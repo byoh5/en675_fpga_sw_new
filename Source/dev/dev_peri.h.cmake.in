@@ -1,0 +1,369 @@
+//******************************************************************************
+//	Copyright(c) Eyenix Co.,Ltd. 2003-
+//
+//	File Name:     dev_peri.h
+//	Description:   EN675 Registere definition
+//	Author:        Team 2
+//
+//	Note:          This file is created automatically.
+//                 Changing this file does not affect your code.
+//                If you want to modify it, edit "dev_peri.h.make.in".
+//
+//	Ver   Date   Author  Changes
+//	---  ------  ------  -------
+//  0.1  190131  hjlee   support EN675
+//------------------------------------------------------------------------------
+#ifndef __DEV_PERI_H__
+#define __DEV_PERI_H__
+
+// SDIO0 define
+#if ${USE_SDIO0}
+
+#endif
+
+// SDIO1 define
+#if ${USE_SDIO1}
+
+#endif
+
+// ETH define
+#if ${USE_ETH}
+
+#endif
+
+// AUD define
+#if ${USE_AUD}
+
+#endif
+
+// SPI0 define
+#if ${USE_SPI0}
+
+#endif
+
+// SPI1 define
+#if ${USE_SPI1}
+
+#endif
+
+// SPI2 define
+#if ${USE_SPI2}
+
+#endif
+
+// SPI3 define
+#if ${USE_SPI3}
+
+#endif
+
+// SPI4 define
+#if ${USE_SPI4}
+
+#endif
+
+// SPI5 define
+#if ${USE_SPI5}
+
+#endif
+
+// SPI6 define
+#if ${USE_SPI6}
+
+#endif
+
+// SPI7 define
+#if ${USE_SPI7}
+
+#endif
+
+// SPI8 define
+#if ${USE_SPI8}
+
+#endif
+
+// I2C0 define
+#if ${USE_I2C0}
+
+#endif
+
+// I2C1 define
+#if ${USE_I2C1}
+
+#endif
+
+// I2C2 define
+#if ${USE_I2C2}
+
+#endif
+
+// I2C3 define
+#if ${USE_I2C3}
+
+#endif
+
+// I2C4 define
+#if ${USE_I2C4}
+
+#endif
+
+// I2C5 define
+#if ${USE_I2C5}
+
+#endif
+
+// I2C6 define
+#if ${USE_I2C6}
+
+#endif
+
+// I2C7 define
+#if ${USE_I2C7}
+
+#endif
+
+// I2C8 define
+#if ${USE_I2C8}
+
+#endif
+
+// UART0 define
+#if ${USE_UART0}
+
+#endif
+
+// UART1 define
+#if ${USE_UART1}
+
+#endif
+
+// UART2 define
+#if ${USE_UART2}
+
+#endif
+
+// UART3 define
+#if ${USE_UART3}
+
+#endif
+
+// UART4 define
+#if ${USE_UART4}
+
+#endif
+
+// UART5 define
+#if ${USE_UART5}
+
+#endif
+
+// UART6 define
+#if ${USE_UART6}
+
+#endif
+
+// UART7 define
+#if ${USE_UART7}
+
+#endif
+
+// UART8 define
+#if ${USE_UART8}
+
+#endif
+
+// TIMER0 define	
+#if ${USE_TIMER0}
+
+#endif
+
+// TIMER1 define	
+#if ${USE_TIMER1}
+
+#endif
+
+// TIMER2 define	
+#if ${USE_TIMER2}
+
+#endif
+
+// TIMER3 define	
+#if ${USE_TIMER3}
+
+#endif
+
+// TIMER4 define	
+#if ${USE_TIMER4}
+
+#endif
+
+// TIMER5 define	
+#if ${USE_TIMER5}
+
+#endif
+
+// TIMER6 define	
+#if ${USE_TIMER6}
+
+#endif
+
+// TIMER7 define	
+#if ${USE_TIMER7}
+
+#endif
+
+// TIMER8 define	
+#if ${USE_TIMER8}
+
+#endif
+
+// TIMER9 define	
+#if ${USE_TIMER9}
+
+#endif
+
+// TIMER10 define	
+#if ${USE_TIMER10}
+
+#endif
+
+// TIMER11 define	
+#if ${USE_TIMER11}
+
+#endif
+
+// TIMER12 define	
+#if ${USE_TIMER12}
+
+#endif
+
+// TIMER13 define	
+#if ${USE_TIMER13}
+
+#endif
+
+// TIMER14 define	
+#if ${USE_TIMER14}
+
+#endif
+
+// TIMER15 define	
+#if ${USE_TIMER15}
+
+#endif
+
+// TIMER16 define	
+#if ${USE_TIMER16}
+
+#endif
+
+// TIMER17 define	
+#if ${USE_TIMER17}
+
+#endif
+
+// TIMER18 define	
+#if ${USE_TIMER18}
+
+#endif
+
+// TIMER19 define	
+#if ${USE_TIMER19}
+
+#endif
+
+// TIMER20 define	
+#if ${USE_TIMER20}
+
+#endif
+
+// TIMER21 define	
+#if ${USE_TIMER21}
+
+#endif
+
+// TIMER22 define	
+#if ${USE_TIMER22}
+
+#endif
+
+// TIMER23 define	
+#if ${USE_TIMER23}
+
+#endif
+
+// TIMER24 define	
+#if ${USE_TIMER24}
+
+#endif
+
+// TIMER25 define	
+#if ${USE_TIMER25}
+
+#endif
+
+// TIMER26 define	
+#if ${USE_TIMER26}
+
+#endif
+
+// TIMER27 define	
+#if ${USE_TIMER27}
+
+#endif
+
+// TIMER28 define	
+#if ${USE_TIMER28}
+
+#endif
+
+// TIMER29 define	
+#if ${USE_TIMER29}
+
+#endif
+
+// TIMER30 define	
+#if ${USE_TIMER30}
+
+#endif
+
+// TIMER31 define	
+#if ${USE_TIMER31}
+
+#endif
+
+// TIMER32 define	
+#if ${USE_TIMER32}
+
+#endif
+
+// TIMER33 define	
+#if ${USE_TIMER33}
+
+#endif
+
+// TIMER34 define	
+#if ${USE_TIMER34}
+
+#endif
+
+// TIMER35 define	
+#if ${USE_TIMER35}
+
+#endif
+
+// TIMER36 define	
+#if ${USE_TIMER36}
+
+#endif
+
+// TIMER37 define	
+#if ${USE_TIMER37}
+
+#endif
+
+// TIMER38 define	
+#if ${USE_TIMER38}
+
+#endif
+
+#endif

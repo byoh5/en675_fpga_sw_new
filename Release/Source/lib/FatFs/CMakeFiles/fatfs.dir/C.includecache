@@ -1,0 +1,42 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+E:/EN675/work8/code/en675_fpga_rc001/Source/lib/FatFs/source/diskio.c
+ff.h
+E:/EN675/work8/code/en675_fpga_rc001/Source/lib/FatFs/source/ff.h
+diskio.h
+E:/EN675/work8/code/en675_fpga_rc001/Source/lib/FatFs/source/diskio.h
+
+E:/EN675/work8/code/en675_fpga_rc001/Source/lib/FatFs/source/diskio.h
+
+E:/EN675/work8/code/en675_fpga_rc001/Source/lib/FatFs/source/ff.c
+ff.h
+E:/EN675/work8/code/en675_fpga_rc001/Source/lib/FatFs/source/ff.h
+diskio.h
+E:/EN675/work8/code/en675_fpga_rc001/Source/lib/FatFs/source/diskio.h
+stdarg.h
+-
+
+E:/EN675/work8/code/en675_fpga_rc001/Source/lib/FatFs/source/ff.h
+ffconf.h
+E:/EN675/work8/code/en675_fpga_rc001/Source/lib/FatFs/source/ffconf.h
+windows.h
+-
+stdint.h
+-
+
+E:/EN675/work8/code/en675_fpga_rc001/Source/lib/FatFs/source/ffconf.h
+
+E:/EN675/work8/code/en675_fpga_rc001/Source/lib/FatFs/source/ffsystem.c
+ff.h
+E:/EN675/work8/code/en675_fpga_rc001/Source/lib/FatFs/source/ff.h
+
+E:/EN675/work8/code/en675_fpga_rc001/Source/lib/FatFs/source/ffunicode.c
+ff.h
+E:/EN675/work8/code/en675_fpga_rc001/Source/lib/FatFs/source/ff.h
+

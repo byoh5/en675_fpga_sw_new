@@ -1,0 +1,27 @@
+EN675 CPU code
+=====================================
+
+코드 구성
+---------
+
+이 코드는 Flash와 DDR이 없는 환경에서 테스트 되었습니다. SRAM에서 작동중입니다.
+CPU0, 1, 2, 3은 source/core폴더에서 core0, core1, core2, core3의 main_.c 파일을 root로 합니다.
+CPU1의 FreeRTOS는 DDR 구성이 된 후 업데이트 예정입니다.
+스택 배정문제로 현재 오작동의 여지가 있습니다.
+CPU0은 FPGA 보드의 LED점멸(GPIO55)과 UART7의 출력(USB동글의 UART0과 연결)으로 작동하고 있습니다.
+
+
+이클립스 구성
+---------
+
+이클립스에서 디버깅모드를 사용하기 위해 Debug와 Release로 구성이 나뉘어 있습니다. Debug는 -O0옵션을 사용하며, Release는 -O3옵션을 사용합니다.
+이클립스에 추가할 때, Debug 모드의 경우 Debug 폴더의 .project와 .cproject가 root가 되겠습니다.
+
+
+코드 컴파일
+---------
+
+이 코드는 Cmake 기반의 makefile으로 구성되어 있습니다. 이 소스코드를 컴파일 하기 위해서는 Cmake를 설치해야 합니다.
+Cmake의 버전은 최소 3.13.2가 되어야 하며, https://cmake.org/download/ 에서 다운로드 받을 수 있습니다.
+
+

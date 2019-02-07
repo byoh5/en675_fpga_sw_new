@@ -1,0 +1,20 @@
+# 최소한의 Cmake 버전을 설정
+CMAKE_MINIMUM_REQUIRED ( VERSION 3.13.2 )
+
+# 프로젝트 이름 설정
+PROJECT ( EN675_LIB_CORE1 )
+
+# 소스 코드
+SET ( CORE1_HDRS
+	task/shell/shell.h
+	task/shell/shell_cmd.h
+)
+
+SET ( CORE1_SRCS
+	main1.c
+	task/shell/shell.c
+	task/shell/shell_cmd.c
+)
+
+# 라이브러리 생성
+ADD_LIBRARY ( core1 STATIC ${CORE1_SRCS} ${CORE1_HDRS} )
