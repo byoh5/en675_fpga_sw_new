@@ -13,25 +13,19 @@ SET ( EN675_BOOT bootloader.bin )
 SET ( EN675_CORE core.bin )
 SET ( EN675_OUTPUT EN675.bin )
 
-# 활성화
-#enable_language(ASM-ATT)
-
-# 빌드 형상(Configuration)
-#SET ( CMAKE_BUILD_TYPE Debug )
-#SET ( CMAKE_BUILD_TYPE Release )
-
-IF ( NOT CMAKE_BUILD_TYPE )
-	SET ( CMAKE_BUILD_TYPE "Debug" CACHE STRING "Choose the type of build, options are: Debug Release" FORCE)
-ENDIF ( NOT CMAKE_BUILD_TYPE )
-
 SET ( CMAKE_VERBOSE_MAKEFILE false )                                            # 빌드 상세 과정을 모두 출력하는 Makefile을 생성함
 
 SET ( ROOT_PATH "$(CMAKE_CURRENT_SOURCE_DIR)" )
 
+INCLUDE ( ${PROJECT_BINARY_DIR}/BuildMode.cmake )
 INCLUDE ( Cmake/cpack.cmake )
 INCLUDE ( Cmake/includeheaddir.cmake )
 INCLUDE ( Cmake/registeraddr.cmake )
 INCLUDE ( Cmake/peripheral.cmake )
+
+IF ( NOT CMAKE_BUILD_TYPE )
+	SET ( CMAKE_BUILD_TYPE "Debug" CACHE STRING "Choose the type of build, options are: Debug Release" FORCE)
+ENDIF ( NOT CMAKE_BUILD_TYPE )
 
 # 컴파일 옵션 추가
 #ADD_COMPILE_OPTIONS ( "-g -Wall" )
@@ -42,16 +36,6 @@ ADD_DEFINITIONS( -DMY_DEBUG=1 )
 
 # 라이브러리 디렉토리 지정 (-L)
 LINK_DIRECTORIES ( ${CMAKE_BUILD_TYPE}/lib )
-
-# "Debug" 형상 한정 컴파일 옵션, 링크 옵션
-#SET ( CMAKE_C_FLAGS_DEBUG "-DDEBUG -DC_FLAGS -O0" )
-SET ( CMAKE_ASM_FLAGS_DEBUG "-DDEBUG -DC_FLAGS -O0 -MMD -MP -Wall -D__NO_INLINE__ -mcmodel=medany -std=gnu99 -Wno-unused -Wno-attributes -fno-delete-null-pointer-checks -g")
-SET ( CMAKE_C_FLAGS_DEBUG   "-DDEBUG -DC_FLAGS -O0 -MMD -MP -Wall -D__NO_INLINE__ -mcmodel=medany -std=gnu99 -Wno-unused -Wno-attributes -fno-delete-null-pointer-checks -g" )
-SET ( CMAKE_EXE_LINKER_FLAGS_DEBUG "-DDEBUG -DLINKER_FLAGS -Wl,--build-id=none -nostartfiles -static" )
-
-# "Release" 형상 한정 컴파일 옵션, 링크 옵션
-SET ( CMAKE_C_FLAGS_RELEASE "-DRELEASE -DC_FLAGS -Os" )
-SET ( CMAKE_EXE_LINKER_FLAGS_RELEASE "-DRELEASE -DLINKER_FLAGS" )
 
 # "Install" ...? 안먹히는듯
 #SET ( CMAKE_INSTALL_PREFIX "${PROJECT_BINARY_DIR}/install" )

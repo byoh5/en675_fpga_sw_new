@@ -3,7 +3,6 @@
 #include "enx_freertos.h"
 #include "shell.h"
 
-#define SLEEP_CNT 1000000
 extern char g_key;
 
 extern void trap_freertos(void); // mentry.S
@@ -18,7 +17,7 @@ void main_1(int cpu_id)
 			_printf("%d:%lu\r\n", cpu_id, *mtime);
 			g_key = 0xA;
 		}
-		sleep_(SLEEP_CNT);
+		WaitXms(1000);
 	}
 #else
 	while(g_key == 0xFF) {} // Wait for CPU0 to be ready.

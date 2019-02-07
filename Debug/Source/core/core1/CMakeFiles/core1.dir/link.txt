@@ -1,2 +1,0 @@
-E:\EN675\eclipse\tool\riscv64-unknown-elf-gcc-20180928-x86_64-w64-mingw32\bin\riscv64-unknown-elf-ar.exe qc ..\..\..\lib\libcore1.a  CMakeFiles/core1.dir/main1.c.obj CMakeFiles/core1.dir/task/shell/shell.c.obj CMakeFiles/core1.dir/task/shell/shell_cmd.c.obj
-E:\EN675\eclipse\tool\riscv64-unknown-elf-gcc-20180928-x86_64-w64-mingw32\bin\riscv64-unknown-elf-ranlib.exe ..\..\..\lib\libcore1.a

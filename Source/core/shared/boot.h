@@ -9,8 +9,8 @@
 #define BOOT_H_
 
 void _init_bss_section(void);
-void sleep_(int cnt);
-
+void WaitXus(uint64_t us);
+void WaitXms(uint64_t ms);
 
 
 

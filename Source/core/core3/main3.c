@@ -1,6 +1,5 @@
 #include "dev.h"
 
-#define SLEEP_CNT 1000000
 extern char g_key;
 
 void main_3(int cpu_id)
@@ -12,6 +11,6 @@ void main_3(int cpu_id)
 			_printf("%d:%lu\r\n", cpu_id, *mtime);
 			g_key = 0xA;
 		}
-		sleep_(SLEEP_CNT);
+		WaitXms(1000);
 	}
 }
