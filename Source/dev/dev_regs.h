@@ -283,6 +283,7 @@
 #define	IRQ_GPIO70				170
 #define	IRQ_GPIO71				171
 
+#define OSC_FREQ				(25*1000*1000)
 #define MCK_FREQ				(50*1000*1000)
 
 //******************************************************************************
@@ -604,6 +605,9 @@ _regs_ BF_1(UINT RX_DAT : 32 ) _rege_ _SPI8_0;
 _regs_ BF_1(UINT TX_DAT : 32 ) _rege_ _SPI8_1;
 _regs_ BF_15(UINT EN : 1 ,UINT _rev0 : 7, UINT CLK_DIV : 8 ,UINT _rev1 : 2, UINT BIT_MODE : 1 ,UINT CS_OEN : 1 ,UINT CS_OUT : 1 ,UINT IRQ_EN : 1 ,UINT IRQ_CLR : 1 ,UINT IRQ : 1 ,UINT ONE_BITMODE : 1 ,UINT CLK_MODE : 2 ,UINT WS : 2 ,UINT RW : 2 ,UINT GO : 1 ) _rege_ _SPI8_2;
 _regs_ BF_4(UINT _rev0 : 26, UINT H264_RST : 1 ,UINT H265_RST : 1 ,UINT CPU_EN : 4 ) _rege_ _SYS_0;
+_regs_ BF_1(UINT WDT_CNT : 32 ) _rege_ _SYS_1;
+_regs_ BF_1(UINT WDT_LMT : 32 ) _rege_ _SYS_2;
+_regs_ BF_3(UINT _rev0 : 30, UINT WDT_EN : 1 ,UINT WDT_CLR : 1 ) _rege_ _SYS_3;
 _regs_ BF_2(UINT _rev0 : 30, UINT GPIO0_MUX : 2 ) _rege_ _SYS_256;
 _regs_ BF_2(UINT _rev0 : 30, UINT GPIO1_MUX : 2 ) _rege_ _SYS_257;
 _regs_ BF_2(UINT _rev0 : 30, UINT GPIO2_MUX : 2 ) _rege_ _SYS_258;
@@ -676,6 +680,65 @@ _regs_ BF_2(UINT _rev0 : 30, UINT GPIO68_MUX : 2 ) _rege_ _SYS_324;
 _regs_ BF_2(UINT _rev0 : 30, UINT GPIO69_MUX : 2 ) _rege_ _SYS_325;
 _regs_ BF_2(UINT _rev0 : 30, UINT GPIO70_MUX : 2 ) _rege_ _SYS_326;
 _regs_ BF_2(UINT _rev0 : 30, UINT GPIO71_MUX : 2 ) _rege_ _SYS_327;
+_regs_ BF_4(UINT _rev0 : 4, UINT IHSIZE : 12 ,UINT _rev1 : 4, UINT IVSIZE : 12 ) _rege_ _H264_0;
+_regs_ BF_4(UINT _rev0 : 4, UINT YSTRIDEX : 12 ,UINT _rev1 : 4, UINT CSTRIDEX : 12 ) _rege_ _H264_2;
+_regs_ BF_2(UINT _rev0 : 18, UINT TMBNUM : 14 ) _rege_ _H264_4;
+_regs_ BF_3(UINT _rev0 : 30, UINT IDR_FLAG : 1 ,UINT PFRAME : 1 ) _rege_ _H264_5;
+_regs_ BF_1(UINT CURYBUF : 32 ) _rege_ _H264_22;
+_regs_ BF_1(UINT CURCBUF : 32 ) _rege_ _H264_24;
+_regs_ BF_1(UINT CUREBUF : 32 ) _rege_ _H264_26;
+_regs_ BF_1(UINT REFYBUF : 32 ) _rege_ _H264_28;
+_regs_ BF_1(UINT REFCBUF : 32 ) _rege_ _H264_30;
+_regs_ BF_1(UINT RECYBUF : 32 ) _rege_ _H264_32;
+_regs_ BF_1(UINT RECCBUF : 32 ) _rege_ _H264_34;
+_regs_ BF_1(UINT STRMBUF : 32 ) _rege_ _H264_36;
+_regs_ BF_1(UINT SBUFEND : 32 ) _rege_ _H264_38;
+_regs_ BF_1(UINT STPSBUFW : 32 ) _rege_ _H264_40;
+_regs_ BF_1(UINT STPIBUFW : 32 ) _rege_ _H264_42;
+_regs_ BF_1(UINT STPIBUFR : 32 ) _rege_ _H264_44;
+_regs_ BF_1(UINT SBUFSIZE : 32 ) _rege_ _H264_46;
+_regs_ BF_3(UINT _rev0 : 24, UINT VLCBURST : 4 ,UINT ENCBURST : 4 ) _rege_ _H264_48;
+_regs_ BF_8(UINT _rev0 : 24, UINT USEIADDR : 1 ,UINT KEEP4KB : 1 ,UINT CLKRATIO : 2 ,UINT KEEPORDER : 1 ,UINT RNDROBIN : 1 ,UINT EXTROBIN : 1 ,UINT BIGENDIAN : 1 ) _rege_ _H264_50;
+_regs_ BF_2(UINT _rev0 : 4, UINT PREBITS : 28 ) _rege_ _H264_106;
+_regs_ BF_3(UINT _rev0 : 25, UINT ROI_EN_0 : 1 ,UINT ROI_Q_0 : 6 ) _rege_ _H264_128;
+_regs_ BF_4(UINT ROI_XS_0 : 8 ,UINT ROI_XE_0 : 8 ,UINT ROI_YS_0 : 8 ,UINT ROI_YE_0 : 8 ) _rege_ _H264_130;
+_regs_ BF_3(UINT _rev0 : 25, UINT ROI_EN_1 : 1 ,UINT ROI_Q_1 : 6 ) _rege_ _H264_132;
+_regs_ BF_4(UINT ROI_XS_1 : 8 ,UINT ROI_XE_1 : 8 ,UINT ROI_YS_1 : 8 ,UINT ROI_YE_1 : 8 ) _rege_ _H264_134;
+_regs_ BF_3(UINT _rev0 : 25, UINT ROI_EN_2 : 1 ,UINT ROI_Q_2 : 6 ) _rege_ _H264_136;
+_regs_ BF_4(UINT ROI_XS_2 : 8 ,UINT ROI_XE_2 : 8 ,UINT ROI_YS_2 : 8 ,UINT ROI_YE_2 : 8 ) _rege_ _H264_138;
+_regs_ BF_3(UINT _rev0 : 25, UINT ROI_EN_3 : 1 ,UINT ROI_Q_3 : 6 ) _rege_ _H264_140;
+_regs_ BF_4(UINT ROI_XS_3 : 8 ,UINT ROI_XE_3 : 8 ,UINT ROI_YS_3 : 8 ,UINT ROI_YE_3 : 8 ) _rege_ _H264_142;
+_regs_ BF_1(UINT MEMYBGN : 32 ) _rege_ _H264_160;
+_regs_ BF_1(UINT MEMYEND : 32 ) _rege_ _H264_162;
+_regs_ BF_1(UINT MEMCBGN : 32 ) _rege_ _H264_164;
+_regs_ BF_1(UINT MEMCEND : 32 ) _rege_ _H264_166;
+_regs_ BF_4(UINT _rev0 : 4, UINT MIHSIZE : 12 ,UINT _rev1 : 4, UINT MIVSIZE : 12 ) _rege_ _H264_192;
+_regs_ BF_3(UINT _rev0 : 29, UINT MCABACIDC : 2 ,UINT MCABACEN : 1 ) _rege_ _H264_194;
+_regs_ BF_2(UINT _rev0 : 26, UINT MQSCALE : 6 ) _rege_ _H264_196;
+_regs_ BF_2(UINT _rev0 : 31, UINT MPFRAME : 1 ) _rege_ _H264_198;
+_regs_ BF_1(UINT SRC : 32 ) _rege_ _AES_0;
+_regs_ BF_1(UINT DST : 32 ) _rege_ _AES_1;
+_regs_ BF_1(UINT LEN : 32 ) _rege_ _AES_2;
+_regs_ BF_7(UINT _rev0 : 26, UINT IRQ : 1 ,UINT IRQ_EN : 1 ,UINT IRQ_CLR : 1 ,UINT KEY_LEN : 1 ,UINT MODE : 1 ,UINT REQ : 1 ) _rege_ _AES_3;
+_regs_ BF_1(UINT KEY_255_224 : 32 ) _rege_ _AES_4;
+_regs_ BF_1(UINT KEY_223_192 : 32 ) _rege_ _AES_5;
+_regs_ BF_1(UINT KEY_191_160 : 32 ) _rege_ _AES_6;
+_regs_ BF_1(UINT KEY_159_128 : 32 ) _rege_ _AES_7;
+_regs_ BF_1(UINT KEY_127_96 : 32 ) _rege_ _AES_8;
+_regs_ BF_1(UINT KEY_95_64 : 32 ) _rege_ _AES_9;
+_regs_ BF_1(UINT KEY_63_32 : 32 ) _rege_ _AES_10;
+_regs_ BF_1(UINT KEY_31_0 : 32 ) _rege_ _AES_11;
+_regs_ BF_1(UINT SRC : 32 ) _rege_ _SHA_0;
+_regs_ BF_1(UINT LEN : 32 ) _rege_ _SHA_2;
+_regs_ BF_7(UINT _rev0 : 26, UINT IRQ : 1 ,UINT IRQ_EN : 1 ,UINT IRQ_CLR : 1 ,UINT _rev1 : 1, UINT MODE : 1 ,UINT REQ : 1 ) _rege_ _SHA_3;
+_regs_ BF_1(UINT DIGEST_255_224 : 32 ) _rege_ _SHA_4;
+_regs_ BF_1(UINT DIGEST_223_192 : 32 ) _rege_ _SHA_5;
+_regs_ BF_1(UINT DIGEST_191_160 : 32 ) _rege_ _SHA_6;
+_regs_ BF_1(UINT DIGEST_159_128 : 32 ) _rege_ _SHA_7;
+_regs_ BF_1(UINT DIGEST_127_96 : 32 ) _rege_ _SHA_8;
+_regs_ BF_1(UINT DIGEST_95_64 : 32 ) _rege_ _SHA_9;
+_regs_ BF_1(UINT DIGEST_63_32 : 32 ) _rege_ _SHA_10;
+_regs_ BF_1(UINT DIGEST_31_0 : 32 ) _rege_ _SHA_11;
 
 #define DDR_MR_ADR _bm(_DDR_0,REG_BASE_DDR, (0<<2),MR_ADR) // 8 Bit, 8'h0, RW
 #define DDR_MR_WRDAT _bm(_DDR_0,REG_BASE_DDR, (0<<2),MR_WRDAT) // 8 Bit, 8'h0, RW
@@ -2299,6 +2362,10 @@ _regs_ BF_2(UINT _rev0 : 30, UINT GPIO71_MUX : 2 ) _rege_ _SYS_327;
 #define SYS_H264_RST _bm(_SYS_0,REG_BASE_SYS, (0<<2),H264_RST) // 1 Bit, 1'h0, RW
 #define SYS_H265_RST _bm(_SYS_0,REG_BASE_SYS, (0<<2),H265_RST) // 1 Bit, 1'h0, RW
 #define SYS_CPU_EN _bm(_SYS_0,REG_BASE_SYS, (0<<2),CPU_EN) // 4 Bit, 4'h0, RW
+#define SYS_WDT_CNT _bm(_SYS_1,REG_BASE_SYS, (1<<2),WDT_CNT) // 32 Bit, 32'h0, R
+#define SYS_WDT_LMT _bm(_SYS_2,REG_BASE_SYS, (2<<2),WDT_LMT) // 32 Bit, 32'hffffffff, RW
+#define SYS_WDT_EN _bm(_SYS_3,REG_BASE_SYS, (3<<2),WDT_EN) // 1 Bit, 1'h0, RW
+#define SYS_WDT_CLR _bm(_SYS_3,REG_BASE_SYS, (3<<2),WDT_CLR) // 1 Bit, 1'h0, W
 #define SYS_GPIO0_MUX _bm(_SYS_256,REG_BASE_SYS, (256<<2),GPIO0_MUX) // 2 Bit, 2'h0, RW
 #define SYS_GPIO1_MUX _bm(_SYS_257,REG_BASE_SYS, (257<<2),GPIO1_MUX) // 2 Bit, 2'h0, RW
 #define SYS_GPIO2_MUX _bm(_SYS_258,REG_BASE_SYS, (258<<2),GPIO2_MUX) // 2 Bit, 2'h0, RW
@@ -2371,5 +2438,101 @@ _regs_ BF_2(UINT _rev0 : 30, UINT GPIO71_MUX : 2 ) _rege_ _SYS_327;
 #define SYS_GPIO69_MUX _bm(_SYS_325,REG_BASE_SYS, (325<<2),GPIO69_MUX) // 2 Bit, 2'h0, RW
 #define SYS_GPIO70_MUX _bm(_SYS_326,REG_BASE_SYS, (326<<2),GPIO70_MUX) // 2 Bit, 2'h0, RW
 #define SYS_GPIO71_MUX _bm(_SYS_327,REG_BASE_SYS, (327<<2),GPIO71_MUX) // 2 Bit, 2'h0, RW
+#define H264_IHSIZE _bm(_H264_0,REG_BASE_H264, (0<<2),IHSIZE) // 12 Bit, 12'h0, RW
+#define H264_IVSIZE _bm(_H264_0,REG_BASE_H264, (0<<2),IVSIZE) // 12 Bit, 12'h0, RW
+#define H264_YSTRIDEX _bm(_H264_2,REG_BASE_H264, (2<<2),YSTRIDEX) // 12 Bit, 12'h0, RW
+#define H264_CSTRIDEX _bm(_H264_2,REG_BASE_H264, (2<<2),CSTRIDEX) // 12 Bit, 12'h0, RW
+#define H264_TMBNUM _bm(_H264_4,REG_BASE_H264, (4<<2),TMBNUM) // 14 Bit, 14'h0, RW
+#define H264_IDR_FLAG _bm(_H264_5,REG_BASE_H264, (5<<2),IDR_FLAG) // 1 Bit, 1'h0, RW
+#define H264_PFRAME _bm(_H264_5,REG_BASE_H264, (5<<2),PFRAME) // 1 Bit, 1'h0, RW
+#define H264_CURYBUF _bm(_H264_22,REG_BASE_H264, (22<<2),CURYBUF) // 32 Bit, 32'h0, RW
+#define H264_CURCBUF _bm(_H264_24,REG_BASE_H264, (24<<2),CURCBUF) // 32 Bit, 32'h0, RW
+#define H264_CUREBUF _bm(_H264_26,REG_BASE_H264, (26<<2),CUREBUF) // 32 Bit, 32'h0, RW
+#define H264_REFYBUF _bm(_H264_28,REG_BASE_H264, (28<<2),REFYBUF) // 32 Bit, 32'h0, RW
+#define H264_REFCBUF _bm(_H264_30,REG_BASE_H264, (30<<2),REFCBUF) // 32 Bit, 32'h0, RW
+#define H264_RECYBUF _bm(_H264_32,REG_BASE_H264, (32<<2),RECYBUF) // 32 Bit, 32'h0, RW
+#define H264_RECCBUF _bm(_H264_34,REG_BASE_H264, (34<<2),RECCBUF) // 32 Bit, 32'h0, RW
+#define H264_STRMBUF _bm(_H264_36,REG_BASE_H264, (36<<2),STRMBUF) // 32 Bit, 32'h0, RW
+#define H264_SBUFEND _bm(_H264_38,REG_BASE_H264, (38<<2),SBUFEND) // 32 Bit, 32'h0, RW
+#define H264_STPSBUFW _bm(_H264_40,REG_BASE_H264, (40<<2),STPSBUFW) // 32 Bit, 32'h0, RW
+#define H264_STPIBUFW _bm(_H264_42,REG_BASE_H264, (42<<2),STPIBUFW) // 32 Bit, 32'h0, RW
+#define H264_STPIBUFR _bm(_H264_44,REG_BASE_H264, (44<<2),STPIBUFR) // 32 Bit, 32'h0, RW
+#define H264_SBUFSIZE _bm(_H264_46,REG_BASE_H264, (46<<2),SBUFSIZE) // 32 Bit, 32'h0, RW
+#define H264_VLCBURST _bm(_H264_48,REG_BASE_H264, (48<<2),VLCBURST) // 4 Bit, 4'h0, RW
+#define H264_ENCBURST _bm(_H264_48,REG_BASE_H264, (48<<2),ENCBURST) // 4 Bit, 4'h0, RW
+#define H264_USEIADDR _bm(_H264_50,REG_BASE_H264, (50<<2),USEIADDR) // 1 Bit, 1'h0, RW
+#define H264_KEEP4KB _bm(_H264_50,REG_BASE_H264, (50<<2),KEEP4KB) // 1 Bit, 1'h0, RW
+#define H264_CLKRATIO _bm(_H264_50,REG_BASE_H264, (50<<2),CLKRATIO) // 2 Bit, 2'h0, RW
+#define H264_KEEPORDER _bm(_H264_50,REG_BASE_H264, (50<<2),KEEPORDER) // 1 Bit, 1'h0, RW
+#define H264_RNDROBIN _bm(_H264_50,REG_BASE_H264, (50<<2),RNDROBIN) // 1 Bit, 1'h0, RW
+#define H264_EXTROBIN _bm(_H264_50,REG_BASE_H264, (50<<2),EXTROBIN) // 1 Bit, 1'h0, RW
+#define H264_BIGENDIAN _bm(_H264_50,REG_BASE_H264, (50<<2),BIGENDIAN) // 1 Bit, 1'h0, RW
+#define H264_PREBITS _bm(_H264_106,REG_BASE_H264, (106<<2),PREBITS) // 28 Bit, 28'h0, RW
+#define H264_ROI_EN_0 _bm(_H264_128,REG_BASE_H264, (128<<2),ROI_EN_0) // 1 Bit, 1'h0, RW
+#define H264_ROI_Q_0 _bm(_H264_128,REG_BASE_H264, (128<<2),ROI_Q_0) // 6 Bit, 6'h0, RW
+#define H264_ROI_XS_0 _bm(_H264_130,REG_BASE_H264, (130<<2),ROI_XS_0) // 8 Bit, 8'h0, RW
+#define H264_ROI_XE_0 _bm(_H264_130,REG_BASE_H264, (130<<2),ROI_XE_0) // 8 Bit, 8'h0, RW
+#define H264_ROI_YS_0 _bm(_H264_130,REG_BASE_H264, (130<<2),ROI_YS_0) // 8 Bit, 8'h0, RW
+#define H264_ROI_YE_0 _bm(_H264_130,REG_BASE_H264, (130<<2),ROI_YE_0) // 8 Bit, 8'h0, RW
+#define H264_ROI_EN_1 _bm(_H264_132,REG_BASE_H264, (132<<2),ROI_EN_1) // 1 Bit, 1'h0, RW
+#define H264_ROI_Q_1 _bm(_H264_132,REG_BASE_H264, (132<<2),ROI_Q_1) // 6 Bit, 6'h0, RW
+#define H264_ROI_XS_1 _bm(_H264_134,REG_BASE_H264, (134<<2),ROI_XS_1) // 8 Bit, 8'h0, RW
+#define H264_ROI_XE_1 _bm(_H264_134,REG_BASE_H264, (134<<2),ROI_XE_1) // 8 Bit, 8'h0, RW
+#define H264_ROI_YS_1 _bm(_H264_134,REG_BASE_H264, (134<<2),ROI_YS_1) // 8 Bit, 8'h0, RW
+#define H264_ROI_YE_1 _bm(_H264_134,REG_BASE_H264, (134<<2),ROI_YE_1) // 8 Bit, 8'h0, RW
+#define H264_ROI_EN_2 _bm(_H264_136,REG_BASE_H264, (136<<2),ROI_EN_2) // 1 Bit, 1'h0, RW
+#define H264_ROI_Q_2 _bm(_H264_136,REG_BASE_H264, (136<<2),ROI_Q_2) // 6 Bit, 6'h0, RW
+#define H264_ROI_XS_2 _bm(_H264_138,REG_BASE_H264, (138<<2),ROI_XS_2) // 8 Bit, 8'h0, RW
+#define H264_ROI_XE_2 _bm(_H264_138,REG_BASE_H264, (138<<2),ROI_XE_2) // 8 Bit, 8'h0, RW
+#define H264_ROI_YS_2 _bm(_H264_138,REG_BASE_H264, (138<<2),ROI_YS_2) // 8 Bit, 8'h0, RW
+#define H264_ROI_YE_2 _bm(_H264_138,REG_BASE_H264, (138<<2),ROI_YE_2) // 8 Bit, 8'h0, RW
+#define H264_ROI_EN_3 _bm(_H264_140,REG_BASE_H264, (140<<2),ROI_EN_3) // 1 Bit, 1'h0, RW
+#define H264_ROI_Q_3 _bm(_H264_140,REG_BASE_H264, (140<<2),ROI_Q_3) // 6 Bit, 6'h0, RW
+#define H264_ROI_XS_3 _bm(_H264_142,REG_BASE_H264, (142<<2),ROI_XS_3) // 8 Bit, 8'h0, RW
+#define H264_ROI_XE_3 _bm(_H264_142,REG_BASE_H264, (142<<2),ROI_XE_3) // 8 Bit, 8'h0, RW
+#define H264_ROI_YS_3 _bm(_H264_142,REG_BASE_H264, (142<<2),ROI_YS_3) // 8 Bit, 8'h0, RW
+#define H264_ROI_YE_3 _bm(_H264_142,REG_BASE_H264, (142<<2),ROI_YE_3) // 8 Bit, 8'h0, RW
+#define H264_MEMYBGN _bm(_H264_160,REG_BASE_H264, (160<<2),MEMYBGN) // 32 Bit, 32'h0, RW
+#define H264_MEMYEND _bm(_H264_162,REG_BASE_H264, (162<<2),MEMYEND) // 32 Bit, 32'h0, RW
+#define H264_MEMCBGN _bm(_H264_164,REG_BASE_H264, (164<<2),MEMCBGN) // 32 Bit, 32'h0, RW
+#define H264_MEMCEND _bm(_H264_166,REG_BASE_H264, (166<<2),MEMCEND) // 32 Bit, 32'h0, RW
+#define H264_MIHSIZE _bm(_H264_192,REG_BASE_H264, (192<<2),MIHSIZE) // 12 Bit, 12'h0, RW
+#define H264_MIVSIZE _bm(_H264_192,REG_BASE_H264, (192<<2),MIVSIZE) // 12 Bit, 12'h0, RW
+#define H264_MCABACIDC _bm(_H264_194,REG_BASE_H264, (194<<2),MCABACIDC) // 2 Bit, 2'h0, RW
+#define H264_MCABACEN _bm(_H264_194,REG_BASE_H264, (194<<2),MCABACEN) // 1 Bit, 1'h0, RW
+#define H264_MQSCALE _bm(_H264_196,REG_BASE_H264, (196<<2),MQSCALE) // 6 Bit, 6'h0, RW
+#define H264_MPFRAME _bm(_H264_198,REG_BASE_H264, (198<<2),MPFRAME) // 1 Bit, 1'h0, RW
+#define AES_SRC _bm(_AES_0,REG_BASE_AES, (0<<2),SRC) // 32 Bit, 32'h0, RW
+#define AES_DST _bm(_AES_1,REG_BASE_AES, (1<<2),DST) // 32 Bit, 32'h0, RW
+#define AES_LEN _bm(_AES_2,REG_BASE_AES, (2<<2),LEN) // 32 Bit, 32'h0, RW
+#define AES_IRQ _bm(_AES_3,REG_BASE_AES, (3<<2),IRQ) // 1 Bit, 1'h0, R
+#define AES_IRQ_EN _bm(_AES_3,REG_BASE_AES, (3<<2),IRQ_EN) // 1 Bit, 1'h0, RW
+#define AES_IRQ_CLR _bm(_AES_3,REG_BASE_AES, (3<<2),IRQ_CLR) // 1 Bit, 1'h0, W
+#define AES_KEY_LEN _bm(_AES_3,REG_BASE_AES, (3<<2),KEY_LEN) // 1 Bit, 1'h0, RW
+#define AES_MODE _bm(_AES_3,REG_BASE_AES, (3<<2),MODE) // 1 Bit, 1'h0, RW
+#define AES_REQ _bm(_AES_3,REG_BASE_AES, (3<<2),REQ) // 1 Bit, 1'h0, RW
+#define AES_KEY_255_224 _bm(_AES_4,REG_BASE_AES, (4<<2),KEY_255_224) // 32 Bit, 32'h0, RW
+#define AES_KEY_223_192 _bm(_AES_5,REG_BASE_AES, (5<<2),KEY_223_192) // 32 Bit, 32'h0, RW
+#define AES_KEY_191_160 _bm(_AES_6,REG_BASE_AES, (6<<2),KEY_191_160) // 32 Bit, 32'h0, RW
+#define AES_KEY_159_128 _bm(_AES_7,REG_BASE_AES, (7<<2),KEY_159_128) // 32 Bit, 32'h0, RW
+#define AES_KEY_127_96 _bm(_AES_8,REG_BASE_AES, (8<<2),KEY_127_96) // 32 Bit, 32'h0, RW
+#define AES_KEY_95_64 _bm(_AES_9,REG_BASE_AES, (9<<2),KEY_95_64) // 32 Bit, 32'h0, RW
+#define AES_KEY_63_32 _bm(_AES_10,REG_BASE_AES, (10<<2),KEY_63_32) // 32 Bit, 32'h0, RW
+#define AES_KEY_31_0 _bm(_AES_11,REG_BASE_AES, (11<<2),KEY_31_0) // 32 Bit, 32'h0, RW
+#define SHA_SRC _bm(_SHA_0,REG_BASE_SHA, (0<<2),SRC) // 32 Bit, 32'h0, RW
+#define SHA_LEN _bm(_SHA_2,REG_BASE_SHA, (2<<2),LEN) // 32 Bit, 32'h0, RW
+#define SHA_IRQ _bm(_SHA_3,REG_BASE_SHA, (3<<2),IRQ) // 1 Bit, 1'h0, R
+#define SHA_IRQ_EN _bm(_SHA_3,REG_BASE_SHA, (3<<2),IRQ_EN) // 1 Bit, 1'h0, RW
+#define SHA_IRQ_CLR _bm(_SHA_3,REG_BASE_SHA, (3<<2),IRQ_CLR) // 1 Bit, 1'h0, W
+#define SHA_MODE _bm(_SHA_3,REG_BASE_SHA, (3<<2),MODE) // 1 Bit, 1'h0, RW
+#define SHA_REQ _bm(_SHA_3,REG_BASE_SHA, (3<<2),REQ) // 1 Bit, 1'h0, RW
+#define SHA_DIGEST_255_224 _bm(_SHA_4,REG_BASE_SHA, (4<<2),DIGEST_255_224) // 32 Bit, 32'h0, RW
+#define SHA_DIGEST_223_192 _bm(_SHA_5,REG_BASE_SHA, (5<<2),DIGEST_223_192) // 32 Bit, 32'h0, RW
+#define SHA_DIGEST_191_160 _bm(_SHA_6,REG_BASE_SHA, (6<<2),DIGEST_191_160) // 32 Bit, 32'h0, RW
+#define SHA_DIGEST_159_128 _bm(_SHA_7,REG_BASE_SHA, (7<<2),DIGEST_159_128) // 32 Bit, 32'h0, RW
+#define SHA_DIGEST_127_96 _bm(_SHA_8,REG_BASE_SHA, (8<<2),DIGEST_127_96) // 32 Bit, 32'h0, RW
+#define SHA_DIGEST_95_64 _bm(_SHA_9,REG_BASE_SHA, (9<<2),DIGEST_95_64) // 32 Bit, 32'h0, RW
+#define SHA_DIGEST_63_32 _bm(_SHA_10,REG_BASE_SHA, (10<<2),DIGEST_63_32) // 32 Bit, 32'h0, RW
+#define SHA_DIGEST_31_0 _bm(_SHA_11,REG_BASE_SHA, (11<<2),DIGEST_31_0) // 32 Bit, 32'h0, RW
 
 #endif

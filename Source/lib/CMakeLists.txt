@@ -11,4 +11,4 @@ SET ( CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/${CMAKE_BUILD_TYPE}/lib
 # ------------------------------------------------------------------------------
 ADD_SUBDIRECTORY(EnxISP)
 ADD_SUBDIRECTORY(FreeRTOS)
-ADD_SUBDIRECTORY(FatFS)
+ADD_SUBDIRECTORY(FatFs)
