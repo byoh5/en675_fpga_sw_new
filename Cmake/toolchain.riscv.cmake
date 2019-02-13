@@ -1,4 +1,4 @@
-# this one is important
+﻿# this one is important
 SET(CMAKE_SYSTEM_NAME Generic)
 
 # this one not so much

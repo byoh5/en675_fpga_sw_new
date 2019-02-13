@@ -14,12 +14,12 @@
 #define DDR_SIZE				(64*1024*1024)	//	 64MB	-	AP Memory AD251232 , Winbond W979H2KK , Etron EM6KA32HGDA
 //#define DDR_SIZE				(128*1024*1024)	//	128MB	-	AP Memory 1Gb , Fidelix 1Gb, Winbond W97AH2KK
 //#define DDR_SIZE				(256*1024*1024)	//	256MB	-	AP Memory AD220032
-#define RAM_SIZE				(    256*1024)	//	256kB
+#define SRAM_SIZE				(    256*1024)	//	256kB
 
 // Base address
 #define SFLS_BASE				0xC0000000	//	OK
 #define DDR_BASE				0x80000000	//	OK
-#define RAM_BASE				0xA0000000	//	OK
+#define SRAM_BASE				0xA0000000	//	OK
 
 // RegBase address
 #define REG_BASE_ISP			0x40000000
@@ -104,7 +104,8 @@
 #define REG_BASE_CHKSUM			0x44F00000
 #define REG_BASE_SYS			0x45000000
 #define REG_BASE_DMA0			0x45100000
-#define REG_BASE_DMA1			0x45200000
+#define REG_BASE_DMA1			0x45100020
+#define REG_BASE_I2S			0x45200000
 
 //******************************************************************************
 // 3. IRQ Number Def
@@ -286,6 +287,17 @@
 #define OSC_FREQ				(25*1000*1000)
 #define MCK_FREQ				(50*1000*1000)
 
+#define DMA_CNT					2
+#define GPIO_CNT				72
+#define SDIO_CNT				2
+#define UART_CNT				9
+#define SPI_CNT					9
+#define I2C_CNT					9
+#define TIMER_CNT				39
+#define USB_CNT					1
+#define ETHERNET_CNT			1
+#define I2S_CNT					1
+
 //******************************************************************************
 // x. Register
 //------------------------------------------------------------------------------
@@ -390,6 +402,9 @@ _regs_ BF_8(UINT PIN68_IN : 1 ,UINT PIN68_OUT : 1 ,UINT PIN68_OEN : 1 ,UINT PIN6
 _regs_ BF_8(UINT PIN69_IN : 1 ,UINT PIN69_OUT : 1 ,UINT PIN69_OEN : 1 ,UINT PIN69_IRQ_DIR : 1 ,UINT PIN69_IRQ_EN : 1 ,UINT PIN69_IRQ_CLR : 1 ,UINT PIN69_IRQ : 1 , UINT _rev0 : 25 ) _rege_ _GPIO_69;
 _regs_ BF_8(UINT PIN70_IN : 1 ,UINT PIN70_OUT : 1 ,UINT PIN70_OEN : 1 ,UINT PIN70_IRQ_DIR : 1 ,UINT PIN70_IRQ_EN : 1 ,UINT PIN70_IRQ_CLR : 1 ,UINT PIN70_IRQ : 1 , UINT _rev0 : 25 ) _rege_ _GPIO_70;
 _regs_ BF_8(UINT PIN71_IN : 1 ,UINT PIN71_OUT : 1 ,UINT PIN71_OEN : 1 ,UINT PIN71_IRQ_DIR : 1 ,UINT PIN71_IRQ_EN : 1 ,UINT PIN71_IRQ_CLR : 1 ,UINT PIN71_IRQ : 1 , UINT _rev0 : 25 ) _rege_ _GPIO_71;
+
+_regs_ BF_8(UINT GPIO_IN : 1 ,UINT GPIO_OUT : 1 ,UINT GPIO_OEN : 1 ,UINT GPIO_IRQ_DIR : 1 ,UINT GPIO_IRQ_EN : 1 ,UINT GPIO_IRQ_CLR : 1 ,UINT GPIO_IRQ : 1 , UINT _rev0 : 25 ) _rege_ _GPIO_PIN;
+
 _regs_ BF_2(UINT _rev0 : 24, UINT PIN_72_64_IN : 8 ) _rege_ _GPIO_72;
 _regs_ BF_1(UINT PIN_63_32_IN : 32 ) _rege_ _GPIO_73;
 _regs_ BF_1(UINT PIN_31_0_IN : 32 ) _rege_ _GPIO_74;
@@ -447,6 +462,12 @@ _regs_ BF_16(UINT CLK_DIV : 12 ,UINT _rev0 : 6, UINT TX_TYPE : 1 ,UINT STOP_BIT 
 _regs_ BF_2(UINT _rev0 : 24, UINT RX_DAT : 8 ) _rege_ _UART8_1;
 _regs_ BF_2(UINT _rev0 : 24, UINT TX_DAT : 8 ) _rege_ _UART8_2;
 _regs_ BF_2(UINT _rev0 : 12, UINT RX_LMT : 20 ) _rege_ _UART8_3;
+
+_regs_ BF_16(UINT CLK_DIV : 12 ,UINT _rev0 : 6, UINT TX_TYPE : 1 ,UINT STOP_BIT : 1 ,UINT PARITY_EN : 1 ,UINT PARITY_TYPE : 1 ,UINT TX_IRQ : 1 ,UINT TX_IRQ_EN : 1 ,UINT TX_IRQ_CLR : 1 ,UINT TX_EMPTY : 1 ,UINT TX_FULL : 1 ,UINT RX_IRQ : 1 ,UINT RX_IRQ_EN : 1 ,UINT RX_IRQ_CLR : 1 ,UINT RX_EMPTY : 1 ,UINT RX_FULL : 1 ) _rege_ _UART_REG0;
+_regs_ BF_2(UINT _rev0 : 24, UINT RX_DAT : 8 ) _rege_ _UART_REG1;
+_regs_ BF_2(UINT _rev0 : 24, UINT TX_DAT : 8 ) _rege_ _UART_REG2;
+_regs_ BF_2(UINT _rev0 : 12, UINT RX_LMT : 20 ) _rege_ _UART_REG3;
+
 _regs_ BF_9(UINT RX_DAT : 8 ,UINT TX_DAT : 8 ,UINT _rev0 : 10, UINT ACT : 1 ,UINT MODE : 1 ,UINT BIT_MODE : 1 ,UINT IRQ : 1 ,UINT IRQ_EN : 1 ,UINT IRQ_CLR : 1 ) _rege_ _I2C0_0;
 _regs_ BF_2(UINT CLK_DIV : 16 , UINT _rev0 : 16 ) _rege_ _I2C0_1;
 _regs_ BF_7(UINT _rev0 : 26, UINT MST_COL : 1 ,UINT MST_ACK : 1 ,UINT MST_REPEAT : 1 ,UINT MST_LAST : 1 ,UINT MST_RW : 1 ,UINT MST_GO : 1 ) _rege_ _I2C0_2;
@@ -483,6 +504,12 @@ _regs_ BF_9(UINT RX_DAT : 8 ,UINT TX_DAT : 8 ,UINT _rev0 : 10, UINT ACT : 1 ,UIN
 _regs_ BF_2(UINT CLK_DIV : 16 , UINT _rev0 : 16 ) _rege_ _I2C8_1;
 _regs_ BF_7(UINT _rev0 : 26, UINT MST_COL : 1 ,UINT MST_ACK : 1 ,UINT MST_REPEAT : 1 ,UINT MST_LAST : 1 ,UINT MST_RW : 1 ,UINT MST_GO : 1 ) _rege_ _I2C8_2;
 _regs_ BF_8(UINT _rev0 : 19, UINT I2C_SDA : 1 ,UINT I2C_SCL : 1 ,UINT SLV_ACK_IN : 1 ,UINT SLV_GO : 1 ,UINT SLV_RW : 1 ,UINT SLV_ACK_OUT : 1 ,UINT SLV_ADR : 7 ) _rege_ _I2C8_3;
+
+_regs_ BF_9(UINT RX_DAT : 8 ,UINT TX_DAT : 8 ,UINT _rev0 : 10, UINT ACT : 1 ,UINT MODE : 1 ,UINT BIT_MODE : 1 ,UINT IRQ : 1 ,UINT IRQ_EN : 1 ,UINT IRQ_CLR : 1 ) _rege_ _I2C_REG0;
+_regs_ BF_2(UINT CLK_DIV : 16 , UINT _rev0 : 16 ) _rege_ _I2C_REG1;
+_regs_ BF_7(UINT _rev0 : 26, UINT MST_COL : 1 ,UINT MST_ACK : 1 ,UINT MST_REPEAT : 1 ,UINT MST_LAST : 1 ,UINT MST_RW : 1 ,UINT MST_GO : 1 ) _rege_ _I2C_REG2;
+_regs_ BF_8(UINT _rev0 : 19, UINT I2C_SDA : 1 ,UINT I2C_SCL : 1 ,UINT SLV_ACK_IN : 1 ,UINT SLV_GO : 1 ,UINT SLV_RW : 1 ,UINT SLV_ACK_OUT : 1 ,UINT SLV_ADR : 7 ) _rege_ _I2C_REG3;
+
 _regs_ BF_9(UINT _rev0 : 4, UINT JOB_PTR : 8 ,UINT DONE_PTR : 6 ,UINT IRQ : 1 ,UINT IRQ_EN : 1 ,UINT IRQ_CLR : 1 ,UINT VALUE : 8 ,UINT MODE : 2 ,UINT GO : 1 ) _rege_ _DMA0_0;
 _regs_ BF_1(UINT SRC : 32 ) _rege_ _DMA0_1;
 _regs_ BF_1(UINT DST : 32 ) _rege_ _DMA0_2;
@@ -491,6 +518,12 @@ _regs_ BF_9(UINT _rev0 : 4, UINT JOB_PTR : 8 ,UINT DONE_PTR : 6 ,UINT IRQ : 1 ,U
 _regs_ BF_1(UINT SRC : 32 ) _rege_ _DMA1_5;
 _regs_ BF_1(UINT DST : 32 ) _rege_ _DMA1_6;
 _regs_ BF_1(UINT LEN : 32 ) _rege_ _DMA1_7;
+
+_regs_ BF_9(UINT _rev0 : 4, UINT JOB_PTR : 8 ,UINT DONE_PTR : 6 ,UINT IRQ : 1 ,UINT IRQ_EN : 1 ,UINT IRQ_CLR : 1 ,UINT VALUE : 8 ,UINT MODE : 2 ,UINT GO : 1 ) _rege_ _DMA_REG0;
+_regs_ BF_1(UINT SRC : 32 ) _rege_ _DMA_REG1;
+_regs_ BF_1(UINT DST : 32 ) _rege_ _DMA_REG2;
+_regs_ BF_1(UINT LEN : 32 ) _rege_ _DMA_REG3;
+
 _regs_ BF_5(UINT _rev0 : 28, UINT IRQ : 1 ,UINT IRQ_EN : 1 ,UINT IRQ_CLR : 1 ,UINT GO : 1 ) _rege_ _CHKSUM_0;
 _regs_ BF_1(UINT ADR : 32 ) _rege_ _CHKSUM_1;
 _regs_ BF_1(UINT LEN : 32 ) _rege_ _CHKSUM_2;
@@ -577,6 +610,10 @@ _regs_ BF_10(UINT EN : 1 ,UINT PWM_EN : 1 ,UINT CK_EN : 1 ,UINT IRQ_EN : 1 ,UINT
 _regs_ BF_2(UINT TRIG : 16 ,UINT CNT : 16 ) _rege_ _TIMER37_1;
 _regs_ BF_10(UINT EN : 1 ,UINT PWM_EN : 1 ,UINT CK_EN : 1 ,UINT IRQ_EN : 1 ,UINT CNT_CLR : 1 ,UINT IRQ_CLR : 1 ,UINT IRQ : 1 ,UINT _rev0 : 1, UINT DIV : 8 ,UINT LMT : 16 ) _rege_ _TIMER38_0;
 _regs_ BF_2(UINT TRIG : 16 ,UINT CNT : 16 ) _rege_ _TIMER38_1;
+
+_regs_ BF_10(UINT EN : 1 ,UINT PWM_EN : 1 ,UINT CK_EN : 1 ,UINT IRQ_EN : 1 ,UINT CNT_CLR : 1 ,UINT IRQ_CLR : 1 ,UINT IRQ : 1 ,UINT _rev0 : 1, UINT DIV : 8 ,UINT LMT : 16 ) _rege_ _TIMER_REG0;
+_regs_ BF_2(UINT TRIG : 16 ,UINT CNT : 16 ) _rege_ _TIMER_REG1;
+
 _regs_ BF_1(UINT RX_DAT : 32 ) _rege_ _SPI0_0;
 _regs_ BF_1(UINT TX_DAT : 32 ) _rege_ _SPI0_1;
 _regs_ BF_15(UINT EN : 1 ,UINT _rev0 : 7, UINT CLK_DIV : 8 ,UINT _rev1 : 2, UINT BIT_MODE : 1 ,UINT CS_OEN : 1 ,UINT CS_OUT : 1 ,UINT IRQ_EN : 1 ,UINT IRQ_CLR : 1 ,UINT IRQ : 1 ,UINT ONE_BITMODE : 1 ,UINT CLK_MODE : 2 ,UINT WS : 2 ,UINT RW : 2 ,UINT GO : 1 ) _rege_ _SPI0_2;
@@ -604,6 +641,11 @@ _regs_ BF_15(UINT EN : 1 ,UINT _rev0 : 7, UINT CLK_DIV : 8 ,UINT _rev1 : 2, UINT
 _regs_ BF_1(UINT RX_DAT : 32 ) _rege_ _SPI8_0;
 _regs_ BF_1(UINT TX_DAT : 32 ) _rege_ _SPI8_1;
 _regs_ BF_15(UINT EN : 1 ,UINT _rev0 : 7, UINT CLK_DIV : 8 ,UINT _rev1 : 2, UINT BIT_MODE : 1 ,UINT CS_OEN : 1 ,UINT CS_OUT : 1 ,UINT IRQ_EN : 1 ,UINT IRQ_CLR : 1 ,UINT IRQ : 1 ,UINT ONE_BITMODE : 1 ,UINT CLK_MODE : 2 ,UINT WS : 2 ,UINT RW : 2 ,UINT GO : 1 ) _rege_ _SPI8_2;
+
+_regs_ BF_1(UINT RX_DAT : 32 ) _rege_ _SPI_REG0;
+_regs_ BF_1(UINT TX_DAT : 32 ) _rege_ _SPI_REG1;
+_regs_ BF_15(UINT EN : 1 ,UINT _rev0 : 7, UINT CLK_DIV : 8 ,UINT _rev1 : 2, UINT BIT_MODE : 1 ,UINT CS_OEN : 1 ,UINT CS_OUT : 1 ,UINT IRQ_EN : 1 ,UINT IRQ_CLR : 1 ,UINT IRQ : 1 ,UINT ONE_BITMODE : 1 ,UINT CLK_MODE : 2 ,UINT WS : 2 ,UINT RW : 2 ,UINT GO : 1 ) _rege_ _SPI_REG2;
+
 _regs_ BF_4(UINT _rev0 : 26, UINT H264_RST : 1 ,UINT H265_RST : 1 ,UINT CPU_EN : 4 ) _rege_ _SYS_0;
 _regs_ BF_1(UINT WDT_CNT : 32 ) _rege_ _SYS_1;
 _regs_ BF_1(UINT WDT_LMT : 32 ) _rege_ _SYS_2;
@@ -2534,5 +2576,62 @@ _regs_ BF_1(UINT DIGEST_31_0 : 32 ) _rege_ _SHA_11;
 #define SHA_DIGEST_95_64 _bm(_SHA_9,REG_BASE_SHA, (9<<2),DIGEST_95_64) // 32 Bit, 32'h0, RW
 #define SHA_DIGEST_63_32 _bm(_SHA_10,REG_BASE_SHA, (10<<2),DIGEST_63_32) // 32 Bit, 32'h0, RW
 #define SHA_DIGEST_31_0 _bm(_SHA_11,REG_BASE_SHA, (11<<2),DIGEST_31_0) // 32 Bit, 32'h0, RW
+
+extern void GpioInit(void);
+extern void GpioEi(UINT nCH);
+extern void GpioDi(UINT nCH);
+extern void GpioRiseEdge(UINT nCH);
+extern void GpioFallEdge(UINT nCH);
+extern void GpioInDir(UINT nCH);
+extern void GpioOutDir(UINT nCH);
+extern UINT GpioGetDir(UINT nCH);
+extern void GpioSetHi(UINT nCH);
+extern void GpioSetLo(UINT nCH);
+extern void GpioFuncPin(UINT nCH);
+extern void GpioFuncPinOff(UINT nCH);
+extern UINT GpioGetFuncPin(UINT nCH);
+extern UINT GpioGetPin(UINT nCH);
+extern void IsrGpio(void *ctx);
+
+extern void UartInit(UINT nCH, UINT Speed_Hz);
+extern void UartTx(UINT nCH, char data);
+extern UINT UartRx(UINT nCH);
+extern UINT UartGetByte(UINT nCH);
+extern UINT UartRxExist(UINT nCH);
+
+extern void I2cInit(UINT nCH, UINT Speed_Hz);
+extern UINT I2cWrite(UINT nCH, BYTE dat, BYTE last, BYTE repeat);
+extern UINT I2cRead(UINT nCH, BYTE last, BYTE repeat);
+extern UINT I2cCheck(UINT nCH, BYTE addr);
+
+extern void SpiInit(UINT nCH, UINT Speed_Hz, UINT WordSize, UINT BitDirection);
+extern void SpiDeinit(UINT nCH);
+extern void SpiCsLo(UINT nCH);
+extern void SpiCsHi(UINT nCH);
+extern void SpiWrite(UINT nCH, BYTE *dat);
+extern void SpiRead(UINT nCH, BYTE *dat);
+extern void SpiRW(UINT nCH, BYTE *WrDat, BYTE *RdDat);
+
+extern void DmaInit(void);
+extern void DmaEi(UINT nCH);
+extern void DmaDi(UINT nCH);
+extern void DmaMemCpy_isr(UINT nCH, BYTE *apbDst, BYTE *apbSrc, UINT anNum);
+extern void DmaMemCpy_isr_async(UINT nCH, BYTE *apbDst, BYTE *apbSrc, UINT anNum);
+extern void DmaMemSet_isr(UINT nCH, BYTE *apbDst, BYTE abVal, UINT anNum);
+extern void DmaMemSet_isr_async(UINT nCH, BYTE *apbDst, BYTE abVal, UINT anNum);
+
+extern void TimerInit(UINT nCH);
+
+extern WORD Checksum16(BYTE *apbDst, UINT anNum);
+
+extern void AesInit(void);
+extern void Aes128Enc(BYTE *apbDst, BYTE *apbSrc, UINT len);
+extern void Aes128Dec(BYTE *apbDst, BYTE *apbSrc, UINT len);
+extern void Aes256Enc(BYTE *apbDst, BYTE *apbSrc, UINT len);
+extern void Aes256Dec(BYTE *apbDst, BYTE *apbSrc, UINT len);
+
+extern void Sha224(BYTE *apbSrc, UINT len);
+extern void Sha256(BYTE *apbSrc, UINT len);
+
 
 #endif

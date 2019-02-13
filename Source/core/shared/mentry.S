@@ -340,6 +340,18 @@ do_reset:
   csrw mie, x0			// 190117 hjlee, Disable all interrupts.
   csrw mscratch, x0
 
+init_bss: // cpu0 only
+  /* cpu0? */
+  csrr a0, mhartid
+  li a4, 0 // If you are debugging a specific cpu, put the cpuid you are debugging in. Default CPU0 == 0
+  bne a0, a4, init_next
+  /* init bss section */
+  la a0, __bss_s
+  la a1, __bss_e-4 /* section end is actually the start of the next section */
+  li a2, 0x0
+  jal fill_block
+
+init_next:
   # write mtvec and make sure it sticks
   la t0, trap_firmware
   csrw mtvec, t0
@@ -348,11 +360,16 @@ do_reset:
 
   #la sp, stacks + RISCV_PGSIZE - MENTRY_FRAME_SIZE + 0x2D140
   li sp, 0xA003C000
-
   csrr a0, mhartid
   slli a2, a0, RISCV_PGSHIFT
   add sp, sp, a2
 
+  #li a0, 0xA003B000
+  #li a1, 0xA003C000
+  #li a2, 0x0
+  #jal fill_block
+
+  #csrr a0, mhartid
   # j main_all
 
   # Boot on the first hart
@@ -399,7 +416,16 @@ do_reset:
   wfi
   j .LmultiHart
 
-  .bss
-  .align RISCV_PGSHIFT
-stacks:
-  .skip RISCV_PGSIZE * MAX_HARTS
+/* Fills memory blocks */
+fill_block:
+    sw		a2, 0(a0)
+    bgeu	a0, a1, fb_end
+    addi	a0, a0, 4
+    j		fill_block
+fb_end:
+    ret
+
+#	.bss
+#	.align RISCV_PGSHIFT
+#stacks:
+#	.skip RISCV_PGSIZE * MAX_HARTS

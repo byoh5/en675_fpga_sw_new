@@ -1,10 +1,10 @@
-# ÃÖ¼ÒÇÑÀÇ Cmake ¹öÀüÀ» ¼³Á¤
+ï»¿# ìµœì†Œí•œì˜ Cmake ë²„ì „ì„ ì„¤ì •
 CMAKE_MINIMUM_REQUIRED ( VERSION 3.13.2 )
 
-# ÇÁ·ÎÁ§Æ® ÀÌ¸§ ¼³Á¤
+# í”„ë¡œì íŠ¸ ì´ë¦„ ì„¤ì •
 PROJECT ( EN675_LIB_FreeRTOS C ASM )
 
-# ¼Ò½º ÄÚµå
+# ì†ŒìŠ¤ ì½”ë“œ
 SET ( FREERTOS_HDRS
 	enx_freertos.h
 	FreeRTOSConfig.h
@@ -41,5 +41,5 @@ SET ( FREERTOS_SRCS
 	Source/portable/MemMang/heap_5.c
 )
 
-# ¶óÀÌºê·¯¸® »ý¼º
+# ë¼ì´ë¸ŒëŸ¬ë¦¬ ìƒì„±
 ADD_LIBRARY ( freertos STATIC ${FREERTOS_SRCS} ${FREERTOS_HDRS} )

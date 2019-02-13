@@ -1,13 +1,16 @@
-# ÃÖ¼ÒÇÑÀÇ Cmake ¹öÀüÀ» ¼³Á¤
+ï»¿# ìµœì†Œí•œì˜ Cmake ë²„ì „ì„ ì„¤ì •
 CMAKE_MINIMUM_REQUIRED ( VERSION 3.13.2 )
 
-# ÇÁ·ÎÁ§Æ® ÀÌ¸§ ¼³Á¤
+# í”„ë¡œì íŠ¸ ì´ë¦„ ì„¤ì •
 PROJECT ( EN675_LIB_CORE2 )
 
-# ¼Ò½º ÄÚµå
+# ì†ŒìŠ¤ ì½”ë“œ
+SET ( CORE2_HDRS
+)
+
 SET ( CORE2_SRCS
 	main2.c
 )
 
-# ¶óÀÌºê·¯¸® »ý¼º
-ADD_LIBRARY ( core2 STATIC ${CORE2_SRCS} )
+# ë¼ì´ë¸ŒëŸ¬ë¦¬ ìƒì„±
+ADD_LIBRARY ( core2 STATIC ${CORE2_SRCS} ${CORE2_HDRS} )

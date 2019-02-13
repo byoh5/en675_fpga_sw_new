@@ -1,10 +1,10 @@
-# ÃÖ¼ÒÇÑÀÇ Cmake ¹öÀüÀ» ¼³Á¤
+ï»¿# ìµœì†Œí•œì˜ Cmake ë²„ì „ì„ ì„¤ì •
 CMAKE_MINIMUM_REQUIRED ( VERSION 3.13.2 )
 
-# ÇÁ·ÎÁ§Æ® ÀÌ¸§ ¼³Á¤
+# í”„ë¡œì íŠ¸ ì´ë¦„ ì„¤ì •
 PROJECT ( EN675_LIB_EnxISP )
 
-# ¼Ò½º ÄÚµå
+# ì†ŒìŠ¤ ì½”ë“œ
 SET ( ENXISP_HDRS
 	isp_lib_main.h
 )
@@ -13,5 +13,5 @@ SET ( ENXISP_SRCS
 	isp_lib_main.c
 )
 
-# ¶óÀÌºê·¯¸® »ý¼º
+# ë¼ì´ë¸ŒëŸ¬ë¦¬ ìƒì„±
 ADD_LIBRARY ( enxisp STATIC ${ENXISP_SRCS} ${ENXISP_HDRS} )

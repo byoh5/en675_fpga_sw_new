@@ -8,6 +8,88 @@
 
 #define UART_INT_ENABLE
 
+static _UART_REG0 *arrUART[UART_CNT];
+static _UART_REG1 *arrUARTRX[UART_CNT];
+static _UART_REG2 *arrUARTTX[UART_CNT];
+static _UART_REG3 *arrUARTRXLMT[UART_CNT];
+
+void UartInit(UINT nCH, UINT Speed_Hz)
+{
+	const uint64_t addrUART[UART_CNT] = {
+			REG_BASE_UART0, REG_BASE_UART1, REG_BASE_UART2, REG_BASE_UART3, REG_BASE_UART4,
+			REG_BASE_UART5, REG_BASE_UART6, REG_BASE_UART7, REG_BASE_UART8
+	};
+
+	arrUART[nCH] = (_UART_REG0 *)(addrUART[nCH] + (0 << 2));
+	arrUARTRX[nCH] = (_UART_REG1 *)(addrUART[nCH] + (1 << 2));
+	arrUARTTX[nCH] = (_UART_REG2 *)(addrUART[nCH] + (2 << 2));
+	arrUARTRXLMT[nCH] = (_UART_REG3 *)(addrUART[nCH] + (3 << 2));
+
+	arrUART[nCH]->CLK_DIV = (MCK_FREQ / (Speed_Hz << 4)) - 1;
+	arrUART[nCH]->TX_TYPE = 0; // 0:open-drain 1:push-pull
+	arrUART[nCH]->STOP_BIT = 0; // 0:1bit 1:2bit
+	arrUART[nCH]->PARITY_EN = 0; // 0:off 1:on
+	arrUART[nCH]->PARITY_TYPE = 0; // 0:even 1:odd
+	arrUART[nCH]->TX_IRQ_EN = 0; // 0:normal 1:interrupt occurs
+	arrUART[nCH]->RX_IRQ_EN = 0; // 0:normal 1:interrupt occurs
+
+	// pin mux setting
+	switch (nCH) {
+		case 0:
+			UART0_PIN_INIT;
+			break;
+		case 1:
+			UART1_PIN_INIT;
+			break;
+		case 2:
+			UART2_PIN_INIT;
+			break;
+		case 3:
+			UART3_PIN_INIT;
+			break;
+		case 4:
+			UART4_PIN_INIT;
+			break;
+		case 5:
+			UART5_PIN_INIT;
+			break;
+		case 6:
+			UART6_PIN_INIT;
+			break;
+		case 7:
+			UART7_PIN_INIT;
+			break;
+		case 8:
+			UART8_PIN_INIT;
+			break;
+	}
+}
+
+void UartTx(UINT nCH, char data)
+{
+	while (arrUART[nCH]->TX_FULL);
+	arrUARTTX[nCH]->TX_DAT = data;
+}
+
+UINT UartRx(UINT nCH)
+{
+	while (arrUART[nCH]->RX_EMPTY);
+	return arrUARTRX[nCH]->RX_DAT;
+}
+
+UINT UartGetByte(UINT nCH)
+{
+	return arrUARTRX[nCH]->RX_DAT;
+}
+
+UINT UartRxExist(UINT nCH)
+{
+	return !arrUART[nCH]->RX_EMPTY;
+}
+
+
+
+#if 0
 void Uart7_Init(unsigned int BaudRate)
 {
 	UART7_CLK_DIV = (MCK_FREQ / (BaudRate << 4)) - 1;
@@ -42,7 +124,7 @@ char Uart7_RxExist(void)
 
 	return !UART7_RX_EMPTY;
 }
-
+#endif
 char Uart7_empty(void)
 {
 	volatile unsigned int* pst = (unsigned int*)0x44a00000;
@@ -56,8 +138,8 @@ void Uart7_clear(void)
 }
 
 #ifdef UART_INT_ENABLE
-void Uart7_int_init(void){
-
+void Uart7_int_init(void)
+{
   extern char _payload_start, _payload_end;
 
   volatile unsigned int * pAdr_prio1 = (unsigned int *)0xc000004;
@@ -117,7 +199,7 @@ void Uart7_int_init(void){
   //printm("plic m_thre = %08lx\n", *pAdr_mthre);
   //printm("plic s_thre = %08lx\n", *pAdr_sthre);
   //printm("plic pend = %08lx\n", *pAdr_pend);
-  unsigned int temp;
+  //unsigned int temp;
 
 }
 
@@ -127,7 +209,7 @@ void IsrUart(void)
 	char bBuf;
 
 	while(!Uart7_empty()) {
-		bBuf = Uart7_GetByte();
+		bBuf = UartGetByte(7);
 
 		if(bBuf == '\r') _printf("\r\n");
 			else {

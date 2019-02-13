@@ -1,5 +1,13 @@
 OUTPUT_ARCH( "riscv" )
 
+MEMORY
+{
+	FLASH   : ORIGIN = 0xC0000000,                              LENGTH = 0x10000
+	SRAM    : ORIGIN = 0xA0000000,                              LENGTH = 0x40000
+	DDR     : ORIGIN = 0x80000000,                              LENGTH = 0x100000
+}
+
+
 ENTRY( reset_vector )
 
 SECTIONS
@@ -10,14 +18,14 @@ SECTIONS
   /*--------------------------------------------------------------------*/
 
   /* Begining of code and text segment */
-  . = 0xa0000000;
+  /*. = 0xa0000000;*/
   _ftext = .;
   PROVIDE( eprol = . );
 
   .text :
   {
     *(.text.init)
-  }
+  } > SRAM
 
   /* text: Program code section */
   .text : 
@@ -25,7 +33,7 @@ SECTIONS
     *(.text)
     *(.text.*)
     *(.gnu.linkonce.t.*)
-  }
+  } > SRAM
 
   /* rodata: Read-only data */
   .rodata : 
@@ -34,7 +42,7 @@ SECTIONS
     *(.rodata)
     *(.rodata.*)
     *(.gnu.linkonce.r.*)
-  }
+  } > SRAM
 
   /* End of code and read-only segment */
   PROVIDE( etext = . );
@@ -48,7 +56,7 @@ SECTIONS
   {
     PROVIDE( __htif_base = .);
     *(.htif)
-  }
+  } > SRAM
   . = ALIGN(0x1000);
 
   /*--------------------------------------------------------------------*/
@@ -67,7 +75,7 @@ SECTIONS
     *(.srodata*)
     *(.gnu.linkonce.d.*)
     *(.comment)
-  }
+  } > SRAM
 
   /* End of initialized data segment */
   . = ALIGN(4);
@@ -99,15 +107,17 @@ SECTIONS
     *(COMMON)
 
   __bss_e = .; 
-  }
+  } > SRAM
 
+/*
   .heap : {
    . = ALIGN(4);
    _heap = .;
    _heap_start = .;
-   . += (64*1024);
+   . += (8*1024);
    _heap_end = .;
   }
+*/
 
   .sbi :
   {

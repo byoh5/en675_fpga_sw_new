@@ -9,7 +9,7 @@ extern void trap_freertos(void); // mentry.S
 
 void main_1(int cpu_id)
 {
-#if 1
+#if 0
 	while(g_key == 0xFF) {} // Wait for CPU0 to be ready.
 
 	while (1) {

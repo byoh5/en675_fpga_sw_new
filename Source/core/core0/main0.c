@@ -1,129 +1,115 @@
 #include "dev.h"
 
+#include "enx_freertos.h"
+#include "shell.h"
+
+extern void trap_freertos(void); // mentry.S
+
 char g_key = 0xFF;
 
 extern volatile uint64_t* mtime;
 
-void ddr_init()
+extern void DdrTest(void); // ddr.c
+extern void DdrInit(void); // ddr.c
+
+#if 0
+#define TEST_SIZE 1024
+BYTE arrlist[TEST_SIZE];
+void test_func(void)
 {
-	DDR_RD_EN_MASK  = 0x20;
-	DDR_RD_VAL_EDGE = 1;
-	DDR_RD_VAL_LTC	= 6;
-	DDR_WR_LTC 		= 1;
-	DDR_DLY_CKEOUT  = 3;
-	DDR_DLY_CSOUT   = 3;
-	DDR_DLY_CA9OUT  = 3;
-	DDR_DLY_CA8OUT  = 3;
-	DDR_DLY_CA7OUT  = 3;
-	DDR_DLY_CA6OUT  = 3;
-	DDR_DLY_CA5OUT  = 3;
-	DDR_DLY_CA4OUT  = 3;
-	DDR_DLY_CA3OUT  = 3;
-	DDR_DLY_CA2OUT  = 3;
-	DDR_DLY_CA1OUT  = 3;
-	DDR_DLY_CA0OUT  = 3;
-	DDR_DLY_DQS0IN  = 3;
-	DDR_DLY_DM0OUT  = 3;
-	DDR_DLY_DQ7OUT  = 3;
-	DDR_DLY_DQ6OUT  = 3;
-	DDR_DLY_DQ5OUT  = 3;
-	DDR_DLY_DQ4OUT  = 3;
-	DDR_DLY_DQ3OUT  = 3;
-	DDR_DLY_DQ2OUT  = 3;
-	DDR_DLY_DQ1OUT  = 3;
-	DDR_DLY_DQ0OUT  = 3;
-	DDR_DLY_DQS1IN  = 3;
-	DDR_DLY_DM1OUT  = 3;
-	DDR_DLY_DQ15OUT = 3;
-	DDR_DLY_DQ14OUT = 3;
-	DDR_DLY_DQ13OUT = 3;
-	DDR_DLY_DQ12OUT = 3;
-	DDR_DLY_DQ11OUT = 3;
-	DDR_DLY_DQ10OUT = 3;
-	DDR_DLY_DQ9OUT  = 3;
-	DDR_DLY_DQ8OUT  = 3;
-	DDR_DLY_DQS2IN  = 3;
-	DDR_DLY_DM2OUT  = 3;
-	DDR_DLY_DQ23OUT = 3;
-	DDR_DLY_DQ22OUT = 3;
-	DDR_DLY_DQ21OUT = 3;
-	DDR_DLY_DQ20OUT = 3;
-	DDR_DLY_DQ19OUT = 3;
-	DDR_DLY_DQ18OUT = 3;
-	DDR_DLY_DQ17OUT = 3;
-	DDR_DLY_DQ16OUT = 3;
-	DDR_DLY_DQS3IN  = 3;
-	DDR_DLY_DM3OUT  = 3;
-	DDR_DLY_DQ31OUT = 3;
-	DDR_DLY_DQ30OUT = 3;
-	DDR_DLY_DQ29OUT = 3;
-	DDR_DLY_DQ28OUT = 3;
-	DDR_DLY_DQ27OUT = 3;
-	DDR_DLY_DQ26OUT = 3;
-	DDR_DLY_DQ25OUT = 3;
-	DDR_DLY_DQ24OUT = 3;
-
-	DDR_PWR_REQ = (DDR_PWR_CUR)? 0 : 1;
-	while(DDR_PWR_REQ);
-}
-
-void dma_set(UINT dst, UINT len, BYTE value)
-{
-	DMA0_VALUE = value;
-	DMA0_MODE = 1;
-	DMA0_DST = dst;
-	DMA0_LEN = len;
-	DMA0_GO = 1;
-	while(DMA0_GO);
-}
-
-void ddr_map_test()
-{
-	dma_set(DDR_BASE, DDR_SIZE, 0);
-
-	volatile UINT * pDDR;
-	_printf("DDR Test - Write\n");
-	for(pDDR = DDR_BASE; pDDR < (DDR_BASE+DDR_SIZE); pDDR++)
-	{
-		*pDDR = (UINT) pDDR;
+	for (int i = 0; i < TEST_SIZE; i++) {
+		arrlist[i] = i;
 	}
-	_printf("DDR Test - Check\n");
-	for(pDDR = DDR_BASE; pDDR < (DDR_BASE+DDR_SIZE); pDDR++)
-	{
-		if(*pDDR!=(UINT)pDDR)
-		{
-			_printf("DDR Test - X: 0x%08X 0x%08X\n", *pDDR, (UINT)pDDR);
-			//_printf("DDR Test - Error\n");
-			//while(1);
-		} else {
-			_printf("DDR Test - O: 0x%08X 0x%08X\n", *pDDR, (UINT)pDDR);
-		}
+	for (int i = 0; i < TEST_SIZE; i++) {
+		_printf("[%x]\n", arrlist[i]);
 	}
-	_printf("DDR Test - Done\n");
+	_printf("1===========================\n");
+	u8 *u8list = arrlist;
+	u16 *u16list = arrlist;
+	u32 *u32list = arrlist;
+	u64 *u64list = arrlist;
+
+	for (int i = 0; i < TEST_SIZE; i++) {
+		_printf("[%x]\n", u8list[i]);
+	}
+	_printf("2===========================\n");
+	for (int i = 0; i < TEST_SIZE/2; i++) {
+		_printf("[%x]\n", u16list[i]);
+	}
+	_printf("3===========================\n");
+	for (int i = 0; i < TEST_SIZE/4; i++) {
+		_printf("[%x]\n", u32list[i]);
+	}
+	_printf("4===========================\n");
+	for (int i = 0; i < TEST_SIZE/8; i++) {
+		_printf("[%lx]\n", u64list[i]);
+	}
+	_printf("5===========================\n");
+}
+#else
+void test_func(void)
+{
+	write_csr(mtvec, &trap_freertos);
+
+	_printf("HELLO EYENIX!\n"); // ADD some
+
+	vMemoryHeapInit();
+
+	vTaskCreate("shell", ShellTask, NULL, 4096, 3);
+
+	vTaskStartScheduler();
+}
+#endif
+
+void test_eth(void)
+{
+	//GpioOutDir(GPIO_RST_ETHERNET);
+	//GpioSetLo(GPIO_RST_ETHERNET);
+	//WaitXms(10);
+	//GpioSetHi(GPIO_RST_ETHERNET);
 }
 
 void main_0(int cpu_id)
 {
 	*mtime = 0; // timer init
 
-	_init_bss_section();
+	//uint64_t a = 100;
+	//uint64_t b = 50;
 
-	Uart7_Init(115200);
+	//_printf("%d\n", a-b);
 
-	GPIO_PIN55_OEN = 0;
+	//Uart7_Init(UART7_SPEED);
+	UartInit(7, UART7_SPEED);
+	_printf("Start EN675\n");
 
-	//ddr_init();
+	//DdrInit();
+	//DdrTest();
 
-	g_key = 0xA; // CPU0 Ready!
+	GpioInit();
+	_printf("Init GPIO\n");
 
-	//ddr_map_test();
+	GpioOutDir(55);
+#if 0
+
+	test_func();
+
+#else
+
+	//test_eth();
+	//test_func();
+
+	//g_key = 0xA; // CPU0 Ready!
 
 	int k = 0;
 	while (1) {
 		_printf("%d:%lu\r\n", cpu_id, *mtime);
-		GPIO_PIN55_OUT = k % 2;
+		if (k%2)
+			GpioSetHi(55);
+		else
+			GpioSetLo(55);
 		k++;
 
 		WaitXms(1000);
 	}
+#endif
 }

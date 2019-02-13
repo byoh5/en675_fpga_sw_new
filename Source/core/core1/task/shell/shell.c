@@ -3,8 +3,7 @@
 //*************************************************************************************************
 #include <string.h>
 
-#include "dev_types.h"
-#include "uart.h"
+#include "dev.h"
 
 #include "shell.h"
 #include "shell_cmd.h"
@@ -13,6 +12,8 @@
 
 static char gcShellCmdBuf[100];
 static char	gcHistoryBuf[100];
+
+#define DEBUG_UART_NUM 7
 
 //*************************************************************************************************
 // Shell functions
@@ -124,12 +125,12 @@ int _getline(char *buf, int max, int timeout)
 
 	for(idx=0; idx<max; idx++){
 
-		while(1) { vTaskDelay(1); }
+		//while(1) { vTaskDelay(1); }
 
-		while(Uart7_RxExist() == 0)			vTaskDelay(10);
+		while(UartRxExist(DEBUG_UART_NUM) == 0)			vTaskDelay(10);
 
 //		*buf = (char)UartGetByte();
-		ck = Uart7_GetByte();
+		ck = UartGetByte(DEBUG_UART_NUM);
 		*buf = ck;
 		//_printf("[%X]", ck);
 		if(!*buf){
@@ -140,8 +141,8 @@ int _getline(char *buf, int max, int timeout)
 		if ( (*buf=='\r') || (*buf=='\n') ){
 			if(crlf && (*buf != crlf))
 				crlf = 0;
-			Uart7_Tx('\r');
-			Uart7_Tx('\n');
+			UartTx(DEBUG_UART_NUM, '\r');
+			UartTx(DEBUG_UART_NUM, '\n');
 		    crlf = *buf;
 		    *buf = 0;
 		    break;
@@ -152,21 +153,21 @@ int _getline(char *buf, int max, int timeout)
 				idx -=2;
 				buf--;
 				total--;
-				Uart7_Tx('\b');
-				Uart7_Tx(' ');
-				Uart7_Tx('\b');
+				UartTx(DEBUG_UART_NUM, '\b');
+				UartTx(DEBUG_UART_NUM, ' ');
+				UartTx(DEBUG_UART_NUM, '\b');
 			}
 		}
 		else if(*buf==CTLC){
-			Uart7_Tx('^');
-			Uart7_Tx('C');
-			Uart7_Tx('\r');
-			Uart7_Tx('\n');
+			UartTx(DEBUG_UART_NUM, '^');
+			UartTx(DEBUG_UART_NUM, 'C');
+			UartTx(DEBUG_UART_NUM, '\r');
+			UartTx(DEBUG_UART_NUM, '\n');
 			*base = 0;
 			return 0;
 		}
 		else{
-			Uart7_Tx(*buf);
+			UartTx(DEBUG_UART_NUM, *buf);
 			total++;
 			buf++;
 		}

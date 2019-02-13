@@ -1,10 +1,10 @@
-# ÃÖ¼ÒÇÑÀÇ Cmake ¹öÀüÀ» ¼³Á¤
+ï»¿# ìµœì†Œí•œì˜ Cmake ë²„ì „ì„ ì„¤ì •
 CMAKE_MINIMUM_REQUIRED ( VERSION 3.13.2 )
 
-# ÇÁ·ÎÁ§Æ® ÀÌ¸§ ¼³Á¤
+# í”„ë¡œì íŠ¸ ì´ë¦„ ì„¤ì •
 PROJECT ( EN675_LIB_CORE0 )
 
-# ¼Ò½º ÄÚµå
+# ì†ŒìŠ¤ ì½”ë“œ
 SET ( CORE0_HDRS
 )
 
@@ -12,5 +12,5 @@ SET ( CORE0_SRCS
 	main0.c
 )
 
-# ¶óÀÌºê·¯¸® »ý¼º
+# ë¼ì´ë¸ŒëŸ¬ë¦¬ ìƒì„±
 ADD_LIBRARY ( core0 STATIC ${CORE0_SRCS} ${CORE0_HDRS} )

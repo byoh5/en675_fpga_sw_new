@@ -1,4 +1,4 @@
-CMAKE_MINIMUM_REQUIRED ( VERSION 3.13.2 )                                       # √÷º“«—¿« Cmake πˆ¿¸¿ª º≥¡§
+ÔªøCMAKE_MINIMUM_REQUIRED ( VERSION 3.13.2 )                                       # ÏµúÏÜåÌïúÏùò Cmake Î≤ÑÏ†ÑÏùÑ ÏÑ§Ï†ï
 
 # About this project
 # ------------------------------------------------------------------------------
@@ -13,34 +13,33 @@ SET ( EN675_BOOT bootloader.bin )
 SET ( EN675_CORE core.bin )
 SET ( EN675_OUTPUT EN675.bin )
 
-SET ( CMAKE_VERBOSE_MAKEFILE false )                                            # ∫ÙµÂ ªÛºº ∞˙¡§¿ª ∏µŒ √‚∑¬«œ¥¬ Makefile¿ª ª˝º∫«‘
+SET ( CMAKE_VERBOSE_MAKEFILE false )                                            # ÎπåÎìú ÏÉÅÏÑ∏ Í≥ºÏ†ïÏùÑ Î™®Îëê Ï∂úÎ†•ÌïòÎäî MakefileÏùÑ ÏÉùÏÑ±Ìï®
 
 SET ( ROOT_PATH "$(CMAKE_CURRENT_SOURCE_DIR)" )
 
 INCLUDE ( ${PROJECT_BINARY_DIR}/BuildMode.cmake )
 INCLUDE ( Cmake/cpack.cmake )
 INCLUDE ( Cmake/includeheaddir.cmake )
-INCLUDE ( Cmake/registeraddr.cmake )
 INCLUDE ( Cmake/peripheral.cmake )
 
 IF ( NOT CMAKE_BUILD_TYPE )
 	SET ( CMAKE_BUILD_TYPE "Debug" CACHE STRING "Choose the type of build, options are: Debug Release" FORCE)
 ENDIF ( NOT CMAKE_BUILD_TYPE )
 
-# ƒƒ∆ƒ¿œ ø…º« √ﬂ∞°
+# Ïª¥ÌååÏùº ÏòµÏÖò Ï∂îÍ∞Ä
 #ADD_COMPILE_OPTIONS ( "-g -Wall" )
 SET ( CMAKE_EXE_LINKER_FLAGS "-static -Wl,--gc-sections" )
 
-# ¿¸√≥∏Æ±‚ ∏≈≈©∑Œ √ﬂ∞° (-D)
+# Ï†ÑÏ≤òÎ¶¨Í∏∞ Îß§ÌÅ¨Î°ú Ï∂îÍ∞Ä (-D)
 ADD_DEFINITIONS( -DMY_DEBUG=1 )
 
-# ∂Û¿Ã∫Í∑Ø∏Æ µ∑∫≈‰∏Æ ¡ˆ¡§ (-L)
+# ÎùºÏù¥Î∏åÎü¨Î¶¨ ÎîîÎ†âÌÜ†Î¶¨ ÏßÄÏ†ï (-L)
 LINK_DIRECTORIES ( ${CMAKE_BUILD_TYPE}/lib )
 
-# "Install" ...? æ»∏‘»˜¥¬µÌ
+# "Install" ...? ÏïàÎ®πÌûàÎäîÎìØ
 #SET ( CMAKE_INSTALL_PREFIX "${PROJECT_BINARY_DIR}/install" )
 
-# √‚∑¬ µ∑∫≈‰∏Æ
+# Ï∂úÎ†• ÎîîÎ†âÌÜ†Î¶¨
 SET ( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/${CMAKE_BUILD_TYPE} )
 SET ( CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/${CMAKE_BUILD_TYPE}/lib )
 SET ( CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/${CMAKE_BUILD_TYPE}/lib )
@@ -67,15 +66,33 @@ ADD_SUBDIRECTORY( Source/core )
 #                COMMAND ren ${CMAKE_SOURCE_DIR}/${CMAKE_BUILD_TYPE}/${EN675_CORE} ${CMAKE_SOURCE_DIR}/${CMAKE_BUILD_TYPE}/${EN675_OUTPUT}
 #)
 
-#ADD_CUSTOM_TARGET ( SECTION
-#		COMMENT "Merges the binaries."
+#ADD_CUSTOM_COMMAND (
+#                OUTPUT ${CMAKE_BUILD_TYPE}/${EN675_OUTPUT}.dis
+#                COMMENT "Generating binary hex dump"
+#                DEPENDS ${CMAKE_BUILD_TYPE}/${EN675_CORE}
+#                COMMAND ${CMAKE_OBJDUMP} -h 
+#)
+
+ADD_CUSTOM_TARGET ( objdump_head
+		WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+		COMMAND ${CMAKE_OBJDUMP} -h ${EN675_CORE}
+		DEPENDS ${CMAKE_SOURCE_DIR}/${CMAKE_BUILD_TYPE}/${EN675_CORE}
+        )
+
+ADD_CUSTOM_TARGET ( objdump_dis
+		WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+		COMMAND ${CMAKE_OBJDUMP} -h -d -S ${EN675_CORE} > ${CMAKE_SOURCE_DIR}/${CMAKE_BUILD_TYPE}/core.dump
+		DEPENDS ${CMAKE_SOURCE_DIR}/${CMAKE_BUILD_TYPE}/${EN675_CORE}
+        )
+
+#ADD_CUSTOM_TARGET ( target_name
 #		WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
 #		COMMAND copy /Y /B ${EN675_BOOT} + ${EN675_CORE} ${EN675_OUTPUT}
 #		COMMAND move /Y ${EN675_CORE} ${EN675_OUTPUT}
 #		DEPENDS ${CMAKE_SOURCE_DIR}/${CMAKE_BUILD_TYPE}/${EN675_CORE}
-#        )
+#       )
 
-# Eclipse ∞¸∑√ º≥¡§ ------------------------------------------------------------
+# Eclipse Í¥ÄÎ†® ÏÑ§Ï†ï ------------------------------------------------------------
 
-# ƒƒ∆ƒ¿œø° ªÁøÎ«“ CPU core º≥¡§
+# Ïª¥ÌååÏùºÏóê ÏÇ¨Ïö©Ìï† CPU core ÏÑ§Ï†ï
 SET (CMAKE_ECLIPSE_MAKE_ARGUMENTS "-j4")

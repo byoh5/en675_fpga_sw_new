@@ -97,6 +97,9 @@ typedef volatile uint64			vuint64;	//	"
 //
 //------------------------------------------------------------------------------
 //
+#define DEF_OK					1
+#define DEF_FAIL				0
+
 #define TRUE					1
 #define FALSE					0
 

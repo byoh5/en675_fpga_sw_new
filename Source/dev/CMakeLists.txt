@@ -1,8 +1,8 @@
-# About this project
+ï»¿# About this project
 # ------------------------------------------------------------------------------
 PROJECT(EN675_DEV)
 
-# Ãâ·Â µð·ºÅä¸®
+# ì¶œë ¥ ë””ë ‰í† ë¦¬
 #SET ( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/${CMAKE_BUILD_TYPE} )
 #SET ( CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/${CMAKE_BUILD_TYPE}/lib )
 #SET ( CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/${CMAKE_BUILD_TYPE}/lib )

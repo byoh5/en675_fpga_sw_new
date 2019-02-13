@@ -392,13 +392,14 @@ void portTrapFromMachineMode( void )
 static uint32_t uiTotalHeapMemorySize = 0;
 void vMemoryHeapInit(void)
 {
+#if 1
 	/* Allocate two blocks of RAM for use by the heap.  The first is a block of
 	0x10000 bytes starting from address 0x80000000, and the second a block of
 	0xa0000 bytes starting from address 0x90000000.  The block starting at
 	0x80000000 has the lower start address so appears in the array fist. */
 	const HeapRegion_t xHeapRegions[] = {
 /*	    { ( uint8_t * ) 0x80100000UL, 0x100000 }, */
-	    { ( uint8_t * ) 0x80200000UL, 0x100000 },
+	    { ( uint8_t * ) 0xA0018000UL, 0x10000 },
 	    { NULL, 0 } /* Terminates the array. */
 	};
 
@@ -406,24 +407,37 @@ void vMemoryHeapInit(void)
 	int len = sizeof(xHeapRegions) / sizeof(xHeapRegions[0]);
 	for (int i = 0; i < len; i++) {
 		_printf("Heap[%d] memory 0x%08X ~ 0x%08X\r\n", i, xHeapRegions[i].pucStartAddress, xHeapRegions[i].pucStartAddress + xHeapRegions[i].xSizeInBytes);
+#if 0
 		memset(xHeapRegions[i].pucStartAddress, 0, xHeapRegions[i].xSizeInBytes);
+#else
+		if (xHeapRegions[i].xSizeInBytes > 0) {
+			uint8_t *arr = xHeapRegions[i].pucStartAddress;
+			for (int j = 0; j < xHeapRegions[i].xSizeInBytes; j++) {
+				*arr = 0;
+				arr++;
+			}
+		}
+#endif
 		uiTotalHeapMemorySize += xHeapRegions[i].xSizeInBytes;
 	}
 
 	/* Pass the array into vPortDefineHeapRegions(). */
 	vPortDefineHeapRegions( xHeapRegions );
+#endif
 }
 /*-----------------------------------------------------------*/
 
 
 void vMemoryHeapInfoPrint(void)
 {
+#if 1
 	size_t nPortGetFreeHeapSize = xPortGetFreeHeapSize();
 	size_t nPortGetMinimumEverFreeHeapSize = xPortGetMinimumEverFreeHeapSize();
 	_printf("Total Heap Size            : %lu\n", uiTotalHeapMemorySize);
 	_printf(" Free Heap Size            : %lu\n", nPortGetFreeHeapSize);
 	_printf("Minimum Ever Free Heap Size: %lu\n", nPortGetMinimumEverFreeHeapSize);
 	_printf("                      Used : %lu%%\n", 100 - (nPortGetFreeHeapSize * 100) / uiTotalHeapMemorySize);
+#endif
 }
 /*-----------------------------------------------------------*/
 

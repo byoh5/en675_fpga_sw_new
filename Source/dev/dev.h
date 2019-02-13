@@ -13,6 +13,4 @@
 #include "vsnprintf.h"
 #include "boot.h"
 
-#include "uart.h"
-
 #endif // __DEV_H__
