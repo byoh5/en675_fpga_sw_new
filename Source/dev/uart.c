@@ -20,10 +20,10 @@ void UartInit(UINT nCH, UINT Speed_Hz)
 			REG_BASE_UART5, REG_BASE_UART6, REG_BASE_UART7, REG_BASE_UART8
 	};
 
-	arrUART[nCH] = (_UART_REG0 *)(addrUART[nCH] + (0 << 2));
-	arrUARTRX[nCH] = (_UART_REG1 *)(addrUART[nCH] + (1 << 2));
-	arrUARTTX[nCH] = (_UART_REG2 *)(addrUART[nCH] + (2 << 2));
-	arrUARTRXLMT[nCH] = (_UART_REG3 *)(addrUART[nCH] + (3 << 2));
+	arrUART[nCH] = (_UART_REG0 *)(addrUART[nCH] + (0 << 3));
+	arrUARTRX[nCH] = (_UART_REG1 *)(addrUART[nCH] + (1 << 3));
+	arrUARTTX[nCH] = (_UART_REG2 *)(addrUART[nCH] + (2 << 3));
+	arrUARTRXLMT[nCH] = (_UART_REG3 *)(addrUART[nCH] + (3 << 3));
 
 	arrUART[nCH]->CLK_DIV = (MCK_FREQ / (Speed_Hz << 4)) - 1;
 	arrUART[nCH]->TX_TYPE = 0; // 0:open-drain 1:push-pull
@@ -65,6 +65,26 @@ void UartInit(UINT nCH, UINT Speed_Hz)
 	}
 }
 
+void UartTxEi(UINT nCH)
+{	// Direction : Uart interrupt enable
+	arrUART[nCH]->TX_IRQ_EN = 1;
+}
+
+void UartTxDi(UINT nCH)
+{	// Direction : Uart interrupt disable
+	arrUART[nCH]->TX_IRQ_EN = 0;
+}
+
+void UartRxEi(UINT nCH)
+{	// Direction : Uart interrupt enable
+	arrUART[nCH]->RX_IRQ_EN = 1;
+}
+
+void UartRxDi(UINT nCH)
+{	// Direction : Uart interrupt disable
+	arrUART[nCH]->RX_IRQ_EN = 0;
+}
+
 void UartTx(UINT nCH, char data)
 {
 	while (arrUART[nCH]->TX_FULL);
@@ -87,6 +107,49 @@ UINT UartRxExist(UINT nCH)
 	return !arrUART[nCH]->RX_EMPTY;
 }
 
+UINT UartRxICheck(UINT nCH)
+{
+	return arrUART[nCH]->RX_IRQ;
+}
+
+void IrqUart(UINT nCH)
+{
+	while (UartRxExist(nCH) == 1) {
+		UINT bBuf = UartGetByte(nCH);
+		if (bBuf == '\r') {
+			_printf("\r\n");
+		} else {
+			_printf("[%c]", bBuf);
+		}
+	}
+	arrUART[nCH]->RX_IRQ_CLR = 1;
+}
+
+void IrqCheck(void)
+{
+	// Enable Global Interrupts
+	volatile unsigned long mstatus = read_csr(mstatus);
+	//mstatus = INSERT_FIELD(mstatus, MSTATUS_MIE, 1); // Machine Interrupt Enable
+//	_printf("Enable Global Interrupts 1 (0x%08X)\n", mstatus);
+//	mstatus = INSERT_FIELD(mstatus, MSTATUS_MPIE, 1); // Machine Previous Interrupt Enabler
+//	_printf("Enable Global Interrupts 2 (0x%08X)\n", mstatus);
+	//mstatus = INSERT_FIELD(mstatus, MSTATUS_MPP, 1); // Machine Previous Interrupt Enabler
+	//_printf("Enable Global Interrupts 3 (0x%08X)\n", mstatus);
+//	write_csr(mstatus, mstatus);
+
+	_printf("3 IRQ(%d) IRQ(%d) mstatus(0x%08X)\n", arrUART[7]->RX_IRQ, UART7_RX_IRQ, mstatus);
+	if (arrUART[7]->RX_IRQ == 1 || UART7_RX_IRQ == 1) {
+		unsigned long mstatus = read_csr(mstatus);
+		_printf("Enable Global Interrupts 0 (0x%08X)\n", mstatus);
+		mstatus |= MSTATUS_MPP;
+//		mstatus = INSERT_FIELD(mstatus, MSTATUS_MPP, 1); // Machine Previous Interrupt Enabler
+		_printf("Enable Global Interrupts 1 (0x%08X)\n", mstatus);
+		write_csr(mstatus, mstatus);
+
+
+		//UartInit(7, UART7_SPEED);
+	}
+}
 
 
 #if 0
@@ -137,10 +200,61 @@ void Uart7_clear(void)
 	*ptr =(unsigned int)0x01a0204e;
 }
 
+
+
+
 #ifdef UART_INT_ENABLE
+
+
 void Uart7_int_init(void)
 {
+#if 0
   extern char _payload_start, _payload_end;
+
+  volatile unsigned int *iPrioBase = (unsigned int *)IRQ_PRIO_BASE;
+  volatile uintptr_t *iMieBase = (uintptr_t *)IRQ_MIE_BASE;
+  volatile unsigned int *iMThreBase = (unsigned int *)IRQ_MTHRE_BASE;
+
+  volatile unsigned int *iPanding = (unsigned int *)IRQ_PENDING_BASE;
+
+#if 1
+  for (int i = 0; i < 8; i++) {
+	  _printf("%X - %d\n", &iPanding[i], iPanding[i]);
+#if 0
+	  _printf("%3d: %X-%X-%X, P(%d)I(%d)T(%d) -> ", i, &iPrioBase[i], &iMieBase[i], &iMThreBase[i], iPrioBase[i], iMieBase[i], iMThreBase[i]);
+	  iPrioBase[i] = ~0;
+	  iMieBase[i] = ~0;
+	  iMThreBase[i] = 0;
+	  _printf("P(%d)I(%d)T(%d)\n", iPrioBase[i], iMieBase[i], iMThreBase[i]);
+#endif
+  }
+#endif
+#endif
+#if 0
+  _printf("sizeof(uintptr_t) : %d\n", sizeof(uintptr_t));
+  for (int i = 0; i <= 171*2; i++) {
+	  iPrioBase[i] = 1;
+	  iMieBase[i] = 2;
+	  iMThreBase[i] = 0;
+  }
+#endif
+
+#if 0
+#if 0
+	  volatile unsigned int * pAdr_prio1 = (unsigned int *)0xc000004;
+	  volatile unsigned int * pAdr_prio2 = (unsigned int *)0xc000008;
+	  volatile unsigned int * pAdr_mie   = (unsigned int *)0xc002000;
+	  volatile unsigned int * pAdr_sie   = (unsigned int *)0xc002080;
+	  volatile unsigned int * pAdr_mthre = (unsigned int *)0xc200000;
+	  volatile unsigned int * pAdr_sthre = (unsigned int *)0xc201000;
+	  volatile unsigned int * pAdr_pend  = (unsigned int *)0xc001000;
+
+	  *pAdr_prio1 = 1;
+	  //*pAdr_prio2 = 1;
+	  *pAdr_mie = 0x2;
+	  //*pAdr_sie = 0xffffffff;
+	  *pAdr_mthre = 0x0;
+#endif
 
   volatile unsigned int * pAdr_prio1 = (unsigned int *)0xc000004;
   volatile unsigned int * pAdr_prio2 = (unsigned int *)0xc000008;
@@ -164,15 +278,15 @@ void Uart7_int_init(void)
   _printf("%s pend  : %X\n", __func__, *pAdr_pend);
 #if 1
   *pAdr_prio1 = 1; // 꼭 1이여야 한다.
-  *pAdr_prio2 = 1;
-  *pAdr_prio3 = 1;
-  *pAdr_prio4 = 1;
-  *pAdr_mie = 0x0; // 꼭 2여야 한다.
-  *pAdr_mie2 = 0x2;
-  *pAdr_mie3 = 0x2;
-  *pAdr_mie4 = 0x2;
+  //*pAdr_prio2 = 1;
+  //*pAdr_prio3 = 1;
+  //*pAdr_prio4 = 1;
+  *pAdr_mie = 0x2; // 꼭 2여야 한다.
+  //*pAdr_mie2 = 0x2;
+  //*pAdr_mie3 = 0x2;
+  //*pAdr_mie4 = 0x2;
   //*pAdr_sie = 0xffffffff;
-  *pAdr_mthre = 0x1;
+  *pAdr_mthre = 0x0;
 
  // *pAdr_sthre = 0x0;
 #else
@@ -182,13 +296,15 @@ void Uart7_int_init(void)
 	//*pAdr_sie = 0xffffffff;
 	pAdr_mthre = 0x0;
 #endif
+#endif
+
   // Enable External Interrupts
   write_csr(mie, MIP_MEIP);
 
   // Enable Global Interrupts
   unsigned long mstatus = read_csr(mstatus);
   mstatus = INSERT_FIELD(mstatus, MSTATUS_MIE, 1);
-  //mstatus = INSERT_FIELD(mstatus, MSTATUS_SIE, 1);
+  mstatus = INSERT_FIELD(mstatus, MSTATUS_SIE, 1);
   //printm("mstatus = %08lx\n", mstatus);
   write_csr(mstatus, mstatus);
 
@@ -202,6 +318,8 @@ void Uart7_int_init(void)
   //unsigned int temp;
 
 }
+
+
 
 
 void IsrUart(void)

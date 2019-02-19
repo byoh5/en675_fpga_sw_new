@@ -236,6 +236,16 @@ void vPortSysTickHandler( void )
 
 	prvSetNextTimerInterrupt();
 
+	/* Incorement the Time(sec) */
+	static UINT gbTickCnt = configTICK_RATE_HZ - 1;
+	if (gbTickCnt == 0) {
+		gbTickCnt = configTICK_RATE_HZ - 1;
+		gptMsgShare.TIME++;
+		gptMsgShare.UPTIME++;
+	} else {
+		gbTickCnt--;
+	}
+
 	/* Increment the RTOS tick. */
 	if( xTaskIncrementTick() != pdFALSE )
 	{

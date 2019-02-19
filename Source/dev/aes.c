@@ -10,6 +10,7 @@ void AesInit(void)
 	AES_KEY_95_64   = 0x12345678;
 	AES_KEY_63_32   = 0x12345678;
 	AES_KEY_31_0    = 0x12345678;
+	AES_CBC_EN      = 1;
 }
 
 void Aes128Enc(BYTE *apbDst, BYTE *apbSrc, UINT len)

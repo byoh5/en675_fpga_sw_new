@@ -1,15 +1,14 @@
 #include "dev.h"
 
-extern void dma_set(UINT dst, UINT len, BYTE value);
-
 void DdrTest(void)
 {
-	dma_set(DDR_BASE, DDR_SIZE, 0);
+	DmaMemSet_isr(0, (BYTE *)DDR_BASE, 0, DDR_SIZE);
 
 	volatile UINT * pDDR;
 	_printf("DDR Test - Write\n");
 	for(pDDR = (UINT *)DDR_BASE; pDDR < (UINT *)(DDR_BASE+DDR_SIZE); pDDR++)
 	{
+		_printf(".");
 		*pDDR = (UINT)pDDR;
 	}
 	_printf("DDR Test - Check\n");

@@ -5,7 +5,7 @@ static _GPIO_PIN *arrGPIO[GPIO_CNT];
 void GpioInit(void)
 {
 	for (uint64_t i = 0; i < GPIO_CNT; i++) {
-		arrGPIO[i] = (_GPIO_PIN *)(REG_BASE_GPIO + (i << 2));
+		arrGPIO[i] = (_GPIO_PIN *)(REG_BASE_GPIO + (i << 3));
 	}
 }
 

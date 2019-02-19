@@ -16,8 +16,8 @@ void TimerInit(UINT nCH)
 			REG_BASE_TIMER35, REG_BASE_TIMER36, REG_BASE_TIMER37, REG_BASE_TIMER38
 	};
 
-	arrTMR0[nCH] = (_TIMER_REG0 *)(addrTMR[nCH] + (0 << 2));
-	arrTMR1[nCH] = (_TIMER_REG1 *)(addrTMR[nCH] + (1 << 2));
+	arrTMR0[nCH] = (_TIMER_REG0 *)(addrTMR[nCH] + (0 << 3));
+	arrTMR1[nCH] = (_TIMER_REG1 *)(addrTMR[nCH] + (1 << 3));
 
 	arrTMR0[nCH]->CK_EN = 1;
 	arrTMR0[nCH]->IRQ_EN = 0;

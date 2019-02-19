@@ -12,10 +12,10 @@ void I2cInit(UINT nCH, UINT Speed_Hz)
 			REG_BASE_I2C5, REG_BASE_I2C6, REG_BASE_I2C7, REG_BASE_I2C8
 	};
 
-	arrI2CCONT[nCH] = (_I2C_REG0 *)(addrI2C[nCH] + (0 << 2));
-	arrI2CCLK[nCH] = (_I2C_REG1 *)(addrI2C[nCH] + (1 << 2));
-	arrI2CMST[nCH] = (_I2C_REG2 *)(addrI2C[nCH] + (2 << 2));
-	arrI2CSLV[nCH] = (_I2C_REG3 *)(addrI2C[nCH] + (3 << 2));
+	arrI2CCONT[nCH] = (_I2C_REG0 *)(addrI2C[nCH] + (0 << 3));
+	arrI2CCLK[nCH] = (_I2C_REG1 *)(addrI2C[nCH] + (1 << 3));
+	arrI2CMST[nCH] = (_I2C_REG2 *)(addrI2C[nCH] + (2 << 3));
+	arrI2CSLV[nCH] = (_I2C_REG3 *)(addrI2C[nCH] + (3 << 3));
 
 	arrI2CCLK[nCH]->CLK_DIV = (MCK_FREQ / (8 * Speed_Hz) - 1);	// Clock divider for I2C controller
 	arrI2CCONT[nCH]->MODE = 0;		// Controller mode / 0:Master, 1:Slave

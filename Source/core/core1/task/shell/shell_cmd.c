@@ -13,6 +13,7 @@
 
 #include "shell.h"
 #include "shell_cmd.h"
+#include "shell_cmd_common.h"
 #include "string.h"
 
 //*************************************************************************************************
@@ -78,6 +79,7 @@ tMonCmd gCmdList[] =
 	{"reboot",      cmd_reboot,         sReboot         },
 	{"task",		cmd_task_status,	sTaskStatus		},
 	{"memory",		cmd_mem_ststus,		sMemStatus		},
+	{"time",		cmd_time,			sTimeCmd		},
 	{0,				0,					0				}
 };
 

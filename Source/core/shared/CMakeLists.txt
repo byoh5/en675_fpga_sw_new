@@ -10,6 +10,7 @@ LINK_LIBRARIES( core0 )
 LINK_LIBRARIES( core1 )
 LINK_LIBRARIES( core2 )
 LINK_LIBRARIES( core3 )
+LINK_LIBRARIES( dev )
 
 # 링크 옵션 추가
 SET ( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -T ${CMAKE_CURRENT_SOURCE_DIR}/exbl.lds")
@@ -21,15 +22,7 @@ SET ( SHARED_HDRS
 	configstring.h
 	exbl.h
 	syscalls.h
-	${CMAKE_SOURCE_DIR}/Source/dev/dev.h
-	${CMAKE_SOURCE_DIR}/Source/dev/dev_types.h
-	${CMAKE_SOURCE_DIR}/Source/dev/dev_regs.h
-	${CMAKE_SOURCE_DIR}/Source/dev/dev_peri.h
-	${CMAKE_SOURCE_DIR}/Source/dev/cpu/asm.h
-	${CMAKE_SOURCE_DIR}/Source/dev/cpu/bits.h
-	${CMAKE_SOURCE_DIR}/Source/dev/cpu/encoding.h
-	${CMAKE_SOURCE_DIR}/Source/dev/cpu/mtrap.h
-	${CMAKE_SOURCE_DIR}/Source/dev/string/vsnprintf.h
+	msg.h
 )
 
 SET ( SHARED_SRCS
@@ -37,23 +30,8 @@ SET ( SHARED_SRCS
 	syscalls.c
 	boot.c
 	exbl.c
+	msg.c
 	mentry.S
-	${CMAKE_SOURCE_DIR}/Source/dev/aes.c
-	${CMAKE_SOURCE_DIR}/Source/dev/checksum.c
-	${CMAKE_SOURCE_DIR}/Source/dev/ddr.c
-	${CMAKE_SOURCE_DIR}/Source/dev/dma.c
-	${CMAKE_SOURCE_DIR}/Source/dev/eth.c
-	${CMAKE_SOURCE_DIR}/Source/dev/gpio.c
-	${CMAKE_SOURCE_DIR}/Source/dev/i2c.c
-	${CMAKE_SOURCE_DIR}/Source/dev/i2s.c
-	${CMAKE_SOURCE_DIR}/Source/dev/sdio.c
-	${CMAKE_SOURCE_DIR}/Source/dev/sfls.c
-	${CMAKE_SOURCE_DIR}/Source/dev/sha.c
-	${CMAKE_SOURCE_DIR}/Source/dev/spi.c
-	${CMAKE_SOURCE_DIR}/Source/dev/timer.c
-	${CMAKE_SOURCE_DIR}/Source/dev/uart.c
-	${CMAKE_SOURCE_DIR}/Source/dev/wdt.c
-	${CMAKE_SOURCE_DIR}/Source/dev/string/vsnprintf.c
 )
 
 # 바이너리 생성

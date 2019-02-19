@@ -11,9 +11,9 @@ void SpiInit(UINT nCH, UINT Speed_Hz, UINT WordSize, UINT BitDirection)
 			REG_BASE_SPI5, REG_BASE_SPI6, REG_BASE_SPI7, REG_BASE_SPI8
 	};
 
-	arrSPIRX[nCH] = (_SPI_REG0 *)(addrSPI[nCH] + (0 << 2));
-	arrSPITX[nCH] = (_SPI_REG1 *)(addrSPI[nCH] + (1 << 2));
-	arrSPI[nCH] = (_SPI_REG2 *)(addrSPI[nCH] + (2 << 2));
+	arrSPIRX[nCH] = (_SPI_REG0 *)(addrSPI[nCH] + (0 << 3));
+	arrSPITX[nCH] = (_SPI_REG1 *)(addrSPI[nCH] + (1 << 3));
+	arrSPI[nCH] = (_SPI_REG2 *)(addrSPI[nCH] + (2 << 3));
 
 	arrSPI[nCH]->EN = 1;				// SPI controller enabled
 	arrSPI[nCH]->WS = WordSize;			// SPI word size / 0:8bit, 1:16bit, 2:24bit, 3:32bit

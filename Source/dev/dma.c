@@ -10,10 +10,10 @@ void DmaInit(void)
 	const uint64_t addrDMA[DMA_CNT] = {REG_BASE_DMA0, REG_BASE_DMA1};
 
 	for (uint64_t i = 0; i < DMA_CNT; i++) {
-		arrDMA[i] = (_DMA_REG0 *)(addrDMA[i] + (0 << 2));
-		arrDMASRC[i] = (_DMA_REG1 *)(addrDMA[i] + (1 << 2));
-		arrDMADST[i] = (_DMA_REG2 *)(addrDMA[i] + (2 << 2));
-		arrDMALEN[i] = (_DMA_REG3 *)(addrDMA[i] + (3 << 2));
+		arrDMA[i] = (_DMA_REG0 *)(addrDMA[i] + (0 << 3));
+		arrDMASRC[i] = (_DMA_REG1 *)(addrDMA[i] + (1 << 3));
+		arrDMADST[i] = (_DMA_REG2 *)(addrDMA[i] + (2 << 3));
+		arrDMALEN[i] = (_DMA_REG3 *)(addrDMA[i] + (3 << 3));
 	}
 }
 

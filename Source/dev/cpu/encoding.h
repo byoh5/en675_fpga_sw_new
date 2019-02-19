@@ -4,16 +4,16 @@
 #define RISCV_CSR_ENCODING_H
 
 #define MSTATUS_UIE         0x00000001
-#define MSTATUS_SIE         0x00000002
+#define MSTATUS_SIE         0x00000002 // Supervisor Interrupt Enable
 #define MSTATUS_HIE         0x00000004
-#define MSTATUS_MIE         0x00000008
+#define MSTATUS_MIE         0x00000008 // Machine Interrupt Enable
 #define MSTATUS_UPIE        0x00000010
-#define MSTATUS_SPIE        0x00000020
+#define MSTATUS_SPIE        0x00000020 // Supervisor Previous Interrupt Enable
 #define MSTATUS_HPIE        0x00000040
-#define MSTATUS_MPIE        0x00000080
-#define MSTATUS_SPP         0x00000100
+#define MSTATUS_MPIE        0x00000080 // Machine Previous Interrupt Enable
+#define MSTATUS_SPP         0x00000100 // Supervisor Previous Privilege Mode
 #define MSTATUS_HPP         0x00000600
-#define MSTATUS_MPP         0x00001800
+#define MSTATUS_MPP         0x00001800 // Machine Previous Privilege Mode
 #define MSTATUS_FS          0x00006000
 #define MSTATUS_XS          0x00018000
 #define MSTATUS_MPRV        0x00020000
@@ -95,15 +95,15 @@
 #define MCONTROL_MATCH_MASK_LOW  4
 #define MCONTROL_MATCH_MASK_HIGH 5
 
-#define MIP_SSIP            (1 << IRQ_S_SOFT)
+#define MIP_SSIP            (1 << IRQ_S_SOFT) // Supervisor Software Interrupt Enable(mie)/Pending(mip)
 #define MIP_HSIP            (1 << IRQ_H_SOFT)
-#define MIP_MSIP            (1 << IRQ_M_SOFT)
-#define MIP_STIP            (1 << IRQ_S_TIMER)
+#define MIP_MSIP            (1 << IRQ_M_SOFT) // Machine Software Interrupt Enable(mie)/Pending(mip)
+#define MIP_STIP            (1 << IRQ_S_TIMER) // Supervisor Timer Interrupt Enable(mie)/Pending(mip)
 #define MIP_HTIP            (1 << IRQ_H_TIMER)
-#define MIP_MTIP            (1 << IRQ_M_TIMER)
-#define MIP_SEIP            (1 << IRQ_S_EXT)
+#define MIP_MTIP            (1 << IRQ_M_TIMER) // Machine Timer Interrupt Enable(mie)/Pending(mip)
+#define MIP_SEIP            (1 << IRQ_S_EXT) // Supervisor External Interrupt Enable(mie)/Pending(mip)
 #define MIP_HEIP            (1 << IRQ_H_EXT)
-#define MIP_MEIP            (1 << IRQ_M_EXT)
+#define MIP_MEIP            (1 << IRQ_M_EXT) // Machine External Interrupt Enable(mie)/Pending(mip)
 
 #define SIP_SSIP MIP_SSIP
 #define SIP_STIP MIP_STIP
