@@ -21,10 +21,36 @@
 #define RTC_I2C_CH	7
 #if 1
 #define __RTC_PCF8563__
-#endif
+#endif // __RTC_PCF8563__
 #if 0
 #define __RTC_S35390A__
-#endif
-#endif
+#endif // __RTC_S35390A__
+#endif // __RTC_LOAD__
+
+#if 0
+#define __NETWORK__
+#if 1
+#define __ETHERNET__
+#define ETHPHY_GPIO_RST	54
+#define ETHPHY_GPIO_IRQ	53
+#define ETHPHY_MDIO_ADR	1
+#if 1
+#define __ETHPHY_KSZ8081MNX__
+#endif // __ETHPHY_KSZ8081MNX__
+#if 0
+#define __ETHPHY_KSZ8081RNB__
+#endif // __ETHPHY_KSZ8081RNB__
+#if 0
+#define __ETHPHY_KSZ9031RNX__
+#endif // __ETHPHY_KSZ9031RNX__
+#endif // __ETHERNET__
+#endif // __NETWORK__
+
+#if 0
+#define __AUDIO__
+#define AUDIO_GPIO_RST	20
+#define AUDIO_GPIO_IRQ	21
+#define AUDIO_I2C_CH	2
+#endif // __AUDIO__
 
 #endif // __DEV_DEVICE_H__

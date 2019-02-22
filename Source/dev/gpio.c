@@ -1,22 +1,15 @@
 #include "dev.h"
 
 static _GPIO_PIN *arrGPIO[GPIO_CNT];
+static tIhnd arrGPIOIrq[GPIO_CNT];
 
 void GpioInit(void)
 {
 	for (uint64_t i = 0; i < GPIO_CNT; i++) {
 		arrGPIO[i] = (_GPIO_PIN *)(REG_BASE_GPIO + (i << 3));
+		arrGPIOIrq[i].irqfn = NULL;
+		arrGPIOIrq[i].arg = NULL;
 	}
-}
-
-void GpioEi(UINT nCH)
-{	// Direction : Gpio interrupt enable
-	arrGPIO[nCH]->GPIO_IRQ_EN = 1;
-}
-
-void GpioDi(UINT nCH)
-{	// Direction : Gpio interrupt disable
-	arrGPIO[nCH]->GPIO_IRQ_EN = 0;
 }
 
 void GpioRiseEdge(UINT nCH)
@@ -75,17 +68,39 @@ UINT GpioGetPin(UINT nCH)
 	return arrGPIO[nCH]->GPIO_IN;
 }
 
-void IsrGpio(void *ctx)
+void GpioIrqCallback(UINT nCH, irq_fn irqfn, void *arg)
 {
-	for (int i = 0; i < GPIO_CNT; i++) {
-		if (arrGPIO[i]->GPIO_IRQ) {
-			arrGPIO[i]->GPIO_IRQ_CLR = 1;
-			switch (i) {
-				default:
-					_printf("GPIO Get[%d]\n", i);
-					break;
-			}
+	arrGPIOIrq[nCH].irqfn = irqfn;
+	arrGPIOIrq[nCH].arg = arg;
+}
+
+void GpioIrqOn(UINT nCH)
+{	// Direction : Gpio interrupt enable
+	arrGPIO[nCH]->GPIO_IRQ_EN = 1;
+}
+
+void GpioIrqOff(UINT nCH)
+{	// Direction : Gpio interrupt disable
+	arrGPIO[nCH]->GPIO_IRQ_EN = 0;
+}
+
+void GpioIrqClear(UINT nCH)
+{
+	arrGPIO[nCH]->GPIO_IRQ_CLR = 1;
+}
+
+UINT GpioIsIrq(UINT nCH)
+{
+	return arrGPIO[nCH]->GPIO_IRQ;
+}
+
+void IrqGpio(UINT nCH)
+{
+	if (GpioIsIrq(nCH)) {
+		_printf("GPIO IRQ Get [%d]\n", nCH);
+		if (arrGPIOIrq[nCH].irqfn) {
+			arrGPIOIrq[nCH].irqfn(arrGPIOIrq[nCH].arg);
 		}
+		GpioIrqClear(nCH);
 	}
-	UNUSED(ctx);
 }

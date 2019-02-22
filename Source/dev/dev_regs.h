@@ -107,185 +107,11 @@
 #define REG_BASE_DMA1			0x45100020
 #define REG_BASE_I2S			0x45200000
 #define REG_BASE_IRQ			0x45300000
+#define REG_BASE_ADC			0x45400000
 
 //******************************************************************************
-// 3. IRQ Number Def
+// 3. System define
 //------------------------------------------------------------------------------
-#if 0
-#define	IRQ_ISP0				  0
-#define	IRQ_ISP1				  1
-#define	IRQ_ISP2				  2
-#define	IRQ_ISP3				  3
-#define	IRQ_ISP4				  4
-#define	IRQ_ISP5				  5
-#define	IRQ_ISP6				  6
-#define	IRQ_ISP7				  7
-#define	IRQ_ISP8				  8
-#define	IRQ_ISP9				  9
-#define	IRQ_ISP10   			 10
-#define	IRQ_ISP11   			 11
-#define	IRQ_ISP12   			 12
-#define	IRQ_ISP13   			 13
-#define	IRQ_ISP14   			 14
-#define	IRQ_ISP15   			 15
-#define	IRQ_ISP16   			 16
-#define	IRQ_ISP17   			 17
-#define	IRQ_ISP18   			 18
-#define	IRQ_ISP19   			 19
-#define	IRQ_ISP20   			 20
-#define	IRQ_ISP21   			 21
-#define	IRQ_ISP22   			 22
-#define	IRQ_ISP23   			 23
-#define	IRQ_H265				 24
-#define	IRQ_H264				 25
-#define	IRQ_DMA					 26
-#define	IRQ_ETH_RX				 27
-#define	IRQ_ETH_TX				 28
-#define	IRQ_SDIO0				 29
-#define	IRQ_SDIO1				 30
-#define	IRQ_AES					 31
-#define IRQ_SHA					 32
-#define IRQ_CHECKSUM			 33
-#define IRQ_SPI0				 34
-#define	IRQ_SPI1				 35
-#define	IRQ_SPI2				 36
-#define	IRQ_SPI3				 37
-#define	IRQ_SPI4				 38
-#define	IRQ_SPI5				 39
-#define	IRQ_SPI6				 40
-#define	IRQ_SPI7				 41
-#define	IRQ_SPI8				 42
-#define	IRQ_I2C0				 43
-#define	IRQ_I2C1				 44
-#define	IRQ_I2C2				 45
-#define	IRQ_I2C3				 46
-#define	IRQ_I2C4				 47
-#define	IRQ_I2C5				 48
-#define	IRQ_I2C6				 49
-#define	IRQ_I2C7				 50
-#define	IRQ_I2C8				 51
-#define	IRQ_UART0				 52
-#define	IRQ_UART1				 53
-#define	IRQ_UART2				 54
-#define	IRQ_UART3				 55
-#define	IRQ_UART4				 56
-#define	IRQ_UART5				 57
-#define	IRQ_UART6				 58
-#define	IRQ_UART7				 59
-#define	IRQ_UART8				 60
-#define IRQ_TIMER0				 61
-#define IRQ_TIMER1				 62
-#define IRQ_TIMER2				 63
-#define IRQ_TIMER3				 64
-#define IRQ_TIMER4				 65
-#define IRQ_TIMER5				 66
-#define IRQ_TIMER6				 67
-#define IRQ_TIMER7				 68
-#define IRQ_TIMER8				 69
-#define IRQ_TIMER9				 70
-#define IRQ_TIMER10 			 71
-#define IRQ_TIMER11 			 72
-#define IRQ_TIMER12 			 73
-#define IRQ_TIMER13 			 74
-#define IRQ_TIMER14 			 75
-#define IRQ_TIMER15 			 76
-#define IRQ_TIMER16 			 77
-#define IRQ_TIMER17 			 78
-#define IRQ_TIMER18 			 79
-#define IRQ_TIMER19 			 80
-#define IRQ_TIMER20 			 81
-#define IRQ_TIMER21 			 82
-#define IRQ_TIMER22 			 83
-#define IRQ_TIMER23 			 84
-#define IRQ_TIMER24 			 85
-#define IRQ_TIMER25 			 86
-#define IRQ_TIMER26 			 87
-#define IRQ_TIMER27 			 88
-#define IRQ_TIMER28 			 89
-#define IRQ_TIMER29 			 90
-#define IRQ_TIMER30 			 91
-#define IRQ_TIMER31 			 92
-#define IRQ_TIMER32 			 93
-#define IRQ_TIMER33 			 94
-#define IRQ_TIMER34 			 95
-#define IRQ_TIMER35 			 96
-#define IRQ_TIMER36 			 97
-#define IRQ_TIMER37 			 98
-#define IRQ_TIMER38 			 99
-#define	IRQ_GPIO0				100
-#define	IRQ_GPIO1				101
-#define	IRQ_GPIO2				102
-#define	IRQ_GPIO3				103
-#define	IRQ_GPIO4				104
-#define	IRQ_GPIO5				105
-#define	IRQ_GPIO6				106
-#define	IRQ_GPIO7				107
-#define	IRQ_GPIO8				108
-#define	IRQ_GPIO9				109
-#define	IRQ_GPIO10				110
-#define	IRQ_GPIO11				111
-#define	IRQ_GPIO12				112
-#define	IRQ_GPIO13				113
-#define	IRQ_GPIO14				114
-#define	IRQ_GPIO15				115
-#define	IRQ_GPIO16				116
-#define	IRQ_GPIO17				117
-#define	IRQ_GPIO18				118
-#define	IRQ_GPIO19				119
-#define	IRQ_GPIO20				120
-#define	IRQ_GPIO21				121
-#define	IRQ_GPIO22				122
-#define	IRQ_GPIO23				123
-#define	IRQ_GPIO24				124
-#define	IRQ_GPIO25				125
-#define	IRQ_GPIO26				126
-#define	IRQ_GPIO27				127
-#define	IRQ_GPIO28				128
-#define	IRQ_GPIO29				129
-#define	IRQ_GPIO30				130
-#define	IRQ_GPIO31				131
-#define	IRQ_GPIO32				132
-#define	IRQ_GPIO33				133
-#define	IRQ_GPIO34				134
-#define	IRQ_GPIO35				135
-#define	IRQ_GPIO36				136
-#define	IRQ_GPIO37				137
-#define	IRQ_GPIO38				138
-#define	IRQ_GPIO39				139
-#define	IRQ_GPIO40				140
-#define	IRQ_GPIO41				141
-#define	IRQ_GPIO42				142
-#define	IRQ_GPIO43				143
-#define	IRQ_GPIO44				144
-#define	IRQ_GPIO45				145
-#define	IRQ_GPIO46				146
-#define	IRQ_GPIO47				147
-#define	IRQ_GPIO48				148
-#define	IRQ_GPIO49				149
-#define	IRQ_GPIO50				150
-#define	IRQ_GPIO51				151
-#define	IRQ_GPIO52				152
-#define	IRQ_GPIO53				153
-#define	IRQ_GPIO54				154
-#define	IRQ_GPIO55				155
-#define	IRQ_GPIO56				156
-#define	IRQ_GPIO57				157
-#define	IRQ_GPIO58				158
-#define	IRQ_GPIO59				159
-#define	IRQ_GPIO60				160
-#define	IRQ_GPIO61				161
-#define	IRQ_GPIO62				162
-#define	IRQ_GPIO63				163
-#define	IRQ_GPIO64				164
-#define	IRQ_GPIO65				165
-#define	IRQ_GPIO66				166
-#define	IRQ_GPIO67				167
-#define	IRQ_GPIO68				168
-#define	IRQ_GPIO69				169
-#define	IRQ_GPIO70				170
-#define	IRQ_GPIO71				171
-#endif
-
 #define OSC_FREQ				(25*1000*1000)
 #define MCK_FREQ				(50*1000*1000)
 
@@ -404,9 +230,6 @@ _regs_ BF_8(UINT PIN68_IN : 1 ,UINT PIN68_OUT : 1 ,UINT PIN68_OEN : 1 ,UINT PIN6
 _regs_ BF_8(UINT PIN69_IN : 1 ,UINT PIN69_OUT : 1 ,UINT PIN69_OEN : 1 ,UINT PIN69_IRQ_DIR : 1 ,UINT PIN69_IRQ_EN : 1 ,UINT PIN69_IRQ_CLR : 1 ,UINT PIN69_IRQ : 1 , UINT _rev0 : 25 ) _rege_ _GPIO_69;
 _regs_ BF_8(UINT PIN70_IN : 1 ,UINT PIN70_OUT : 1 ,UINT PIN70_OEN : 1 ,UINT PIN70_IRQ_DIR : 1 ,UINT PIN70_IRQ_EN : 1 ,UINT PIN70_IRQ_CLR : 1 ,UINT PIN70_IRQ : 1 , UINT _rev0 : 25 ) _rege_ _GPIO_70;
 _regs_ BF_8(UINT PIN71_IN : 1 ,UINT PIN71_OUT : 1 ,UINT PIN71_OEN : 1 ,UINT PIN71_IRQ_DIR : 1 ,UINT PIN71_IRQ_EN : 1 ,UINT PIN71_IRQ_CLR : 1 ,UINT PIN71_IRQ : 1 , UINT _rev0 : 25 ) _rege_ _GPIO_71;
-
-_regs_ BF_8(UINT GPIO_IN : 1 ,UINT GPIO_OUT : 1 ,UINT GPIO_OEN : 1 ,UINT GPIO_IRQ_DIR : 1 ,UINT GPIO_IRQ_EN : 1 ,UINT GPIO_IRQ_CLR : 1 ,UINT GPIO_IRQ : 1 , UINT _rev0 : 25 ) _rege_ _GPIO_PIN;
-
 _regs_ BF_2(UINT _rev0 : 24, UINT PIN_72_64_IN : 8 ) _rege_ _GPIO_72;
 _regs_ BF_1(UINT PIN_63_32_IN : 32 ) _rege_ _GPIO_73;
 _regs_ BF_1(UINT PIN_31_0_IN : 32 ) _rege_ _GPIO_74;
@@ -464,12 +287,6 @@ _regs_ BF_16(UINT CLK_DIV : 12 ,UINT _rev0 : 6, UINT TX_TYPE : 1 ,UINT STOP_BIT 
 _regs_ BF_2(UINT _rev0 : 24, UINT RX_DAT : 8 ) _rege_ _UART8_1;
 _regs_ BF_2(UINT _rev0 : 24, UINT TX_DAT : 8 ) _rege_ _UART8_2;
 _regs_ BF_2(UINT _rev0 : 12, UINT RX_LMT : 20 ) _rege_ _UART8_3;
-
-_regs_ BF_16(UINT CLK_DIV : 12 ,UINT _rev0 : 6, UINT TX_TYPE : 1 ,UINT STOP_BIT : 1 ,UINT PARITY_EN : 1 ,UINT PARITY_TYPE : 1 ,UINT TX_IRQ : 1 ,UINT TX_IRQ_EN : 1 ,UINT TX_IRQ_CLR : 1 ,UINT TX_EMPTY : 1 ,UINT TX_FULL : 1 ,UINT RX_IRQ : 1 ,UINT RX_IRQ_EN : 1 ,UINT RX_IRQ_CLR : 1 ,UINT RX_EMPTY : 1 ,UINT RX_FULL : 1 ) _rege_ _UART_REG0;
-_regs_ BF_2(UINT _rev0 : 24, UINT RX_DAT : 8 ) _rege_ _UART_REG1;
-_regs_ BF_2(UINT _rev0 : 24, UINT TX_DAT : 8 ) _rege_ _UART_REG2;
-_regs_ BF_2(UINT _rev0 : 12, UINT RX_LMT : 20 ) _rege_ _UART_REG3;
-
 _regs_ BF_9(UINT RX_DAT : 8 ,UINT TX_DAT : 8 ,UINT _rev0 : 10, UINT ACT : 1 ,UINT MODE : 1 ,UINT BIT_MODE : 1 ,UINT IRQ : 1 ,UINT IRQ_EN : 1 ,UINT IRQ_CLR : 1 ) _rege_ _I2C0_0;
 _regs_ BF_2(UINT CLK_DIV : 16 , UINT _rev0 : 16 ) _rege_ _I2C0_1;
 _regs_ BF_7(UINT _rev0 : 26, UINT MST_COL : 1 ,UINT MST_ACK : 1 ,UINT MST_REPEAT : 1 ,UINT MST_LAST : 1 ,UINT MST_RW : 1 ,UINT MST_GO : 1 ) _rege_ _I2C0_2;
@@ -506,34 +323,24 @@ _regs_ BF_9(UINT RX_DAT : 8 ,UINT TX_DAT : 8 ,UINT _rev0 : 10, UINT ACT : 1 ,UIN
 _regs_ BF_2(UINT CLK_DIV : 16 , UINT _rev0 : 16 ) _rege_ _I2C8_1;
 _regs_ BF_7(UINT _rev0 : 26, UINT MST_COL : 1 ,UINT MST_ACK : 1 ,UINT MST_REPEAT : 1 ,UINT MST_LAST : 1 ,UINT MST_RW : 1 ,UINT MST_GO : 1 ) _rege_ _I2C8_2;
 _regs_ BF_8(UINT _rev0 : 19, UINT I2C_SDA : 1 ,UINT I2C_SCL : 1 ,UINT SLV_ACK_IN : 1 ,UINT SLV_GO : 1 ,UINT SLV_RW : 1 ,UINT SLV_ACK_OUT : 1 ,UINT SLV_ADR : 7 ) _rege_ _I2C8_3;
-
-_regs_ BF_9(UINT RX_DAT : 8 ,UINT TX_DAT : 8 ,UINT _rev0 : 10, UINT ACT : 1 ,UINT MODE : 1 ,UINT BIT_MODE : 1 ,UINT IRQ : 1 ,UINT IRQ_EN : 1 ,UINT IRQ_CLR : 1 ) _rege_ _I2C_REG0;
-_regs_ BF_2(UINT CLK_DIV : 16 , UINT _rev0 : 16 ) _rege_ _I2C_REG1;
-_regs_ BF_7(UINT _rev0 : 26, UINT MST_COL : 1 ,UINT MST_ACK : 1 ,UINT MST_REPEAT : 1 ,UINT MST_LAST : 1 ,UINT MST_RW : 1 ,UINT MST_GO : 1 ) _rege_ _I2C_REG2;
-_regs_ BF_8(UINT _rev0 : 19, UINT I2C_SDA : 1 ,UINT I2C_SCL : 1 ,UINT SLV_ACK_IN : 1 ,UINT SLV_GO : 1 ,UINT SLV_RW : 1 ,UINT SLV_ACK_OUT : 1 ,UINT SLV_ADR : 7 ) _rege_ _I2C_REG3;
-
 _regs_ BF_9(UINT _rev0 : 4, UINT JOB_PTR : 8 ,UINT DONE_PTR : 6 ,UINT IRQ : 1 ,UINT IRQ_EN : 1 ,UINT IRQ_CLR : 1 ,UINT VALUE : 8 ,UINT MODE : 2 ,UINT GO : 1 ) _rege_ _DMA0_0;
 _regs_ BF_1(UINT SRC : 32 ) _rege_ _DMA0_1;
 _regs_ BF_1(UINT DST : 32 ) _rege_ _DMA0_2;
 _regs_ BF_1(UINT LEN : 32 ) _rege_ _DMA0_3;
-_regs_ BF_9(UINT _rev0 : 4, UINT JOB_PTR : 8 ,UINT DONE_PTR : 6 ,UINT IRQ : 1 ,UINT IRQ_EN : 1 ,UINT IRQ_CLR : 1 ,UINT VALUE : 8 ,UINT MODE : 2 ,UINT GO : 1 ) _rege_ _DMA1_4;
-_regs_ BF_1(UINT SRC : 32 ) _rege_ _DMA1_5;
-_regs_ BF_1(UINT DST : 32 ) _rege_ _DMA1_6;
-_regs_ BF_1(UINT LEN : 32 ) _rege_ _DMA1_7;
-
-_regs_ BF_9(UINT _rev0 : 4, UINT JOB_PTR : 8 ,UINT DONE_PTR : 6 ,UINT IRQ : 1 ,UINT IRQ_EN : 1 ,UINT IRQ_CLR : 1 ,UINT VALUE : 8 ,UINT MODE : 2 ,UINT GO : 1 ) _rege_ _DMA_REG0;
-_regs_ BF_1(UINT SRC : 32 ) _rege_ _DMA_REG1;
-_regs_ BF_1(UINT DST : 32 ) _rege_ _DMA_REG2;
-_regs_ BF_1(UINT LEN : 32 ) _rege_ _DMA_REG3;
-
+_regs_ BF_9(UINT _rev0 : 4, UINT JOB_PTR : 8 ,UINT DONE_PTR : 6 ,UINT IRQ : 1 ,UINT IRQ_EN : 1 ,UINT IRQ_CLR : 1 ,UINT VALUE : 8 ,UINT MODE : 2 ,UINT GO : 1 ) _rege_ _DMA1_0;
+_regs_ BF_1(UINT SRC : 32 ) _rege_ _DMA1_1;
+_regs_ BF_1(UINT DST : 32 ) _rege_ _DMA1_2;
+_regs_ BF_1(UINT LEN : 32 ) _rege_ _DMA1_3;
 _regs_ BF_5(UINT _rev0 : 28, UINT IRQ : 1 ,UINT IRQ_EN : 1 ,UINT IRQ_CLR : 1 ,UINT GO : 1 ) _rege_ _CHKSUM_0;
 _regs_ BF_1(UINT ADR : 32 ) _rege_ _CHKSUM_1;
 _regs_ BF_1(UINT LEN : 32 ) _rege_ _CHKSUM_2;
 _regs_ BF_2(UINT _rev0 : 16, UINT DAT : 16 ) _rege_ _CHKSUM_3;
-_regs_ BF_16(UINT _rev0 : 8, UINT IRQ : 1 ,UINT IRQ_EN : 1 ,UINT IRQ_CLR : 1 ,UINT BYTE : 2 ,UINT TXBYTE : 2 ,UINT RXBYTE : 2 ,UINT TXDW : 2 ,UINT RXDW : 2 ,UINT TXCODEC : 2 ,UINT RXCODEC : 2 ,UINT TXMODE : 2 ,UINT RXMODE : 2 ,UINT TXEN : 1 ,UINT RXEN : 1 ,UINT MODE : 1 ) _rege_ _I2S_0;
+_regs_ BF_20(UINT _rev0 : 3, UINT TXEDN : 1 ,UINT RXEDN : 1 ,UINT IRQ : 2 ,UINT TX_IRQ_CLR : 1 ,UINT RX_IRQ_CLR : 1 ,UINT TX_IRQ_EN : 1 ,UINT RX_IRQ_EN : 1 ,UINT BYTE : 2 ,UINT TXBYTE : 2 ,UINT RXBYTE : 2 ,UINT TXDW : 2 ,UINT RXDW : 2 ,UINT TXCODEC : 2 ,UINT RXCODEC : 2 ,UINT TXMODE : 2 ,UINT RXMODE : 2 ,UINT TXEN : 1 ,UINT RXEN : 1 ,UINT MODE : 1 ) _rege_ _I2S_0;
 _regs_ BF_1(UINT ADRW : 32 ) _rege_ _I2S_1;
 _regs_ BF_1(UINT ADRR : 32 ) _rege_ _I2S_2;
 _regs_ BF_2(UINT _rev0 : 16, UINT SCKCNT : 16 ) _rege_ _I2S_3;
+_regs_ BF_1(UINT RX_ADDR : 32 ) _rege_ _I2S_4;
+_regs_ BF_1(UINT TX_ADDR : 32 ) _rege_ _I2S_5;
 _regs_ BF_10(UINT EN : 1 ,UINT PWM_EN : 1 ,UINT CK_EN : 1 ,UINT IRQ_EN : 1 ,UINT CNT_CLR : 1 ,UINT IRQ_CLR : 1 ,UINT IRQ : 1 ,UINT _rev0 : 1, UINT DIV : 8 ,UINT LMT : 16 ) _rege_ _TIMER0_0;
 _regs_ BF_2(UINT TRIG : 16 ,UINT CNT : 16 ) _rege_ _TIMER0_1;
 _regs_ BF_10(UINT EN : 1 ,UINT PWM_EN : 1 ,UINT CK_EN : 1 ,UINT IRQ_EN : 1 ,UINT CNT_CLR : 1 ,UINT IRQ_CLR : 1 ,UINT IRQ : 1 ,UINT _rev0 : 1, UINT DIV : 8 ,UINT LMT : 16 ) _rege_ _TIMER1_0;
@@ -612,10 +419,6 @@ _regs_ BF_10(UINT EN : 1 ,UINT PWM_EN : 1 ,UINT CK_EN : 1 ,UINT IRQ_EN : 1 ,UINT
 _regs_ BF_2(UINT TRIG : 16 ,UINT CNT : 16 ) _rege_ _TIMER37_1;
 _regs_ BF_10(UINT EN : 1 ,UINT PWM_EN : 1 ,UINT CK_EN : 1 ,UINT IRQ_EN : 1 ,UINT CNT_CLR : 1 ,UINT IRQ_CLR : 1 ,UINT IRQ : 1 ,UINT _rev0 : 1, UINT DIV : 8 ,UINT LMT : 16 ) _rege_ _TIMER38_0;
 _regs_ BF_2(UINT TRIG : 16 ,UINT CNT : 16 ) _rege_ _TIMER38_1;
-
-_regs_ BF_10(UINT EN : 1 ,UINT PWM_EN : 1 ,UINT CK_EN : 1 ,UINT IRQ_EN : 1 ,UINT CNT_CLR : 1 ,UINT IRQ_CLR : 1 ,UINT IRQ : 1 ,UINT _rev0 : 1, UINT DIV : 8 ,UINT LMT : 16 ) _rege_ _TIMER_REG0;
-_regs_ BF_2(UINT TRIG : 16 ,UINT CNT : 16 ) _rege_ _TIMER_REG1;
-
 _regs_ BF_1(UINT RX_DAT : 32 ) _rege_ _SPI0_0;
 _regs_ BF_1(UINT TX_DAT : 32 ) _rege_ _SPI0_1;
 _regs_ BF_15(UINT EN : 1 ,UINT _rev0 : 7, UINT CLK_DIV : 8 ,UINT _rev1 : 2, UINT BIT_MODE : 1 ,UINT CS_OEN : 1 ,UINT CS_OUT : 1 ,UINT IRQ_EN : 1 ,UINT IRQ_CLR : 1 ,UINT IRQ : 1 ,UINT ONE_BITMODE : 1 ,UINT CLK_MODE : 2 ,UINT WS : 2 ,UINT RW : 2 ,UINT GO : 1 ) _rege_ _SPI0_2;
@@ -643,11 +446,6 @@ _regs_ BF_15(UINT EN : 1 ,UINT _rev0 : 7, UINT CLK_DIV : 8 ,UINT _rev1 : 2, UINT
 _regs_ BF_1(UINT RX_DAT : 32 ) _rege_ _SPI8_0;
 _regs_ BF_1(UINT TX_DAT : 32 ) _rege_ _SPI8_1;
 _regs_ BF_15(UINT EN : 1 ,UINT _rev0 : 7, UINT CLK_DIV : 8 ,UINT _rev1 : 2, UINT BIT_MODE : 1 ,UINT CS_OEN : 1 ,UINT CS_OUT : 1 ,UINT IRQ_EN : 1 ,UINT IRQ_CLR : 1 ,UINT IRQ : 1 ,UINT ONE_BITMODE : 1 ,UINT CLK_MODE : 2 ,UINT WS : 2 ,UINT RW : 2 ,UINT GO : 1 ) _rege_ _SPI8_2;
-
-_regs_ BF_1(UINT RX_DAT : 32 ) _rege_ _SPI_REG0;
-_regs_ BF_1(UINT TX_DAT : 32 ) _rege_ _SPI_REG1;
-_regs_ BF_15(UINT EN : 1 ,UINT _rev0 : 7, UINT CLK_DIV : 8 ,UINT _rev1 : 2, UINT BIT_MODE : 1 ,UINT CS_OEN : 1 ,UINT CS_OUT : 1 ,UINT IRQ_EN : 1 ,UINT IRQ_CLR : 1 ,UINT IRQ : 1 ,UINT ONE_BITMODE : 1 ,UINT CLK_MODE : 2 ,UINT WS : 2 ,UINT RW : 2 ,UINT GO : 1 ) _rege_ _SPI_REG2;
-
 _regs_ BF_6(UINT PKG_ID : 1 ,UINT REV_ID : 2 ,UINT _rev0 : 23, UINT H264_RST : 1 ,UINT H265_RST : 1 ,UINT CPU_EN : 4 ) _rege_ _SYS_0;
 _regs_ BF_1(UINT WDT_CNT : 32 ) _rege_ _SYS_1;
 _regs_ BF_1(UINT WDT_LMT : 32 ) _rege_ _SYS_2;
@@ -742,8 +540,8 @@ _regs_ BF_8(UINT _rev0 : 12, UINT ALN32 : 1 ,UINT QUANTMODE : 1 ,UINT RINGTYPE :
 _regs_ BF_3(UINT _rev0 : 20, UINT FRMBITS : 4 ,UINT FRMNUM : 8 ) _rege_ _H264_8;
 _regs_ BF_7(UINT _rev0 : 8, UINT PROFILEIDC : 8 ,UINT _rev1 : 4, UINT CABACIDC : 2 ,UINT CABACEN : 1 ,UINT CROPBOT : 1 ,UINT LEVIDC : 8 ) _rege_ _H264_9;
 _regs_ BF_7(UINT SPS_SPSID : 4 ,UINT PPS_SPSID : 4 ,UINT PPS_PPSID : 4 ,UINT SLH_PPSID : 4 ,UINT _rev0 : 14, UINT SPSINSRT : 1 ,UINT PPSINSRT : 1 ) _rege_ _H264_10;
-_regs_ BF_2(UINT _rev0 : 29, UINT PREPTR : 3 ) _rege_ _H264_11;
-_regs_ BF_2(UINT _rev0 : 29, UINT PSTPTR : 3 ) _rege_ _H264_12;
+_regs_ BF_2(UINT _rev0 : 28, UINT PREPTR : 4 ) _rege_ _H264_11;
+_regs_ BF_2(UINT _rev0 : 28, UINT PSTPTR : 4 ) _rege_ _H264_12;
 _regs_ BF_2(UINT _rev0 : 31, UINT INTRVC : 1 ) _rege_ _H264_16;
 _regs_ BF_1(UINT CURYBUF : 32 ) _rege_ _H264_17;
 _regs_ BF_1(UINT CURCBUF : 32 ) _rege_ _H264_18;
@@ -761,7 +559,7 @@ _regs_ BF_1(UINT SBUFSIZE : 32 ) _rege_ _H264_29;
 _regs_ BF_3(UINT _rev0 : 24, UINT VLCBURST : 4 ,UINT ENCBURST : 4 ) _rege_ _H264_30;
 _regs_ BF_8(UINT _rev0 : 24, UINT USEIADDR : 1 ,UINT KEEP4KB : 1 ,UINT CLKRATIO : 2 ,UINT KEEPORDER : 1 ,UINT RNDROBIN : 1 ,UINT EXTROBIN : 1 ,UINT BIGENDIAN : 1 ) _rege_ _H264_31;
 _regs_ BF_11(UINT _rev0 : 21, UINT STRMRESET : 1 ,UINT DECCONTINUE : 1 ,UINT DECSTART : 1 ,UINT _rev1 : 2, UINT RINGINIT : 1 ,UINT VLCSTART : 1 ,UINT _rev2 : 1, UINT FLUSHSTART : 1 ,UINT VLCREADY : 1 ,UINT ENCSTART : 1 ) _rege_ _H264_32;
-_regs_ BF_18(UINT _rev0 : 15, UINT EXTDTCT : 1 ,UINT ENDERR : 1 ,UINT STRMERR : 1 ,UINT DECERR : 1 ,UINT SLDEND : 1 ,UINT SLHDTCT : 1 ,UINT PPSDTCT : 1 ,UINT SEQDTCT : 1 ,UINT DECEND : 1 ,UINT _rev1 : 1, UINT SEQDTCT_DECEND : 1 ,UINT _rev2 : 1, UINT VLCEND : 1 ,UINT _rev3 : 1, UINT FLUSHEND : 1 ,UINT _rev4 : 1, UINT ENCEND : 1 ) _rege_ _H264_33;
+_regs_ BF_18(UINT _rev0 : 15, UINT EXTDTCT : 1 ,UINT ENDERR : 1 ,UINT STRMERR : 1 ,UINT DECERR : 1 ,UINT SLDEND : 1 ,UINT SLHDTCT : 1 ,UINT PPSDTCT : 1 ,UINT SEQDTCT : 1 ,UINT DECEND : 1 ,UINT _rev1 : 1, UINT SBUFFULL : 1 ,UINT _rev2 : 1, UINT VLCEND : 1 ,UINT _rev3 : 1, UINT FLUSHEND : 1 ,UINT _rev4 : 1, UINT ENCEND : 1 ) _rege_ _H264_33;
 _regs_ BF_2(UINT _rev0 : 8, UINT GENBITS : 24 ) _rege_ _H264_34;
 _regs_ BF_1(UINT SBUFWPOS : 32 ) _rege_ _H264_35;
 _regs_ BF_9(UINT _rev0 : 24, UINT SERRMASK : 1 ,UINT EERRMASK : 1 ,UINT INTRMASK3 : 1 ,UINT INTRMASK2 : 1 ,UINT _rev1 : 1, UINT INTRMASK1 : 1 ,UINT _rev2 : 1, UINT INTRMASK0 : 1 ) _rege_ _H264_36;
@@ -779,6 +577,8 @@ _regs_ BF_3(UINT _rev0 : 25, UINT ROI_EN_2 : 1 ,UINT ROI_Q_2 : 6 ) _rege_ _H264_
 _regs_ BF_4(UINT ROI_XS_2 : 8 ,UINT ROI_XE_2 : 8 ,UINT ROI_YS_2 : 8 ,UINT ROI_YE_2 : 8 ) _rege_ _H264_69;
 _regs_ BF_3(UINT _rev0 : 25, UINT ROI_EN_3 : 1 ,UINT ROI_Q_3 : 6 ) _rege_ _H264_70;
 _regs_ BF_4(UINT ROI_XS_3 : 8 ,UINT ROI_XE_3 : 8 ,UINT ROI_YS_3 : 8 ,UINT ROI_YE_3 : 8 ) _rege_ _H264_71;
+_regs_ BF_7(UINT DVADR : 16 ,UINT _rev0 : 6, UINT DVIDX : 2 ,UINT _rev1 : 1, UINT DVNUM : 3 ,UINT _rev2 : 3, UINT DVSLCEN : 1 ) _rege_ _H264_72;
+_regs_ BF_4(UINT _rev0 : 3, UINT ORGH : 13 ,UINT _rev1 : 4, UINT ORGV : 12 ) _rege_ _H264_73;
 _regs_ BF_1(UINT MEMYBGN : 32 ) _rege_ _H264_80;
 _regs_ BF_1(UINT MEMYEND : 32 ) _rege_ _H264_81;
 _regs_ BF_1(UINT MEMCBGN : 32 ) _rege_ _H264_82;
@@ -787,6 +587,36 @@ _regs_ BF_4(UINT _rev0 : 4, UINT MIHSIZE : 12 ,UINT _rev1 : 4, UINT MIVSIZE : 12
 _regs_ BF_3(UINT _rev0 : 29, UINT MCABACIDC : 2 ,UINT MCABACEN : 1 ) _rege_ _H264_97;
 _regs_ BF_2(UINT _rev0 : 26, UINT MQSCALE : 6 ) _rege_ _H264_98;
 _regs_ BF_2(UINT _rev0 : 31, UINT MPFRAME : 1 ) _rege_ _H264_99;
+_regs_ BF_2(UINT _rev0 : 31, UINT DECMODE : 1 ) _rege_ _H264_102;
+_regs_ BF_5(UINT _rev0 : 14, UINT SHDR_IDX : 3 ,UINT SHDR_IDC : 8 ,UINT SHDR_NUT : 5 ,UINT SHDR_STYPE : 2 ) _rege_ _H264_103;
+_regs_ BF_3(UINT _rev0 : 2, UINT SHDR_FMIS : 14 ,UINT SHDR_FNUM : 16 ) _rege_ _H264_104;
+_regs_ BF_10(UINT _rev0 : 14, UINT SHDR_FPF : 1 ,UINT SHDR_BFF : 1 ,UINT SHDR_MBAFF : 1 ,UINT SHDR_CIDC : 2 ,UINT SHDR_CF : 1 ,UINT SHDR_DSMPF : 1 ,UINT SHDR_NRIAOF : 1 ,UINT SHDR_NRIL0AM1 : 5 ,UINT SHDR_NRIL1AM1 : 5 ) _rege_ _H264_105;
+_regs_ BF_9(UINT _rev0 : 7, UINT SHDR_DDFI : 2 ,UINT SHDR_SACOD : 4 ,UINT SHDR_SBOD : 4 ,UINT SHDR_CIPF : 1 ,UINT SHDR_T8X8MF : 1 ,UINT SHDR_D8X8IF : 1 ,UINT SHDR_QSCALE : 6 ,UINT SHDR_CQIO : 6 ) _rege_ _H264_106;
+_regs_ BF_3(UINT _rev0 : 7, UINT FLUSHOP_EXTRA : 1 ,UINT FLUSHOP_LIMIT : 24 ) _rege_ _H264_107;
+_regs_ BF_2(UINT _rev0 : 31, UINT DECSTOP : 1 ) _rege_ _H264_108;
+_regs_ BF_1(UINT SBUFRPTR : 32 ) _rege_ _H264_109;
+_regs_ BF_3(UINT _rev0 : 16, UINT MBPOS_Y : 8 ,UINT MBPOS_X : 8 ) _rege_ _H264_110;
+_regs_ BF_5(UINT _rev0 : 28, UINT SM_CLR : 1 ,UINT SM_RST : 1 ,UINT SM_FLUSH : 1 ,UINT SM_CMD_STATUS : 1 ) _rege_ _H264_112;
+_regs_ BF_5(UINT SMRQWAIT : 24 ,UINT _rev0 : 3, UINT SMINTRMASK : 1 ,UINT SMBUFTYPE : 1 ,UINT SMSLCNUM : 3 ) _rege_ _H264_113;
+_regs_ BF_1(UINT MRBS : 32 ) _rege_ _H264_114;
+_regs_ BF_1(UINT MRGE : 32 ) _rege_ _H264_115;
+_regs_ BF_1(UINT S0ADR : 32 ) _rege_ _H264_116;
+_regs_ BF_1(UINT S1ADR : 32 ) _rege_ _H264_117;
+_regs_ BF_1(UINT S2ADR : 32 ) _rege_ _H264_118;
+_regs_ BF_1(UINT S3ADR : 32 ) _rege_ _H264_119;
+_regs_ BF_1(UINT S0SIZE : 32 ) _rege_ _H264_120;
+_regs_ BF_1(UINT S1SIZE : 32 ) _rege_ _H264_121;
+_regs_ BF_1(UINT S2SIZE : 32 ) _rege_ _H264_122;
+_regs_ BF_1(UINT S3SIZE : 32 ) _rege_ _H264_123;
+_regs_ BF_1(UINT SWADR : 32 ) _rege_ _H264_124;
+_regs_ BF_1(UINT SMSIZE : 32 ) _rege_ _H264_125;
+_regs_ BF_1(UINT NEXT32BIT : 32 ) _rege_ _H264_128;
+_regs_ BF_1(UINT GET_N_BITS : 32 ) _rege_ _H264_129;
+_regs_ BF_1(UINT UE : 32 ) _rege_ _H264_192;
+_regs_ BF_1(UINT SE : 32 ) _rege_ _H264_193;
+_regs_ BF_1(UINT BA : 32 ) _rege_ _H264_194;
+_regs_ BF_2(UINT _rev0 : 29, UINT SFTPTR : 3 ) _rege_ _H264_195;
+_regs_ BF_2(UINT _rev0 : 31, UINT STRMWAIT : 1 ) _rege_ _H264_196;
 _regs_ BF_1(UINT SRC : 32 ) _rege_ _AES_0;
 _regs_ BF_1(UINT DST : 32 ) _rege_ _AES_1;
 _regs_ BF_1(UINT LEN : 32 ) _rege_ _AES_2;
@@ -895,7 +725,7 @@ _regs_ BF_1(UINT CMD_RESP_TLMT : 32 ) _rege_ _SDIO0_4;
 _regs_ BF_1(UINT DAT_ADR : 32 ) _rege_ _SDIO0_5;
 _regs_ BF_3(UINT _rev0 : 4, UINT DAT_BLKBYTE : 12 ,UINT DAT_BLKNUM : 16 ) _rege_ _SDIO0_6;
 _regs_ BF_1(UINT DAT_BLKADR : 32 ) _rege_ _SDIO0_7;
-_regs_ BF_7(UINT _rev0 : 26, UINT DAT_FAIL : 1 ,UINT DAT_IRQ : 1 ,UINT DAT_IRQ_CLR : 1 ,UINT DAT_IRQ_EN : 1 ,UINT DAT_WE : 1 ,UINT DAT_EN : 1 ) _rege_ _SDIO0_8;
+_regs_ BF_13(UINT DAT_FAIL : 1 ,UINT _rev0 : 20, UINT IO_IRQ : 1 ,UINT IO_IRQ_CLR : 1 ,UINT IO_IRQ_EN : 1 ,UINT CMD_IRQ : 1 ,UINT CMD_IRQ_CLR : 1 ,UINT CMD_IRQ_EN : 1 ,UINT DAT_IRQ : 1 ,UINT DAT_IRQ_CLR : 1 ,UINT DAT_IRQ_EN : 1 ,UINT DAT_WE : 1 ,UINT DAT_EN : 1 ) _rege_ _SDIO0_8;
 _regs_ BF_4(UINT _rev0 : 18, UINT DAT_STOP_CMD : 6 ,UINT _rev1 : 2, UINT DAT_IORW_CMD : 6 ) _rege_ _SDIO0_9;
 _regs_ BF_8(UINT _rev0 : 2, UINT DAT_WRCMD_S : 6 ,UINT _rev1 : 2, UINT DAT_WRCMD_M : 6 ,UINT _rev2 : 2, UINT DAT_RDCMD_S : 6 ,UINT _rev3 : 2, UINT DAT_RDCMD_M : 6 ) _rege_ _SDIO0_10;
 _regs_ BF_5(UINT _rev0 : 28, UINT BITMODE : 1 ,UINT IOMODE : 1 ,UINT MODE : 1 ,UINT EN : 1 ) _rege_ _SDIO1_0;
@@ -906,7 +736,7 @@ _regs_ BF_1(UINT CMD_RESP_TLMT : 32 ) _rege_ _SDIO1_4;
 _regs_ BF_1(UINT DAT_ADR : 32 ) _rege_ _SDIO1_5;
 _regs_ BF_3(UINT _rev0 : 4, UINT DAT_BLKBYTE : 12 ,UINT DAT_BLKNUM : 16 ) _rege_ _SDIO1_6;
 _regs_ BF_1(UINT DAT_BLKADR : 32 ) _rege_ _SDIO1_7;
-_regs_ BF_7(UINT _rev0 : 26, UINT DAT_FAIL : 1 ,UINT DAT_IRQ : 1 ,UINT DAT_IRQ_CLR : 1 ,UINT DAT_IRQ_EN : 1 ,UINT DAT_WE : 1 ,UINT DAT_EN : 1 ) _rege_ _SDIO1_8;
+_regs_ BF_13(UINT DAT_FAIL : 1 ,UINT _rev0 : 20, UINT IO_IRQ : 1 ,UINT IO_IRQ_CLR : 1 ,UINT IO_IRQ_EN : 1 ,UINT CMD_IRQ : 1 ,UINT CMD_IRQ_CLR : 1 ,UINT CMD_IRQ_EN : 1 ,UINT DAT_IRQ : 1 ,UINT DAT_IRQ_CLR : 1 ,UINT DAT_IRQ_EN : 1 ,UINT DAT_WE : 1 ,UINT DAT_EN : 1 ) _rege_ _SDIO1_8;
 _regs_ BF_4(UINT _rev0 : 18, UINT DAT_STOP_CMD : 6 ,UINT _rev1 : 2, UINT DAT_IORW_CMD : 6 ) _rege_ _SDIO1_9;
 _regs_ BF_8(UINT _rev0 : 2, UINT DAT_WRCMD_S : 6 ,UINT _rev1 : 2, UINT DAT_WRCMD_M : 6 ,UINT _rev2 : 2, UINT DAT_RDCMD_S : 6 ,UINT _rev3 : 2, UINT DAT_RDCMD_M : 6 ) _rege_ _SDIO1_10;
 _regs_ BF_32(UINT ISP : 1 ,UINT ISP30 : 1 ,UINT ISP29 : 1 ,UINT ISP28 : 1 ,UINT ISP27 : 1 ,UINT ISP26 : 1 ,UINT ISP25 : 1 ,UINT ISP24 : 1 ,UINT ISP23 : 1 ,UINT ISP22 : 1 ,UINT ISP21 : 1 ,UINT ISP20 : 1 ,UINT ISP19 : 1 ,UINT ISP18 : 1 ,UINT ISP17 : 1 ,UINT ISP16 : 1 ,UINT ISP15 : 1 ,UINT ISP14 : 1 ,UINT ISP13 : 1 ,UINT ISP12 : 1 ,UINT ISP11 : 1 ,UINT ISP10 : 1 ,UINT ISP9 : 1 ,UINT ISP8 : 1 ,UINT ISP7 : 1 ,UINT ISP6 : 1 ,UINT ISP5 : 1 ,UINT ISP4 : 1 ,UINT ISP3 : 1 ,UINT ISP2 : 1 ,UINT ISP1 : 1 ,UINT ISP0 : 1 ) _rege_ _IRQ_0;
@@ -922,6 +752,34 @@ _regs_ BF_26(UINT GPIO_G1 : 1 ,UINT _rev0 : 7, UINT GPIO47 : 1 ,UINT GPIO46 : 1 
 _regs_ BF_26(UINT GPIO_G0 : 1 ,UINT _rev0 : 7, UINT GPIO23 : 1 ,UINT GPIO22 : 1 ,UINT GPIO21 : 1 ,UINT GPIO20 : 1 ,UINT GPIO19 : 1 ,UINT GPIO18 : 1 ,UINT GPIO17 : 1 ,UINT GPIO16 : 1 ,UINT GPIO15 : 1 ,UINT GPIO14 : 1 ,UINT GPIO13 : 1 ,UINT GPIO12 : 1 ,UINT GPIO11 : 1 ,UINT GPIO10 : 1 ,UINT GPIO9 : 1 ,UINT GPIO8 : 1 ,UINT GPIO7 : 1 ,UINT GPIO6 : 1 ,UINT GPIO5 : 1 ,UINT GPIO4 : 1 ,UINT GPIO3 : 1 ,UINT GPIO2 : 1 ,UINT GPIO1 : 1 ,UINT GPIO0 : 1 ) _rege_ _IRQ_10;
 _regs_ BF_18(UINT TIMER_G1 : 1 ,UINT _rev0 : 15, UINT TIMER39 : 1 ,UINT TIMER38 : 1 ,UINT TIMER37 : 1 ,UINT TIMER36 : 1 ,UINT TIMER35 : 1 ,UINT TIMER34 : 1 ,UINT TIMER33 : 1 ,UINT TIMER32 : 1 ,UINT TIMER31 : 1 ,UINT TIMER30 : 1 ,UINT TIMER29 : 1 ,UINT TIMER28 : 1 ,UINT TIMER27 : 1 ,UINT TIMER26 : 1 ,UINT TIMER25 : 1 ,UINT TIMER24 : 1 ) _rege_ _IRQ_11;
 _regs_ BF_26(UINT TIMER_G0 : 1 ,UINT _rev0 : 7, UINT TIMER23 : 1 ,UINT TIMER22 : 1 ,UINT TIMER21 : 1 ,UINT TIMER20 : 1 ,UINT TIMER19 : 1 ,UINT TIMER18 : 1 ,UINT TIMER17 : 1 ,UINT TIMER16 : 1 ,UINT TIMER15 : 1 ,UINT TIMER14 : 1 ,UINT TIMER13 : 1 ,UINT TIMER12 : 1 ,UINT TIMER11 : 1 ,UINT TIMER10 : 1 ,UINT TIMER9 : 1 ,UINT TIMER8 : 1 ,UINT TIMER7 : 1 ,UINT TIMER6 : 1 ,UINT TIMER5 : 1 ,UINT TIMER4 : 1 ,UINT TIMER3 : 1 ,UINT TIMER2 : 1 ,UINT TIMER1 : 1 ,UINT TIMER0 : 1 ) _rege_ _IRQ_12;
+_regs_ BF_4(UINT CLK_LMT : 16 ,UINT _rev0 : 14, UINT CKEN : 1 ,UINT EN : 1 ) _rege_ _ADC_0;
+_regs_ BF_5(UINT CH0_EN : 1 ,UINT CH0_MAG : 1 ,UINT CH0_MUL : 3 ,UINT _rev0 : 11, UINT CH0_DAT : 16 ) _rege_ _ADC_1;
+_regs_ BF_5(UINT CH1_EN : 1 ,UINT CH1_MAG : 1 ,UINT CH1_MUL : 3 ,UINT _rev0 : 11, UINT CH1_DAT : 16 ) _rege_ _ADC_2;
+_regs_ BF_5(UINT CH2_EN : 1 ,UINT CH2_MAG : 1 ,UINT CH2_MUL : 3 ,UINT _rev0 : 11, UINT CH2_DAT : 16 ) _rege_ _ADC_3;
+_regs_ BF_5(UINT CH3_EN : 1 ,UINT CH3_MAG : 1 ,UINT CH3_MUL : 3 ,UINT _rev0 : 11, UINT CH3_DAT : 16 ) _rege_ _ADC_4;
+_regs_ BF_5(UINT CH4_EN : 1 ,UINT CH4_MAG : 1 ,UINT CH4_MUL : 3 ,UINT _rev0 : 11, UINT CH4_DAT : 16 ) _rege_ _ADC_5;
+_regs_ BF_5(UINT CH5_EN : 1 ,UINT CH5_MAG : 1 ,UINT CH5_MUL : 3 ,UINT _rev0 : 11, UINT CH5_DAT : 16 ) _rege_ _ADC_6;
+_regs_ BF_5(UINT CH6_EN : 1 ,UINT CH6_MAG : 1 ,UINT CH6_MUL : 3 ,UINT _rev0 : 11, UINT CH6_DAT : 16 ) _rege_ _ADC_7;
+_regs_ BF_5(UINT CH7_EN : 1 ,UINT CH7_MAG : 1 ,UINT CH7_MUL : 3 ,UINT _rev0 : 11, UINT CH7_DAT : 16 ) _rege_ _ADC_8;
+
+_regs_ BF_8(UINT GPIO_IN : 1 ,UINT GPIO_OUT : 1 ,UINT GPIO_OEN : 1 ,UINT GPIO_IRQ_DIR : 1 ,UINT GPIO_IRQ_EN : 1 ,UINT GPIO_IRQ_CLR : 1 ,UINT GPIO_IRQ : 1 , UINT _rev0 : 25 ) _rege_ _GPIO_PIN;
+_regs_ BF_16(UINT CLK_DIV : 12 ,UINT _rev0 : 6, UINT TX_TYPE : 1 ,UINT STOP_BIT : 1 ,UINT PARITY_EN : 1 ,UINT PARITY_TYPE : 1 ,UINT TX_IRQ : 1 ,UINT TX_IRQ_EN : 1 ,UINT TX_IRQ_CLR : 1 ,UINT TX_EMPTY : 1 ,UINT TX_FULL : 1 ,UINT RX_IRQ : 1 ,UINT RX_IRQ_EN : 1 ,UINT RX_IRQ_CLR : 1 ,UINT RX_EMPTY : 1 ,UINT RX_FULL : 1 ) _rege_ _UART_REG0;
+_regs_ BF_2(UINT _rev0 : 24, UINT RX_DAT : 8 ) _rege_ _UART_REG1;
+_regs_ BF_2(UINT _rev0 : 24, UINT TX_DAT : 8 ) _rege_ _UART_REG2;
+_regs_ BF_2(UINT _rev0 : 12, UINT RX_LMT : 20 ) _rege_ _UART_REG3;
+_regs_ BF_9(UINT RX_DAT : 8 ,UINT TX_DAT : 8 ,UINT _rev0 : 10, UINT ACT : 1 ,UINT MODE : 1 ,UINT BIT_MODE : 1 ,UINT IRQ : 1 ,UINT IRQ_EN : 1 ,UINT IRQ_CLR : 1 ) _rege_ _I2C_REG0;
+_regs_ BF_2(UINT CLK_DIV : 16 , UINT _rev0 : 16 ) _rege_ _I2C_REG1;
+_regs_ BF_7(UINT _rev0 : 26, UINT MST_COL : 1 ,UINT MST_ACK : 1 ,UINT MST_REPEAT : 1 ,UINT MST_LAST : 1 ,UINT MST_RW : 1 ,UINT MST_GO : 1 ) _rege_ _I2C_REG2;
+_regs_ BF_8(UINT _rev0 : 19, UINT I2C_SDA : 1 ,UINT I2C_SCL : 1 ,UINT SLV_ACK_IN : 1 ,UINT SLV_GO : 1 ,UINT SLV_RW : 1 ,UINT SLV_ACK_OUT : 1 ,UINT SLV_ADR : 7 ) _rege_ _I2C_REG3;
+_regs_ BF_9(UINT _rev0 : 4, UINT JOB_PTR : 8 ,UINT DONE_PTR : 6 ,UINT IRQ : 1 ,UINT IRQ_EN : 1 ,UINT IRQ_CLR : 1 ,UINT VALUE : 8 ,UINT MODE : 2 ,UINT GO : 1 ) _rege_ _DMA_REG0;
+_regs_ BF_1(UINT SRC : 32 ) _rege_ _DMA_REG1;
+_regs_ BF_1(UINT DST : 32 ) _rege_ _DMA_REG2;
+_regs_ BF_1(UINT LEN : 32 ) _rege_ _DMA_REG3;
+_regs_ BF_10(UINT EN : 1 ,UINT PWM_EN : 1 ,UINT CK_EN : 1 ,UINT IRQ_EN : 1 ,UINT CNT_CLR : 1 ,UINT IRQ_CLR : 1 ,UINT IRQ : 1 ,UINT _rev0 : 1, UINT DIV : 8 ,UINT LMT : 16 ) _rege_ _TIMER_REG0;
+_regs_ BF_2(UINT TRIG : 16 ,UINT CNT : 16 ) _rege_ _TIMER_REG1;
+_regs_ BF_1(UINT RX_DAT : 32 ) _rege_ _SPI_REG0;
+_regs_ BF_1(UINT TX_DAT : 32 ) _rege_ _SPI_REG1;
+_regs_ BF_15(UINT EN : 1 ,UINT _rev0 : 7, UINT CLK_DIV : 8 ,UINT _rev1 : 2, UINT BIT_MODE : 1 ,UINT CS_OEN : 1 ,UINT CS_OUT : 1 ,UINT IRQ_EN : 1 ,UINT IRQ_CLR : 1 ,UINT IRQ : 1 ,UINT ONE_BITMODE : 1 ,UINT CLK_MODE : 2 ,UINT WS : 2 ,UINT RW : 2 ,UINT GO : 1 ) _rege_ _SPI_REG2;
 
 #define DDR_MR_ADR _bm(_DDR_0,REG_BASE_DDR, (0<<3),MR_ADR) // 8 Bit, 8'h0, RW
 #define DDR_MR_WRDAT _bm(_DDR_0,REG_BASE_DDR, (0<<3),MR_WRDAT) // 8 Bit, 8'h0, RW
@@ -1942,17 +1800,17 @@ _regs_ BF_26(UINT TIMER_G0 : 1 ,UINT _rev0 : 7, UINT TIMER23 : 1 ,UINT TIMER22 :
 #define DMA0_SRC _bm(_DMA0_1,REG_BASE_DMA0, (1<<3),SRC) // 32 Bit, 0, RW
 #define DMA0_DST _bm(_DMA0_2,REG_BASE_DMA0, (2<<3),DST) // 32 Bit, 0, RW
 #define DMA0_LEN _bm(_DMA0_3,REG_BASE_DMA0, (3<<3),LEN) // 32 Bit, 0, RW
-#define DMA1_JOB_PTR _bm(_DMA1_4,REG_BASE_DMA1, (0<<3),JOB_PTR) // 8 Bit, 0, RW
-#define DMA1_DONE_PTR _bm(_DMA1_4,REG_BASE_DMA1, (0<<3),DONE_PTR) // 6 Bit, 0, R
-#define DMA1_IRQ _bm(_DMA1_4,REG_BASE_DMA1, (0<<3),IRQ) // 1 Bit, 0, R
-#define DMA1_IRQ_EN _bm(_DMA1_4,REG_BASE_DMA1, (0<<3),IRQ_EN) // 1 Bit, 0, RW
-#define DMA1_IRQ_CLR _bm(_DMA1_4,REG_BASE_DMA1, (0<<3),IRQ_CLR) // 1 Bit, 0, W
-#define DMA1_VALUE _bm(_DMA1_4,REG_BASE_DMA1, (0<<3),VALUE) // 8 Bit, 0, RW
-#define DMA1_MODE _bm(_DMA1_4,REG_BASE_DMA1, (0<<3),MODE) // 2 Bit, 0, RW
-#define DMA1_GO _bm(_DMA1_4,REG_BASE_DMA1, (0<<3),GO) // 1 Bit, 0, RW
-#define DMA1_SRC _bm(_DMA1_5,REG_BASE_DMA1, (1<<3),SRC) // 32 Bit, 0, RW
-#define DMA1_DST _bm(_DMA1_6,REG_BASE_DMA1, (2<<3),DST) // 32 Bit, 0, RW
-#define DMA1_LEN _bm(_DMA1_7,REG_BASE_DMA1, (3<<3),LEN) // 32 Bit, 0, RW
+#define DMA1_JOB_PTR _bm(_DMA1_0,REG_BASE_DMA1, (0<<3),JOB_PTR) // 8 Bit, 0, RW
+#define DMA1_DONE_PTR _bm(_DMA1_0,REG_BASE_DMA1, (0<<3),DONE_PTR) // 6 Bit, 0, R
+#define DMA1_IRQ _bm(_DMA1_0,REG_BASE_DMA1, (0<<3),IRQ) // 1 Bit, 0, R
+#define DMA1_IRQ_EN _bm(_DMA1_0,REG_BASE_DMA1, (0<<3),IRQ_EN) // 1 Bit, 0, RW
+#define DMA1_IRQ_CLR _bm(_DMA1_0,REG_BASE_DMA1, (0<<3),IRQ_CLR) // 1 Bit, 0, W
+#define DMA1_VALUE _bm(_DMA1_0,REG_BASE_DMA1, (0<<3),VALUE) // 8 Bit, 0, RW
+#define DMA1_MODE _bm(_DMA1_0,REG_BASE_DMA1, (0<<3),MODE) // 2 Bit, 0, RW
+#define DMA1_GO _bm(_DMA1_0,REG_BASE_DMA1, (0<<3),GO) // 1 Bit, 0, RW
+#define DMA1_SRC _bm(_DMA1_1,REG_BASE_DMA1, (1<<3),SRC) // 32 Bit, 0, RW
+#define DMA1_DST _bm(_DMA1_2,REG_BASE_DMA1, (2<<3),DST) // 32 Bit, 0, RW
+#define DMA1_LEN _bm(_DMA1_3,REG_BASE_DMA1, (3<<3),LEN) // 32 Bit, 0, RW
 #define CHKSUM_IRQ _bm(_CHKSUM_0,REG_BASE_CHKSUM, (0<<3),IRQ) // 1 Bit, 0, R
 #define CHKSUM_IRQ_EN _bm(_CHKSUM_0,REG_BASE_CHKSUM, (0<<3),IRQ_EN) // 1 Bit, 0, RW
 #define CHKSUM_IRQ_CLR _bm(_CHKSUM_0,REG_BASE_CHKSUM, (0<<3),IRQ_CLR) // 1 Bit, 0, W
@@ -1960,24 +1818,30 @@ _regs_ BF_26(UINT TIMER_G0 : 1 ,UINT _rev0 : 7, UINT TIMER23 : 1 ,UINT TIMER22 :
 #define CHKSUM_ADR _bm(_CHKSUM_1,REG_BASE_CHKSUM, (1<<3),ADR) // 32 Bit, 0, RW
 #define CHKSUM_LEN _bm(_CHKSUM_2,REG_BASE_CHKSUM, (2<<3),LEN) // 32 Bit, 0, RW
 #define CHKSUM_DAT _bm(_CHKSUM_3,REG_BASE_CHKSUM, (3<<3),DAT) // 16 Bit, 0, R
-#define I2S_IRQ _bm(_I2S_0,REG_BASE_I2S, (0<<3),IRQ) // 1 Bit, 0, R
-#define I2S_IRQ_EN _bm(_I2S_0,REG_BASE_I2S, (0<<3),IRQ_EN) // 1 Bit, 0, RW
-#define I2S_IRQ_CLR _bm(_I2S_0,REG_BASE_I2S, (0<<3),IRQ_CLR) // 1 Bit, 0, W
-#define I2S_BYTE _bm(_I2S_0,REG_BASE_I2S, (0<<3),BYTE) // 2 Bit, 0, RW
-#define I2S_TXBYTE _bm(_I2S_0,REG_BASE_I2S, (0<<3),TXBYTE) // 2 Bit, 0, RW
-#define I2S_RXBYTE _bm(_I2S_0,REG_BASE_I2S, (0<<3),RXBYTE) // 2 Bit, 0, RW
-#define I2S_TXDW _bm(_I2S_0,REG_BASE_I2S, (0<<3),TXDW) // 2 Bit, 0, RW
-#define I2S_RXDW _bm(_I2S_0,REG_BASE_I2S, (0<<3),RXDW) // 2 Bit, 0, RW
-#define I2S_TXCODEC _bm(_I2S_0,REG_BASE_I2S, (0<<3),TXCODEC) // 2 Bit, 0, RW
-#define I2S_RXCODEC _bm(_I2S_0,REG_BASE_I2S, (0<<3),RXCODEC) // 2 Bit, 0, RW
-#define I2S_TXMODE _bm(_I2S_0,REG_BASE_I2S, (0<<3),TXMODE) // 2 Bit, 0, RW
-#define I2S_RXMODE _bm(_I2S_0,REG_BASE_I2S, (0<<3),RXMODE) // 2 Bit, 0, RW
-#define I2S_TXEN _bm(_I2S_0,REG_BASE_I2S, (0<<3),TXEN) // 1 Bit, 0, RW
-#define I2S_RXEN _bm(_I2S_0,REG_BASE_I2S, (0<<3),RXEN) // 1 Bit, 0, RW
-#define I2S_MODE _bm(_I2S_0,REG_BASE_I2S, (0<<3),MODE) // 1 Bit, 0, RW
-#define I2S_ADRW _bm(_I2S_1,REG_BASE_I2S, (1<<3),ADRW) // 32 Bit, 0, RW
-#define I2S_ADRR _bm(_I2S_2,REG_BASE_I2S, (2<<3),ADRR) // 32 Bit, 0, RW
-#define I2S_SCKCNT _bm(_I2S_3,REG_BASE_I2S, (3<<3),SCKCNT) // 16 Bit, 0, RW
+#define I2S_TXEDN _bm(_I2S_0,REG_BASE_I2S, (0<<3),TXEDN) // 1 Bit, 0, R/W
+#define I2S_RXEDN _bm(_I2S_0,REG_BASE_I2S, (0<<3),RXEDN) // 1 Bit, 0, R/W
+#define I2S_IRQ _bm(_I2S_0,REG_BASE_I2S, (0<<3),IRQ) // 2 Bit, 0, R
+#define I2S_TX_IRQ_CLR _bm(_I2S_0,REG_BASE_I2S, (0<<3),TX_IRQ_CLR) // 1 Bit, 0, R/W
+#define I2S_RX_IRQ_CLR _bm(_I2S_0,REG_BASE_I2S, (0<<3),RX_IRQ_CLR) // 1 Bit, 0, R/W
+#define I2S_TX_IRQ_EN _bm(_I2S_0,REG_BASE_I2S, (0<<3),TX_IRQ_EN) // 1 Bit, 0, R/W
+#define I2S_RX_IRQ_EN _bm(_I2S_0,REG_BASE_I2S, (0<<3),RX_IRQ_EN) // 1 Bit, 0, R/W
+#define I2S_BYTE _bm(_I2S_0,REG_BASE_I2S, (0<<3),BYTE) // 2 Bit, 0, R/W
+#define I2S_TXBYTE _bm(_I2S_0,REG_BASE_I2S, (0<<3),TXBYTE) // 2 Bit, 0, R/W
+#define I2S_RXBYTE _bm(_I2S_0,REG_BASE_I2S, (0<<3),RXBYTE) // 2 Bit, 0, R/W
+#define I2S_TXDW _bm(_I2S_0,REG_BASE_I2S, (0<<3),TXDW) // 2 Bit, 0, R/W
+#define I2S_RXDW _bm(_I2S_0,REG_BASE_I2S, (0<<3),RXDW) // 2 Bit, 0, R/W
+#define i2S_TXCODEC _bm(_i2S_0,REG_BASE_i2S, (0<<3),TXCODEC) // 2 Bit, 0, R/W
+#define I2S_RXCODEC _bm(_I2S_0,REG_BASE_I2S, (0<<3),RXCODEC) // 2 Bit, 0, R/W
+#define I2S_TXMODE _bm(_I2S_0,REG_BASE_I2S, (0<<3),TXMODE) // 2 Bit, 0, R/W
+#define I2S_RXMODE _bm(_I2S_0,REG_BASE_I2S, (0<<3),RXMODE) // 2 Bit, 0, R/W
+#define I2S_TXEN _bm(_I2S_0,REG_BASE_I2S, (0<<3),TXEN) // 1 Bit, 0, R/W
+#define I2S_RXEN _bm(_I2S_0,REG_BASE_I2S, (0<<3),RXEN) // 1 Bit, 0, R/W
+#define I2S_MODE _bm(_I2S_0,REG_BASE_I2S, (0<<3),MODE) // 1 Bit, 0, R/W
+#define I2S_ADRW _bm(_I2S_1,REG_BASE_I2S, (1<<3),ADRW) // 32 Bit, 0, R/W
+#define I2S_ADRR _bm(_I2S_2,REG_BASE_I2S, (2<<3),ADRR) // 32 Bit, 0, R/W
+#define I2S_SCKCNT _bm(_I2S_3,REG_BASE_I2S, (3<<3),SCKCNT) // 16 Bit, 0, R/W
+#define I2S_RX_ADDR _bm(_I2S_4,REG_BASE_I2S, (4<<3),RX_ADDR) // 32 Bit, 0, R
+#define I2S_TX_ADDR _bm(_I2S_5,REG_BASE_I2S, (5<<3),TX_ADDR) // 32 Bit, 0, R
 #define TIMER0_EN _bm(_TIMER0_0,REG_BASE_TIMER0, (0<<3),EN) // 1 Bit, 1'h0, RW
 #define TIMER0_PWM_EN _bm(_TIMER0_0,REG_BASE_TIMER0, (0<<3),PWM_EN) // 1 Bit, 1'h0, RW
 #define TIMER0_CK_EN _bm(_TIMER0_0,REG_BASE_TIMER0, (0<<3),CK_EN) // 1 Bit, 1'h0, RW
@@ -2551,11 +2415,11 @@ _regs_ BF_26(UINT TIMER_G0 : 1 ,UINT _rev0 : 7, UINT TIMER23 : 1 ,UINT TIMER22 :
 #define SYS_WDT_LMT _bm(_SYS_2,REG_BASE_SYS, (2<<3),WDT_LMT) // 32 Bit, 32'hFFFFFFFF, RW
 #define SYS_WDT_EN _bm(_SYS_3,REG_BASE_SYS, (3<<3),WDT_EN) // 1 Bit, 1'h0, RW
 #define SYS_WDT_CLR _bm(_SYS_3,REG_BASE_SYS, (3<<3),WDT_CLR) // 1 Bit, 1'h0, W
-#define SYS_MARK0 _bm(_SYS_4,REG_BASE_SYS, (4<<3),MARK0) // 32 Bit, 32'h4559454E, R
-#define SYS_MARK1 _bm(_SYS_5,REG_BASE_SYS, (5<<3),MARK1) // 32 Bit, 32'h49585F45, R
-#define SYS_MARK2 _bm(_SYS_6,REG_BASE_SYS, (6<<3),MARK2) // 32 Bit, 32'h4E363735, R
-#define SYS_MARK3 _bm(_SYS_7,REG_BASE_SYS, (7<<3),MARK3) // 32 Bit, 32'h5F524556, R
-#define SYS_MARK4 _bm(_SYS_8,REG_BASE_SYS, (8<<3),MARK4) // 32 Bit, 32'h40000000, R
+#define SYS_MARK0 _bm(_SYS_4,REG_BASE_SYS, (4<<3),MARK0) // 32 Bit, 32'h4E455945, R
+#define SYS_MARK1 _bm(_SYS_5,REG_BASE_SYS, (5<<3),MARK1) // 32 Bit, 32'h455F5849, R
+#define SYS_MARK2 _bm(_SYS_6,REG_BASE_SYS, (6<<3),MARK2) // 32 Bit, 32'h3537364E, R
+#define SYS_MARK3 _bm(_SYS_7,REG_BASE_SYS, (7<<3),MARK3) // 32 Bit, 32'h523x505F, R
+#define SYS_MARK4 _bm(_SYS_8,REG_BASE_SYS, (8<<3),MARK4) // 32 Bit, 32'h0000003x, R
 #define SYS_REG0 _bm(_SYS_9,REG_BASE_SYS, (9<<3),REG0) // 32 Bit, 32'h0, RW
 #define SYS_REG1 _bm(_SYS_10,REG_BASE_SYS, (10<<3),REG1) // 32 Bit, 32'h0, RW
 #define SYS_REG2 _bm(_SYS_11,REG_BASE_SYS, (11<<3),REG2) // 32 Bit, 32'h0, RW
@@ -2658,8 +2522,8 @@ _regs_ BF_26(UINT TIMER_G0 : 1 ,UINT _rev0 : 7, UINT TIMER23 : 1 ,UINT TIMER22 :
 #define H264_SLH_PPSID _bm(_H264_10,REG_BASE_H264, (10<<3),SLH_PPSID) // 4 Bit, 4'h0, RW
 #define H264_SPSINSRT _bm(_H264_10,REG_BASE_H264, (10<<3),SPSINSRT) // 1 Bit, 1'h0, RW
 #define H264_PPSINSRT _bm(_H264_10,REG_BASE_H264, (10<<3),PPSINSRT) // 1 Bit, 1'h0, RW
-#define H264_PREPTR _bm(_H264_11,REG_BASE_H264, (11<<3),PREPTR) // 3 Bit, 3'h0, RW
-#define H264_PSTPTR _bm(_H264_12,REG_BASE_H264, (12<<3),PSTPTR) // 3 Bit, 3'h0, RW
+#define H264_PREPTR _bm(_H264_11,REG_BASE_H264, (11<<3),PREPTR) // 4 Bit, 4'h0, RW
+#define H264_PSTPTR _bm(_H264_12,REG_BASE_H264, (12<<3),PSTPTR) // 4 Bit, 4'h0, RW
 #define H264_INTRVC _bm(_H264_16,REG_BASE_H264, (16<<3),INTRVC) // 1 Bit, 1'h0, RW
 #define H264_CURYBUF _bm(_H264_17,REG_BASE_H264, (17<<3),CURYBUF) // 32 Bit, 32'h0, RW
 #define H264_CURCBUF _bm(_H264_18,REG_BASE_H264, (18<<3),CURCBUF) // 32 Bit, 32'h0, RW
@@ -2700,7 +2564,7 @@ _regs_ BF_26(UINT TIMER_G0 : 1 ,UINT _rev0 : 7, UINT TIMER23 : 1 ,UINT TIMER22 :
 #define H264_PPSDTCT _bm(_H264_33,REG_BASE_H264, (33<<3),PPSDTCT) // 1 Bit, 1'h0, R
 #define H264_SEQDTCT _bm(_H264_33,REG_BASE_H264, (33<<3),SEQDTCT) // 1 Bit, 1'h0, R
 #define H264_DECEND _bm(_H264_33,REG_BASE_H264, (33<<3),DECEND) // 1 Bit, 1'h0, RW
-#define H264_SEQDTCT_DECEND _bm(_H264_33,REG_BASE_H264, (33<<3),SEQDTCT_DECEND) // 1 Bit, 1'h0, RW
+#define H264_SBUFFULL _bm(_H264_33,REG_BASE_H264, (33<<3),SBUFFULL) // 1 Bit, 1'h0, RW
 #define H264_VLCEND _bm(_H264_33,REG_BASE_H264, (33<<3),VLCEND) // 1 Bit, 1'h0, RW
 #define H264_FLUSHEND _bm(_H264_33,REG_BASE_H264, (33<<3),FLUSHEND) // 1 Bit, 1'h0, RW
 #define H264_ENCEND _bm(_H264_33,REG_BASE_H264, (33<<3),ENCEND) // 1 Bit, 1'h0, RW
@@ -2745,6 +2609,12 @@ _regs_ BF_26(UINT TIMER_G0 : 1 ,UINT _rev0 : 7, UINT TIMER23 : 1 ,UINT TIMER22 :
 #define H264_ROI_XE_3 _bm(_H264_71,REG_BASE_H264, (71<<3),ROI_XE_3) // 8 Bit, 8'h0, RW
 #define H264_ROI_YS_3 _bm(_H264_71,REG_BASE_H264, (71<<3),ROI_YS_3) // 8 Bit, 8'h0, RW
 #define H264_ROI_YE_3 _bm(_H264_71,REG_BASE_H264, (71<<3),ROI_YE_3) // 8 Bit, 8'h0, RW
+#define H264_DVADR _bm(_H264_72,REG_BASE_H264, (72<<3),DVADR) // 16 Bit, 16'h0, RW
+#define H264_DVIDX _bm(_H264_72,REG_BASE_H264, (72<<3),DVIDX) // 2 Bit, 2'h0, RW
+#define H264_DVNUM _bm(_H264_72,REG_BASE_H264, (72<<3),DVNUM) // 3 Bit, 3'h0, RW
+#define H264_DVSLCEN _bm(_H264_72,REG_BASE_H264, (72<<3),DVSLCEN) // 1 Bit, 1'h0, RW
+#define H264_ORGH _bm(_H264_73,REG_BASE_H264, (73<<3),ORGH) // 13 Bit, 16'h0, RW
+#define H264_ORGV _bm(_H264_73,REG_BASE_H264, (73<<3),ORGV) // 12 Bit, 16'h0, RW
 #define H264_MEMYBGN _bm(_H264_80,REG_BASE_H264, (80<<3),MEMYBGN) // 32 Bit, 32'h0, RW
 #define H264_MEMYEND _bm(_H264_81,REG_BASE_H264, (81<<3),MEMYEND) // 32 Bit, 32'h0, RW
 #define H264_MEMCBGN _bm(_H264_82,REG_BASE_H264, (82<<3),MEMCBGN) // 32 Bit, 32'h0, RW
@@ -2755,6 +2625,63 @@ _regs_ BF_26(UINT TIMER_G0 : 1 ,UINT _rev0 : 7, UINT TIMER23 : 1 ,UINT TIMER22 :
 #define H264_MCABACEN _bm(_H264_97,REG_BASE_H264, (97<<3),MCABACEN) // 1 Bit, 1'h0, RW
 #define H264_MQSCALE _bm(_H264_98,REG_BASE_H264, (98<<3),MQSCALE) // 6 Bit, 6'h0, RW
 #define H264_MPFRAME _bm(_H264_99,REG_BASE_H264, (99<<3),MPFRAME) // 1 Bit, 1'h0, RW
+#define H264_DECMODE _bm(_H264_102,REG_BASE_H264, (102<<3),DECMODE) // 1 Bit, 1'h0, RW
+#define H264_SHDR_IDX _bm(_H264_103,REG_BASE_H264, (103<<3),SHDR_IDX) // 3 Bit, 3'h0, RW
+#define H264_SHDR_IDC _bm(_H264_103,REG_BASE_H264, (103<<3),SHDR_IDC) // 8 Bit, 8'h0, RW
+#define H264_SHDR_NUT _bm(_H264_103,REG_BASE_H264, (103<<3),SHDR_NUT) // 5 Bit, 5'h0, RW
+#define H264_SHDR_STYPE _bm(_H264_103,REG_BASE_H264, (103<<3),SHDR_STYPE) // 2 Bit, 2'h0, RW
+#define H264_SHDR_FMIS _bm(_H264_104,REG_BASE_H264, (104<<3),SHDR_FMIS) // 14 Bit, 14'h0, RW
+#define H264_SHDR_FNUM _bm(_H264_104,REG_BASE_H264, (104<<3),SHDR_FNUM) // 16 Bit, 16'h0, RW
+#define H264_SHDR_FPF _bm(_H264_105,REG_BASE_H264, (105<<3),SHDR_FPF) // 1 Bit, 1'h0, RW
+#define H264_SHDR_BFF _bm(_H264_105,REG_BASE_H264, (105<<3),SHDR_BFF) // 1 Bit, 1'h0, RW
+#define H264_SHDR_MBAFF _bm(_H264_105,REG_BASE_H264, (105<<3),SHDR_MBAFF) // 1 Bit, 1'h0, RW
+#define H264_SHDR_CIDC _bm(_H264_105,REG_BASE_H264, (105<<3),SHDR_CIDC) // 2 Bit, 2'h0, RW
+#define H264_SHDR_CF _bm(_H264_105,REG_BASE_H264, (105<<3),SHDR_CF) // 1 Bit, 1'h0, RW
+#define H264_SHDR_DSMPF _bm(_H264_105,REG_BASE_H264, (105<<3),SHDR_DSMPF) // 1 Bit, 1'h0, RW
+#define H264_SHDR_NRIAOF _bm(_H264_105,REG_BASE_H264, (105<<3),SHDR_NRIAOF) // 1 Bit, 1'h0, RW
+#define H264_SHDR_NRIL0AM1 _bm(_H264_105,REG_BASE_H264, (105<<3),SHDR_NRIL0AM1) // 5 Bit, 5'h0, RW
+#define H264_SHDR_NRIL1AM1 _bm(_H264_105,REG_BASE_H264, (105<<3),SHDR_NRIL1AM1) // 5 Bit, 5'h0, RW
+#define H264_SHDR_DDFI _bm(_H264_106,REG_BASE_H264, (106<<3),SHDR_DDFI) // 2 Bit, 2'h0, RW
+#define H264_SHDR_SACOD _bm(_H264_106,REG_BASE_H264, (106<<3),SHDR_SACOD) // 4 Bit, 4'h0, RW
+#define H264_SHDR_SBOD _bm(_H264_106,REG_BASE_H264, (106<<3),SHDR_SBOD) // 4 Bit, 4'h0, RW
+#define H264_SHDR_CIPF _bm(_H264_106,REG_BASE_H264, (106<<3),SHDR_CIPF) // 1 Bit, 1'h0, RW
+#define H264_SHDR_T8X8MF _bm(_H264_106,REG_BASE_H264, (106<<3),SHDR_T8X8MF) // 1 Bit, 1'h0, RW
+#define H264_SHDR_D8X8IF _bm(_H264_106,REG_BASE_H264, (106<<3),SHDR_D8X8IF) // 1 Bit, 1'h0, RW
+#define H264_SHDR_QSCALE _bm(_H264_106,REG_BASE_H264, (106<<3),SHDR_QSCALE) // 6 Bit, 6'h0, RW
+#define H264_SHDR_CQIO _bm(_H264_106,REG_BASE_H264, (106<<3),SHDR_CQIO) // 6 Bit, 6'h0, RW
+#define H264_FLUSHOP_EXTRA _bm(_H264_107,REG_BASE_H264, (107<<3),FLUSHOP_EXTRA) // 1 Bit, 1'h0, RW
+#define H264_FLUSHOP_LIMIT _bm(_H264_107,REG_BASE_H264, (107<<3),FLUSHOP_LIMIT) // 24 Bit, 24'h0, RW
+#define H264_DECSTOP _bm(_H264_108,REG_BASE_H264, (108<<3),DECSTOP) // 1 Bit, 1'h0, RW
+#define H264_SBUFRPTR _bm(_H264_109,REG_BASE_H264, (109<<3),SBUFRPTR) // 32 Bit, 32'h0, RW
+#define H264_MBPOS_Y _bm(_H264_110,REG_BASE_H264, (110<<3),MBPOS_Y) // 8 Bit, 8'h0, R
+#define H264_MBPOS_X _bm(_H264_110,REG_BASE_H264, (110<<3),MBPOS_X) // 8 Bit, 8'h0, R
+#define H264_SM_CLR _bm(_H264_112,REG_BASE_H264, (112<<3),SM_CLR) // 1 Bit, 1'h0, W
+#define H264_SM_RST _bm(_H264_112,REG_BASE_H264, (112<<3),SM_RST) // 1 Bit, 1'h0, W
+#define H264_SM_FLUSH _bm(_H264_112,REG_BASE_H264, (112<<3),SM_FLUSH) // 1 Bit, 1'h0, W
+#define H264_SM_CMD_STATUS _bm(_H264_112,REG_BASE_H264, (112<<3),SM_CMD_STATUS) // 1 Bit, 1'h0, RW
+#define H264_SMRQWAIT _bm(_H264_113,REG_BASE_H264, (113<<3),SMRQWAIT) // 24 Bit, 24'h0, RW
+#define H264_SMINTRMASK _bm(_H264_113,REG_BASE_H264, (113<<3),SMINTRMASK) // 1 Bit, 1'h0, RW
+#define H264_SMBUFTYPE _bm(_H264_113,REG_BASE_H264, (113<<3),SMBUFTYPE) // 1 Bit, 1'h0, RW
+#define H264_SMSLCNUM _bm(_H264_113,REG_BASE_H264, (113<<3),SMSLCNUM) // 3 Bit, 3'h0, RW
+#define H264_MRBS _bm(_H264_114,REG_BASE_H264, (114<<3),MRBS) // 32 Bit, 32'h0, RW
+#define H264_MRGE _bm(_H264_115,REG_BASE_H264, (115<<3),MRGE) // 32 Bit, 32'h0, RW
+#define H264_S0ADR _bm(_H264_116,REG_BASE_H264, (116<<3),S0ADR) // 32 Bit, 32'h0, RW
+#define H264_S1ADR _bm(_H264_117,REG_BASE_H264, (117<<3),S1ADR) // 32 Bit, 32'h0, RW
+#define H264_S2ADR _bm(_H264_118,REG_BASE_H264, (118<<3),S2ADR) // 32 Bit, 32'h0, RW
+#define H264_S3ADR _bm(_H264_119,REG_BASE_H264, (119<<3),S3ADR) // 32 Bit, 32'h0, RW
+#define H264_S0SIZE _bm(_H264_120,REG_BASE_H264, (120<<3),S0SIZE) // 32 Bit, 32'h0, RW
+#define H264_S1SIZE _bm(_H264_121,REG_BASE_H264, (121<<3),S1SIZE) // 32 Bit, 32'h0, RW
+#define H264_S2SIZE _bm(_H264_122,REG_BASE_H264, (122<<3),S2SIZE) // 32 Bit, 32'h0, RW
+#define H264_S3SIZE _bm(_H264_123,REG_BASE_H264, (123<<3),S3SIZE) // 32 Bit, 32'h0, RW
+#define H264_SWADR _bm(_H264_124,REG_BASE_H264, (124<<3),SWADR) // 32 Bit, 32'h0, RW
+#define H264_SMSIZE _bm(_H264_125,REG_BASE_H264, (125<<3),SMSIZE) // 32 Bit, 32'h0, RW
+#define H264_NEXT32BIT _bm(_H264_128,REG_BASE_H264, (128<<3),NEXT32BIT) // 32 Bit, 32'h0, R
+#define H264_GET_N_BITS _bm(_H264_129,REG_BASE_H264, (129<<3),GET_N_BITS) // 32 Bit, 32'h0, R
+#define H264_UE _bm(_H264_192,REG_BASE_H264, (192<<3),UE) // 32 Bit, 32'h0, R
+#define H264_SE _bm(_H264_193,REG_BASE_H264, (193<<3),SE) // 32 Bit, 32'h0, R
+#define H264_BA _bm(_H264_194,REG_BASE_H264, (194<<3),BA) // 32 Bit, 32'h0, R
+#define H264_SFTPTR _bm(_H264_195,REG_BASE_H264, (195<<3),SFTPTR) // 3 Bit, 3'h0, R
+#define H264_STRMWAIT _bm(_H264_196,REG_BASE_H264, (196<<3),STRMWAIT) // 1 Bit, 1'h0, R
 #define AES_SRC _bm(_AES_0,REG_BASE_AES, (0<<3),SRC) // 32 Bit, 32'h0, RW
 #define AES_DST _bm(_AES_1,REG_BASE_AES, (1<<3),DST) // 32 Bit, 32'h0, RW
 #define AES_LEN _bm(_AES_2,REG_BASE_AES, (2<<3),LEN) // 32 Bit, 32'h0, RW
@@ -2918,6 +2845,12 @@ _regs_ BF_26(UINT TIMER_G0 : 1 ,UINT _rev0 : 7, UINT TIMER23 : 1 ,UINT TIMER22 :
 #define SDIO0_DAT_BLKNUM _bm(_SDIO0_6,REG_BASE_SDIO0, (6<<3),DAT_BLKNUM) // 16 Bit, 1'h0, RW
 #define SDIO0_DAT_BLKADR _bm(_SDIO0_7,REG_BASE_SDIO0, (7<<3),DAT_BLKADR) // 32 Bit, 1'h0, RW
 #define SDIO0_DAT_FAIL _bm(_SDIO0_8,REG_BASE_SDIO0, (8<<3),DAT_FAIL) // 1 Bit, 1'h0, R
+#define SDIO0_IO_IRQ _bm(_SDIO0_8,REG_BASE_SDIO0, (8<<3),IO_IRQ) // 1 Bit, 1'h0, R
+#define SDIO0_IO_IRQ_CLR _bm(_SDIO0_8,REG_BASE_SDIO0, (8<<3),IO_IRQ_CLR) // 1 Bit, 1'h0, W
+#define SDIO0_IO_IRQ_EN _bm(_SDIO0_8,REG_BASE_SDIO0, (8<<3),IO_IRQ_EN) // 1 Bit, 1'h0, RW
+#define SDIO0_CMD_IRQ _bm(_SDIO0_8,REG_BASE_SDIO0, (8<<3),CMD_IRQ) // 1 Bit, 1'h0, R
+#define SDIO0_CMD_IRQ_CLR _bm(_SDIO0_8,REG_BASE_SDIO0, (8<<3),CMD_IRQ_CLR) // 1 Bit, 1'h0, W
+#define SDIO0_CMD_IRQ_EN _bm(_SDIO0_8,REG_BASE_SDIO0, (8<<3),CMD_IRQ_EN) // 1 Bit, 1'h0, RW
 #define SDIO0_DAT_IRQ _bm(_SDIO0_8,REG_BASE_SDIO0, (8<<3),DAT_IRQ) // 1 Bit, 1'h0, R
 #define SDIO0_DAT_IRQ_CLR _bm(_SDIO0_8,REG_BASE_SDIO0, (8<<3),DAT_IRQ_CLR) // 1 Bit, 1'h0, W
 #define SDIO0_DAT_IRQ_EN _bm(_SDIO0_8,REG_BASE_SDIO0, (8<<3),DAT_IRQ_EN) // 1 Bit, 1'h0, RW
@@ -2950,6 +2883,12 @@ _regs_ BF_26(UINT TIMER_G0 : 1 ,UINT _rev0 : 7, UINT TIMER23 : 1 ,UINT TIMER22 :
 #define SDIO1_DAT_BLKNUM _bm(_SDIO1_6,REG_BASE_SDIO1, (6<<3),DAT_BLKNUM) // 16 Bit, 1'h0, RW
 #define SDIO1_DAT_BLKADR _bm(_SDIO1_7,REG_BASE_SDIO1, (7<<3),DAT_BLKADR) // 32 Bit, 1'h0, RW
 #define SDIO1_DAT_FAIL _bm(_SDIO1_8,REG_BASE_SDIO1, (8<<3),DAT_FAIL) // 1 Bit, 1'h0, R
+#define SDIO1_IO_IRQ _bm(_SDIO1_8,REG_BASE_SDIO1, (8<<3),IO_IRQ) // 1 Bit, 1'h0, R
+#define SDIO1_IO_IRQ_CLR _bm(_SDIO1_8,REG_BASE_SDIO1, (8<<3),IO_IRQ_CLR) // 1 Bit, 1'h0, W
+#define SDIO1_IO_IRQ_EN _bm(_SDIO1_8,REG_BASE_SDIO1, (8<<3),IO_IRQ_EN) // 1 Bit, 1'h0, RW
+#define SDIO1_CMD_IRQ _bm(_SDIO1_8,REG_BASE_SDIO1, (8<<3),CMD_IRQ) // 1 Bit, 1'h0, R
+#define SDIO1_CMD_IRQ_CLR _bm(_SDIO1_8,REG_BASE_SDIO1, (8<<3),CMD_IRQ_CLR) // 1 Bit, 1'h0, W
+#define SDIO1_CMD_IRQ_EN _bm(_SDIO1_8,REG_BASE_SDIO1, (8<<3),CMD_IRQ_EN) // 1 Bit, 1'h0, RW
 #define SDIO1_DAT_IRQ _bm(_SDIO1_8,REG_BASE_SDIO1, (8<<3),DAT_IRQ) // 1 Bit, 1'h0, R
 #define SDIO1_DAT_IRQ_CLR _bm(_SDIO1_8,REG_BASE_SDIO1, (8<<3),DAT_IRQ_CLR) // 1 Bit, 1'h0, W
 #define SDIO1_DAT_IRQ_EN _bm(_SDIO1_8,REG_BASE_SDIO1, (8<<3),DAT_IRQ_EN) // 1 Bit, 1'h0, RW
@@ -3158,13 +3097,46 @@ _regs_ BF_26(UINT TIMER_G0 : 1 ,UINT _rev0 : 7, UINT TIMER23 : 1 ,UINT TIMER22 :
 #define IRQ_TIMER2 _bm(_IRQ_12,REG_BASE_IRQ, (12<<3),TIMER2) // 1 Bit, 1'h0, R
 #define IRQ_TIMER1 _bm(_IRQ_12,REG_BASE_IRQ, (12<<3),TIMER1) // 1 Bit, 1'h0, R
 #define IRQ_TIMER0 _bm(_IRQ_12,REG_BASE_IRQ, (12<<3),TIMER0) // 1 Bit, 1'h0, R
+#define ADC_CLK_LMT _bm(_ADC_0,REG_BASE_ADC, (0<<3),CLK_LMT) // 16 Bit, 16'hFFFF, RW
+#define ADC_CKEN _bm(_ADC_0,REG_BASE_ADC, (0<<3),CKEN) // 1 Bit, 1'h0, RW
+#define ADC_EN _bm(_ADC_0,REG_BASE_ADC, (0<<3),EN) // 1 Bit, 1'h0, RW
+#define ADC_CH0_EN _bm(_ADC_1,REG_BASE_ADC, (1<<3),CH0_EN) // 1 Bit, 1'h0, RW
+#define ADC_CH0_MAG _bm(_ADC_1,REG_BASE_ADC, (1<<3),CH0_MAG) // 1 Bit, 1'h0, RW
+#define ADC_CH0_MUL _bm(_ADC_1,REG_BASE_ADC, (1<<3),CH0_MUL) // 3 Bit, 3'h0, RW
+#define ADC_CH0_DAT _bm(_ADC_1,REG_BASE_ADC, (1<<3),CH0_DAT) // 16 Bit, 16'h0, R
+#define ADC_CH1_EN _bm(_ADC_2,REG_BASE_ADC, (2<<3),CH1_EN) // 1 Bit, 1'h0, RW
+#define ADC_CH1_MAG _bm(_ADC_2,REG_BASE_ADC, (2<<3),CH1_MAG) // 1 Bit, 1'h0, RW
+#define ADC_CH1_MUL _bm(_ADC_2,REG_BASE_ADC, (2<<3),CH1_MUL) // 3 Bit, 3'h0, RW
+#define ADC_CH1_DAT _bm(_ADC_2,REG_BASE_ADC, (2<<3),CH1_DAT) // 16 Bit, 16'h0, R
+#define ADC_CH2_EN _bm(_ADC_3,REG_BASE_ADC, (3<<3),CH2_EN) // 1 Bit, 1'h0, RW
+#define ADC_CH2_MAG _bm(_ADC_3,REG_BASE_ADC, (3<<3),CH2_MAG) // 1 Bit, 1'h0, RW
+#define ADC_CH2_MUL _bm(_ADC_3,REG_BASE_ADC, (3<<3),CH2_MUL) // 3 Bit, 3'h0, RW
+#define ADC_CH2_DAT _bm(_ADC_3,REG_BASE_ADC, (3<<3),CH2_DAT) // 16 Bit, 16'h0, R
+#define ADC_CH3_EN _bm(_ADC_4,REG_BASE_ADC, (4<<3),CH3_EN) // 1 Bit, 1'h0, RW
+#define ADC_CH3_MAG _bm(_ADC_4,REG_BASE_ADC, (4<<3),CH3_MAG) // 1 Bit, 1'h0, RW
+#define ADC_CH3_MUL _bm(_ADC_4,REG_BASE_ADC, (4<<3),CH3_MUL) // 3 Bit, 3'h0, RW
+#define ADC_CH3_DAT _bm(_ADC_4,REG_BASE_ADC, (4<<3),CH3_DAT) // 16 Bit, 16'h0, R
+#define ADC_CH4_EN _bm(_ADC_5,REG_BASE_ADC, (5<<3),CH4_EN) // 1 Bit, 1'h0, RW
+#define ADC_CH4_MAG _bm(_ADC_5,REG_BASE_ADC, (5<<3),CH4_MAG) // 1 Bit, 1'h0, RW
+#define ADC_CH4_MUL _bm(_ADC_5,REG_BASE_ADC, (5<<3),CH4_MUL) // 3 Bit, 3'h0, RW
+#define ADC_CH4_DAT _bm(_ADC_5,REG_BASE_ADC, (5<<3),CH4_DAT) // 16 Bit, 16'h0, R
+#define ADC_CH5_EN _bm(_ADC_6,REG_BASE_ADC, (6<<3),CH5_EN) // 1 Bit, 1'h0, RW
+#define ADC_CH5_MAG _bm(_ADC_6,REG_BASE_ADC, (6<<3),CH5_MAG) // 1 Bit, 1'h0, RW
+#define ADC_CH5_MUL _bm(_ADC_6,REG_BASE_ADC, (6<<3),CH5_MUL) // 3 Bit, 3'h0, RW
+#define ADC_CH5_DAT _bm(_ADC_6,REG_BASE_ADC, (6<<3),CH5_DAT) // 16 Bit, 16'h0, R
+#define ADC_CH6_EN _bm(_ADC_7,REG_BASE_ADC, (7<<3),CH6_EN) // 1 Bit, 1'h0, RW
+#define ADC_CH6_MAG _bm(_ADC_7,REG_BASE_ADC, (7<<3),CH6_MAG) // 1 Bit, 1'h0, RW
+#define ADC_CH6_MUL _bm(_ADC_7,REG_BASE_ADC, (7<<3),CH6_MUL) // 3 Bit, 3'h0, RW
+#define ADC_CH6_DAT _bm(_ADC_7,REG_BASE_ADC, (7<<3),CH6_DAT) // 16 Bit, 16'h0, R
+#define ADC_CH7_EN _bm(_ADC_8,REG_BASE_ADC, (8<<3),CH7_EN) // 1 Bit, 1'h0, RW
+#define ADC_CH7_MAG _bm(_ADC_8,REG_BASE_ADC, (8<<3),CH7_MAG) // 1 Bit, 1'h0, RW
+#define ADC_CH7_MUL _bm(_ADC_8,REG_BASE_ADC, (8<<3),CH7_MUL) // 3 Bit, 3'h0, RW
+#define ADC_CH7_DAT _bm(_ADC_8,REG_BASE_ADC, (8<<3),CH7_DAT) // 16 Bit, 16'h0, R
 
 extern void DdrTest(void); // ddr.c
 extern void DdrInit(void); // ddr.c
 
 extern void GpioInit(void);
-extern void GpioEi(UINT nCH);
-extern void GpioDi(UINT nCH);
 extern void GpioRiseEdge(UINT nCH);
 extern void GpioFallEdge(UINT nCH);
 extern void GpioInDir(UINT nCH);
@@ -3176,23 +3148,45 @@ extern void GpioFuncPin(UINT nCH);
 extern void GpioFuncPinOff(UINT nCH);
 extern UINT GpioGetFuncPin(UINT nCH);
 extern UINT GpioGetPin(UINT nCH);
-extern void IsrGpio(void *ctx);
+extern void GpioIrqCallback(UINT nCH, irq_fn irqfn, void *arg);
+extern void GpioIrqOn(UINT nCH);
+extern void GpioIrqOff(UINT nCH);
+extern void GpioIrqClear(UINT nCH);
+extern UINT GpioIsIrq(UINT nCH);
+extern void IrqGpio(UINT nCH);
 
 extern void UartInit(UINT nCH, UINT Speed_Hz);
-extern void UartTxEi(UINT nCH);
-extern void UartTxDi(UINT nCH);
-extern void UartRxEi(UINT nCH);
-extern void UartRxDi(UINT nCH);
 extern void UartTx(UINT nCH, char data);
+extern UINT UartTxIsEmpty(UINT nCH);
+extern UINT UartTxIsFull(UINT nCH);
+extern void UartTxIrqCallback(UINT nCH, irq_fn irqfn, void *arg);
+extern void UartTxIrqOn(UINT nCH);
+extern void UartTxIrqOff(UINT nCH);
+extern void UartTxIrqClear(UINT nCH);
+extern UINT UartTxIsIrq(UINT nCH);
 extern UINT UartRx(UINT nCH);
-extern UINT UartGetByte(UINT nCH);
-extern UINT UartRxExist(UINT nCH);
+extern UINT UartRxGetByte(UINT nCH);
+extern UINT UartRxIsEmpty(UINT nCH);
+extern UINT UartRxIsFull(UINT nCH);
+extern void UartRxIrqCallback(UINT nCH, irq_fn irqfn, void *arg);
+extern void UartRxIrqOn(UINT nCH);
+extern void UartRxIrqOff(UINT nCH);
+extern void UartRxIrqClear(UINT nCH);
+extern UINT UartRxIsIrq(UINT nCH);
 extern void IrqUart(UINT nCH);
 
 extern void I2cInit(UINT nCH, UINT Speed_Hz);
+extern void I2cDeInit(UINT nCH);
 extern UINT I2cWrite(UINT nCH, BYTE dat, BYTE last, BYTE repeat);
 extern UINT I2cRead(UINT nCH, BYTE last, BYTE repeat);
 extern UINT I2cCheck(UINT nCH, BYTE addr);
+extern void I2cChCheck(UINT nCH);
+extern void I2cIrqCallback(UINT nCH, irq_fn irqfn, void *arg);
+extern void I2cIrqOn(UINT nCH);
+extern void I2cIrqOff(UINT nCH);
+extern void I2cIrqClear(UINT nCH);
+extern UINT I2cIsIrq(UINT nCH);
+extern void IrqI2c(UINT nCH);
 
 extern void SpiInit(UINT nCH, UINT Speed_Hz, UINT WordSize, UINT BitDirection);
 extern void SpiDeinit(UINT nCH);
@@ -3201,22 +3195,52 @@ extern void SpiCsHi(UINT nCH);
 extern void SpiWrite(UINT nCH, BYTE *dat);
 extern void SpiRead(UINT nCH, BYTE *dat);
 extern void SpiRW(UINT nCH, BYTE *WrDat, BYTE *RdDat);
+extern void SpiIrqCallback(UINT nCH, irq_fn irqfn, void *arg);
+extern void SpiIrqOn(UINT nCH);
+extern void SpiIrqOff(UINT nCH);
+extern void SpiIrqClear(UINT nCH);
+extern UINT SpiIsIrq(UINT nCH);
+extern void IrqSpi(UINT nCH);
 
 extern void DmaInit(void);
-extern void DmaEi(UINT nCH);
-extern void DmaDi(UINT nCH);
 extern void DmaMemCpy_isr(UINT nCH, BYTE *apbDst, BYTE *apbSrc, UINT anNum);
 extern void DmaMemCpy_isr_async(UINT nCH, BYTE *apbDst, BYTE *apbSrc, UINT anNum);
 extern void DmaMemSet_isr(UINT nCH, BYTE *apbDst, BYTE abVal, UINT anNum);
 extern void DmaMemSet_isr_async(UINT nCH, BYTE *apbDst, BYTE abVal, UINT anNum);
+extern void DmaIrqCallback(UINT nCH, irq_fn irqfn, void *arg);
+extern void DmaIrqOn(UINT nCH);
+extern void DmaIrqOff(UINT nCH);
+extern void DmaIrqClear(UINT nCH);
+extern UINT DmaIsIrq(UINT nCH);
+extern void IrqDma(void);
 
 extern void TimerInit(UINT nCH);
+extern void TimerDeInit(UINT nCH);
+extern void TimerSetFreq(UINT nCH, UINT nDiv, UINT nLmt, UINT nTrig);
+extern void TimerStart(UINT nCH);
+extern void TimerStop(UINT nCH);
+extern void TimerPWMEnable(UINT nCH);
+extern void TimerPWMDisable(UINT nCH);
+extern void TimerIrqCallback(UINT nCH, irq_fn irqfn, void *arg);
+extern void TimerIrqOn(UINT nCH);
+extern void TimerIrqOff(UINT nCH);
+extern void TimerIrqClear(UINT nCH);
+extern UINT TimerIsIrq(UINT nCH);
+extern void IrqTimer(UINT nCH);
 
 extern void MdioInit(UINT Speed_Hz);
 extern void MdioRead(BYTE PhyAdr, BYTE RegAdr, WORD *RdDat);
 extern void MdioWrite(BYTE PhyAdr, BYTE RegAdr, WORD WrDat);
 
-void MdioInit(UINT Speed_Hz);
+extern void EthInit(void);
+
+extern void SdioInit(UINT nCH);
+extern void SdioIrqCallback(UINT nCH, irq_fn irqfn, void *arg);
+extern void SdioIrqOn(UINT nCH);
+extern void SdioIrqOff(UINT nCH);
+extern void SdioIrqClear(UINT nCH);
+extern UINT SdioIsIrq(UINT nCH);
+extern void IrqSdio(UINT nCH);
 
 extern WORD Checksum16(BYTE *apbDst, UINT anNum);
 

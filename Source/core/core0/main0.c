@@ -1,58 +1,22 @@
 #include "dev.h"
 
-#include <time.h>
-
-#include "enx_freertos.h"
-#include "shell.h"
-
-#include "rtc.h"
-
-extern void trap_freertos(void); // mentry.S
-
 char g_key = 0xFF;
 
-extern volatile uint64_t* mtime;
+void Uart7RxIrqTest(void *ctx)
+{
+	UINT bBuf = UartRxGetByte(7);
+	UartTx(7, (char)bBuf);
+}
 
 #if 0
-#define TEST_SIZE 1024
-BYTE arrlist[TEST_SIZE];
-void test_func(void)
-{
-	for (int i = 0; i < TEST_SIZE; i++) {
-		arrlist[i] = i;
-	}
-	for (int i = 0; i < TEST_SIZE; i++) {
-		_printf("[%x]\n", arrlist[i]);
-	}
-	_printf("1===========================\n");
-	u8 *u8list = arrlist;
-	u16 *u16list = arrlist;
-	u32 *u32list = arrlist;
-	u64 *u64list = arrlist;
-
-	for (int i = 0; i < TEST_SIZE; i++) {
-		_printf("[%x]\n", u8list[i]);
-	}
-	_printf("2===========================\n");
-	for (int i = 0; i < TEST_SIZE/2; i++) {
-		_printf("[%x]\n", u16list[i]);
-	}
-	_printf("3===========================\n");
-	for (int i = 0; i < TEST_SIZE/4; i++) {
-		_printf("[%x]\n", u32list[i]);
-	}
-	_printf("4===========================\n");
-	for (int i = 0; i < TEST_SIZE/8; i++) {
-		_printf("[%lx]\n", u64list[i]);
-	}
-	_printf("5===========================\n");
-}
-#else
-void test_func(void)
+#include "enx_freertos.h"
+#include "shell.h"
+extern void trap_freertos(void); // mentry.S
+void test_freertos(void)
 {
 	write_csr(mtvec, &trap_freertos);
 
-	_printf("HELLO EYENIX!\n"); // ADD some
+	printf("HELLO EYENIX!\n"); // ADD some
 
 	vMemoryHeapInit();
 
@@ -147,7 +111,8 @@ void enx_peri_init(void)
 	SpiInit(8, SPI8_SPEED, 0, 0);
 #endif
 
-	UartRxEi(7);
+	UartRxIrqCallback(7, Uart7RxIrqTest, NULL);
+	UartRxIrqOn(7);
 }
 
 void enx_device_init(void)
@@ -156,11 +121,18 @@ void enx_device_init(void)
 	for (int i=0;i<256;i++) {
 		UINT a = I2cCheck(7, i);
 		if (a == DEF_OK) {
-			_printf("[%X]");
+			printf("[%X]");
 		} else {
-			_printf(".");
+			printf(".");
 		}
 	}
+#endif
+
+	GpioOutDir(55);
+
+#ifdef __ETHERNET__
+	EthInit();
+	EthphyInit(ETHPHY_MDIO_ADR);
 #endif
 
 #ifdef __RTC_LOAD__
@@ -169,54 +141,69 @@ void enx_device_init(void)
 	set_devicetime(TimeZone_GMT, 2019, 2, 19, 10, 0, 0);
 }
 
-extern INT16S cmd_time(INT32S argc, char *argv[]);
-extern void IrqStatus(void);
-extern void enx_externalirq_init(void);
-extern void IrqCheck(void);
+extern int cmd_test_sysreg(int argc, char *argv[]);
 
 void main_0(int cpu_id)
 {
 	*mtime = 0; // timer init
 
+	enx_peri_init();
+	printf("Start EN675\n");
+
+#if 0
 	uint64_t a = 100;
 	uint64_t b = 50;
-	_printf("%d\n", a-b);
-
-	enx_peri_init();
-	_printf("Start EN675\n");
+	uint64_t c = a+b;
+	printf("%d,%d\n", a-b, c);
+#endif
+#if 0
+	float a = 3.2f;
+	float b = 1.2f;
+	printf("%d\n", (int)(a/b));
+#endif
 
 	enx_externalirq_init();
+	enx_timerirq_init();
 
 	enx_device_init();
 
 	//DdrInit();
 	//DdrTest();
 
-	GpioOutDir(55);
+	g_key = 0xA; // CPU0 Ready!
 
-	//g_key = 0xA; // CPU0 Ready!
+	printf("Init Device\n");
 
-	_printf("Init Device\n");
-
+	//exit(1);
+	//setTimeZone();
 	int k = 0;
 	while (1) {
-		_printf("%d:%lu\n", cpu_id, *mtime);
-		if (k%2)
-			GpioSetHi(55);
-		else
-			GpioSetLo(55);
-		k++;
-
-		WaitXms(1000);
-		gptMsgShare.TIME++;
-		gptMsgShare.UPTIME++;
+		//printf("%d:%lu\n", cpu_id, *mtime);
 
 		//IrqStatus();
 		//IrqCheck();
 
-		unsigned long mstatus = read_csr(mstatus);
-		_printf("mstatus : %lX\n", mstatus);
+		//unsigned long mstatus = read_csr(mstatus);
+		//printf("mstatus : %lX\n", mstatus);
+		//printf("mstatus : %lX, Uptime(%lu)\n", mstatus, _getuptime());
 
-		//cmd_time(1, NULL);
+		static uint64_t oldt = 0;
+		if (oldt != gptMsgShare.TIME) {
+			oldt = gptMsgShare.TIME;
+			extern INT16S cmd_time(INT32S argc, char *argv[]);
+			cmd_time(1, NULL);
+
+			//extern void IrqStatus(void);
+			//IrqStatus();
+
+			printf("%d:%16lu\n", cpu_id, *mtime);
+
+			if (k++%2)	GpioSetHi(55);
+			else		GpioSetLo(55);
+		}
+
+		//exit(1);
+
+		WaitXms(1);
 	}
 }

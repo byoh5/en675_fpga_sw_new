@@ -19,8 +19,9 @@ const char *sTimeCmd[]      = {"System Time, TimeZone Get / Set",               
 int cmd_time(int argc, char *argv[])
 {
 	if (argc == 1) {
-		_printf("UPTIME : %us\n", gptMsgShare.UPTIME);
-		_printf("gptMsgShare.TIME : %d\n", gptMsgShare.TIME);
+		_printf("gptMsgShare.UPTIME: %lus\n", gptMsgShare.UPTIME);
+		_printf("gptMsgShare.TIME  : %lus\n", gptMsgShare.TIME);
+		_printf("gettimeofday      : %lus\n", gettime());
 
 		struct tm tmout;
 

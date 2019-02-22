@@ -21,16 +21,17 @@ SET ( SHARED_HDRS
 	clib.h
 	configstring.h
 	exbl.h
-	syscalls.h
 	msg.h
+	syscalls.h
 )
 
 SET ( SHARED_SRCS
 	clib.c
-	syscalls.c
 	boot.c
 	exbl.c
 	msg.c
+	syscalls.c
+	syscalls_dummy.c
 	mentry.S
 )
 

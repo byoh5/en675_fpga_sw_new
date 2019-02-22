@@ -40,7 +40,7 @@ static BYTE pcf8563_write_reg(BYTE reg, BYTE data)
 		I2C_UNLOCK;
 		return DEF_FAIL;
 	}
-	if (I2C_WRITE(data,1, 0)) {
+	if (I2C_WRITE(data, 1, 0)) {
 		I2C_UNLOCK;
 		return DEF_FAIL;
 	}

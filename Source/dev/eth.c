@@ -1,5 +1,6 @@
 #include "dev.h"
 
+#ifdef __ETHERNET__
 void MdioRead(BYTE PhyAdr, BYTE RegAdr, WORD *RdDat)
 {
 	ETH_MDIO_OPCODE = 2;
@@ -35,3 +36,4 @@ void EthInit(void)
 
 
 }
+#endif

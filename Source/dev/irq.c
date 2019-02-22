@@ -1,258 +1,5 @@
 #include "dev.h"
-
-void enx_exirq_source1(void)
-{
-	if(IRQ_ISP)
-	{
-		if(IRQ_ISP0){};
-		if(IRQ_ISP1){};
-		if(IRQ_ISP2){};
-		if(IRQ_ISP3){};
-		if(IRQ_ISP4){};
-		if(IRQ_ISP5){};
-		if(IRQ_ISP6){};
-		if(IRQ_ISP7){};
-		if(IRQ_ISP8){};
-		if(IRQ_ISP9){};
-		if(IRQ_ISP10){};
-		if(IRQ_ISP11){};
-		if(IRQ_ISP12){};
-		if(IRQ_ISP13){};
-		if(IRQ_ISP14){};
-		if(IRQ_ISP15){};
-		if(IRQ_ISP16){};
-		if(IRQ_ISP17){};
-		if(IRQ_ISP18){};
-		if(IRQ_ISP19){};
-		if(IRQ_ISP20){};
-		if(IRQ_ISP21){};
-		if(IRQ_ISP22){};
-		if(IRQ_ISP23){};
-		if(IRQ_ISP24){};
-		if(IRQ_ISP25){};
-		if(IRQ_ISP26){};
-		if(IRQ_ISP27){};
-		if(IRQ_ISP28){};
-		if(IRQ_ISP29){};
-		if(IRQ_ISP30){};
-	}
-}
-
-void enx_exirq_source2(void)
-{
-	if(IRQ_CDC)
-	{
-		if(IRQ_DMA){};
-		if(IRQ_H265){};
-		if(IRQ_H264){};
-	}
-}
-
-void enx_exirq_source3(void)
-{
-	if(IRQ_ETH)
-	{
-		if(IRQ_USB_DMA){};
-		if(IRQ_USB_MC){};
-		if(IRQ_I2S_RX){};
-		if(IRQ_I2S_TX){};
-		if(IRQ_ETH_RX){};
-		if(IRQ_ETH_TX){};
-	}
-}
-void enx_exirq_source4(void)
-{
-	if(IRQ_SDIO)
-	{
-		if(IRQ_SDIO0){};
-		if(IRQ_SDIO1){};
-	}
-}
-
-void enx_exirq_source5(void)
-{
-	if(IRQ_UTIL)
-	{
-		if(IRQ_AES){};
-		if(IRQ_SHA){};
-		if(IRQ_CHKSUM){};
-	}
-}
-
-void enx_exirq_source6(void)
-{
-	if(IRQ_UART)
-	{
-		if(IRQ_UART0){IrqUart(0);}
-		if(IRQ_UART1){IrqUart(1);}
-		if(IRQ_UART2){IrqUart(2);}
-		if(IRQ_UART3){IrqUart(3);}
-		if(IRQ_UART4){IrqUart(4);}
-		if(IRQ_UART5){IrqUart(5);}
-		if(IRQ_UART6){IrqUart(6);}
-		if(IRQ_UART7){IrqUart(7);}
-		if(IRQ_UART8){IrqUart(8);}
-	}
-	if(IRQ_SPI)
-	{
-		if(IRQ_SPI0){};
-		if(IRQ_SPI1){};
-		if(IRQ_SPI2){};
-		if(IRQ_SPI3){};
-		if(IRQ_SPI4){};
-		if(IRQ_SPI5){};
-		if(IRQ_SPI6){};
-		if(IRQ_SPI7){};
-		if(IRQ_SPI8){};
-
-	}
-	if(IRQ_I2C)
-	{
-		if(IRQ_I2C0){};
-		if(IRQ_I2C1){};
-		if(IRQ_I2C2){};
-		if(IRQ_I2C3){};
-		if(IRQ_I2C4){};
-		if(IRQ_I2C5){};
-		if(IRQ_I2C6){};
-		if(IRQ_I2C7){};
-		if(IRQ_I2C8){};
-	}
-}
-
-void enx_exirq_source7(void)
-{
-	if(IRQ_GPIO_G2)
-	{
-		if(IRQ_GPIO71){};
-		if(IRQ_GPIO70){};
-		if(IRQ_GPIO69){};
-		if(IRQ_GPIO68){};
-		if(IRQ_GPIO67){};
-		if(IRQ_GPIO66){};
-		if(IRQ_GPIO65){};
-		if(IRQ_GPIO64){};
-		if(IRQ_GPIO63){};
-		if(IRQ_GPIO62){};
-		if(IRQ_GPIO61){};
-		if(IRQ_GPIO60){};
-		if(IRQ_GPIO59){};
-		if(IRQ_GPIO58){};
-		if(IRQ_GPIO57){};
-		if(IRQ_GPIO56){};
-		if(IRQ_GPIO55){};
-		if(IRQ_GPIO54){};
-		if(IRQ_GPIO53){};
-		if(IRQ_GPIO52){};
-		if(IRQ_GPIO51){};
-		if(IRQ_GPIO50){};
-		if(IRQ_GPIO49){};
-		if(IRQ_GPIO48){};
-	}
-	if(IRQ_GPIO_G1)
-	{
-		if(IRQ_GPIO47){};
-		if(IRQ_GPIO46){};
-		if(IRQ_GPIO45){};
-		if(IRQ_GPIO44){};
-		if(IRQ_GPIO43){};
-		if(IRQ_GPIO42){};
-		if(IRQ_GPIO41){};
-		if(IRQ_GPIO40){};
-		if(IRQ_GPIO39){};
-		if(IRQ_GPIO38){};
-		if(IRQ_GPIO37){};
-		if(IRQ_GPIO36){};
-		if(IRQ_GPIO35){};
-		if(IRQ_GPIO34){};
-		if(IRQ_GPIO33){};
-		if(IRQ_GPIO32){};
-		if(IRQ_GPIO31){};
-		if(IRQ_GPIO30){};
-		if(IRQ_GPIO29){};
-		if(IRQ_GPIO28){};
-		if(IRQ_GPIO27){};
-		if(IRQ_GPIO26){};
-		if(IRQ_GPIO25){};
-		if(IRQ_GPIO24){};
-	}
-	if(IRQ_GPIO_G0)
-	{
-		if(IRQ_GPIO23){};
-		if(IRQ_GPIO22){};
-		if(IRQ_GPIO21){};
-		if(IRQ_GPIO20){};
-		if(IRQ_GPIO19){};
-		if(IRQ_GPIO18){};
-		if(IRQ_GPIO17){};
-		if(IRQ_GPIO16){};
-		if(IRQ_GPIO15){};
-		if(IRQ_GPIO14){};
-		if(IRQ_GPIO13){};
-		if(IRQ_GPIO12){};
-		if(IRQ_GPIO11){};
-		if(IRQ_GPIO10){};
-		if(IRQ_GPIO9){};
-		if(IRQ_GPIO8){};
-		if(IRQ_GPIO7){};
-		if(IRQ_GPIO6){};
-		if(IRQ_GPIO5){};
-		if(IRQ_GPIO4){};
-		if(IRQ_GPIO3){};
-		if(IRQ_GPIO2){};
-		if(IRQ_GPIO1){};
-		if(IRQ_GPIO0){};
-	}
-}
-
-void enx_exirq_source8(void)
-{
-	if(IRQ_TIMER_G1)
-	{
-		if(IRQ_TIMER38){};
-		if(IRQ_TIMER37){};
-		if(IRQ_TIMER36){};
-		if(IRQ_TIMER35){};
-		if(IRQ_TIMER34){};
-		if(IRQ_TIMER33){};
-		if(IRQ_TIMER32){};
-		if(IRQ_TIMER31){};
-		if(IRQ_TIMER30){};
-		if(IRQ_TIMER29){};
-		if(IRQ_TIMER28){};
-		if(IRQ_TIMER27){};
-		if(IRQ_TIMER26){};
-		if(IRQ_TIMER25){};
-		if(IRQ_TIMER24){};
-		if(IRQ_TIMER23){};
-		if(IRQ_TIMER22){};
-		if(IRQ_TIMER21){};
-		if(IRQ_TIMER20){};
-	}
-	if(IRQ_TIMER_G0)
-	{
-		if(IRQ_TIMER19){};
-		if(IRQ_TIMER18){};
-		if(IRQ_TIMER17){};
-		if(IRQ_TIMER16){};
-		if(IRQ_TIMER15){};
-		if(IRQ_TIMER14){};
-		if(IRQ_TIMER13){};
-		if(IRQ_TIMER12){};
-		if(IRQ_TIMER11){};
-		if(IRQ_TIMER10){};
-		if(IRQ_TIMER9){};
-		if(IRQ_TIMER8){};
-		if(IRQ_TIMER7){};
-		if(IRQ_TIMER6){};
-		if(IRQ_TIMER5){};
-		if(IRQ_TIMER4){};
-		if(IRQ_TIMER3){};
-		if(IRQ_TIMER2){};
-		if(IRQ_TIMER1){};
-		if(IRQ_TIMER0){};
-	}
-}
+#include "syscall.h"
 
 #define IRQ_PRIO1_BASE				0x0C000004 // RW: Source 1 priority (ISP)
 #define IRQ_PRIO2_BASE				0x0C000008 // RW: Source 2 priority (DMA, H.264, H.265)
@@ -292,38 +39,7 @@ void enx_exirq_source8(void)
 #define IRQ_CLAIM_COMPLIET7_BASE	0x0C206004 // RW: Hart 3 M-mode (R)claim/(W)complete
 #define IRQ_CLAIM_COMPLIET8_BASE	0x0C207004 // RW: Hart 3 S-mode (R)claim/(W)complete
 
-typedef struct {
-	unsigned int _res:29;
-	unsigned int priority:3;
-} IRQ_Priority;
-
-typedef struct {
-	unsigned int _res1:23;
-	unsigned int pending8:1;
-	unsigned int pending7:1;
-	unsigned int pending6:1;
-	unsigned int pending5:1;
-	unsigned int pending4:1;
-	unsigned int pending3:1;
-	unsigned int pending2:1;
-	unsigned int pending1:1;
-	unsigned int _res2:1;
-} IRQ_Pending;
-
-typedef struct {
-	unsigned int _res1:23;
-	unsigned int enables1:1;
-	unsigned int enables0:7;
-	unsigned int _res2:1;
-} IRQ_Enable;
-
-typedef struct {
-	unsigned long threshold:3;
-	unsigned long _res:29;
-	unsigned long claim_complete:32;
-} IRQ_Thres_Claim;
-
-volatile unsigned int *iPrioBase[8] = {
+static volatile unsigned int *iPrioBase[8] = {
 		(unsigned int *)IRQ_PRIO1_BASE,
 		(unsigned int *)IRQ_PRIO2_BASE,
 		(unsigned int *)IRQ_PRIO3_BASE,
@@ -333,8 +49,10 @@ volatile unsigned int *iPrioBase[8] = {
 		(unsigned int *)IRQ_PRIO7_BASE,
 		(unsigned int *)IRQ_PRIO8_BASE,
 };
-volatile unsigned int *iPanding = (unsigned int *)IRQ_PENDING_BASE;
-volatile unsigned int *iEnables[8] = {
+
+static volatile unsigned int *iPanding = (unsigned int *)IRQ_PENDING_BASE;
+
+static volatile unsigned int *iEnables[8] = {
 		(unsigned int *)IRQ_ENABLES1_BASE,
 		(unsigned int *)IRQ_ENABLES2_BASE,
 		(unsigned int *)IRQ_ENABLES3_BASE,
@@ -344,7 +62,8 @@ volatile unsigned int *iEnables[8] = {
 		(unsigned int *)IRQ_ENABLES7_BASE,
 		(unsigned int *)IRQ_ENABLES8_BASE,
 };
-volatile unsigned int *iThreshold[8] = {
+
+static volatile unsigned int *iThreshold[8] = {
 		(unsigned int *)IRQ_THRESHOLD1_BASE,
 		(unsigned int *)IRQ_THRESHOLD2_BASE,
 		(unsigned int *)IRQ_THRESHOLD3_BASE,
@@ -354,7 +73,8 @@ volatile unsigned int *iThreshold[8] = {
 		(unsigned int *)IRQ_THRESHOLD7_BASE,
 		(unsigned int *)IRQ_THRESHOLD8_BASE,
 };
-volatile unsigned int *iClaimCompliet[8] = {
+
+static volatile unsigned int *iClaimCompliet[8] = {
 		(unsigned int *)IRQ_CLAIM_COMPLIET1_BASE,
 		(unsigned int *)IRQ_CLAIM_COMPLIET2_BASE,
 		(unsigned int *)IRQ_CLAIM_COMPLIET3_BASE,
@@ -365,6 +85,249 @@ volatile unsigned int *iClaimCompliet[8] = {
 		(unsigned int *)IRQ_CLAIM_COMPLIET8_BASE,
 };
 
+void enx_exirq_source1(void)
+{
+	if (IRQ_ISP) {
+		printf("IRQ_ISP\n");
+		if (IRQ_ISP0){};
+		if (IRQ_ISP1){};
+		if (IRQ_ISP2){};
+		if (IRQ_ISP3){};
+		if (IRQ_ISP4){};
+		if (IRQ_ISP5){};
+		if (IRQ_ISP6){};
+		if (IRQ_ISP7){};
+		if (IRQ_ISP8){};
+		if (IRQ_ISP9){};
+		if (IRQ_ISP10){};
+		if (IRQ_ISP11){};
+		if (IRQ_ISP12){};
+		if (IRQ_ISP13){};
+		if (IRQ_ISP14){};
+		if (IRQ_ISP15){};
+		if (IRQ_ISP16){};
+		if (IRQ_ISP17){};
+		if (IRQ_ISP18){};
+		if (IRQ_ISP19){};
+		if (IRQ_ISP20){};
+		if (IRQ_ISP21){};
+		if (IRQ_ISP22){};
+		if (IRQ_ISP23){};
+		if (IRQ_ISP24){};
+		if (IRQ_ISP25){};
+		if (IRQ_ISP26){};
+		if (IRQ_ISP27){};
+		if (IRQ_ISP28){};
+		if (IRQ_ISP29){};
+		if (IRQ_ISP30){};
+	}
+}
+
+void enx_exirq_source2(void)
+{
+	if (IRQ_CDC) {
+		if (IRQ_DMA){IrqDma();};
+		if (IRQ_H265){printf("IRQ_H265\n");};
+		if (IRQ_H264){printf("IRQ_H264\n");};
+	}
+}
+
+void enx_exirq_source3(void)
+{
+	if (IRQ_ETH) {
+		if (IRQ_USB_DMA){printf("IRQ_USB_DMA\n");};
+		if (IRQ_USB_MC){printf("IRQ_USB_MC\n");};
+		if (IRQ_I2S_RX){printf("IRQ_I2S_RX\n");};
+		if (IRQ_I2S_TX){printf("IRQ_I2S_TX\n");};
+		if (IRQ_ETH_RX){printf("IRQ_ETH_RX\n");};
+		if (IRQ_ETH_TX){printf("IRQ_ETH_TX\n");};
+	}
+}
+
+void enx_exirq_source4(void)
+{
+	if (IRQ_SDIO) {
+		if (IRQ_SDIO0){IrqSdio(0);};
+		if (IRQ_SDIO1){IrqSdio(1);};
+	}
+}
+
+void enx_exirq_source5(void)
+{
+	if (IRQ_UTIL) {
+		if (IRQ_AES){printf("IRQ_AES\n");};
+		if (IRQ_SHA){printf("IRQ_SHA\n");};
+		if (IRQ_CHKSUM){printf("IRQ_CHKSUM\n");};
+	}
+}
+
+void enx_exirq_source6(void)
+{
+	if (IRQ_UART) {
+		if (IRQ_UART0){IrqUart(0);};
+		if (IRQ_UART1){IrqUart(1);};
+		if (IRQ_UART2){IrqUart(2);};
+		if (IRQ_UART3){IrqUart(3);};
+		if (IRQ_UART4){IrqUart(4);};
+		if (IRQ_UART5){IrqUart(5);};
+		if (IRQ_UART6){IrqUart(6);};
+		if (IRQ_UART7){IrqUart(7);};
+		if (IRQ_UART8){IrqUart(8);};
+	}
+	if (IRQ_SPI) {
+		if (IRQ_SPI0){IrqSpi(0);};
+		if (IRQ_SPI1){IrqSpi(1);};
+		if (IRQ_SPI2){IrqSpi(2);};
+		if (IRQ_SPI3){IrqSpi(3);};
+		if (IRQ_SPI4){IrqSpi(4);};
+		if (IRQ_SPI5){IrqSpi(5);};
+		if (IRQ_SPI6){IrqSpi(6);};
+		if (IRQ_SPI7){IrqSpi(7);};
+		if (IRQ_SPI8){IrqSpi(8);};
+	}
+	if (IRQ_I2C) {
+		if (IRQ_I2C0){IrqI2c(0);};
+		if (IRQ_I2C1){IrqI2c(1);};
+		if (IRQ_I2C2){IrqI2c(2);};
+		if (IRQ_I2C3){IrqI2c(3);};
+		if (IRQ_I2C4){IrqI2c(4);};
+		if (IRQ_I2C5){IrqI2c(5);};
+		if (IRQ_I2C6){IrqI2c(6);};
+		if (IRQ_I2C7){IrqI2c(7);};
+		if (IRQ_I2C8){IrqI2c(8);};
+	}
+}
+
+void enx_exirq_source7(void)
+{
+	if (IRQ_GPIO_G2) {
+		if (IRQ_GPIO71){IrqGpio(71);}
+		if (IRQ_GPIO70){IrqGpio(70);}
+		if (IRQ_GPIO69){IrqGpio(69);}
+		if (IRQ_GPIO68){IrqGpio(68);}
+		if (IRQ_GPIO67){IrqGpio(67);}
+		if (IRQ_GPIO66){IrqGpio(66);}
+		if (IRQ_GPIO65){IrqGpio(65);}
+		if (IRQ_GPIO64){IrqGpio(64);}
+		if (IRQ_GPIO63){IrqGpio(63);}
+		if (IRQ_GPIO62){IrqGpio(62);}
+		if (IRQ_GPIO61){IrqGpio(61);}
+		if (IRQ_GPIO60){IrqGpio(60);}
+		if (IRQ_GPIO59){IrqGpio(59);}
+		if (IRQ_GPIO58){IrqGpio(58);}
+		if (IRQ_GPIO57){IrqGpio(57);}
+		if (IRQ_GPIO56){IrqGpio(56);}
+		if (IRQ_GPIO55){IrqGpio(55);}
+		if (IRQ_GPIO54){IrqGpio(54);}
+		if (IRQ_GPIO53){IrqGpio(53);}
+		if (IRQ_GPIO52){IrqGpio(52);}
+		if (IRQ_GPIO51){IrqGpio(51);}
+		if (IRQ_GPIO50){IrqGpio(50);}
+		if (IRQ_GPIO49){IrqGpio(49);}
+		if (IRQ_GPIO48){IrqGpio(48);}
+	}
+	if (IRQ_GPIO_G1) {
+		if (IRQ_GPIO47){IrqGpio(47);}
+		if (IRQ_GPIO46){IrqGpio(46);}
+		if (IRQ_GPIO45){IrqGpio(45);}
+		if (IRQ_GPIO44){IrqGpio(44);}
+		if (IRQ_GPIO43){IrqGpio(43);}
+		if (IRQ_GPIO42){IrqGpio(42);}
+		if (IRQ_GPIO41){IrqGpio(41);}
+		if (IRQ_GPIO40){IrqGpio(40);}
+		if (IRQ_GPIO39){IrqGpio(39);}
+		if (IRQ_GPIO38){IrqGpio(38);}
+		if (IRQ_GPIO37){IrqGpio(37);}
+		if (IRQ_GPIO36){IrqGpio(36);}
+		if (IRQ_GPIO35){IrqGpio(35);}
+		if (IRQ_GPIO34){IrqGpio(34);}
+		if (IRQ_GPIO33){IrqGpio(33);}
+		if (IRQ_GPIO32){IrqGpio(32);}
+		if (IRQ_GPIO31){IrqGpio(31);}
+		if (IRQ_GPIO30){IrqGpio(30);}
+		if (IRQ_GPIO29){IrqGpio(29);}
+		if (IRQ_GPIO28){IrqGpio(28);}
+		if (IRQ_GPIO27){IrqGpio(27);}
+		if (IRQ_GPIO26){IrqGpio(26);}
+		if (IRQ_GPIO25){IrqGpio(25);}
+		if (IRQ_GPIO24){IrqGpio(24);}
+	}
+	if (IRQ_GPIO_G0) {
+		if (IRQ_GPIO23){IrqGpio(23);}
+		if (IRQ_GPIO22){IrqGpio(22);}
+		if (IRQ_GPIO21){IrqGpio(21);}
+		if (IRQ_GPIO20){IrqGpio(20);}
+		if (IRQ_GPIO19){IrqGpio(19);}
+		if (IRQ_GPIO18){IrqGpio(18);}
+		if (IRQ_GPIO17){IrqGpio(17);}
+		if (IRQ_GPIO16){IrqGpio(16);}
+		if (IRQ_GPIO15){IrqGpio(15);}
+		if (IRQ_GPIO14){IrqGpio(14);}
+		if (IRQ_GPIO13){IrqGpio(13);}
+		if (IRQ_GPIO12){IrqGpio(12);}
+		if (IRQ_GPIO11){IrqGpio(11);}
+		if (IRQ_GPIO10){IrqGpio(10);}
+		if (IRQ_GPIO9){IrqGpio(9);}
+		if (IRQ_GPIO8){IrqGpio(8);}
+		if (IRQ_GPIO7){IrqGpio(7);}
+		if (IRQ_GPIO6){IrqGpio(6);}
+		if (IRQ_GPIO5){IrqGpio(5);}
+		if (IRQ_GPIO4){IrqGpio(4);}
+		if (IRQ_GPIO3){IrqGpio(3);}
+		if (IRQ_GPIO2){IrqGpio(2);}
+		if (IRQ_GPIO1){IrqGpio(1);}
+		if (IRQ_GPIO0){IrqGpio(0);}
+	}
+}
+
+void enx_exirq_source8(void)
+{
+	if (IRQ_TIMER_G1) {
+		if (IRQ_TIMER38){IrqTimer(38);};
+		if (IRQ_TIMER37){IrqTimer(37);};
+		if (IRQ_TIMER36){IrqTimer(36);};
+		if (IRQ_TIMER35){IrqTimer(35);};
+		if (IRQ_TIMER34){IrqTimer(34);};
+		if (IRQ_TIMER33){IrqTimer(33);};
+		if (IRQ_TIMER32){IrqTimer(32);};
+		if (IRQ_TIMER31){IrqTimer(31);};
+		if (IRQ_TIMER30){IrqTimer(30);};
+		if (IRQ_TIMER29){IrqTimer(29);};
+		if (IRQ_TIMER28){IrqTimer(28);};
+		if (IRQ_TIMER27){IrqTimer(27);};
+		if (IRQ_TIMER26){IrqTimer(26);};
+		if (IRQ_TIMER25){IrqTimer(25);};
+		if (IRQ_TIMER24){IrqTimer(24);};
+		if (IRQ_TIMER23){IrqTimer(23);};
+		if (IRQ_TIMER22){IrqTimer(22);};
+		if (IRQ_TIMER21){IrqTimer(21);};
+		if (IRQ_TIMER20){IrqTimer(20);};
+	}
+	if (IRQ_TIMER_G0) {
+		if (IRQ_TIMER19){IrqTimer(19);};
+		if (IRQ_TIMER18){IrqTimer(18);};
+		if (IRQ_TIMER17){IrqTimer(17);};
+		if (IRQ_TIMER16){IrqTimer(16);};
+		if (IRQ_TIMER15){IrqTimer(15);};
+		if (IRQ_TIMER14){IrqTimer(14);};
+		if (IRQ_TIMER13){IrqTimer(13);};
+		if (IRQ_TIMER12){IrqTimer(12);};
+		if (IRQ_TIMER11){IrqTimer(11);};
+		if (IRQ_TIMER10){IrqTimer(10);};
+		if (IRQ_TIMER9){IrqTimer(9);};
+		if (IRQ_TIMER8){IrqTimer(8);};
+		if (IRQ_TIMER7){IrqTimer(7);};
+		if (IRQ_TIMER6){IrqTimer(6);};
+		if (IRQ_TIMER5){IrqTimer(5);};
+		if (IRQ_TIMER4){IrqTimer(4);};
+		if (IRQ_TIMER3){IrqTimer(3);};
+		if (IRQ_TIMER2){IrqTimer(2);};
+		if (IRQ_TIMER1){IrqTimer(1);};
+		if (IRQ_TIMER0){IrqTimer(0);};
+	}
+}
+
+#if 0
 void IrqStatus(void)
 {
 	unsigned long mstatus = read_csr(mstatus);
@@ -417,213 +380,141 @@ void IrqStatus(void)
 
 	_printf("======================================================\n");
 }
+#endif
 
-void trap_from_machine_mode(void)
+static void __attribute__((noreturn)) bad_trap(uintptr_t mcause, uintptr_t mepc, uintptr_t regs[32])
 {
-	unsigned long mcause = read_csr(mcause);
-	if ((mcause&0x8000000000000000) != 0x0) {
-		mcause -= 0x8000000000000000;
-		switch(mcause) {
-			case 7:
-			    if (mtime && timecmp) {
-			    	//*HLS()->timecmp = *mtime + (1000000) ; // / configTICK_RATE_HZ);
-			    	//*timecmp = *mtime + (1000000);
-			        //*timecmp1 = *mtime + (1000000);
-			    }
-				break;
-			case 11:
-				for (int i = 0; i < 8; i++) {
-					volatile unsigned int source = *iClaimCompliet[i];
-					if (source != 0) {
-						_printf("CPU%d(%c) - IRQ%d\n", i/2, i%2==0 ? 'M':'S', i);
-					}
-					switch (source) {
-						case 1:
-							enx_exirq_source1();
-							break;
-						case 2:
-							enx_exirq_source2();
-							break;
-						case 3:
-							enx_exirq_source3();
-							break;
-						case 4:
-							enx_exirq_source4();
-							break;
-						case 5:
-							enx_exirq_source5();
-							break;
-						case 6:
-							enx_exirq_source6();
-							break;
-						case 7:
-							enx_exirq_source7();
-							break;
-						case 8:
-							enx_exirq_source8();
-							break;
-					}
-					*iClaimCompliet[i] = source;
-				}
-				break;
-			default:
-				_printf("IRQ.1 0x%lX\n", mcause);
-				break;
-		}
+	switch (mcause) {
+	case CAUSE_MISALIGNED_FETCH:	_printf("Instruction address misaligned\n");	break;
+	case CAUSE_FETCH_ACCESS:		_printf("Instruction access fault\n");			break;
+	case CAUSE_ILLEGAL_INSTRUCTION:	_printf("Illegal instruction\n");				break;
+	case CAUSE_BREAKPOINT:			_printf("Breakpoint\n");						break;
+	case CAUSE_MISALIGNED_LOAD:		_printf("Load address misaligned\n");			break;
+	case CAUSE_LOAD_ACCESS:			_printf("Load access fault\n");					break;
+	case CAUSE_MISALIGNED_STORE:	_printf("Store/AMO address misaligned\n");		break;
+	case CAUSE_STORE_ACCESS:		_printf("Store/AMO access fault\n");			break;
+	//case 10:						_printf("Reserved\n");							break;
+	case CAUSE_FETCH_PAGE_FAULT:	_printf("Instruction page fault\n");			break;
+	case CAUSE_LOAD_PAGE_FAULT:		_printf("Load page fault\n");					break;
+	//case 14:						_printf("Reserved\n");							break;
+	case CAUSE_STORE_PAGE_FAULT:	_printf("Store/AMO page fault\n");				break;
+	default:						_printf("Reserved(%d)\n", mcause);				break;
 	}
-	else {
-		_printf("IRQ.0 0x%lX\n", mcause);
-		switch(mcause) {
-			case 0:		_printf("Instruction address misaligned\n");	break;
-			case 1:		_printf("Instruction access fault\n");			break;
-			case 2:		_printf("Illegal instruction\n");				break;
-			case 3:		_printf("Breakpoint\n");						break;
-			case 4:		_printf("Load address misaligned\n");			break;
-			case 5:		_printf("Load access fault\n");					break;
-			case 6:		_printf("Store/AMO address misaligned\n");		break;
-			case 7:		_printf("Store/AMO access fault\n");			break;
-			case 8:		_printf("Environment call from U-mode\n");		break;
-			case 9:		_printf("Environment call from S-mode\n");		break;
-			//case 10:	_printf("Reserved\n");							break;
-			case 11:	_printf("Environment call from M-mode\n");		break;
-			case 12:	_printf("Instruction page fault\n");			break;
-			case 13:	_printf("Load page fault\n");					break;
-			//case 14:	_printf("Reserved\n");							break;
-			case 15:	_printf("Store/AMO page fault\n");				break;
-			default:	_printf("Reserved\n");							break;
+	_printf("machine mode: unhandlable trap %d @ %p\n", read_csr(mcause), mepc);
+	while (1);
+}
+
+uintptr_t trap_from_machine_mode(uintptr_t mcause, uintptr_t mepc, uintptr_t regs[32])
+{
+	if ((mcause & 0x8000000000000000) != 0x0) {
+		mcause -= 0x8000000000000000;
+		switch (mcause) {
+		case IRQ_M_TIMER:
+		    if (mtime && timecmp) {
+		    	int cpu_id = read_csr(mhartid);
+		    	//timecmp[cpu_id] = *mtime + TIMECMP_NEXT_VAL; // 1ms
+		    	timecmp[cpu_id] = timecmp[cpu_id] + TIMECMP_NEXT_VAL; // 1ms
+		    	static uint64_t gbTickCnt = TIME_TICK - 1;
+				if (gbTickCnt == 0) {
+					gbTickCnt = TIME_TICK - 1;
+					gptMsgShare.TIME++;
+					gptMsgShare.UPTIME++;
+				} else {
+					gbTickCnt--;
+				}
+		    }
+			break;
+
+		case IRQ_M_EXT:
+			for (int i = 0; i < 8; i++) {
+				volatile unsigned int source = *iClaimCompliet[i]; // Get Claim IRQ
+				if (source != 0) {
+					_printf("CPU%d(%c) - IRQ%d\n", i/2, i%2==0 ? 'M':'S', i);
+				}
+				switch (source) {
+				case 1:	enx_exirq_source1();	break;
+				case 2:	enx_exirq_source2();	break;
+				case 3:	enx_exirq_source3();	break;
+				case 4:	enx_exirq_source4();	break;
+				case 5:	enx_exirq_source5();	break;
+				case 6:	enx_exirq_source6();	break;
+				case 7:	enx_exirq_source7();	break;
+				case 8:	enx_exirq_source8();	break;
+				}
+				*iClaimCompliet[i] = source; // Set Complete IRQ
+			}
+			break;
+
+		default:
+			_printf("IRQ.1 0x%lX\n", mcause);
+			break;
 		}
+		return mepc;
+	} else {
+		switch(mcause) {
+		case CAUSE_USER_ECALL:
+		case CAUSE_SUPERVISOR_ECALL:
+		case CAUSE_MACHINE_ECALL:
+			regs[10] = do_syscall(regs[10], regs[11], regs[12], regs[13], regs[14], regs[15], regs[17]);
+			break;
+
+		default:
+			bad_trap(mcause, mepc, regs);
+			break;
+		}
+		return mepc + 4;
 	}
 }
 
-// Group1
-#define IRQ_USE_ISP 1
+void enx_externalirq_perl(eIRQ_GROUP_INDEX perlIdx, uint64_t onoff, uint64_t type)
+{
+	if (type > 1) {
+		_printf("Error type(%lu) (M-mode:0 S-mode:1)\n", type);
+		return;
+	}
 
-// Group2
-#define IRQ_USE_DMA 2
-#define IRQ_USE_H264 2
-#define IRQ_USE_H265 2
+	if (onoff) {
+		*iPrioBase[perlIdx] = 1;
+	} else {
+		*iPrioBase[perlIdx] = 0;
+	}
 
-// Group3
-#define IRQ_USE_USB 3
-#define IRQ_USE_I2S 3
-#define IRQ_USE_ETH 3
+	uint64_t cpuid = read_csr(mhartid);
+	*iEnables[cpuid+type] |= 1 << (perlIdx + 1);
+	*iThreshold[cpuid+type] = 0;
+}
 
-// Group4
-#define IRQ_USE_SDIO 4
+void enx_timerirq_init(void)
+{
+    /* reuse existing routine */
+	int cpu_id = read_csr(mhartid);
+	*mtime = 0;											// timer init
+	timecmp[cpu_id] = *mtime + TIMECMP_NEXT_VAL;		// Next timer Interrupt
 
-// Group5
-#define IRQ_USE_AES 5
-#define IRQ_USE_SHA 5
-#define IRQ_USE_CHKSUM 5
-
-// Group6
-#define IRQ_USE_UART 6
-#define IRQ_USE_SPI 6
-#define IRQ_USE_I2C 6
-
-// Group7
-#define IRQ_USE_GPIO 7
-
-// Group8
-#define IRQ_USE_TIMER 8
+    set_csr(mie, MIP_MTIP);								// Enable the Machine-Timer bit in MIE
+}
 
 void enx_externalirq_init(void)
 {
-	uint64_t cpuid = read_csr(mhartid);
+	set_csr(mie, MIP_MEIP);								// Enable External Interrupts
+	set_csr(mstatus, MSTATUS_MIE);						// Machine Interrupt Enable
+//	set_csr(mstatus, MSTATUS_MPIE);						// Machine Previous Interrupt Enabler
+//	set_csr(mstatus, MSTATUS_MPP);						// Machine Previous Privilege Mode
 
-	// Enable External Interrupts
-	write_csr(mie, MIP_MEIP);
-
-	// Enable Global Interrupts
-	unsigned long mstatus = read_csr(mstatus);
-	_printf("MSTATUS SET1: 0x%X\n", mstatus);
-	mstatus = INSERT_FIELD(mstatus, MSTATUS_MIE, 1); // Machine Interrupt Enable
-	mstatus = INSERT_FIELD(mstatus, MSTATUS_MPIE, 0); // Machine Previous Interrupt Enabler
-	mstatus = INSERT_FIELD(mstatus, MSTATUS_MPP, 0); // Machine Previous Privilege Mode
-	_printf("MSTATUS SET2: 0x%X\n", mstatus);
-	write_csr(mstatus, mstatus);
-
-#if 1
-	iPrioBase[0] = 0;
-	iPrioBase[1] = 0;
-	iPrioBase[2] = 0;
-	iPrioBase[3] = 0;
-	iPrioBase[4] = 0;
-	iPrioBase[5] = 1;
-	iPrioBase[6] = 0;
-	iPrioBase[7] = 0;
-
-	iEnables[0] = 0x40;
-	iEnables[1] = 0;
-	iEnables[2] = 0;
-	iEnables[3] = 0;
-	iEnables[4] = 0;
-	iEnables[5] = 0;
-	iEnables[6] = 0;
-	iEnables[7] = 0;
-
-	iThreshold[0] = 0;
-	iThreshold[1] = 0;
-	iThreshold[2] = 0;
-	iThreshold[3] = 0;
-	iThreshold[4] = 0;
-	iThreshold[5] = 0;
-	iThreshold[6] = 0;
-	iThreshold[7] = 0;
-
-
-#else
-	// source
-	volatile unsigned int * pAdr_prio1 = (unsigned int *)0x0C000004; // ISP
-	volatile unsigned int * pAdr_prio2 = (unsigned int *)0x0C000008; // DMA, H.264, H.265
-	volatile unsigned int * pAdr_prio3 = (unsigned int *)0x0C00000C; // USB, I2S, ETH
-	volatile unsigned int * pAdr_prio4 = (unsigned int *)0x0C000010; // SDIO
-	volatile unsigned int * pAdr_prio5 = (unsigned int *)0x0C000014; // AES, SHA, CHKSUM
-	volatile unsigned int * pAdr_prio6 = (unsigned int *)0x0C000018; // UART, SPI, I2C
-	volatile unsigned int * pAdr_prio7 = (unsigned int *)0x0C00001C; // GPIO
-	volatile unsigned int * pAdr_prio8 = (unsigned int *)0x0C000020; // TIMER
-
-	// Target
-	volatile unsigned int * pAdr_ie1   = (unsigned int *)0x0C002000; // CPU1 - Machine
-	volatile unsigned int * pAdr_ie2   = (unsigned int *)0x0C002080; // CPU1 - Supervisor
-	volatile unsigned int * pAdr_ie3   = (unsigned int *)0x0C002100; // CPU2 - Machine
-	volatile unsigned int * pAdr_ie4   = (unsigned int *)0x0C002180; // CPU2 - Supervisor
-	volatile unsigned int * pAdr_ie5   = (unsigned int *)0x0C002200; // CPU3 - Machine
-	volatile unsigned int * pAdr_ie6   = (unsigned int *)0x0C002280; // CPU3 - Supervisor
-	volatile unsigned int * pAdr_ie7   = (unsigned int *)0x0C002300; // CPU4 - Machine
-	volatile unsigned int * pAdr_ie8   = (unsigned int *)0x0C002380; // CPU4 - Supervisor
-
-	volatile unsigned int * pAdr_thre1 = (unsigned int *)0x0C200000; // CPU1 - Machine
-	volatile unsigned int * pAdr_thre2 = (unsigned int *)0x0C201000; // CPU1 - Supervisor
-	volatile unsigned int * pAdr_thre3 = (unsigned int *)0x0C202000; // CPU2 - Machine
-	volatile unsigned int * pAdr_thre4 = (unsigned int *)0x0C203000; // CPU2 - Supervisor
-	volatile unsigned int * pAdr_thre5 = (unsigned int *)0x0C204000; // CPU3 - Machine
-	volatile unsigned int * pAdr_thre6 = (unsigned int *)0x0C205000; // CPU3 - Supervisor
-	volatile unsigned int * pAdr_thre7 = (unsigned int *)0x0C206000; // CPU4 - Machine
-	volatile unsigned int * pAdr_thre8 = (unsigned int *)0x0C207000; // CPU4 - Supervisor
-
-	volatile unsigned int * pAdr_mthre = (unsigned int *)0xc200000;
-	volatile unsigned int * pAdr_sthre = (unsigned int *)0xc201000;
-	volatile unsigned int * pAdr_pend  = (unsigned int *)0xc001000;
-
-	*pAdr_prio1 = 0;
-	*pAdr_prio2 = 0;
-	*pAdr_prio3 = 0;
-	*pAdr_prio4 = 0;
-	*pAdr_prio5 = 0;
-	*pAdr_prio6 = 1;
-	*pAdr_prio7 = 0;
-	*pAdr_prio8 = 0;
-
-	*pAdr_ie1 = 0x40;
-	*pAdr_ie2 = 0;
-	*pAdr_ie3 = 0;
-	*pAdr_ie4 = 0;
-	*pAdr_ie5 = 0;
-	*pAdr_ie6 = 0;
-	*pAdr_ie7 = 0;
-	*pAdr_ie8 = 0;
-
-	*pAdr_mthre = 0x0;
-#endif
+	enx_externalirq_perl(eigiISP, DEF_ON, 0);			// Enable ISP Interrupts
+	enx_externalirq_perl(eigiDMA, DEF_ON, 0);			// Enable DMA Interrupts
+	enx_externalirq_perl(eigiH264, DEF_ON, 0);			// Enable H264 Interrupts
+	enx_externalirq_perl(eigiH265, DEF_ON, 0);			// Enable H265 Interrupts
+	enx_externalirq_perl(eigiUSB, DEF_ON, 0);			// Enable USB Interrupts
+	enx_externalirq_perl(eigiI2S, DEF_ON, 0);			// Enable I2S Interrupts
+	enx_externalirq_perl(eigiETH, DEF_ON, 0);			// Enable ETH Interrupts
+	enx_externalirq_perl(eigiSDIO, DEF_ON, 0);			// Enable SDIO Interrupts
+	enx_externalirq_perl(eigiASE, DEF_ON, 0);			// Enable AES Interrupts
+	enx_externalirq_perl(eigiSHA, DEF_ON, 0);			// Enable SHA Interrupts
+	enx_externalirq_perl(eigiCHKSUM, DEF_ON, 0);		// Enable CHKSUM Interrupts
+	enx_externalirq_perl(eigiUART, DEF_ON, 0);			// Enable UART Interrupts
+	enx_externalirq_perl(eigiSPI, DEF_ON, 0);			// Enable SPI Interrupts
+	enx_externalirq_perl(eigiI2C, DEF_ON, 0);			// Enable I2C Interrupts
+	enx_externalirq_perl(eigiGPIO, DEF_ON, 0);			// Enable GPIO Interrupts
+	enx_externalirq_perl(eigiTIMER, DEF_ON, 0);			// Enable TIMER Interrupts
 }

@@ -21,10 +21,36 @@
 #define RTC_I2C_CH	${USE_RTC_I2C}
 #if ${USE_RTC_PCF8563}
 #define __RTC_PCF8563__
-#endif
+#endif // __RTC_PCF8563__
 #if ${USE_RTC_S35390A}
 #define __RTC_S35390A__
-#endif
-#endif
+#endif // __RTC_S35390A__
+#endif // __RTC_LOAD__
+
+#if ${USE_NETWORK}
+#define __NETWORK__
+#if ${USE_ETHERNET}
+#define __ETHERNET__
+#define ETHPHY_GPIO_RST	${USE_ETHPHY_RST}
+#define ETHPHY_GPIO_IRQ	${USE_ETHPHY_IRQ}
+#define ETHPHY_MDIO_ADR	${USE_ETHPHY_MDIO_ADR}
+#if ${USE_ETHPHY_KSZ8081MNX}
+#define __ETHPHY_KSZ8081MNX__
+#endif // __ETHPHY_KSZ8081MNX__
+#if ${USE_ETHPHY_KSZ8081RNB}
+#define __ETHPHY_KSZ8081RNB__
+#endif // __ETHPHY_KSZ8081RNB__
+#if ${USE_ETHPHY_KSZ9031RNX}
+#define __ETHPHY_KSZ9031RNX__
+#endif // __ETHPHY_KSZ9031RNX__
+#endif // __ETHERNET__
+#endif // __NETWORK__
+
+#if ${USE_AUDIO}
+#define __AUDIO__
+#define AUDIO_GPIO_RST	${USE_AUDIO_RST}
+#define AUDIO_GPIO_IRQ	${USE_AUDIO_IRQ}
+#define AUDIO_I2C_CH	${USE_AUDIO_I2C}
+#endif // __AUDIO__
 
 #endif // __DEV_DEVICE_H__

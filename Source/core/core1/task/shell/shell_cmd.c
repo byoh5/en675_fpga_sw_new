@@ -370,3 +370,67 @@ int cmd_mem_ststus(int argc, char *argv[])
 	UNUSED(argc);
 	UNUSED(argv);
 }
+
+int cmd_test_sysreg(int argc, char *argv[])
+{
+#if 0 // Test Code
+	cmd_test_sysreg(1, NULL);
+
+	char *str0[10] = {"NULL", "0","1111"};
+	cmd_test_sysreg(3, str0);
+	cmd_test_sysreg(1, NULL);
+
+	char *str1[10] = {"NULL", "1","2222"};
+	cmd_test_sysreg(3, str1);
+	cmd_test_sysreg(1, NULL);
+
+	char *str2[10] = {"NULL", "2","3333"};
+	cmd_test_sysreg(3, str2);
+	cmd_test_sysreg(1, NULL);
+
+	char *str3[10] = {"NULL", "3","4444"};
+	cmd_test_sysreg(3, str3);
+	cmd_test_sysreg(1, NULL);
+#endif
+	if (argc == 1) {
+		char strName[20] = {0};
+		UINT *p = strName;
+		p[0] = SYS_MARK0;
+		p[1] = SYS_MARK1;
+		p[2] = SYS_MARK2;
+		p[3] = SYS_MARK3;
+		p[4] = SYS_MARK4;
+		_printf("SYS_MAKR [%s]\n", strName);
+		hexDump("SYS_MARK", strName, 20);
+		_printf("SYS_REG0 [0x%08X]\n", SYS_REG0);
+		_printf("SYS_REG1 [0x%08X]\n", SYS_REG1);
+		_printf("SYS_REG2 [0x%08X]\n", SYS_REG2);
+		_printf("SYS_REG3 [0x%08X]\n", SYS_REG3);
+	} else if (argc == 3) {
+		UINT id = atoi(argv[1]);
+		UINT var = atoi(argv[2]);
+		_printf("Input ID(%d) VAR(0x%08X)\n", id, var);
+		switch (id) {
+		case 0:
+			SYS_REG0 = var;
+			break;
+		case 1:
+			SYS_REG1 = var;
+			break;
+		case 2:
+			SYS_REG2 = var;
+			break;
+		case 3:
+			SYS_REG3 = var;
+			break;
+		default:
+			Shell_Unknown();
+			break;
+		}
+	} else {
+		Shell_Unknown();
+	}
+	return 0;
+	UNUSED(argc);
+	UNUSED(argv);
+}

@@ -18,7 +18,16 @@
 #include <time.h>	// time_t
 #include "rtc.h"
 
-// time.c //////////////////////////////////////////////////////////////////////
+// uart printf out /////////////////////////////////////////////////////////////
+
+#define DEBUG_UART_NUM 7
+
+#define printf _printf
+
+// time ////////////////////////////////////////////////////////////////////////
+#define TIME_TICK			1000							// 1ms
+#define TIMECMP_NEXT_VAL	((MCK_FREQ / 100) / TIME_TICK)
+
 #define TimeZone_GMT 1
 #define TimeZone_LOC 0
 
@@ -27,5 +36,9 @@ extern const char* const strMonth[];
 
 extern void enx_get_tmtime(time_t get_time, struct tm *tmtime, UINT is_local);
 extern int set_devicetime(int nTimezone, UINT nYear, UINT nMonth, UINT nDay, UINT nHour, UINT nMin, UINT nSec);
+
+// irq.c ///////////////////////////////////////////////////////////////////////
+extern void enx_timerirq_init(void);
+extern void enx_externalirq_init(void);
 
 #endif // __DEV_H__

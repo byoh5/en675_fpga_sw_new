@@ -3,6 +3,7 @@
 static _SPI_REG0 *arrSPIRX[SPI_CNT];
 static _SPI_REG1 *arrSPITX[SPI_CNT];
 static _SPI_REG2 *arrSPI[SPI_CNT];
+static tIhnd arrSPIIrq[SPI_CNT];
 
 void SpiInit(UINT nCH, UINT Speed_Hz, UINT WordSize, UINT BitDirection)
 {
@@ -25,35 +26,20 @@ void SpiInit(UINT nCH, UINT Speed_Hz, UINT WordSize, UINT BitDirection)
 	// L(Low) H(High) Pec(Positive Edge clock) Nec(Negative Edge clock)
 	arrSPI[nCH]->CLK_MODE = 0;			// 0:L+Pec, 1:L+Nec, 2:H+Pec, 3:H+Nec
 
+	arrSPIIrq[nCH].irqfn = NULL;
+	arrSPIIrq[nCH].arg = NULL;
+
 	// pin mux setting
 	switch (nCH) {
-		case 0:
-			SPI0_PIN_INIT;
-			break;
-		case 1:
-			SPI1_PIN_INIT;
-			break;
-		case 2:
-			SPI2_PIN_INIT;
-			break;
-		case 3:
-			SPI3_PIN_INIT;
-			break;
-		case 4:
-			SPI4_PIN_INIT;
-			break;
-		case 5:
-			SPI5_PIN_INIT;
-			break;
-		case 6:
-			SPI6_PIN_INIT;
-			break;
-		case 7:
-			SPI7_PIN_INIT;
-			break;
-		case 8:
-			SPI8_PIN_INIT;
-			break;
+		case 0:	SPI0_PIN_INIT;	break;
+		case 1:	SPI1_PIN_INIT;	break;
+		case 2:	SPI2_PIN_INIT;	break;
+		case 3:	SPI3_PIN_INIT;	break;
+		case 4:	SPI4_PIN_INIT;	break;
+		case 5:	SPI5_PIN_INIT;	break;
+		case 6:	SPI6_PIN_INIT;	break;
+		case 7:	SPI7_PIN_INIT;	break;
+		case 8:	SPI8_PIN_INIT;	break;
 	}
 }
 
@@ -68,9 +54,25 @@ void SpiDeinit(UINT nCH)
 	arrSPI[nCH]->CLK_MODE    = 0;
 	arrSPI[nCH]->EN          = 0;
 
+	arrSPIIrq[nCH].irqfn = NULL;
+	arrSPIIrq[nCH].arg = NULL;
+
 	arrSPIRX[nCH] = NULL;
 	arrSPITX[nCH] = NULL;
 	arrSPI[nCH] = NULL;
+
+	// pin mux setting
+	switch (nCH) {
+		case 0:	SPI0_PIN_DEINIT;	break;
+		case 1:	SPI1_PIN_DEINIT;	break;
+		case 2:	SPI2_PIN_DEINIT;	break;
+		case 3:	SPI3_PIN_DEINIT;	break;
+		case 4:	SPI4_PIN_DEINIT;	break;
+		case 5:	SPI5_PIN_DEINIT;	break;
+		case 6:	SPI6_PIN_DEINIT;	break;
+		case 7:	SPI7_PIN_DEINIT;	break;
+		case 8:	SPI8_PIN_DEINIT;	break;
+	}
 }
 
 void SpiCsLo(UINT nCH)
@@ -119,3 +121,43 @@ void SpiRW(UINT nCH, BYTE *WrDat, BYTE *RdDat)
 	if (arrSPI[nCH]->WS>1) *RdDat++ = (arrSPIRX[nCH]->RX_DAT&0x0000ff00)>>8;
 	if (arrSPI[nCH]->WS>2) *RdDat++ = (arrSPIRX[nCH]->RX_DAT&0x000000ff);
 }
+
+void SpiIrqCallback(UINT nCH, irq_fn irqfn, void *arg)
+{
+	arrSPIIrq[nCH].irqfn = irqfn;
+	arrSPIIrq[nCH].arg = arg;
+}
+
+void SpiIrqOn(UINT nCH)
+{
+	arrSPI[nCH]->IRQ_EN = 1;
+}
+
+void SpiIrqOff(UINT nCH)
+{
+	arrSPI[nCH]->IRQ_EN = 0;
+}
+
+void SpiIrqClear(UINT nCH)
+{
+	arrSPI[nCH]->IRQ_CLR = 1;
+}
+
+UINT SpiIsIrq(UINT nCH)
+{
+	return arrSPI[nCH]->IRQ;
+}
+
+void IrqSpi(UINT nCH)
+{
+	if (SpiIsIrq(nCH)) {
+		_printf("SPI IRQ Get [%d]\n", nCH);
+		if (arrSPIIrq[nCH].irqfn) {
+			arrSPIIrq[nCH].irqfn(arrSPIIrq[nCH].arg);
+		}
+		SpiIrqClear(nCH);
+	}
+}
+
+
+

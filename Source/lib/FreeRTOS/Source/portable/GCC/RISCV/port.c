@@ -241,7 +241,6 @@ void vPortSysTickHandler( void )
 	if (gbTickCnt == 0) {
 		gbTickCnt = configTICK_RATE_HZ - 1;
 		gptMsgShare.TIME++;
-		gptMsgShare.UPTIME++;
 	} else {
 		gbTickCnt--;
 	}

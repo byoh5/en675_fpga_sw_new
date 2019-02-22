@@ -340,8 +340,8 @@ int _printf(const char *format, ...)
 
 	pbuf = buf;
 	while (*pbuf) {
-		if (*pbuf == '\n') UartTx(7, '\r');
-		UartTx(7, *pbuf++);
+		if (*pbuf == '\n') UartTx(DEBUG_UART_NUM, '\r');
+		UartTx(DEBUG_UART_NUM, *pbuf++);
 	}
 	return len;
 }

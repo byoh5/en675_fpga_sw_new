@@ -13,8 +13,6 @@
 static char gcShellCmdBuf[100];
 static char	gcHistoryBuf[100];
 
-#define DEBUG_UART_NUM 7
-
 //*************************************************************************************************
 // Shell functions
 //-------------------------------------------------------------------------------------------------
@@ -115,32 +113,27 @@ int _DoCommand(char *cmdline)
 int _getline(char *buf, int max, int timeout)
 {
 	static char crlf;
-	int total, idx;
-	char *base;
+	int total = 0;
+	char *base = buf;
 	unsigned char ck;
-	
-	total = idx = 0;
-	base = buf;
+
 	max -= 1;												// Make sure there is space for the null terminator
 
-	for(idx=0; idx<max; idx++){
+	for (int idx = 0; idx < max; idx++) {
+		while (UartRxIsEmpty(DEBUG_UART_NUM) == 1) {
+			vTaskDelay(10);
+		}
 
-		//while(1) { vTaskDelay(1); }
-
-		while(UartRxExist(DEBUG_UART_NUM) == 0)			vTaskDelay(10);
-
-//		*buf = (char)UartGetByte();
-		ck = UartGetByte(DEBUG_UART_NUM);
-		*buf = ck;
-		//_printf("[%X]", ck);
-		if(!*buf){
+		*buf = (char)UartRxGetByte(DEBUG_UART_NUM);
+		if (!*buf) {
 			idx--;
 			return 0;
 		}
 
-		if ( (*buf=='\r') || (*buf=='\n') ){
-			if(crlf && (*buf != crlf))
+		if ((*buf=='\r') || (*buf=='\n')) {
+			if (crlf && (*buf != crlf)) {
 				crlf = 0;
+			}
 			UartTx(DEBUG_UART_NUM, '\r');
 			UartTx(DEBUG_UART_NUM, '\n');
 		    crlf = *buf;
@@ -148,8 +141,8 @@ int _getline(char *buf, int max, int timeout)
 		    break;
 		}
 
-		if (*buf=='\b'){
-			if(total){
+		if (*buf=='\b') {
+			if (total) {
 				idx -=2;
 				buf--;
 				total--;

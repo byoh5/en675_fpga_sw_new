@@ -1,5 +1,25 @@
 #include "dev.h"
 
+#if 0
+void ddr_map_test()
+{
+	//dma_set(DDR_BASE, DDR_SIZE, 0);
+	volatile UINT pDDR = DDR_BASE;
+
+	for(pDDR = DDR_BASE; pDDR < (DDR_BASE+DDR_SIZE); pDDR++)
+	{
+		dmwrite32(pDDR, pDDR);
+	}
+	for(pDDR = DDR_BASE; pDDR < (DDR_BASE+DDR_SIZE); pDDR++)
+	{
+		if(dmread32(pDDR)!=pDDR)
+		{
+			while(1);
+		}
+	}
+}
+#endif
+
 void DdrTest(void)
 {
 	DmaMemSet_isr(0, (BYTE *)DDR_BASE, 0, DDR_SIZE);

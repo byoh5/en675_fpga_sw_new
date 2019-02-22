@@ -214,4 +214,33 @@ typedef volatile uint64			vuint64;	//	"
 #define	_am(uon,base,addr)		((volatile uon*)(UINT*)(base+(addr)))->a	// All macro
 #define	_bm(uon,base,addr,mne)	((volatile uon*)(UINT*)(base+(addr)))->mne	// Bit macro
 
+//******************************************************************************
+// IRQ define
+//------------------------------------------------------------------------------
+typedef enum {
+	eigiISP = 0,
+	eigiDMA = 1,
+	eigiH264 = 1,
+	eigiH265 = 1,
+	eigiUSB = 2,
+	eigiI2S = 2,
+	eigiETH = 2,
+	eigiSDIO = 3,
+	eigiASE = 4,
+	eigiSHA = 4,
+	eigiCHKSUM = 4,
+	eigiUART = 5,
+	eigiSPI = 5,
+	eigiI2C = 5,
+	eigiGPIO = 6,
+	eigiTIMER = 7
+} eIRQ_GROUP_INDEX;
+
+typedef void (*irq_fn)(void *arg);
+
+typedef struct {
+	irq_fn irqfn;
+	void *arg;
+} tIhnd;
+
 #endif // _DEV_TYPES_H_
