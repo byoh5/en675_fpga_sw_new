@@ -18,20 +18,14 @@ SET ( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -T ${CMAKE_CURRENT_SOURC
 # 소스 코드
 SET ( SHARED_HDRS
 	boot.h
-	clib.h
-	configstring.h
 	exbl.h
 	msg.h
-	syscalls.h
 )
 
 SET ( SHARED_SRCS
-	clib.c
 	boot.c
 	exbl.c
 	msg.c
-	syscalls.c
-	syscalls_dummy.c
 	mentry.S
 )
 

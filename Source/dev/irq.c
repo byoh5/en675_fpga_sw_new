@@ -1,6 +1,9 @@
 #include "dev.h"
 #include "syscall.h"
 
+volatile uint64_t* mtime =      (uint64_t*)(CLINT_BASE + 0xbff8);
+volatile uint64_t* timecmp =    (uint64_t*)(CLINT_BASE + 0x4000);
+
 #define IRQ_PRIO1_BASE				0x0C000004 // RW: Source 1 priority (ISP)
 #define IRQ_PRIO2_BASE				0x0C000008 // RW: Source 2 priority (DMA, H.264, H.265)
 #define IRQ_PRIO3_BASE				0x0C00000C // RW: Source 3 priority (USB, I2S, ETH)
@@ -404,25 +407,33 @@ static void __attribute__((noreturn)) bad_trap(uintptr_t mcause, uintptr_t mepc,
 	while (1);
 }
 
+void enx_timerirq_next(void)
+{
+    if (mtime && timecmp) {
+    	int cpu_id = read_csr(mhartid);
+    	//timecmp[cpu_id] = *mtime + TIMECMP_NEXT_VAL; // 1ms
+    	timecmp[cpu_id] = timecmp[cpu_id] + TIMECMP_NEXT_VAL; // 1ms
+    	if (cpu_id == 0) {
+			static uint64_t gbTickCnt = TIME_TICK - 1;
+			if (gbTickCnt == 0) {
+				gbTickCnt = TIME_TICK - 1;
+				gptMsgShare.TIME++;
+				gptMsgShare.UPTIME++;
+			} else {
+				gbTickCnt--;
+			}
+    	}
+    }
+}
+
 uintptr_t trap_from_machine_mode(uintptr_t mcause, uintptr_t mepc, uintptr_t regs[32])
 {
+	mcause = read_csr(mcause);
 	if ((mcause & 0x8000000000000000) != 0x0) {
 		mcause -= 0x8000000000000000;
 		switch (mcause) {
 		case IRQ_M_TIMER:
-		    if (mtime && timecmp) {
-		    	int cpu_id = read_csr(mhartid);
-		    	//timecmp[cpu_id] = *mtime + TIMECMP_NEXT_VAL; // 1ms
-		    	timecmp[cpu_id] = timecmp[cpu_id] + TIMECMP_NEXT_VAL; // 1ms
-		    	static uint64_t gbTickCnt = TIME_TICK - 1;
-				if (gbTickCnt == 0) {
-					gbTickCnt = TIME_TICK - 1;
-					gptMsgShare.TIME++;
-					gptMsgShare.UPTIME++;
-				} else {
-					gbTickCnt--;
-				}
-		    }
+			enx_timerirq_next();
 			break;
 
 		case IRQ_M_EXT:
@@ -466,7 +477,7 @@ uintptr_t trap_from_machine_mode(uintptr_t mcause, uintptr_t mepc, uintptr_t reg
 	}
 }
 
-void enx_externalirq_perl(eIRQ_GROUP_INDEX perlIdx, uint64_t onoff, uint64_t type)
+static void enx_externalirq_perl(eIRQ_GROUP_INDEX perlIdx, uint64_t onoff, uint64_t type)
 {
 	if (type > 1) {
 		_printf("Error type(%lu) (M-mode:0 S-mode:1)\n", type);
@@ -488,7 +499,6 @@ void enx_timerirq_init(void)
 {
     /* reuse existing routine */
 	int cpu_id = read_csr(mhartid);
-	*mtime = 0;											// timer init
 	timecmp[cpu_id] = *mtime + TIMECMP_NEXT_VAL;		// Next timer Interrupt
 
     set_csr(mie, MIP_MTIP);								// Enable the Machine-Timer bit in MIE

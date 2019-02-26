@@ -351,12 +351,12 @@ int sys_uname(void* buf)
 	return 0;
 }
 
-pid_t sys_getpid()
+pid_t sys_getpid(void)
 {
 	return 0;
 }
 
-int sys_getuid()
+int sys_getuid(void)
 {
 	return 0;
 }
@@ -466,12 +466,12 @@ int sys_getdents(int fd, void* dirbuf, int count)
 	return 0; //stub
 }
 
-static int sys_stub_success()
+static int sys_stub_success(void)
 {
 	return 0;
 }
 
-static int sys_stub_nosys()
+static int sys_stub_nosys(void)
 {
 	return -ENOSYS;
 }
@@ -482,7 +482,7 @@ static void __attribute__((noreturn)) bad_syscall(unsigned long n)
 	while (1);
 }
 
-long do_syscall(long a0, long a1, long a2, long a3, long a4, long a5, unsigned long n)
+long do_syscall(long a0, long a1, long a2, long a3, long a4, long a5, unsigned long cmd)
 {
 	const static void* syscall_table[] = {
 		[SYS_exit] = sys_exit,
@@ -546,17 +546,15 @@ long do_syscall(long a0, long a1, long a2, long a3, long a4, long a5, unsigned l
 
 	syscall_t f = 0;
 
-	#define ARRAY_SIZE(x) (sizeof(x)/sizeof((x)[0]))
-
-	if (n < ARRAY_SIZE(syscall_table)) {
-		f = syscall_table[n];
-	} else if (n - OLD_SYSCALL_THRESHOLD < ARRAY_SIZE(old_syscall_table)) {
-		f = old_syscall_table[n - OLD_SYSCALL_THRESHOLD];
+	if (cmd < ARRAY_SIZE(syscall_table)) {
+		f = syscall_table[cmd];
+	} else if (cmd - OLD_SYSCALL_THRESHOLD < ARRAY_SIZE(old_syscall_table)) {
+		f = old_syscall_table[cmd - OLD_SYSCALL_THRESHOLD];
 	}
 
 	if (!f) {
-		bad_syscall(n);
+		bad_syscall(cmd);
 	}
 
-	return f(a0, a1, a2, a3, a4, a5, n);
+	return f(a0, a1, a2, a3, a4, a5, cmd);
 }

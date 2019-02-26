@@ -1,14 +1,12 @@
 //*************************************************************************************************
 // User shell commands
 //*************************************************************************************************
-
 #include "dev.h"
-
 #include "enx_freertos.h"
 
-#include "shell.h"
 #include "shell_cmd_common.h"
-#include "string.h"
+
+#include <sys/time.h> // gettimeofday
 
 const char *sTimeCmd[]      = {"System Time, TimeZone Get / Set",                (char*)0};
 
@@ -16,12 +14,15 @@ const char *sTimeCmd[]      = {"System Time, TimeZone Get / Set",               
 // User functions
 //-------------------------------------------------------------------------------------------------
 //
+
 int cmd_time(int argc, char *argv[])
 {
 	if (argc == 1) {
 		_printf("gptMsgShare.UPTIME: %lus\n", gptMsgShare.UPTIME);
 		_printf("gptMsgShare.TIME  : %lus\n", gptMsgShare.TIME);
-		_printf("gettimeofday      : %lus\n", gettime());
+		struct timeval tv;
+		gettimeofday(&tv, NULL);
+		_printf("gettimeofday      : %lus\n", tv.tv_sec);
 
 		struct tm tmout;
 

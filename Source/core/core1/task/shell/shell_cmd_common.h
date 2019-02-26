@@ -18,4 +18,4 @@ extern int cmd_time(int argc, char *argv[]);
 // Variable
 extern const char *sTimeCmd[];
 
-#endif
+#endif // _SHELL_USR_COMMON_H_

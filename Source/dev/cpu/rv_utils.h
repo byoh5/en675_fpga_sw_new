@@ -15,21 +15,22 @@
 #define	_RV_UTILS_H_
 #include "dev.h"
 
-void flush_dcache_line(unsigned int);
+extern void flush_dcache_line(unsigned int);
+extern void hwflush_dcache_range(uint sadr, uint eadr);
 
 // direct memory access using software flush/invalidation
-void dmwrite8(uint adr, uchar wdat);
-void dmwrite16(uint adr, ushort wdat);
-void dmwrite32(uint adr, uint wdat);
-void dmwrite64(uint adr, ulong wdat);
+extern void dmwrite8(uint adr, uchar wdat);
+extern void dmwrite16(uint adr, ushort wdat);
+extern void dmwrite32(uint adr, uint wdat);
+extern void dmwrite64(uint adr, ulong wdat);
 
-uchar dmread8(uint adr);
-ushort dmread16(uint adr);
-uint dmread32(uint adr);
-ulong dmread64(uint adr);
+extern uchar dmread8(uint adr);
+extern ushort dmread16(uint adr);
+extern uint dmread32(uint adr);
+extern ulong dmread64(uint adr);
 
 // misc
-void rv_util_test();
+extern void rv_util_test();
 
 #endif//_RV_UTILS_H_
 

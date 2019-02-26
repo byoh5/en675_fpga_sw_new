@@ -9,6 +9,9 @@ SET ( CORE1_HDRS
 	task/shell/shell.h
 	task/shell/shell_cmd.h
 	task/shell/shell_cmd_common.h
+	task/shell/shell_cmd_sdio.h
+	task/ledblink/ledblink.h
+	task/sdcard/sdcard.h
 )
 
 SET ( CORE1_SRCS
@@ -16,6 +19,9 @@ SET ( CORE1_SRCS
 	task/shell/shell.c
 	task/shell/shell_cmd.c
 	task/shell/shell_cmd_common.c
+	task/shell/shell_cmd_sdio.c
+	task/ledblink/ledblink.c
+	task/sdcard/sdcard.c
 )
 
 # 라이브러리 생성

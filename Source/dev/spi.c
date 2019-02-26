@@ -41,6 +41,8 @@ void SpiInit(UINT nCH, UINT Speed_Hz, UINT WordSize, UINT BitDirection)
 		case 7:	SPI7_PIN_INIT;	break;
 		case 8:	SPI8_PIN_INIT;	break;
 	}
+
+	printf("SPI%u Init - %uKHz\n", nCH, MCK_FREQ / ((arrSPI[nCH]->CLK_DIV + 1) * 4) / 1000);
 }
 
 void SpiDeinit(UINT nCH)
@@ -151,7 +153,7 @@ UINT SpiIsIrq(UINT nCH)
 void IrqSpi(UINT nCH)
 {
 	if (SpiIsIrq(nCH)) {
-		_printf("SPI IRQ Get [%d]\n", nCH);
+		_printf("SPI%d IRQ Get\n", nCH);
 		if (arrSPIIrq[nCH].irqfn) {
 			arrSPIIrq[nCH].irqfn(arrSPIIrq[nCH].arg);
 		}

@@ -17,13 +17,15 @@
 #define __DEV_PERI_H__
 
 // SDIO0 define
-#if 0
-
+#define USE_SDIO0			1
+#if USE_SDIO0
+#define SDIO0_SPEED			400000
 #endif
 
 // SDIO1 define
-#if 0
-
+#define USE_SDIO1			1
+#if USE_SDIO1
+#define SDIO1_SPEED			400000
 #endif
 
 // I2S define

@@ -38,6 +38,8 @@ void I2cInit(UINT nCH, UINT Speed_Hz)
 		case 7:	I2C7_PIN_INIT;	break;
 		case 8:	I2C8_PIN_INIT;	break;
 	}
+
+	printf("I2C%u Init - %uKHz\n", nCH, MCK_FREQ / ((arrI2CCLK[nCH]->CLK_DIV + 1) * 8) / 1000);
 }
 
 void I2cDeInit(UINT nCH)
@@ -139,7 +141,7 @@ UINT I2cIsIrq(UINT nCH)
 void IrqI2c(UINT nCH)
 {
 	if (I2cIsIrq(nCH)) {
-		_printf("I2C IRQ Get [%d]\n", nCH);
+		_printf("I2C%d IRQ Get\n", nCH);
 		if (arrI2CIrq[nCH].irqfn) {
 			arrI2CIrq[nCH].irqfn(arrI2CIrq[nCH].arg);
 		}

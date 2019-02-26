@@ -34,33 +34,51 @@ void UartInit(UINT nCH, UINT Speed_Hz)
 
 	// pin mux setting
 	switch (nCH) {
-		case 0:
-			UART0_PIN_INIT;
-			break;
-		case 1:
-			UART1_PIN_INIT;
-			break;
-		case 2:
-			UART2_PIN_INIT;
-			break;
-		case 3:
-			UART3_PIN_INIT;
-			break;
-		case 4:
-			UART4_PIN_INIT;
-			break;
-		case 5:
-			UART5_PIN_INIT;
-			break;
-		case 6:
-			UART6_PIN_INIT;
-			break;
-		case 7:
-			UART7_PIN_INIT;
-			break;
-		case 8:
-			UART8_PIN_INIT;
-			break;
+		case 0:	UART0_PIN_INIT;	break;
+		case 1:	UART1_PIN_INIT;	break;
+		case 2:	UART2_PIN_INIT;	break;
+		case 3:	UART3_PIN_INIT;	break;
+		case 4:	UART4_PIN_INIT;	break;
+		case 5:	UART5_PIN_INIT;	break;
+		case 6:	UART6_PIN_INIT;	break;
+		case 7:	UART7_PIN_INIT;	break;
+		case 8:	UART8_PIN_INIT;	break;
+	}
+
+	printf("UART%u Init - %uHz\n", nCH, MCK_FREQ / ((arrUART[nCH]->CLK_DIV + 1) * 16));
+}
+
+void UartDeinit(UINT nCH)
+{
+	arrUART[nCH]->CLK_DIV = 0;
+	arrUART[nCH]->TX_TYPE = 0;
+	arrUART[nCH]->STOP_BIT = 0;
+	arrUART[nCH]->PARITY_EN = 0;
+	arrUART[nCH]->PARITY_TYPE = 0;
+	arrUART[nCH]->TX_IRQ_EN = 0;
+	arrUART[nCH]->RX_IRQ_EN = 0;
+
+	arrUARTRXIrq[nCH].irqfn = NULL;
+	arrUARTRXIrq[nCH].arg = NULL;
+	arrUARTTXIrq[nCH].irqfn = NULL;
+	arrUARTTXIrq[nCH].arg = NULL;
+
+	arrUART[nCH] = NULL;
+	arrUARTRX[nCH] = NULL;
+	arrUARTTX[nCH] = NULL;
+	arrUARTRXLMT[nCH] = NULL;
+
+	// pin mux setting
+	switch (nCH) {
+		case 0:	UART0_PIN_DEINIT;	break;
+		case 1:	UART1_PIN_DEINIT;	break;
+		case 2:	UART2_PIN_DEINIT;	break;
+		case 3:	UART3_PIN_DEINIT;	break;
+		case 4:	UART4_PIN_DEINIT;	break;
+		case 5:	UART5_PIN_DEINIT;	break;
+		case 6:	UART6_PIN_DEINIT;	break;
+		case 7:	UART7_PIN_DEINIT;	break;
+		case 8:	UART8_PIN_DEINIT;	break;
 	}
 }
 
@@ -157,7 +175,6 @@ void IrqUart(UINT nCH)
 {
 	if (UartRxIsIrq(nCH)) {
 		while (UartRxIsEmpty(nCH) == 0) {
-			_printf(".");
 			if (arrUARTRXIrq[nCH].irqfn) {
 				arrUARTRXIrq[nCH].irqfn(arrUARTRXIrq[nCH].arg);
 			}
@@ -166,7 +183,7 @@ void IrqUart(UINT nCH)
 	}
 
 	if (UartTxIsIrq(nCH)) {
-		_printf("UART-TX IRQ Get [%d]\n", nCH);
+		_printf("UART%d-TX IRQ Get\n", nCH);
 		if (arrUARTTXIrq[nCH].irqfn) {
 			arrUARTTXIrq[nCH].irqfn(arrUARTTXIrq[nCH].arg);
 		}

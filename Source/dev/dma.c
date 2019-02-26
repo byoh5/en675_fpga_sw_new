@@ -92,7 +92,7 @@ void IrqDma(void)
 {
 	for (UINT nCH = 0; nCH < DMA_CNT; nCH++) {
 		if (DmaIsIrq(nCH)) {
-			_printf("Dma IRQ Get [%d]\n", nCH);
+			_printf("DMA%d IRQ Get\n", nCH);
 			if (arrDMAIrq[nCH].irqfn) {
 				arrDMAIrq[nCH].irqfn(arrDMAIrq[nCH].arg);
 			}

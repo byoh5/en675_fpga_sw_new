@@ -36,6 +36,7 @@ trap_freertos:
 	addi	sp, sp, 32 * -REGBYTES
 
 	/* Save Context */
+/*
 	STORE	x1, 0x0(sp)
 	STORE	x2,   1 * REGBYTES(sp)
 	STORE	x3,   2 * REGBYTES(sp)
@@ -67,15 +68,52 @@ trap_freertos:
 	STORE	x29, 28 * REGBYTES(sp)
 	STORE	x30, 29 * REGBYTES(sp)
 	STORE	x31, 30 * REGBYTES(sp)
+*/
+	STORE	x1,   1 * REGBYTES(sp)
+	STORE	x2,   2 * REGBYTES(sp)
+	STORE	x3,   3 * REGBYTES(sp)
+	STORE	x4,   4 * REGBYTES(sp)
+	STORE	x5,   5 * REGBYTES(sp)
+	STORE	x6,   6 * REGBYTES(sp)
+	STORE	x7,   7 * REGBYTES(sp)
+	STORE	x8,   8 * REGBYTES(sp)
+	STORE	x9,   9 * REGBYTES(sp)
+	STORE	x10, 10 * REGBYTES(sp)
+	STORE	x11, 11 * REGBYTES(sp)
+	STORE	x12, 12 * REGBYTES(sp)
+	STORE	x13, 13 * REGBYTES(sp)
+	STORE	x14, 14 * REGBYTES(sp)
+	STORE	x15, 15 * REGBYTES(sp)
+	STORE	x16, 16 * REGBYTES(sp)
+	STORE	x17, 17 * REGBYTES(sp)
+	STORE	x18, 18 * REGBYTES(sp)
+	STORE	x19, 19 * REGBYTES(sp)
+	STORE	x20, 20 * REGBYTES(sp)
+	STORE	x21, 21 * REGBYTES(sp)
+	STORE	x22, 22 * REGBYTES(sp)
+	STORE	x23, 23 * REGBYTES(sp)
+	STORE	x24, 24 * REGBYTES(sp)
+	STORE	x25, 25 * REGBYTES(sp)
+	STORE	x26, 26 * REGBYTES(sp)
+	STORE	x27, 27 * REGBYTES(sp)
+	STORE	x28, 28 * REGBYTES(sp)
+	STORE	x29, 29 * REGBYTES(sp)
+	STORE	x30, 30 * REGBYTES(sp)
+	STORE	x31, 31 * REGBYTES(sp)
 
 	csrr	a0, mcause
 	blt		a0, zero, portInterrupt
 	csrr	a1, mepc
 
 	mv		a2,	sp
-	jal		ulSyscallTrap
+	jal		trap_from_machine_mode
 
-	mv		sp, a0
+#	mv		sp, a0
+	csrw	mepc, a0
+
+	/* Remain in M-mode after mret */
+	li		t0, MSTATUS_MPP
+	csrs	mstatus, t0
 
 	/* Load Context */
 	LOAD	x1,   1 * REGBYTES(sp)

@@ -1,105 +1,115 @@
 #include "dev.h"
+#include "rv_utils.h" // dmwrite32, dmread32
+//#define TEST_DDR_SIZE DDR_SIZE
+#define TEST_DDR_SIZE 1*1024
 
-#if 0
-void ddr_map_test()
+#if 1
+void DdrTest(void)
 {
 	//dma_set(DDR_BASE, DDR_SIZE, 0);
-	volatile UINT pDDR = DDR_BASE;
+	volatile UINT *pDDR = (volatile UINT *)DDR_BASE;
 
-	for(pDDR = DDR_BASE; pDDR < (DDR_BASE+DDR_SIZE); pDDR++)
+	printf("DDR Test - Write\n");
+	for(pDDR = (volatile UINT *)DDR_BASE; pDDR < (volatile UINT *)(DDR_BASE+TEST_DDR_SIZE); pDDR++)
 	{
-		dmwrite32(pDDR, pDDR);
+		if (((long)pDDR) % (long)(1024*1024) == 0) {
+			printf("DDR Test - Write(0x%08X)\n", pDDR);
+		}
+		dmwrite32((uint)pDDR, (uint)pDDR);
 	}
-	for(pDDR = DDR_BASE; pDDR < (DDR_BASE+DDR_SIZE); pDDR++)
+	printf("DDR Test - Check\n");
+	for(pDDR = (volatile UINT *)DDR_BASE; pDDR < (volatile UINT *)(DDR_BASE+TEST_DDR_SIZE); pDDR++)
 	{
-		if(dmread32(pDDR)!=pDDR)
-		{
-			while(1);
+		long getdata = dmread32((uint)pDDR);
+		if (getdata != (long)pDDR) {
+			printf("DDR Test - X: 0x%08X 0x%08X\n", getdata, pDDR);
+		} else {
+			printf("DDR Test - O: 0x%08X 0x%08X\n", getdata, pDDR);
 		}
 	}
+	printf("DDR Test - Done\n");
 }
-#endif
-
+#else
 void DdrTest(void)
 {
 	DmaMemSet_isr(0, (BYTE *)DDR_BASE, 0, DDR_SIZE);
 
 	volatile UINT * pDDR;
-	_printf("DDR Test - Write\n");
-	for(pDDR = (UINT *)DDR_BASE; pDDR < (UINT *)(DDR_BASE+DDR_SIZE); pDDR++)
+	printf("DDR Test - Write\n");
+	for(pDDR = (UINT *)DDR_BASE; pDDR < (UINT *)(DDR_BASE+TEST_DDR_SIZE); pDDR++)
 	{
-		_printf(".");
 		*pDDR = (UINT)pDDR;
-	}
-	_printf("DDR Test - Check\n");
-	for(pDDR = (UINT *)DDR_BASE; pDDR < (UINT *)(DDR_BASE+DDR_SIZE); pDDR++)
-	{
-		if(*pDDR!=(UINT)pDDR)
-		{
-			_printf("DDR Test - X: 0x%08X 0x%08X\n", *pDDR, (UINT)pDDR);
-			//_printf("DDR Test - Error\n");
-			//while(1);
-		} else {
-			_printf("DDR Test - O: 0x%08X 0x%08X\n", *pDDR, (UINT)pDDR);
+		if (((UINT)pDDR) % (1024*1024) == 0) {
+			printf("DDR Test - Write(0x%08X)\n", pDDR);
 		}
 	}
-	_printf("DDR Test - Done\n");
+	printf("DDR Test - Check\n");
+	for(pDDR = (UINT *)DDR_BASE; pDDR < (UINT *)(DDR_BASE+TEST_DDR_SIZE); pDDR++)
+	{
+		if (*pDDR!=(UINT)pDDR) {
+			printf("DDR Test - X: 0x%08X 0x%08X\n", *pDDR, (UINT)pDDR);
+		} else {
+			printf("DDR Test - O: 0x%08X 0x%08X\n", *pDDR, (UINT)pDDR);
+		}
+	}
+	printf("DDR Test - Done\n");
 }
+#endif
 
-static void DdrParamBypass(void)
+static void DdrParamBypass(UINT var)
 {
-	DDR_DLY_CKEOUT  = 3;
-	DDR_DLY_CSOUT   = 3;
-	DDR_DLY_CA9OUT  = 3;
-	DDR_DLY_CA8OUT  = 3;
-	DDR_DLY_CA7OUT  = 3;
-	DDR_DLY_CA6OUT  = 3;
-	DDR_DLY_CA5OUT  = 3;
-	DDR_DLY_CA4OUT  = 3;
-	DDR_DLY_CA3OUT  = 3;
-	DDR_DLY_CA2OUT  = 3;
-	DDR_DLY_CA1OUT  = 3;
-	DDR_DLY_CA0OUT  = 3;
-	DDR_DLY_DQS0IN  = 3;
-	DDR_DLY_DM0OUT  = 3;
-	DDR_DLY_DQ7OUT  = 3;
-	DDR_DLY_DQ6OUT  = 3;
-	DDR_DLY_DQ5OUT  = 3;
-	DDR_DLY_DQ4OUT  = 3;
-	DDR_DLY_DQ3OUT  = 3;
-	DDR_DLY_DQ2OUT  = 3;
-	DDR_DLY_DQ1OUT  = 3;
-	DDR_DLY_DQ0OUT  = 3;
-	DDR_DLY_DQS1IN  = 3;
-	DDR_DLY_DM1OUT  = 3;
-	DDR_DLY_DQ15OUT = 3;
-	DDR_DLY_DQ14OUT = 3;
-	DDR_DLY_DQ13OUT = 3;
-	DDR_DLY_DQ12OUT = 3;
-	DDR_DLY_DQ11OUT = 3;
-	DDR_DLY_DQ10OUT = 3;
-	DDR_DLY_DQ9OUT  = 3;
-	DDR_DLY_DQ8OUT  = 3;
-	DDR_DLY_DQS2IN  = 3;
-	DDR_DLY_DM2OUT  = 3;
-	DDR_DLY_DQ23OUT = 3;
-	DDR_DLY_DQ22OUT = 3;
-	DDR_DLY_DQ21OUT = 3;
-	DDR_DLY_DQ20OUT = 3;
-	DDR_DLY_DQ19OUT = 3;
-	DDR_DLY_DQ18OUT = 3;
-	DDR_DLY_DQ17OUT = 3;
-	DDR_DLY_DQ16OUT = 3;
-	DDR_DLY_DQS3IN  = 3;
-	DDR_DLY_DM3OUT  = 3;
-	DDR_DLY_DQ31OUT = 3;
-	DDR_DLY_DQ30OUT = 3;
-	DDR_DLY_DQ29OUT = 3;
-	DDR_DLY_DQ28OUT = 3;
-	DDR_DLY_DQ27OUT = 3;
-	DDR_DLY_DQ26OUT = 3;
-	DDR_DLY_DQ25OUT = 3;
-	DDR_DLY_DQ24OUT = 3;
+	DDR_DLY_CKEOUT  = var;
+	DDR_DLY_CSOUT   = var;
+	DDR_DLY_CA9OUT  = var;
+	DDR_DLY_CA8OUT  = var;
+	DDR_DLY_CA7OUT  = var;
+	DDR_DLY_CA6OUT  = var;
+	DDR_DLY_CA5OUT  = var;
+	DDR_DLY_CA4OUT  = var;
+	DDR_DLY_CA3OUT  = var;
+	DDR_DLY_CA2OUT  = var;
+	DDR_DLY_CA1OUT  = var;
+	DDR_DLY_CA0OUT  = var;
+	DDR_DLY_DQS0IN  = var;
+	DDR_DLY_DM0OUT  = var;
+	DDR_DLY_DQ7OUT  = var;
+	DDR_DLY_DQ6OUT  = var;
+	DDR_DLY_DQ5OUT  = var;
+	DDR_DLY_DQ4OUT  = var;
+	DDR_DLY_DQ3OUT  = var;
+	DDR_DLY_DQ2OUT  = var;
+	DDR_DLY_DQ1OUT  = var;
+	DDR_DLY_DQ0OUT  = var;
+	DDR_DLY_DQS1IN  = var;
+	DDR_DLY_DM1OUT  = var;
+	DDR_DLY_DQ15OUT = var;
+	DDR_DLY_DQ14OUT = var;
+	DDR_DLY_DQ13OUT = var;
+	DDR_DLY_DQ12OUT = var;
+	DDR_DLY_DQ11OUT = var;
+	DDR_DLY_DQ10OUT = var;
+	DDR_DLY_DQ9OUT  = var;
+	DDR_DLY_DQ8OUT  = var;
+	DDR_DLY_DQS2IN  = var;
+	DDR_DLY_DM2OUT  = var;
+	DDR_DLY_DQ23OUT = var;
+	DDR_DLY_DQ22OUT = var;
+	DDR_DLY_DQ21OUT = var;
+	DDR_DLY_DQ20OUT = var;
+	DDR_DLY_DQ19OUT = var;
+	DDR_DLY_DQ18OUT = var;
+	DDR_DLY_DQ17OUT = var;
+	DDR_DLY_DQ16OUT = var;
+	DDR_DLY_DQS3IN  = var;
+	DDR_DLY_DM3OUT  = var;
+	DDR_DLY_DQ31OUT = var;
+	DDR_DLY_DQ30OUT = var;
+	DDR_DLY_DQ29OUT = var;
+	DDR_DLY_DQ28OUT = var;
+	DDR_DLY_DQ27OUT = var;
+	DDR_DLY_DQ26OUT = var;
+	DDR_DLY_DQ25OUT = var;
+	DDR_DLY_DQ24OUT = var;
 }
 
 void DdrInit(void)
@@ -108,7 +118,7 @@ void DdrInit(void)
 	DDR_RD_VAL_EDGE = 1;
 	DDR_RD_VAL_LTC	= 6;
 	DDR_WR_LTC 		= 1;
-	DdrParamBypass();
+	DdrParamBypass(3);
 
 	DDR_PWR_REQ = (DDR_PWR_CUR)? 0 : 1;
 	while(DDR_PWR_REQ);

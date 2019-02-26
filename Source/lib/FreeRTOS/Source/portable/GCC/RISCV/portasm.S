@@ -53,6 +53,38 @@
 	addi	sp, sp, -REGBYTES * 32
 
 	/* Save Context */
+	STORE	x1,   1 * REGBYTES(sp)
+	STORE	x2,   2 * REGBYTES(sp)
+	STORE	x3,   3 * REGBYTES(sp)
+	STORE	x4,   4 * REGBYTES(sp)
+	STORE	x5,   5 * REGBYTES(sp)
+	STORE	x6,   6 * REGBYTES(sp)
+	STORE	x7,   7 * REGBYTES(sp)
+	STORE	x8,   8 * REGBYTES(sp)
+	STORE	x9,   9 * REGBYTES(sp)
+	STORE	x10, 10 * REGBYTES(sp)
+	STORE	x11, 11 * REGBYTES(sp)
+	STORE	x12, 12 * REGBYTES(sp)
+	STORE	x13, 13 * REGBYTES(sp)
+	STORE	x14, 14 * REGBYTES(sp)
+	STORE	x15, 15 * REGBYTES(sp)
+	STORE	x16, 16 * REGBYTES(sp)
+	STORE	x17, 17 * REGBYTES(sp)
+	STORE	x18, 18 * REGBYTES(sp)
+	STORE	x19, 19 * REGBYTES(sp)
+	STORE	x20, 20 * REGBYTES(sp)
+	STORE	x21, 21 * REGBYTES(sp)
+	STORE	x22, 22 * REGBYTES(sp)
+	STORE	x23, 23 * REGBYTES(sp)
+	STORE	x24, 24 * REGBYTES(sp)
+	STORE	x25, 25 * REGBYTES(sp)
+	STORE	x26, 26 * REGBYTES(sp)
+	STORE	x27, 27 * REGBYTES(sp)
+	STORE	x28, 28 * REGBYTES(sp)
+	STORE	x29, 29 * REGBYTES(sp)
+	STORE	x30, 30 * REGBYTES(sp)
+	STORE	x31, 31 * REGBYTES(sp)
+/*
 	STORE	x1, 0x0(sp)
 	STORE	x2, 1 * REGBYTES(sp)
 	STORE	x3, 2 * REGBYTES(sp)
@@ -84,6 +116,7 @@
 	STORE	x29, 28 * REGBYTES(sp)
 	STORE	x30, 29 * REGBYTES(sp)
 	STORE	x31, 30 * REGBYTES(sp)
+*/
 .endm
 
 /* Saves mstatus and TCB */
@@ -127,6 +160,38 @@
 .macro popREGFILE
 	/* Restore registers,
 	Skip global pointer because that does not change */
+	LOAD	x1,   1 * REGBYTES(sp)
+#	LOAD	x2,   2 * REGBYTES(sp)
+#	LOAD	x3,   3 * REGBYTES(sp)
+	LOAD	x4,   4 * REGBYTES(sp)
+	LOAD	x5,   5 * REGBYTES(sp)
+	LOAD	x6,   6 * REGBYTES(sp)
+	LOAD	x7,   7 * REGBYTES(sp)
+	LOAD	x8,   8 * REGBYTES(sp)
+	LOAD	x9,   9 * REGBYTES(sp)
+	LOAD	x10, 10 * REGBYTES(sp)
+	LOAD	x11, 11 * REGBYTES(sp)
+	LOAD	x12, 12 * REGBYTES(sp)
+	LOAD	x13, 13 * REGBYTES(sp)
+	LOAD	x14, 14 * REGBYTES(sp)
+	LOAD	x15, 15 * REGBYTES(sp)
+	LOAD	x16, 16 * REGBYTES(sp)
+	LOAD	x17, 17 * REGBYTES(sp)
+	LOAD	x18, 18 * REGBYTES(sp)
+	LOAD	x19, 19 * REGBYTES(sp)
+	LOAD	x20, 20 * REGBYTES(sp)
+	LOAD	x21, 21 * REGBYTES(sp)
+	LOAD	x22, 22 * REGBYTES(sp)
+	LOAD	x23, 23 * REGBYTES(sp)
+	LOAD	x24, 24 * REGBYTES(sp)
+	LOAD	x25, 25 * REGBYTES(sp)
+	LOAD	x26, 26 * REGBYTES(sp)
+	LOAD	x27, 27 * REGBYTES(sp)
+	LOAD	x28, 28 * REGBYTES(sp)
+	LOAD	x29, 29 * REGBYTES(sp)
+	LOAD	x30, 30 * REGBYTES(sp)
+	LOAD	x31, 31 * REGBYTES(sp)
+/*
 	LOAD	x1, 0x0(sp)
 	LOAD	x4, 3 * REGBYTES(sp)
 	LOAD	x5, 4 * REGBYTES(sp)
@@ -156,7 +221,7 @@
 	LOAD	x29, 28 * REGBYTES(sp)
 	LOAD	x30, 29 * REGBYTES(sp)
 	LOAD	x31, 30 * REGBYTES(sp)
-
+*/
 	addi	sp, sp, REGBYTES * 32
 .endm
 
@@ -177,6 +242,38 @@ xPortStartScheduler:
 	   For example if you want to test multiple instances after each other in one test suite.
      */
 	la		t0, xStartContext
+	STORE	x1,   1 * REGBYTES(sp)
+	STORE	x2,   2 * REGBYTES(sp)
+	STORE	x3,   3 * REGBYTES(sp)
+	STORE	x4,   4 * REGBYTES(sp)
+	STORE	x5,   5 * REGBYTES(sp)
+	STORE	x6,   6 * REGBYTES(sp)
+	STORE	x7,   7 * REGBYTES(sp)
+	STORE	x8,   8 * REGBYTES(sp)
+	STORE	x9,   9 * REGBYTES(sp)
+	STORE	x10, 10 * REGBYTES(sp)
+	STORE	x11, 11 * REGBYTES(sp)
+	STORE	x12, 12 * REGBYTES(sp)
+	STORE	x13, 13 * REGBYTES(sp)
+	STORE	x14, 14 * REGBYTES(sp)
+	STORE	x15, 15 * REGBYTES(sp)
+	STORE	x16, 16 * REGBYTES(sp)
+	STORE	x17, 17 * REGBYTES(sp)
+	STORE	x18, 18 * REGBYTES(sp)
+	STORE	x19, 19 * REGBYTES(sp)
+	STORE	x20, 20 * REGBYTES(sp)
+	STORE	x21, 21 * REGBYTES(sp)
+	STORE	x22, 22 * REGBYTES(sp)
+	STORE	x23, 23 * REGBYTES(sp)
+	STORE	x24, 24 * REGBYTES(sp)
+	STORE	x25, 25 * REGBYTES(sp)
+	STORE	x26, 26 * REGBYTES(sp)
+	STORE	x27, 27 * REGBYTES(sp)
+	STORE	x28, 28 * REGBYTES(sp)
+	STORE	x29, 29 * REGBYTES(sp)
+	STORE	x30, 30 * REGBYTES(sp)
+	STORE	x31, 31 * REGBYTES(sp)
+/*
 	STORE	x1, 0x0(t0)
 	STORE	x2, 1 * REGBYTES(t0)
 	STORE	x3, 2 * REGBYTES(t0)
@@ -208,6 +305,7 @@ xPortStartScheduler:
 	STORE	x29, 28 * REGBYTES(t0)
 	STORE	x30, 29 * REGBYTES(t0)
 	STORE	x31, 30 * REGBYTES(t0)
+*/
 #endif
 	jal		vPortSetupTimer
 	portRESTORE_CONTEXT
@@ -219,6 +317,38 @@ vPortEndScheduler:
 #ifdef __gracefulExit
 	/* Load current context from xStartContext */
 	la		t0, xStartContext
+	LOAD	x1,   1 * REGBYTES(sp)
+	LOAD	x2,   2 * REGBYTES(sp)
+	LOAD	x3,   3 * REGBYTES(sp)
+	LOAD	x4,   4 * REGBYTES(sp)
+	LOAD	x5,   5 * REGBYTES(sp)
+	LOAD	x6,   6 * REGBYTES(sp)
+	LOAD	x7,   7 * REGBYTES(sp)
+	LOAD	x8,   8 * REGBYTES(sp)
+	LOAD	x9,   9 * REGBYTES(sp)
+	LOAD	x10, 10 * REGBYTES(sp)
+	LOAD	x11, 11 * REGBYTES(sp)
+	LOAD	x12, 12 * REGBYTES(sp)
+	LOAD	x13, 13 * REGBYTES(sp)
+	LOAD	x14, 14 * REGBYTES(sp)
+	LOAD	x15, 15 * REGBYTES(sp)
+	LOAD	x16, 16 * REGBYTES(sp)
+	LOAD	x17, 17 * REGBYTES(sp)
+	LOAD	x18, 18 * REGBYTES(sp)
+	LOAD	x19, 19 * REGBYTES(sp)
+	LOAD	x20, 20 * REGBYTES(sp)
+	LOAD	x21, 21 * REGBYTES(sp)
+	LOAD	x22, 22 * REGBYTES(sp)
+	LOAD	x23, 23 * REGBYTES(sp)
+	LOAD	x24, 24 * REGBYTES(sp)
+	LOAD	x25, 25 * REGBYTES(sp)
+	LOAD	x26, 26 * REGBYTES(sp)
+	LOAD	x27, 27 * REGBYTES(sp)
+	LOAD	x28, 28 * REGBYTES(sp)
+	LOAD	x29, 29 * REGBYTES(sp)
+	LOAD	x30, 30 * REGBYTES(sp)
+	LOAD	x31, 31 * REGBYTES(sp)
+/*
 	LOAD	x1, 0x0(t0)
 	LOAD	x2, 1 * REGBYTES(t0)
 	LOAD	x3, 2 * REGBYTES(t0)
@@ -250,6 +380,7 @@ vPortEndScheduler:
 	LOAD	x29, 28 * REGBYTES(t0)
 	LOAD	x30, 39 * REGBYTES(t0)
 	LOAD	x31, 30 * REGBYTES(t0)
+*/
 #endif
 	ret
 
@@ -283,7 +414,7 @@ portMtimeIRQ:
 	mret
 
 portHandleInterrupt:
-	j		portTrapFromMachineMode
+	j		trap_from_machine_mode
 
 /* async interrupt, this function is called */
 portInterrupt:

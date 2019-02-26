@@ -10,6 +10,7 @@ void GpioInit(void)
 		arrGPIOIrq[i].irqfn = NULL;
 		arrGPIOIrq[i].arg = NULL;
 	}
+	printf("GPIO Init\n");
 }
 
 void GpioRiseEdge(UINT nCH)
@@ -20,6 +21,11 @@ void GpioRiseEdge(UINT nCH)
 void GpioFallEdge(UINT nCH)
 {	// Direction : Gpio falling edge sel
 	arrGPIO[nCH]->GPIO_IRQ_DIR = 0;
+}
+
+void GpioBothEdge(UINT nCH)
+{	// Direction : Gpio Both edge sel
+	arrGPIO[nCH]->GPIO_IRQ_DIR = 2;
 }
 
 void GpioInDir(UINT nCH)
@@ -97,7 +103,7 @@ UINT GpioIsIrq(UINT nCH)
 void IrqGpio(UINT nCH)
 {
 	if (GpioIsIrq(nCH)) {
-		_printf("GPIO IRQ Get [%d]\n", nCH);
+		_printf("GPIO%d IRQ Get\n", nCH);
 		if (arrGPIOIrq[nCH].irqfn) {
 			arrGPIOIrq[nCH].irqfn(arrGPIOIrq[nCH].arg);
 		}

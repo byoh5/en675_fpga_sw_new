@@ -10,7 +10,7 @@
 #define LEFT			16	// Left justified
 #define SPECIAL			32	// 0x
 #define LARGE			64	// Use 'ABCDEF' instead of 'abcdef'
-#define PRINTFBUF_SIZE	1024
+#define PRINTFBUF_SIZE	512
 
 #ifndef max
 #define max(a,b)		(((a) > (b)) ? (a) : (b))

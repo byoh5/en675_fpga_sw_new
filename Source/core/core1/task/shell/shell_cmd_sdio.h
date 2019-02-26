@@ -1,5 +1,5 @@
-#ifndef _SHELL_USR_H_
-#define _SHELL_USR_H_
+#ifndef _SHELL_USR_SDIO_H_
+#define _SHELL_USR_SDIO_H_
 
 #include "shell.h"
 
@@ -12,10 +12,10 @@
 // Extern
 //-------------------------------------------------------------------------------------------------
 // Function
-
+extern int cmd_test_sdio(int argc, char *argv[]);
 
 //-------------------------------------------------------------------------------------------------
 // Variable
-extern tMonCmd gCmdList[];
+extern const char *sSdioTest[];
 
-#endif
+#endif // _SHELL_USR_SDIO_H_

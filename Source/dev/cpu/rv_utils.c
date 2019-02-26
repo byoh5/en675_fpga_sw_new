@@ -14,6 +14,8 @@
 #include "rv_utils.h"
 #include "dev.h"
 
+extern void hwflush_dcache_line(uint);
+
 //******************************************************************************
 // Software Flush/Invalidate 16kB Data Cache
 //------------------------------------------------------------------------------
@@ -26,7 +28,19 @@
 #define	DC_BSSIZE	(DC_BSIZE*DC_SSIZE)						// block set size: 4096 B
 #define	DC_SIZE		(DC_BSSIZE*DC_NWAYS)					// cache size: 16 kB
 
+//------------------------------------------------------------------------------
+//
+void hwflush_dcache_range(uint sadr, uint eadr)
+{
+	sadr = ((sadr >> DC_BBITS) << DC_BBITS);
+	while (sadr < eadr) {
+		hwflush_dcache_line(sadr);
+		sadr += DC_BSIZE;
+	}
+}
 
+//------------------------------------------------------------------------------
+//
 void dmwrite8(uint adr, uchar wdat)
 {
 	asm volatile("fence rw,rw");									// to finish prev read/write

@@ -15,14 +15,9 @@
 #ifndef _DEV_TYPES_H_
 #define	_DEV_TYPES_H_
 
-#if !defined INT_MAX
-#define INT_MAX __INT_MAX__
-#endif
+#define ARRAY_SIZE(x)			(sizeof(x) / sizeof((x)[0]))
 
-#if !defined UINT_MAX
-#define UINT_MAX (__INT_MAX__ * 2U + 1)
-#endif
-
+#include <limits.h>							// for __xxxx_MAX__
 #include <stdarg.h>							// for va_list
 
 typedef _Bool					bool;		// 1 bit
@@ -242,5 +237,21 @@ typedef struct {
 	irq_fn irqfn;
 	void *arg;
 } tIhnd;
+
+//******************************************************************************
+// SDIO define
+//------------------------------------------------------------------------------
+typedef enum {
+	ecrtR1,
+	ecrtR1b,
+	ecrtR2,
+	ecrtR3,
+	ecrtR4,
+	ecrtR5,
+	ecrtR6,
+	ecrtR7
+} eCmdRespType;
+
+typedef void (*user_delay_fn)(uint64 ms);
 
 #endif // _DEV_TYPES_H_

@@ -1,49 +1,30 @@
 #include "dev.h"
 
-void AdcInit(UINT AdcClkFreq)
+static _ADC_REG0 *arrADC0;
+static _ADC_REG1 *arrADC1[ADC_CNT];
+
+void AdcInit(UINT Speed_Hz)
 {
-	ADC_CLK_LMT = (MCK_FREQ / AdcClkFreq>>1) - 1;
-	ADC_CKEN = 1;
-	ADC_CH0_EN = 1;
-	ADC_CH1_EN = 1;
-	ADC_CH2_EN = 1;
-	ADC_CH3_EN = 1;
-	ADC_CH4_EN = 1;
-	ADC_CH5_EN = 1;
-	ADC_CH6_EN = 1;
-	ADC_CH7_EN = 1;
-	ADC_EN = 1;
+	arrADC0->CLK_LMT = (MCK_FREQ / Speed_Hz >> 1) - 1;
+	arrADC0->CKEN = 1;
+	for (uint64_t i = 0; i < ADC_CNT; i++) {
+		arrADC1[i] = (_ADC_REG1 *)(REG_BASE_ADC + ((i + 1) << 3));
+		arrADC1[i]->CHEN = 0;
+	}
+	arrADC0->EN = 1;
 }
 
-WORD adc_get_ch0()
+void AdcOn(UINT nCH)
 {
-	return (WORD) ADC_CH0_DAT;
+	arrADC1[nCH]->CHEN = 1;
 }
-WORD adc_get_ch1()
+
+void AdcOff(UINT nCH)
 {
-	return (WORD) ADC_CH1_DAT;
+	arrADC1[nCH]->CHEN = 0;
 }
-WORD adc_get_ch2()
+
+WORD AdcGet(UINT nCH)
 {
-	return (WORD) ADC_CH2_DAT;
-}
-WORD adc_get_ch3()
-{
-	return (WORD) ADC_CH3_DAT;
-}
-WORD adc_get_ch4()
-{
-	return (WORD) ADC_CH4_DAT;
-}
-WORD adc_get_ch5()
-{
-	return (WORD) ADC_CH5_DAT;
-}
-WORD adc_get_ch6()
-{
-	return (WORD) ADC_CH6_DAT;
-}
-WORD adc_get_ch7()
-{
-	return (WORD) ADC_CH7_DAT;
+	return (WORD)arrADC1[nCH]->DAT;
 }

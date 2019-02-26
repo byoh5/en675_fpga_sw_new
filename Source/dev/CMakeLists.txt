@@ -13,6 +13,7 @@ SET ( DEV_HDRS
 	dev.h
 	dev_device.h
 	dev_types.h
+	dev_reg.h
 	dev_regs.h
 	dev_peri.h
 	cpu/asm.h
@@ -27,6 +28,7 @@ SET ( DEV_HDRS
 	rtc/rtc.h
 	rtc/pcf8563.h
 	rtc/s35390a.h
+	sdio/sdio_cd.h
 )
 
 SET ( DEV_SRCS
@@ -41,6 +43,8 @@ SET ( DEV_SRCS
 	i2s.c
 	irq.c
 	sdio.c
+	sdio/sdio_cd.c
+	sdio/sdio_wf.c
 	sfls.c
 	sha.c
 	spi.c

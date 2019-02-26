@@ -15,6 +15,8 @@
 #include "boot.h"	// core/shared
 #include "msg.h"	// core/shared
 
+#include "exbl.h"	// WaitXus, WaitXms
+
 #include <time.h>	// time_t
 #include "rtc.h"
 
@@ -38,6 +40,7 @@ extern void enx_get_tmtime(time_t get_time, struct tm *tmtime, UINT is_local);
 extern int set_devicetime(int nTimezone, UINT nYear, UINT nMonth, UINT nDay, UINT nHour, UINT nMin, UINT nSec);
 
 // irq.c ///////////////////////////////////////////////////////////////////////
+extern void enx_timerirq_next(void);
 extern void enx_timerirq_init(void);
 extern void enx_externalirq_init(void);
 

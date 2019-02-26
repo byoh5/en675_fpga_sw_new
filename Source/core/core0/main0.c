@@ -8,19 +8,33 @@ void Uart7RxIrqTest(void *ctx)
 	UartTx(7, (char)bBuf);
 }
 
-#if 0
+#if 1
 #include "enx_freertos.h"
 #include "shell.h"
+#include "ledblink.h"
+#include "sdcard.h"
 extern void trap_freertos(void); // mentry.S
+
+void TestTask(void* pvParameters)
+{
+	while (1) {
+		printf("Test Task\n");
+		vTaskDelay(3000);
+	}
+}
+
 void test_freertos(void)
 {
 	write_csr(mtvec, &trap_freertos);
 
-	printf("HELLO EYENIX!\n"); // ADD some
-
 	vMemoryHeapInit();
 
 	vTaskCreate("shell", ShellTask, NULL, 4096, 3);
+	vTaskCreate("ledblink", LedblinkTask, NULL, 1024, 3);
+#ifdef __USE_SD__
+	vTaskCreate("sdcard", SdcardTask, NULL, 4096, 3);
+#endif
+
 
 	vTaskStartScheduler();
 }
@@ -110,9 +124,14 @@ void enx_peri_init(void)
 #if USE_SPI8
 	SpiInit(8, SPI8_SPEED, 0, 0);
 #endif
-
-	UartRxIrqCallback(7, Uart7RxIrqTest, NULL);
-	UartRxIrqOn(7);
+#if USE_SDIO0
+	SdioInit(0, SDIO0_SPEED);
+#endif
+#if USE_SDIO1
+	SdioInit(1, SDIO1_SPEED);
+#endif
+	//UartRxIrqCallback(7, Uart7RxIrqTest, NULL);
+	//UartRxIrqOn(7);
 }
 
 void enx_device_init(void)
@@ -128,7 +147,17 @@ void enx_device_init(void)
 	}
 #endif
 
-	GpioOutDir(55);
+#ifdef __USE_LED0__
+	GpioOutDir(GPIO_LED0);
+#endif
+
+#ifdef __USE_LED1__
+	GpioOutDir(GPIO_LED1);
+#endif
+
+#ifdef __USE_LED2__
+	GpioOutDir(GPIO_LED2);
+#endif
 
 #ifdef __ETHERNET__
 	EthInit();
@@ -138,7 +167,17 @@ void enx_device_init(void)
 #ifdef __RTC_LOAD__
 	rtc_init();
 #endif
-	set_devicetime(TimeZone_GMT, 2019, 2, 19, 10, 0, 0);
+	set_devicetime(TimeZone_GMT, 2019, 2, 25, 10, 0, 0);
+
+#ifdef __USE_SD__
+	GpioOutDir(SD_GPIO_RST);
+	GpioInDir(SD_GPIO_IRQ);
+	SdioCdInit(SD_SDIO_CH);
+#endif
+
+#ifdef __USE_WF__
+	GpioOutDir(WF_GPIO_RST);
+#endif
 }
 
 extern int cmd_test_sysreg(int argc, char *argv[]);
@@ -163,7 +202,7 @@ void main_0(int cpu_id)
 #endif
 
 	enx_externalirq_init();
-	enx_timerirq_init();
+	//enx_timerirq_init();
 
 	enx_device_init();
 
@@ -174,12 +213,11 @@ void main_0(int cpu_id)
 
 	printf("Init Device\n");
 
-	//exit(1);
-	//setTimeZone();
+	test_freertos();
+
+#if 0
 	int k = 0;
 	while (1) {
-		//printf("%d:%lu\n", cpu_id, *mtime);
-
 		//IrqStatus();
 		//IrqCheck();
 
@@ -206,4 +244,5 @@ void main_0(int cpu_id)
 
 		WaitXms(1);
 	}
+#endif
 }

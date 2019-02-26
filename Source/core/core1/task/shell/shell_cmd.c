@@ -7,13 +7,12 @@
 #include <stdlib.h>		// for atoi
 #include <time.h>
 
-#include "mtrap.h"
-
 #include "enx_freertos.h"
 
 #include "shell.h"
 #include "shell_cmd.h"
 #include "shell_cmd_common.h"
+#include "shell_cmd_sdio.h"
 #include "string.h"
 
 //*************************************************************************************************
@@ -38,6 +37,9 @@ extern int cmd_reboot(int argc, char *argv[]);
 extern int cmd_task_status(int argc, char *argv[]);
 extern int cmd_mem_ststus(int argc, char *argv[]);
 
+// Test
+extern int cmd_test_sysreg(int argc, char *argv[]);
+
 const char *sHelpDisp[]	    = {"Shell command list (! : Repeat command)",        (char*)0};
 const char *sUsrCmd_a[]     = {":",                                              (char*)0};
 const char *sUsrCmd_b[]     = {":",                                              (char*)0};
@@ -55,6 +57,7 @@ const char *sPerlGPIO[]     = {"Check GPIO state",                              
 const char *sReboot[]       = {"system reboot",                                  (char*)0};
 const char *sTaskStatus[]   = {"show freeRTOS task status",                      (char*)0};
 const char *sMemStatus[]    = {"show memory status",                             (char*)0};
+const char *sSysreg[]       = {"Test(System Reg)",                               (char*)0};
 
 tMonCmd gCmdList[] =
 {
@@ -80,6 +83,11 @@ tMonCmd gCmdList[] =
 	{"task",		cmd_task_status,	sTaskStatus		},
 	{"memory",		cmd_mem_ststus,		sMemStatus		},
 	{"time",		cmd_time,			sTimeCmd		},
+
+//TEST
+	{"sysreg",		cmd_test_sysreg,	sSysreg			},
+	{"sd",			cmd_test_sdio,		sSdioTest		},
+
 	{0,				0,					0				}
 };
 
@@ -310,9 +318,16 @@ int UsrCmd_j(int argc, char *argv[])
 int cmd_info(int argc, char *argv[])
 {
 	_printf("H/W info ===================================\n");
-	_printf("CPU Clock             : %ukHz\n", 0);
+	_printf("CPU Clock             : %ukHz\n", MCK_FREQ / 1000);
 	_printf("ISP Clock             : %ukHz\n", 0);
-	_printf("Model name            : [%s]\n", "Unknown");
+	char strName[20] = {0};
+	UINT *p = (UINT *)strName;
+	p[0] = SYS_MARK0;
+	p[1] = SYS_MARK1;
+	p[2] = SYS_MARK2;
+	p[3] = SYS_MARK3;
+	p[4] = SYS_MARK4;
+	_printf("Model name            : [%s]\n", strName);
 
 	_printf("S/W info ===================================\n");
 	_printf("Firmware compile date : %s %s\n", __DATE__, __TIME__);
@@ -394,7 +409,7 @@ int cmd_test_sysreg(int argc, char *argv[])
 #endif
 	if (argc == 1) {
 		char strName[20] = {0};
-		UINT *p = strName;
+		UINT *p = (UINT *)strName;
 		p[0] = SYS_MARK0;
 		p[1] = SYS_MARK1;
 		p[2] = SYS_MARK2;

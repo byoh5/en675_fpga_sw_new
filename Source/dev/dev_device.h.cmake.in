@@ -53,4 +53,33 @@
 #define AUDIO_I2C_CH	${USE_AUDIO_I2C}
 #endif // __AUDIO__
 
+#if ${USE_LED0}
+#define __USE_LED0__
+#define GPIO_LED0	${USE_LED0_GPIO}
+#endif // __USE_LED0__
+
+#if ${USE_LED1}
+#define __USE_LED1__
+#define GPIO_LED1	${USE_LED1_GPIO}
+#endif // __USE_LED1__
+
+#if ${USE_LED2}
+#define __USE_LED2__
+#define GPIO_LED2	${USE_LED2_GPIO}
+#endif // __USE_LED2__
+
+#if ${USE_SD}
+#define __USE_SD__
+#define SD_GPIO_RST	${USE_SD_RST}
+#define SD_GPIO_IRQ	${USE_SD_IRQ}
+#define SD_SDIO_CH	${USE_SD_SDIO}
+#endif // __USE_SD__
+
+#if ${USE_WF}
+#define __USE_WF__
+#define WF_GPIO_RST	${USE_WF_RST}
+#define WF_GPIO_IRQ	${USE_WF_IRQ}
+#define WF_SDIO_CH	${USE_WF_SDIO}
+#endif // __USE_WF__
+
 #endif // __DEV_DEVICE_H__

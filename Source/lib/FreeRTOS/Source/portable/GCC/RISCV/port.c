@@ -50,54 +50,20 @@ BaseType_t xStartContext[31] = {0};
 #endif
 
 /*
- * Handler for timer interrupt
- */
-void vPortSysTickHandler( void );
-
-/*
- * Setup the timer to generate the tick interrupts.
- */
-void vPortSetupTimer( void );
-
-/*
- * Set the next interval for the timer
- */
-static void prvSetNextTimerInterrupt( void );
-
-/*
  * Used to catch tasks that attempt to return from their implementing function.
  */
 static void prvTaskExitError( void );
 
 /*-----------------------------------------------------------*/
 
-/* Sets the next timer interrupt
- * Reads current timer register and adds tickrate
- * Does nothing if a Clint was not found in the hardware configuration string
- * Using previous timer compare may fail if interrupts were disabled for a long time,
- * which is likely for the very first interrupt. When that happens, compare timer + 
- * tickrate may already be behind current timer and prevent correctly programming
- * the 2nd interrupt
- */
-static void prvSetNextTimerInterrupt(void)
-{
-    if (mtime && timecmp) {
-    	int cpu_id = read_csr(mhartid);
-    	timecmp[cpu_id] = *mtime + (configTICK_CLOCK_HZ / configTICK_RATE_HZ);
-    }
-}
-/*-----------------------------------------------------------*/
 
 /* Sets and enable the timer interrupt */
 void vPortSetupTimer(void)
 {
-    /* reuse existing routine */
-    prvSetNextTimerInterrupt();
-
-    // Enable the Machine-Timer bit in MIE
-    set_csr(mie, MIP_MTIP);
+	enx_timerirq_init();
 }
 /*-----------------------------------------------------------*/
+
 
 void prvTaskExitError( void )
 {
@@ -114,6 +80,7 @@ void prvTaskExitError( void )
 	//for( ;; );
 }
 /*-----------------------------------------------------------*/
+
 
 /* Clear current interrupt mask and set given mask */
 #if 1
@@ -230,29 +197,16 @@ StackType_t *pxPortInitialiseStack( StackType_t *pxTopOfStack, TaskFunction_t px
 }
 /*-----------------------------------------------------------*/
 
+
+// Handler for timer interrupt
 void vPortSysTickHandler( void )
 {
-	//clear_csr(mie, MIP_MTIP);
-
-	prvSetNextTimerInterrupt();
-
-	/* Incorement the Time(sec) */
-	static UINT gbTickCnt = configTICK_RATE_HZ - 1;
-	if (gbTickCnt == 0) {
-		gbTickCnt = configTICK_RATE_HZ - 1;
-		gptMsgShare.TIME++;
-	} else {
-		gbTickCnt--;
-	}
+	enx_timerirq_next();
 
 	/* Increment the RTOS tick. */
-	if( xTaskIncrementTick() != pdFALSE )
-	{
-		//_printf("%s Task Switch, %lu\n", __func__, *mtime);
+	if (xTaskIncrementTick() != pdFALSE) {
 		vTaskSwitchContext();
 	}
-
-	//set_csr(mie, MIP_MTIP);
 }
 /*-----------------------------------------------------------*/
 
@@ -291,113 +245,6 @@ void vApplicationMallocFailedHook( void )
 /*-----------------------------------------------------------*/
 
 
-void portTrapFromMachineMode( void )
-{
-	unsigned long mcause = read_csr(mcause);
-	unsigned int irq_num = mcause & 0x7fffffff;
-	if ((mcause&0x8000000000000000) != 0x0) {
-		//volatile unsigned int * pAdr_prio =  (unsigned int *)0xc000004;
-		//volatile unsigned int * pAdr_mie =   (unsigned int *)0xc002000;
-		//volatile unsigned int * pAdr_sie =   (unsigned int *)0xc002080;
-		//volatile unsigned int * pAdr_mthre = (unsigned int *)0xc200000;
-		//volatile unsigned int * pAdr_sthre = (unsigned int *)0xc201000;
-		//volatile unsigned int * pAdr_pend =  (unsigned int *)0xc001000;
-		//volatile unsigned int * pAdr_claim =  (unsigned int *)0xc200004;
-		//volatile unsigned int source = *pAdr_claim;
-		switch (irq_num) {
-			case IRQ_S_SOFT:
-				_printf("call IRQ_S_SOFT\n");
-				break;
-			case IRQ_H_SOFT:
-				_printf("call IRQ_H_SOFT\n");
-				break;
-			case IRQ_M_SOFT:
-				_printf("call IRQ_M_SOFT\n");
-				break;
-			case IRQ_S_TIMER:
-				_printf("call IRQ_S_TIMER\n");
-				break;
-			case IRQ_H_TIMER:
-				_printf("call IRQ_H_TIMER\n");
-				break;
-			case IRQ_M_TIMER:
-				_printf("call IRQ_M_TIMER\n");
-				break;
-			case IRQ_S_EXT:
-				_printf("call IRQ_S_EXT\n");
-				break;
-			case IRQ_H_EXT:
-				_printf("call IRQ_H_EXT\n");
-				break;
-			case IRQ_M_EXT:
-				_printf("call IRQ_M_EXT\n");
-				break;
-			case IRQ_COP:
-				_printf("call IRQ_COP\n");
-				break;
-			case IRQ_HOST:
-				_printf("call IRQ_HOST\n");
-				break;
-			default:
-				_printf("call IRQ1-default(%d)\n", irq_num);
-				break;
-		}
-		//*pAdr_claim = source;
-	} else {
-		switch (irq_num) {
-			case CAUSE_MISALIGNED_FETCH:
-				_printf("call CAUSE_MISALIGNED_FETCH\n");
-				break;
-			case CAUSE_FETCH_ACCESS:
-				_printf("call CAUSE_FETCH_ACCESS\n");
-				break;
-			case CAUSE_ILLEGAL_INSTRUCTION:
-				_printf("call CAUSE_ILLEGAL_INSTRUCTION\n");
-				break;
-			case CAUSE_BREAKPOINT:
-				_printf("call CAUSE_BREAKPOINT\n");
-				break;
-			case CAUSE_MISALIGNED_LOAD:
-				_printf("call CAUSE_MISALIGNED_LOAD\n");
-				break;
-			case CAUSE_LOAD_ACCESS:
-				_printf("call CAUSE_LOAD_ACCESS\n");
-				break;
-			case CAUSE_MISALIGNED_STORE:
-				_printf("call CAUSE_MISALIGNED_STORE\n");
-				break;
-			case CAUSE_STORE_ACCESS:
-				_printf("call CAUSE_STORE_ACCESS\n");
-				break;
-			case CAUSE_USER_ECALL:
-				_printf("call CAUSE_USER_ECALL\n");
-				break;
-			case CAUSE_SUPERVISOR_ECALL:
-				_printf("call CAUSE_SUPERVISOR_ECALL\n");
-				break;
-			case CAUSE_HYPERVISOR_ECALL:
-				_printf("call CAUSE_HYPERVISOR_ECALL\n");
-				break;
-			case CAUSE_MACHINE_ECALL:
-				_printf("call CAUSE_MACHINE_ECALL\n");
-				break;
-			case CAUSE_FETCH_PAGE_FAULT:
-				_printf("call CAUSE_FETCH_PAGE_FAULT\n");
-				break;
-			case CAUSE_LOAD_PAGE_FAULT:
-				_printf("call CAUSE_LOAD_PAGE_FAULT\n");
-				break;
-			case CAUSE_STORE_PAGE_FAULT:
-				_printf("call CAUSE_STORE_PAGE_FAULT\n");
-				break;
-			default:
-				_printf("call IRQ0-default(%d)\n", irq_num);
-		}
-	}
-}
-/*-----------------------------------------------------------*/
-
-
 static uint32_t uiTotalHeapMemorySize = 0;
 void vMemoryHeapInit(void)
 {
@@ -408,25 +255,25 @@ void vMemoryHeapInit(void)
 	0x80000000 has the lower start address so appears in the array fist. */
 	const HeapRegion_t xHeapRegions[] = {
 /*	    { ( uint8_t * ) 0x80100000UL, 0x100000 }, */
-	    { ( uint8_t * ) 0xA0018000UL, 0x10000 },
+	    { ( uint8_t * ) 0xA0028000UL, 0x10000 },
 	    { NULL, 0 } /* Terminates the array. */
 	};
 
 	uiTotalHeapMemorySize = 0;
 	int len = sizeof(xHeapRegions) / sizeof(xHeapRegions[0]);
 	for (int i = 0; i < len; i++) {
-		_printf("Heap[%d] memory 0x%08X ~ 0x%08X\r\n", i, xHeapRegions[i].pucStartAddress, xHeapRegions[i].pucStartAddress + xHeapRegions[i].xSizeInBytes);
-#if 0
-		memset(xHeapRegions[i].pucStartAddress, 0, xHeapRegions[i].xSizeInBytes);
-#else
 		if (xHeapRegions[i].xSizeInBytes > 0) {
+			printf("Heap[%d] memory 0x%08X ~ 0x%08X, %ubyte\r\n", i, xHeapRegions[i].pucStartAddress, xHeapRegions[i].pucStartAddress + xHeapRegions[i].xSizeInBytes, xHeapRegions[i].xSizeInBytes);
+#if 1
+			memset(xHeapRegions[i].pucStartAddress, 0, xHeapRegions[i].xSizeInBytes);
+#else
 			uint8_t *arr = xHeapRegions[i].pucStartAddress;
 			for (int j = 0; j < xHeapRegions[i].xSizeInBytes; j++) {
 				*arr = 0;
 				arr++;
 			}
-		}
 #endif
+		}
 		uiTotalHeapMemorySize += xHeapRegions[i].xSizeInBytes;
 	}
 
