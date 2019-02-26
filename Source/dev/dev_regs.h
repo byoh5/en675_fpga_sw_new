@@ -286,12 +286,15 @@ extern void MdioWrite(BYTE PhyAdr, BYTE RegAdr, WORD WrDat);
 extern void EthInit(void);
 
 extern void SdioInit(UINT nCH, UINT Speed_Hz);
-extern UINT SdioCmd(UINT nCH, BYTE Cmd, UINT Arg, BYTE RespBusyEn, BYTE RespType, BYTE RespEn);
+extern UINT SdioCmd(UINT nCH, BYTE Cmd, UINT Arg, BYTE RespEn, BYTE RespType, BYTE RespBusyEn);
 extern void SdioSetDelayfn(UINT nCH, user_delay_fn user_delay);
 extern void SdioGetResp(UINT nCH, UINT *nResp, eCmdRespType cmdType);
+extern void SdioSetClockDef(UINT nCH);
 extern void SdioSetClock(UINT nCH, UINT Speed_Hz);
 extern void SdioSetClockDiv(UINT nCH, UINT nClkDiv);
 extern UINT SdioGetClockDiv(UINT nCH);
+extern void SdioClockEnable(UINT nCH);
+extern void SdioClockDisable(UINT nCH);
 extern void SdioClockDivPrint(UINT nCH, char *strBuffer);
 extern void SdioIrqCallback_Io(UINT nCH, irq_fn irqfn, void *arg);
 extern void SdioIrqCallback_Cmd(UINT nCH, irq_fn irqfn, void *arg);

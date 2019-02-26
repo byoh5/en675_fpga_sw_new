@@ -170,7 +170,7 @@ void enx_device_init(void)
 	set_devicetime(TimeZone_GMT, 2019, 2, 25, 10, 0, 0);
 
 #ifdef __USE_SD__
-	GpioOutDir(SD_GPIO_RST);
+	GpioInDir(SD_GPIO_RST);
 	GpioInDir(SD_GPIO_IRQ);
 	SdioCdInit(SD_SDIO_CH);
 #endif

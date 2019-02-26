@@ -253,9 +253,19 @@ void vMemoryHeapInit(void)
 	0x10000 bytes starting from address 0x80000000, and the second a block of
 	0xa0000 bytes starting from address 0x90000000.  The block starting at
 	0x80000000 has the lower start address so appears in the array fist. */
+
+	register long t0 asm("t0") = 0;
+	register long t1 asm("t1") = 0;
+	asm("la t0, _heap_start");
+	asm("la t1, _heap_end");
+//	printf("S(0x%08X)\n", t0);
+//	printf("S(0x%08X) E(0x%08X)\n", _bss_s0, _bss_e0);
+
+
+
 	const HeapRegion_t xHeapRegions[] = {
 /*	    { ( uint8_t * ) 0x80100000UL, 0x100000 }, */
-	    { ( uint8_t * ) 0xA0028000UL, 0x10000 },
+	    { ( uint8_t * ) t0, t1 - t0 },
 	    { NULL, 0 } /* Terminates the array. */
 	};
 

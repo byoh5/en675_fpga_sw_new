@@ -185,7 +185,11 @@ repeat:
 			}
 			if (size)
 			{
-				*str++ = (unsigned char)va_arg(args, int);
+				unsigned char getc = (unsigned char)va_arg(args, int);
+				if (getc == 0) {
+					getc = ' ';
+				}
+				*str++ = getc;
 				size--;
 			}
 			while (--field_width > 0 && size)

@@ -40,6 +40,8 @@ init_end:
 
 void SdcardTask(void *pvParameters)
 {
+	vTaskDelay(2000); // Log 겹치기 방지용
+
 	while (1) {
 		UINT SDDet = SdioCdDet();
 		if (SDDet == 0) { // SD card IN

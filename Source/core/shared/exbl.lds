@@ -109,15 +109,13 @@ SECTIONS
   __bss_e = .; 
   } > SRAM
 
-/*
   .heap : {
    . = ALIGN(4);
    _heap = .;
    _heap_start = .;
-   . += (8*1024);
+   . += (64*1024);
    _heap_end = .;
-  }
-*/
+  } > SRAM
 
   .sbi :
   {

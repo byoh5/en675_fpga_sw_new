@@ -21,6 +21,8 @@
   .align 6
   WORD_ENTRY(_bss_s   )
   WORD_ENTRY(_bss_e   )
+  WORD_ENTRY(heap_start)
+  WORD_ENTRY(heap_end)
 
   .option norvc
   .section .text.init,"ax",@progbits

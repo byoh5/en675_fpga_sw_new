@@ -42,7 +42,7 @@ void SpiInit(UINT nCH, UINT Speed_Hz, UINT WordSize, UINT BitDirection)
 		case 8:	SPI8_PIN_INIT;	break;
 	}
 
-	printf("SPI%u Init - %uKHz\n", nCH, MCK_FREQ / ((arrSPI[nCH]->CLK_DIV + 1) * 4) / 1000);
+	printf("SPI%u Init - %uHz\n", nCH, MCK_FREQ / ((arrSPI[nCH]->CLK_DIV + 1) * 4));
 }
 
 void SpiDeinit(UINT nCH)

@@ -15,8 +15,8 @@ static SDIO_SD sdinfo;
 
 #ifdef ENX_SDIOCD_CMD_DEBUG
 	#define gprintf(fmt, args...) do { printf("(%04d)%s : "fmt, __LINE__, __func__, ##args); } while(0);
-	#define SDIO_CMD_LOG_START	{	printf("(%04d)%s : START\r\n", __LINE__, __func__);	}
-	#define SDIO_CMD_LOG_END	{	printf("(%04d)%s : E N D\r\n", __LINE__, __func__);	}
+	#define SDIO_CMD_LOG_START	{	printf("(%04d)%s : START\n", __LINE__, __func__);	}
+	#define SDIO_CMD_LOG_END	{	printf("(%04d)%s : E N D\n", __LINE__, __func__);	}
 #else
 	#define gprintf(fmt, args...) do {} while(0);
 	#define SDIO_CMD_LOG_START	{ }
@@ -25,8 +25,8 @@ static SDIO_SD sdinfo;
 
 #ifdef ENX_SDIOCD_DAT_DEBUG
 	#define tprintf(fmt, args...) do { printf("(%04d)%s : "fmt, __LINE__, __func__, ##args); } while(0);
-	#define SDIO_DAT_LOG_START	{	printf("(%04d)%s : START\r\n", __LINE__, __func__);	}
-	#define SDIO_DAT_LOG_END	{	printf("(%04d)%s : E N D\r\n", __LINE__, __func__);	}
+	#define SDIO_DAT_LOG_START	{	printf("(%04d)%s : START\n", __LINE__, __func__);	}
+	#define SDIO_DAT_LOG_END	{	printf("(%04d)%s : E N D\n", __LINE__, __func__);	}
 #else
 	#define tprintf(fmt, args...) do {} while(0);
 	#define SDIO_DAT_LOG_START	{ }
@@ -50,77 +50,447 @@ static SDIO_SD sdinfo;
 #define ACMD41_S18R			0x01000000		// [   24] : Switching to 1.8V Request
 #define	ACMD41_VOLT			0x00ff8000		// [23:15] : Voltage window OCR
 
+// OCR register
+#define OCR_POWUP			0x80000000		// Power up procedure end
+#define OCR_CCS				0x40000000		// Card Capacity Status(0:SDSC, 1:SDHCorSDXC)
+#define OCR_UHSII			0x20000000		// UHS-II Card Status(0:Non, 1:UHS-II)
+#define OCR_S18A			0x01000000		// Switching to 1.8V Accepted
+#define OCR_VOLT			0x00ff8000		// Voltage window
+
+// SCR register
+#define SCR_SPEC_VER_0		0	/* Implements system specification 1.0 - 1.01 */
+#define SCR_SPEC_VER_1		1	/* Implements system specification 1.10 */
+#define SCR_SPEC_VER_2		2	/* Implements system specification 2.00 */
+
+#define SCR_CCC_SWITCH		0x00000400		// [  :10] : High speed switch
+
+// Status Mask
+#define RCA_RCA_MASK		0xffff0000
+
+// Sd power up retry count
+#define	SD_TRY_CNT			100
+
+//-------------------------------------------------------------------------------------------------
+// SDIO-CD Card Reg
+void SdioPrintOCR(SD_OCR *ocr)
+{
+	SDIO_CMD_LOG_START;
+
+	printf("===================================================\n");
+	printf("ocr->busy     [   31] : %u(0x%08X)\n", ocr->busy, ocr->busy);
+	printf("ocr->CCS      [   30] : %u(0x%08X)\n", ocr->CCS, ocr->CCS);
+	printf("ocr->UHSIICS  [   29] : %u(0x%08X)\n", ocr->UHSIICS, ocr->UHSIICS);
+	printf("ocr->_res1    [28:25] : %u(0x%08X)\n", ocr->_res1, ocr->_res1);
+	printf("ocr->VDD18    [   24] : %u(0x%08X)\n", ocr->VDD18, ocr->VDD18);
+	printf("ocr->VDD35_36 [   23] : %u(0x%08X)\n", ocr->VDD35_36, ocr->VDD35_36);
+	printf("ocr->VDD34_35 [   22] : %u(0x%08X)\n", ocr->VDD34_35, ocr->VDD34_35);
+	printf("ocr->VDD33_34 [   21] : %u(0x%08X)\n", ocr->VDD33_34, ocr->VDD33_34);
+	printf("ocr->VDD32_33 [   20] : %u(0x%08X)\n", ocr->VDD32_33, ocr->VDD32_33);
+	printf("ocr->VDD31_32 [   19] : %u(0x%08X)\n", ocr->VDD31_32, ocr->VDD31_32);
+	printf("ocr->VDD30_31 [   18] : %u(0x%08X)\n", ocr->VDD30_31, ocr->VDD30_31);
+	printf("ocr->VDD29_30 [   17] : %u(0x%08X)\n", ocr->VDD29_30, ocr->VDD29_30);
+	printf("ocr->VDD28_29 [   16] : %u(0x%08X)\n", ocr->VDD28_29, ocr->VDD28_29);
+	printf("ocr->VDD27_28 [   15] : %u(0x%08X)\n", ocr->VDD27_28, ocr->VDD27_28);
+	printf("ocr->_res2    [14: 8] : %u(0x%08X)\n", ocr->_res2, ocr->_res2);
+	printf("ocr->VDDLOW   [    7] : %u(0x%08X)\n", ocr->VDDLOW, ocr->VDDLOW);
+	printf("ocr->_res3    [ 6: 0] : %u(0x%08X)\n", ocr->_res3, ocr->_res3);
+	printf("===================================================\n");
+
+	SDIO_CMD_LOG_END;
+}
+
+void SdioPrintCID(SD_CID *cid)
+{
+	SDIO_CMD_LOG_START;
+
+	printf("===================================================\n");
+	printf("cid->MID    [127:120] : %u(0x%08X)\n", cid->MID, cid->MID);
+	printf("cid->OID    [119:104] : %u(0x%08X)\n", cid->OID, cid->OID);
+	printf("cid->PNM1   [103: 96] : %u(0x%08X) : %c\n", cid->PNM1, cid->PNM1, cid->PNM1);
+	printf("cid->PNM2     [95:88] : %u(0x%08X) : %c\n", cid->PNM2, cid->PNM2, cid->PNM2);
+	printf("cid->PNM3     [87:80] : %u(0x%08X) : %c\n", cid->PNM3, cid->PNM3, cid->PNM3);
+	printf("cid->PNM4     [79:72] : %u(0x%08X) : %c\n", cid->PNM4, cid->PNM4, cid->PNM4);
+	printf("cid->PNM5     [71:64] : %u(0x%08X) : %c\n", cid->PNM5, cid->PNM5, cid->PNM5);
+	printf("cid->PRV      [63:56] : %u(0x%08X)\n", cid->PRV, cid->PRV);
+	printf("cid->PSN      [55:24] : %u(0x%08X)\n", cid->PSN0 << 8 | cid->PSN1, cid->PSN0 << 8 | cid->PSN1);
+	printf("cid->_res1    [23:20] : %u(0x%08X)\n", cid->_res1, cid->_res1);
+	printf("cid->MDT      [19: 8] : %u(0x%08X)\n", cid->MDT, cid->MDT);
+	printf("cid->CRC      [ 7: 1] : %u(0x%08X)\n", cid->CRC, cid->CRC);
+	printf("cid->_res2    [    0] : %u(0x%08X)\n", cid->_res2, cid->_res2);
+	printf("===================================================\n");
+
+	SDIO_CMD_LOG_END;
+}
+
+void SdioPrintCSD(SD_CSD *csd)
+{
+	SDIO_CMD_LOG_START;
+
+	printf("===================================================\n");
+	if(csd->csd_v1.CSD_STRUCTURE == 0)
+	{	// CSD Version 1.0
+		printf("csd->CSD_STRUCTURE      [127:126] : %u(0x%08X)\n", csd->csd_v1.CSD_STRUCTURE, csd->csd_v1.CSD_STRUCTURE);
+	}
+	else if(csd->csd_v1.CSD_STRUCTURE == 1)
+	{	// CSD Version 2.0
+		printf("csd->CSD_STRUCTURE      [127:126] : %u(0x%08X)\n", csd->csd_v2.CSD_STRUCTURE, csd->csd_v2.CSD_STRUCTURE);
+		printf("csd->_res1              [125:120] : %u(0x%08X)\n", csd->csd_v2._res1, csd->csd_v2._res1);
+		printf("csd->TAAC               [119:112] : %u(0x%08X)\n", csd->csd_v2.TAAC, csd->csd_v2.TAAC);
+		printf("csd->NSAC               [111:104] : %u(0x%08X)\n", csd->csd_v2.NSAC, csd->csd_v2.NSAC);
+		printf("csd->TRAN_SPEED         [103: 96] : %u(0x%08X)\n", csd->csd_v2.TRAN_SPEED, csd->csd_v2.TRAN_SPEED);
+		printf("csd->CCC                [ 95: 84] : %u(0x%08X)\n", csd->csd_v2.CCC, csd->csd_v2.CCC);
+		printf("csd->READ_BL_LEN        [ 83: 80] : %u(0x%08X)\n", csd->csd_v2.READ_BL_LEN, csd->csd_v2.READ_BL_LEN);
+		printf("csd->READ_BL_PARTIAL    [ 79: 79] : %u(0x%08X)\n", csd->csd_v2.READ_BL_PARTIAL, csd->csd_v2.READ_BL_PARTIAL);
+		printf("csd->WRITE_BLK_MISALIGN [ 78: 78] : %u(0x%08X)\n", csd->csd_v2.WRITE_BLK_MISALIGN, csd->csd_v2.WRITE_BLK_MISALIGN);
+		printf("csd->READ_BLK_MISALIGN  [ 77: 77] : %u(0x%08X)\n", csd->csd_v2.READ_BLK_MISALIGN, csd->csd_v2.READ_BLK_MISALIGN);
+		printf("csd->DSR_IMP            [ 76: 76] : %u(0x%08X)\n", csd->csd_v2.DSR_IMP, csd->csd_v2.DSR_IMP);
+		printf("csd->_res2              [ 75: 70] : %u(0x%08X)\n", csd->csd_v2._res2, csd->csd_v2._res2);
+		printf("csd->C_SIZE             [ 69: 48] : %u(0x%08X)\n", csd->csd_v2.C_SIZE0 << 6 | csd->csd_v2.C_SIZE1, csd->csd_v2.C_SIZE0 << 6 | csd->csd_v2.C_SIZE1);
+		printf("csd->_res3              [ 47: 47] : %u(0x%08X)\n", csd->csd_v2._res3, csd->csd_v2._res3);
+		printf("csd->ERASE_BLK_EN       [ 46: 46] : %u(0x%08X)\n", csd->csd_v2.ERASE_BLK_EN, csd->csd_v2.ERASE_BLK_EN);
+		printf("csd->SECTOR_SIZE        [ 45: 39] : %u(0x%08X)\n", csd->csd_v2.SECTOR_SIZE, csd->csd_v2.SECTOR_SIZE);
+		printf("csd->WP_GRP_SIZE        [ 38: 32] : %u(0x%08X)\n", csd->csd_v2.WP_GRP_SIZE, csd->csd_v2.WP_GRP_SIZE);
+		printf("csd->WP_GRP_ENABLE      [ 31: 31] : %u(0x%08X)\n", csd->csd_v2.WP_GRP_ENABLE, csd->csd_v2.WP_GRP_ENABLE);
+		printf("csd->_res4              [ 30: 29] : %u(0x%08X)\n", csd->csd_v2._res4, csd->csd_v2._res4);
+		printf("csd->R2W_FACTOR         [ 28: 26] : %u(0x%08X)\n", csd->csd_v2.R2W_FACTOR, csd->csd_v2.R2W_FACTOR);
+		printf("csd->WRITE_BL_LEN       [ 25: 22] : %u(0x%08X)\n", csd->csd_v2.WRITE_BL_LEN, csd->csd_v2.WRITE_BL_LEN);
+		printf("csd->WRITE_BL_PARTIAL   [ 21: 19] : %u(0x%08X)\n", csd->csd_v2.WRITE_BL_PARTIAL, csd->csd_v2.WRITE_BL_PARTIAL);
+		printf("csd->_res5              [ 20: 16] : %u(0x%08X)\n", csd->csd_v2._res5, csd->csd_v2._res5);
+		printf("csd->FILE_FORMAT_GRP    [ 15: 15] : %u(0x%08X)\n", csd->csd_v2.FILE_FORMAT_GRP, csd->csd_v2.FILE_FORMAT_GRP);
+		printf("csd->COPY               [ 14: 14] : %u(0x%08X)\n", csd->csd_v2.COPY, csd->csd_v2.COPY);
+		printf("csd->PERM_WRITE_PROTECT [ 13: 13] : %u(0x%08X)\n", csd->csd_v2.PERM_WRITE_PROTECT, csd->csd_v2.PERM_WRITE_PROTECT);
+		printf("csd->TMP_WRITE_PROTECT  [ 12: 12] : %u(0x%08X)\n", csd->csd_v2.TMP_WRITE_PROTECT, csd->csd_v2.TMP_WRITE_PROTECT);
+		printf("csd->FILE_FORMAT        [ 11: 10] : %u(0x%08X)\n", csd->csd_v2.FILE_FORMAT, csd->csd_v2.FILE_FORMAT);
+		printf("csd->_res6              [  9:  8] : %u(0x%08X)\n", csd->csd_v2._res6, csd->csd_v2._res6);
+		printf("csd->CRC                [  7:  1] : %u(0x%08X)\n", csd->csd_v2.CRC, csd->csd_v2.CRC);
+		printf("csd->_res7              [  0:  0] : %u(0x%08X)\n", csd->csd_v2._res7, csd->csd_v2._res7);
+	}
+	else
+	{
+		printf("(%04d)%s : CSD Version Check Error\n", __LINE__, __func__);
+	}
+	printf("===================================================\n");
+
+	SDIO_CMD_LOG_END;
+}
+
+void SdioPrintSSR(SD_SSR *ssr)
+{
+	SDIO_CMD_LOG_START;
+
+	printf("===================================================\n");
+	printf("ssr->DAT_BUS_WIDTH          [511:510] : %u(0x%08X)\n", ssr->DAT_BUS_WIDTH, ssr->DAT_BUS_WIDTH);
+	printf("ssr->SECURED_MODE           [509:509] : %u(0x%08X)\n", ssr->SECURED_MODE, ssr->SECURED_MODE);
+	printf("ssr->RSF                    [508:502] : %u(0x%08X)\n", ssr->RSF, ssr->RSF);
+	printf("ssr->_res1                  [501:496] : %u(0x%08X)\n", ssr->_res1, ssr->_res1);
+	printf("ssr->SD_CARD_TYPE           [495:480] : %u(0x%08X)\n", ssr->SD_CARD_TYPE, ssr->SD_CARD_TYPE);
+	printf("ssr->SIZE_OF_PROTECTED_AREA [479:448] : %u(0x%08X)\n", ssr->SIZE_OF_PROTECTED_AREA, ssr->SIZE_OF_PROTECTED_AREA);
+	printf("ssr->SPEED_CLASS            [447:440] : %u(0x%08X)\n", ssr->SPEED_CLASS, ssr->SPEED_CLASS);
+	printf("ssr->PERFORMANCE_MOVE       [439:432] : %u(0x%08X)\n", ssr->PERFORMANCE_MOVE, ssr->PERFORMANCE_MOVE);
+	printf("ssr->AU_SIZE                [431:428] : %u(0x%08X)\n", ssr->AU_SIZE, ssr->AU_SIZE);
+	printf("ssr->_res2                  [427:424] : %u(0x%08X)\n", ssr->_res2, ssr->_res2);
+	printf("ssr->ERASE_SIZE             [423:408] : %u(0x%08X)\n", ssr->ERASE_SIZE0 << 8 | ssr->ERASE_SIZE1, ssr->ERASE_SIZE0 << 8 | ssr->ERASE_SIZE1);
+	printf("ssr->ERASE_TIMEOUT          [407:402] : %u(0x%08X)\n", ssr->ERASE_TIMEOUT, ssr->ERASE_TIMEOUT);
+	printf("ssr->ERASE_OFFSET           [401:400] : %u(0x%08X)\n", ssr->ERASE_OFFSET, ssr->ERASE_OFFSET);
+	printf("ssr->UHS_SPEED_GRADE        [399:396] : %u(0x%08X)\n", ssr->UHS_SPEED_GRADE, ssr->UHS_SPEED_GRADE);
+	printf("ssr->UHS_AU_SIZE            [395:392] : %u(0x%08X)\n", ssr->UHS_AU_SIZE, ssr->UHS_AU_SIZE);
+	printf("ssr->_res3                  [391:384] : %u(0x%08X)\n", ssr->_res3, ssr->_res3);
+	printf("ssr->_res4                  [383:352] : %u(0x%08X)\n", ssr->_res4, ssr->_res4);
+	printf("ssr->_res5                  [351:320] : %u(0x%08X)\n", ssr->_res5, ssr->_res5);
+	printf("ssr->_res6                  [319:288] : %u(0x%08X)\n", ssr->_res6, ssr->_res6);
+	printf("ssr->_res7                  [287:256] : %u(0x%08X)\n", ssr->_res7, ssr->_res7);
+	printf("ssr->_res8                  [255:224] : %u(0x%08X)\n", ssr->_res8, ssr->_res8);
+	printf("ssr->_res9                  [223:192] : %u(0x%08X)\n", ssr->_res9, ssr->_res9);
+	printf("ssr->_res10                 [191:160] : %u(0x%08X)\n", ssr->_res10, ssr->_res10);
+	printf("ssr->_res11                 [159:128] : %u(0x%08X)\n", ssr->_res11, ssr->_res11);
+	printf("ssr->_res12                 [127: 96] : %u(0x%08X)\n", ssr->_res12, ssr->_res12);
+	printf("ssr->_res13                 [ 95: 64] : %u(0x%08X)\n", ssr->_res13, ssr->_res13);
+	printf("ssr->_res14                 [ 63: 32] : %u(0x%08X)\n", ssr->_res14, ssr->_res14);
+	printf("ssr->_res15                 [ 31:  0] : %u(0x%08X)\n", ssr->_res15, ssr->_res15);
+	printf("===================================================\n");
+
+	SDIO_CMD_LOG_END;
+}
+
+void SdioPrintSCR(SD_SCRreg *scr)
+{
+	SDIO_CMD_LOG_START;
+
+	printf("===================================================\n");
+	printf("scr->SCR_STRUCTURE         [63:60] : %u(0x%08X)\n", scr->SCR_STRUCTURE, scr->SCR_STRUCTURE);
+	printf("scr->SD_SPEC               [59:56] : %u(0x%08X)\n", scr->SD_SPEC, scr->SD_SPEC);
+	printf("scr->DATA_STAT_AFTER_ERASE [55:55] : %u(0x%08X)\n", scr->DATA_STAT_AFTER_ERASE, scr->DATA_STAT_AFTER_ERASE);
+	printf("scr->SD_SECURITY           [54:52] : %u(0x%08X)\n", scr->SD_SECURITY, scr->SD_SECURITY);
+	printf("scr->SD_BUS_WIDTHS         [51:48] : %u(0x%08X)\n", scr->SD_BUS_WIDTHS, scr->SD_BUS_WIDTHS);
+	printf("scr->SD_SPEC3              [47:47] : %u(0x%08X)\n", scr->SD_SPEC3, scr->SD_SPEC3);
+	printf("scr->EX_SECURITY           [46:43] : %u(0x%08X)\n", scr->EX_SECURITY, scr->EX_SECURITY);
+	printf("scr->_res1                 [42:34] : %u(0x%08X)\n", scr->_res1, scr->_res1);
+	printf("scr->CMD_SUPPORT           [33:32] : %u(0x%08X)\n", scr->CMD_SUPPORT, scr->CMD_SUPPORT);
+	printf("scr->_res2                 [31: 0] : %u(0x%08X)\n", scr->_res2, scr->_res2);
+	printf("===================================================\n");
+
+	SDIO_CMD_LOG_END;
+}
 
 //-------------------------------------------------------------------------------------------------
 // SDIO-CD Command
 
-// CMD0, CMD8
 UINT SdioCdReset(void)
-{
+{	// CMD0, 8 : Power on(Reset)
 	UINT nResp, nRes;
 
 	nRes = SdioCmd(sdinfo.nCH, 0, 0x00000000, 0, 0, 0);
-	gprintf("[ 0] res(%d)\r\n", nRes);
+	gprintf("[ 0] res(%d)\n", nRes);
 	DELAY_MS(1);
 
 	nRes = SdioCmd(sdinfo.nCH, 0, 0x00000000, 0, 0, 0);
-	gprintf("[ 0] res(%d)\r\n", nRes);
+	gprintf("[ 0] res(%d)\n", nRes);
 	DELAY_MS(1);
 
-	nRes = SdioCmd(sdinfo.nCH, 8, CMD8_VHS|CMD8_PATTERN, 1, 0, 0);	//	Send IF Condition
+	nRes = SdioCmd(sdinfo.nCH, 8, CMD8_VHS|CMD8_PATTERN, 1, 0, 1);	//	Send IF Condition
 	SdioGetResp(sdinfo.nCH, &nResp, ecrtR7);
-	gprintf("[ 8] res(%d) RESP(0x%08X)\r\n", nRes, nResp);
+	gprintf("[ 8] res(%d) RESP(0x%08X)\n", nRes, nResp);
 
 	if (nResp & 0x300) {
 		SDIO_CMD_LOG_END;
 		return DEF_OK;
 	} else {
-		eprintf("End(FAIL) : RESP(0x%08X)\r\n", nResp);
+		eprintf("End(FAIL) : RESP(0x%08X)\n", nResp);
 		SDIO_CMD_LOG_END;
 		return DEF_FAIL;
 	}
 }
 
-// ACMD41
 UINT SdioCdInitialization(void)
-{
-	return DEF_FAIL;
+{	// ACMD41(R3)
+	UINT *pResp;
+	UINT nResp, nTryCnt = 0;
+	BOOL bRes;
+
+	SDIO_CMD_LOG_START;
+
+	pResp = (UINT *)&sdinfo.ocr;
+
+	do {
+		if (SdioCdDet()) {
+			eprintf("End(FAIL) : SDcard no detect\n");
+			return DEF_FAIL;
+		}
+		if (++nTryCnt > SD_TRY_CNT) {
+			eprintf("End(FAIL) : RESP(0x%08X)\n", *pResp);
+			return DEF_FAIL;
+		}
+
+		DELAY_MS(100); // Polling less than 100ms interval
+		bRes = SdioCmd(sdinfo.nCH, 55, 0x00000000, 1, 0, 0);
+		SdioGetResp(sdinfo.nCH, &nResp, ecrtR1);
+		gprintf("[55] res(%d) RESP(0x%08X)\n", bRes, nResp);
+		bRes = SdioCmd(sdinfo.nCH, 41, ACMD41_HCS|ACMD41_XPC|ACMD41_VOLT
+#ifdef sdio_support_1_8v
+			|ACMD41_S18R
+#endif
+			, 1, 0, 0);	//	ACMD41
+		SdioGetResp(sdinfo.nCH, pResp, ecrtR3);
+		gprintf("[41] res(%d) RESP(0x%08X)\n", bRes, *pResp);
+	} while (sdinfo.ocr.busy == 0);
+
+#ifdef ENX_SDIOCD_CMD_DEBUG
+	SdioPrintOCR(&sdinfo.ocr);
+#endif
+
+	SDIO_CMD_LOG_END;
+
+	return DEF_OK;
 }
 
-// CMD11
 UINT SdioCdSwitchVoltage(void)
-{
-	return DEF_FAIL;
+{	// CMD11 : Switch to 1.8V
+	UINT bRes = DEF_FAIL;
+	UINT nResp = 0;
+
+	SDIO_CMD_LOG_START;
+
+	bRes = SdioCmd(sdinfo.nCH, 11, 0x00000000, 1, 0, 0);
+	SdioGetResp(sdinfo.nCH, &nResp, ecrtR1);
+	gprintf("[11] res(%d) RESP0(0x%08X)\n", bRes, nResp);
+
+	// Switch 1.8V
+	if (bRes == DEF_OK) {
+//		PAD_SDIO0_CMD_PU = 1;		// CMD pull-up disable
+//		PAD_SDIO0_DAT_PU = 1;		// DAT pull-up disable
+		SdioClockDisable(sdinfo.nCH);	// CLK disable
+		DELAY_MS(5);				// 5ms delay(min.)
+
+		gprintf("Set Default speed mode\n");
+		SdioSetClockDiv(sdinfo.nCH, 25*1000*1000);
+
+//		PAD_SDIO0_MSEL = 0x3F;		// 1.8v
+		SdioClockEnable(sdinfo.nCH);// CLK enable
+//		PAD_SDIO0_CMD_PU = 0;		// CMD pull-up enable
+//		PAD_SDIO0_DAT_PU = 0;		// DAT pull-up enable
+
+		sdinfo.nVoltageMode = 1;
+		eprintf("3.3v -> 1.8v ok\n");
+	} else {
+		sdinfo.nVoltageMode = 0;
+		eprintf("3.3v -> 1.8v fail\r\n");
+	}
+
+	SDIO_CMD_LOG_END;
+
+	return bRes;
 }
 
-// CMD2, CMD10
 UINT SdioCdGetCID(int nType)
-{
-	return DEF_FAIL;
+{	// CMD2, 10(R2): Type:0(CMD2) Type:1(CMD10)
+	UINT bRes = DEF_FAIL;
+	UINT *pResp;
+	UINT cmdType = 0;
+
+	SDIO_CMD_LOG_START;
+
+	pResp = (UINT *)&sdinfo.cid;
+
+	if (nType == 0) {
+		cmdType = 2;
+		bRes = SdioCmd(sdinfo.nCH, cmdType, 0x00000000, 1, 1, 0);
+	} else if (nType == 1) {
+		cmdType = 10;
+		bRes = SdioCmd(sdinfo.nCH, cmdType, sdinfo.rca, 1, 1, 0);
+	}
+	SdioGetResp(sdinfo.nCH, pResp, ecrtR2);
+	gprintf("[%2d] res(%d) RESP0(0x%08X)\n", cmdType, bRes, pResp[0]);
+	gprintf("[%2d] res(%d) RESP1(0x%08X)\n", cmdType, bRes, pResp[1]);
+	gprintf("[%2d] res(%d) RESP2(0x%08X)\n", cmdType, bRes, pResp[2]);
+	gprintf("[%2d] res(%d) RESP3(0x%08X)\n", cmdType, bRes, pResp[3]);
+
+#ifdef ENX_SDIOCD_CMD_DEBUG
+	SdioPrintCID(&sdinfo.cid);
+#endif
+
+	SDIO_CMD_LOG_END;
+
+	return bRes;
 }
 
-// CMD3
 UINT SdioCdGetRCA(void)
-{
-	return DEF_FAIL;
+{	// CMD3(R6)
+	UINT bRes = DEF_FAIL;
+	UINT nResp = 0;
+
+	SDIO_CMD_LOG_START;
+
+	bRes = SdioCmd(sdinfo.nCH, 3, 0x00000000, 1, 0, 0);
+	SdioGetResp(sdinfo.nCH, &nResp, ecrtR6);
+	gprintf("[ 3] res(%d) RESP(0x%08X)\n", bRes, nResp);
+
+	sdinfo.rca = nResp & RCA_RCA_MASK;
+
+	SDIO_CMD_LOG_END;
+
+	return bRes;
 }
 
-// CMD9
 UINT SdioCdGetCSD(void)
-{
-	return DEF_FAIL;
+{	// CMD9(R2)
+	UINT bRes = DEF_FAIL;
+	UINT *pResp;
+
+	SDIO_CMD_LOG_START;
+
+	pResp = (UINT *)&sdinfo.csd;
+
+	bRes = SdioCmd(sdinfo.nCH, 9, sdinfo.rca, 1, 1, 0);
+	SdioGetResp(sdinfo.nCH, pResp, ecrtR2);
+	gprintf("[ 9] res(%d) RESP0(0x%08X)\n", bRes, pResp[0]);
+	gprintf("[ 9] res(%d) RESP1(0x%08X)\n", bRes, pResp[1]);
+	gprintf("[ 9] res(%d) RESP2(0x%08X)\n", bRes, pResp[2]);
+	gprintf("[ 9] res(%d) RESP3(0x%08X)\n", bRes, pResp[3]);
+
+#ifdef ENX_SDIOCD_CMD_DEBUG
+	SdioPrintCSD(&sdinfo.csd);
+#endif
+
+	if (sdinfo.csd.csd_v2.PERM_WRITE_PROTECT == 1) {
+		eprintf("PERM_WRITE_PROTECT enable!\n");
+		bRes = DEF_FAIL;
+	}
+
+	SDIO_CMD_LOG_END;
+
+	return bRes;
 }
 
-// CMD7, CMD42, ACMD6
 UINT SdioCdBusWidthChange(void)
-{
-	return DEF_FAIL;
+{	// CMD7(R1b), CMD42(R1), ACMD6(R1) : Bus Width 1bit -> 4bit
+	UINT bRes = DEF_FAIL;
+	UINT nResp = 0;
+
+	SDIO_CMD_LOG_START;
+
+	// Select a card
+	bRes = SdioCmd(sdinfo.nCH, 7, sdinfo.rca, 1, 0, 0);
+	SdioGetResp(sdinfo.nCH, &nResp, ecrtR1b);
+	gprintf("[ 7] res(%d) RESP(0x%08X)\n", bRes, nResp);
+
+	// Unlock
+//	bRes = SdioCmd(sdinfo.nCH, 42, 0x00000000, 1, 0, 0);
+//	nResp = SDIO0_RESP0;
+//	printf("%s(%d) : [42] res(%d) RESP(0x%08X)\r\n", __func__, __LINE__, bRes, nResp);
+
+	// ACMD6 : 1bit -> 4bit
+	bRes = SdioCmd(sdinfo.nCH, 55, sdinfo.rca, 1, 0, 0);
+	SdioGetResp(sdinfo.nCH, &nResp, ecrtR1);
+	gprintf("[55] res(%d) RESP(0x%08X)\n", bRes, nResp);
+
+	bRes = SdioCmd(sdinfo.nCH, 6, 0x00000002, 1, 0, 0);
+	SdioGetResp(sdinfo.nCH, &nResp, ecrtR1);
+	gprintf("[ 6] res(%d) RESP(0x%08X)\n", bRes, nResp);
+
+	SDIO_CMD_LOG_END;
+
+	return bRes;
 }
 
-// ACMD13
 UINT SdioCdGetSSR(void)
-{
-	return DEF_FAIL;
+{	// ACMD13(R1) : Data bus response / 64byte
+	BOOL bRes = DEF_FAIL;
+	UINT nResp, nTemp = 0;
+
+	SDIO_CMD_LOG_START;
+
+	bRes = SdioCmd(sdinfo.nCH, 55, sdinfo.rca, 1, 0, 0);
+	SdioGetResp(sdinfo.nCH, &nResp, ecrtR1);
+	gprintf("[55] res(%d) RESP(0x%08X)\n", bRes, nResp);
+
+//	nTemp = SDIO0_DAT_BL;
+//	SDIO0_DAT_BL = sizeof(SD_SSR);
+//	SDIO0_DATLEN = 1;
+
+	bRes = SdioCmd(sdinfo.nCH, 13, 0x00000000, 1, 0, 0);
+	SdioGetResp(sdinfo.nCH, &nResp, ecrtR1);
+	gprintf("[13] res(%d) RESP(0x%08X)\r\n", bRes, nResp);
+
+	if (bRes == DEF_OK) {
+//		while(SDIO0_DAT_EN);
+//		BYTE *getData = (BYTE *)&sdinfo.ssr;
+//		DmaMemCpy_ip((BYTE *)getData, (BYTE *)SDIO0_BASE, sizeof(SD_SSR));
+//		invalidate_dcache_range((UINT)getData, (UINT)(getData) + sizeof(SD_SSR));
+	} else {
+//		SDIO0_DAT_EN = 0;
+	}
+
+//	SDIO0_DAT_BL = nTemp;
+
+#ifdef ENX_SDIOCD_CMD_DEBUG
+	if (bRes == DEF_OK) {
+		SdioPrintSSR(&sdinfo.ssr);
+	}
+#endif
+
+	SDIO_CMD_LOG_END;
+
+	return bRes;
 }
 
 // ACMD51
@@ -152,6 +522,12 @@ UINT SdioCdSetBlockLength(void)
 UINT SdioCdInitProcess(void)
 {
 	SDIO_CMD_LOG_START;
+
+	SdioSetClockDef(sdinfo.nCH);
+	//SdioSetClock(sdinfo.nCH, 25*1000*1000);
+	char strClockPrint[40] = {0};
+	SdioClockDivPrint(sdinfo.nCH, strClockPrint);
+	printf("SDIO%u(MicroSD) Init Start(%s)\n", sdinfo.nCH, strClockPrint);
 
 	// CMD 0, 8
 	if (SdioCdReset() == DEF_FAIL) {
@@ -237,7 +613,6 @@ UINT SdioCdInitProcess(void)
 		goto done_fail;
 	}
 
-	char strClockPrint[40] = {0};
 	SdioClockDivPrint(sdinfo.nCH, strClockPrint);
 	printf("SDIO%u(MicroSD) Init OK(%s)\n", sdinfo.nCH, strClockPrint);
 
@@ -273,7 +648,7 @@ void SdioCdInit(UINT nCH)
 	sdinfo.nCH = nCH;
 	sdinfo.nErrorCode = 0;
 
-	GpioSetHi(SD_GPIO_RST);
+	GpioSetLo(SD_GPIO_RST); // LO:ON HI:OFF
 	SdioSetDelayfn(sdinfo.nCH, (user_delay_fn)ENX_SDIOCD_DELAY);
 
 //	GpioInDir(SD_GPIO_IRQ);
