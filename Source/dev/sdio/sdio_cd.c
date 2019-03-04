@@ -178,6 +178,25 @@ void SdioPrintSSR(SD_SSR *ssr)
 {
 	SDIO_CMD_LOG_START;
 
+#if 0
+	uint8 DAT_BUS_WIDTH				:2;
+	uint8 SECURED_MODE 				:1;
+	uint8 RSF							:7;
+	uint8 _res1						:6;
+	uint8 SD_CARD_TYPE[2];
+	uint8 SIZE_OF_PROTECTED_AREA[4];
+	uint8 SPEED_CLASS;
+	uint8 PERFORMANCE_MOVE;
+	uint8 AU_SIZE						:4;
+	uint8 _res2						:4;
+	uint8 ERASE_SIZE[2];
+	uint8 ERASE_TIMEOUT				:6;
+	uint8 ERASE_OFFSET 				:2;
+	uint8 UHS_SPEED_GRADE				:4;
+	uint8 UHS_AU_SIZE					:4;
+	uint8 _res3;
+#endif
+
 	printf("===================================================\n");
 	printf("ssr->DAT_BUS_WIDTH          [511:510] : %u(0x%08X)\n", ssr->DAT_BUS_WIDTH, ssr->DAT_BUS_WIDTH);
 	printf("ssr->SECURED_MODE           [509:509] : %u(0x%08X)\n", ssr->SECURED_MODE, ssr->SECURED_MODE);
@@ -185,11 +204,14 @@ void SdioPrintSSR(SD_SSR *ssr)
 	printf("ssr->_res1                  [501:496] : %u(0x%08X)\n", ssr->_res1, ssr->_res1);
 	printf("ssr->SD_CARD_TYPE           [495:480] : %u(0x%08X)\n", ssr->SD_CARD_TYPE, ssr->SD_CARD_TYPE);
 	printf("ssr->SIZE_OF_PROTECTED_AREA [479:448] : %u(0x%08X)\n", ssr->SIZE_OF_PROTECTED_AREA, ssr->SIZE_OF_PROTECTED_AREA);
+	//printf("ssr->SIZE_OF_PROTECTED_AREA [479:448] : %u(0x%08X)\n", ssr->SIZE_OF_PROTECTED_AREA[0] << 24 | ssr->SIZE_OF_PROTECTED_AREA[1] << 16 | ssr->SIZE_OF_PROTECTED_AREA[2] << 8 | ssr->SIZE_OF_PROTECTED_AREA[3]);
 	printf("ssr->SPEED_CLASS            [447:440] : %u(0x%08X)\n", ssr->SPEED_CLASS, ssr->SPEED_CLASS);
 	printf("ssr->PERFORMANCE_MOVE       [439:432] : %u(0x%08X)\n", ssr->PERFORMANCE_MOVE, ssr->PERFORMANCE_MOVE);
 	printf("ssr->AU_SIZE                [431:428] : %u(0x%08X)\n", ssr->AU_SIZE, ssr->AU_SIZE);
 	printf("ssr->_res2                  [427:424] : %u(0x%08X)\n", ssr->_res2, ssr->_res2);
-	printf("ssr->ERASE_SIZE             [423:408] : %u(0x%08X)\n", ssr->ERASE_SIZE0 << 8 | ssr->ERASE_SIZE1, ssr->ERASE_SIZE0 << 8 | ssr->ERASE_SIZE1);
+	//printf("ssr->ERASE_SIZE             [423:408] : %u(0x%08X)\n", ssr->ERASE_SIZE0 << 8 | ssr->ERASE_SIZE1, ssr->ERASE_SIZE0 << 8 | ssr->ERASE_SIZE1);
+	//printf("ssr->ERASE_SIZE             [423:408] : %u(0x%08X)\n", ssr->ERASE_SIZE[0] << 8 | ssr->ERASE_SIZE[1], ssr->ERASE_SIZE[0] << 8 | ssr->ERASE_SIZE[1]);
+	printf("ssr->ERASE_SIZE             [423:408] : %u(0x%08X)\n", ssr->ERASE_SIZE, ssr->ERASE_SIZE);
 	printf("ssr->ERASE_TIMEOUT          [407:402] : %u(0x%08X)\n", ssr->ERASE_TIMEOUT, ssr->ERASE_TIMEOUT);
 	printf("ssr->ERASE_OFFSET           [401:400] : %u(0x%08X)\n", ssr->ERASE_OFFSET, ssr->ERASE_OFFSET);
 	printf("ssr->UHS_SPEED_GRADE        [399:396] : %u(0x%08X)\n", ssr->UHS_SPEED_GRADE, ssr->UHS_SPEED_GRADE);
@@ -432,18 +454,18 @@ UINT SdioCdBusWidthChange(void)
 	bRes = SdioCmd(sdinfo.nCH, 7, sdinfo.rca, 1, 0, 0);
 	SdioGetResp(sdinfo.nCH, &nResp, ecrtR1b);
 	gprintf("[ 7] res(%d) RESP(0x%08X)\n", bRes, nResp);
-
+#if 0
 	// Unlock
-//	bRes = SdioCmd(sdinfo.nCH, 42, 0x00000000, 1, 0, 0);
-//	nResp = SDIO0_RESP0;
-//	printf("%s(%d) : [42] res(%d) RESP(0x%08X)\r\n", __func__, __LINE__, bRes, nResp);
-
+	bRes = SdioCmd(sdinfo.nCH, 42, 0x00000000, 1, 0, 0);
+	SdioGetResp(sdinfo.nCH, &nResp, ecrtR1b);
+	gprintf("[42] res(%d) RESP(0x%08X)\n", bRes, nResp);
+#endif
 	// ACMD6 : 1bit -> 4bit
 	bRes = SdioCmd(sdinfo.nCH, 55, sdinfo.rca, 1, 0, 0);
 	SdioGetResp(sdinfo.nCH, &nResp, ecrtR1);
 	gprintf("[55] res(%d) RESP(0x%08X)\n", bRes, nResp);
 
-	bRes = SdioCmd(sdinfo.nCH, 6, 0x00000002, 1, 0, 0);
+	bRes = SdioCmd(sdinfo.nCH, 6, 0x00000002, 1, 0, 1);
 	SdioGetResp(sdinfo.nCH, &nResp, ecrtR1);
 	gprintf("[ 6] res(%d) RESP(0x%08X)\n", bRes, nResp);
 
@@ -454,8 +476,19 @@ UINT SdioCdBusWidthChange(void)
 
 UINT SdioCdGetSSR(void)
 {	// ACMD13(R1) : Data bus response / 64byte
-	BOOL bRes = DEF_FAIL;
+	//UINT getData[16] = {0xaaaa5555,0xaaaa5555,0xaaaa5555,0xaaaa5555};
+	//UINT getData[16] = {0};
+	//UINT getData[16];
+
+	//SD_SSR testssr;
+	UINT bRes = DEF_FAIL;
 	UINT nResp, nTemp = 0;
+	UINT *getData = (UINT *)&sdinfo.ssr;
+	//BYTE *getData = (BYTE *)&testssr;
+	printf("Test Addr (0x%08X) (0x%08X)\n", getData, &sdinfo.ssr);
+
+//	memset(&testssr, 0, sizeof(testssr));
+//	SdioPrintSSR(&testssr);
 
 	SDIO_CMD_LOG_START;
 
@@ -463,28 +496,49 @@ UINT SdioCdGetSSR(void)
 	SdioGetResp(sdinfo.nCH, &nResp, ecrtR1);
 	gprintf("[55] res(%d) RESP(0x%08X)\n", bRes, nResp);
 
-//	nTemp = SDIO0_DAT_BL;
-//	SDIO0_DAT_BL = sizeof(SD_SSR);
-//	SDIO0_DATLEN = 1;
+	nTemp = SdioGetDataBlockByte(sdinfo.nCH);
+	SdioSetDataBlockByte(sdinfo.nCH, sizeof(SD_SSR));	// Data Block Byte를 64으로 설정
+	SdioSetCmdDataReadS(sdinfo.nCH, 13);				// Data Read command를 13으로 설정
 
-	bRes = SdioCmd(sdinfo.nCH, 13, 0x00000000, 1, 0, 0);
+	hwflush_dcache_range((UINT)getData, ((UINT)getData)+sizeof(SD_SSR));
+	bRes = SdioDataReadS(sdinfo.nCH, (ULONG)getData, 0, 1);
+	hwflush_dcache_range((UINT)getData, ((UINT)getData)+sizeof(SD_SSR));
 	SdioGetResp(sdinfo.nCH, &nResp, ecrtR1);
-	gprintf("[13] res(%d) RESP(0x%08X)\r\n", bRes, nResp);
+	gprintf("[13] res(%d) RESP(0x%08X)\n", bRes, nResp);
 
-	if (bRes == DEF_OK) {
-//		while(SDIO0_DAT_EN);
-//		BYTE *getData = (BYTE *)&sdinfo.ssr;
-//		DmaMemCpy_ip((BYTE *)getData, (BYTE *)SDIO0_BASE, sizeof(SD_SSR));
-//		invalidate_dcache_range((UINT)getData, (UINT)(getData) + sizeof(SD_SSR));
-	} else {
-//		SDIO0_DAT_EN = 0;
-	}
-
-//	SDIO0_DAT_BL = nTemp;
+	SdioSetDataBlockByte(sdinfo.nCH, nTemp);	// Data Block Byte를 원상복귀
+	SdioSetCmdDataReadS(sdinfo.nCH, 17);		// Data Read command를 17으로 설정(기본 Read 명령으로 설정)
 
 #ifdef ENX_SDIOCD_CMD_DEBUG
 	if (bRes == DEF_OK) {
-		SdioPrintSSR(&sdinfo.ssr);
+		UINT *un32getData = getData;
+		BYTE *un8getData = getData;
+
+		//un8getData[9] =
+
+		sdinfo.ssr.AU_SIZE = 0xf;
+		sdinfo.ssr.SD_CARD_TYPE = 0x1234;
+
+		//un8getData[0] = 0x4;
+		//un8getData[1] = 0xff - 1;
+
+		int ss = 511, ee = 480;
+		hexDump("SSR", getData, 64);
+		gprintf("=======================================\n");
+		for (int k = 0; k < 16; k++) {
+			gprintf("DATA[%2d][%3d:%3d] %u(0x%08X)\n", k, ss, ee, un32getData[k], un32getData[k]);
+			ss -= 32;
+			ee -= 32;
+		}
+		gprintf("=======================================\n");
+		ss = 511; ee = 504;
+		for (int k = 0; k < 64; k++) {
+			gprintf("DATA[%2d][%3d:%3d] %u(0x%02X)\n", k, ss, ee, un8getData[k], un8getData[k]);
+			ss -= 8;
+			ee -= 8;
+		}
+		gprintf("=======================================\n");
+		SdioPrintSSR(getData);
 	}
 #endif
 
@@ -493,28 +547,195 @@ UINT SdioCdGetSSR(void)
 	return bRes;
 }
 
-// ACMD51
 UINT SdioCdGetSCR(void)
-{
-	return DEF_FAIL;
+{	// ACMD51(R1) : Data bus response / 8byte
+	UINT bRes = DEF_FAIL;
+	UINT nResp, nTemp = 0;
+
+	SDIO_CMD_LOG_START;
+
+	bRes = SdioCmd(sdinfo.nCH, 55, sdinfo.rca, 1, 0, 0);
+	SdioGetResp(sdinfo.nCH, &nResp, ecrtR1);
+	gprintf("[55] res(%d) RESP(0x%08X)\n", bRes, nResp);
+
+	nTemp = SdioGetDataBlockByte(sdinfo.nCH);
+	SdioSetDataBlockByte(sdinfo.nCH, sizeof(SD_SCRreg));	// Data Block Byte를 64으로 설정
+	SdioSetCmdDataReadS(sdinfo.nCH, 51);					// Data Read command를 51으로 설정
+
+	UINT *getData = (UINT *)&sdinfo.scr;
+	//hwflush_dcache_range(getData, getData+sizeof(SD_SCRreg));
+	bRes = SdioDataReadS(sdinfo.nCH, (ULONG)getData, 0, 1);
+	//hwflush_dcache_range(getData, getData+sizeof(SD_SCRreg));
+	SdioGetResp(sdinfo.nCH, &nResp, ecrtR1);
+	gprintf("[51] res(%d) RESP(0x%08X)\n", bRes, nResp);
+
+	SdioSetDataBlockByte(sdinfo.nCH, nTemp);	// Data Block Byte를 원상복귀
+	SdioSetCmdDataReadS(sdinfo.nCH, 17);		// Data Read command를 17으로 설정(기본 Read 명령으로 설정)
+
+#ifdef ENX_SDIOCD_CMD_DEBUG
+	if (bRes == DEF_OK) {
+		SdioPrintSCR(&sdinfo.scr);
+	}
+#endif
+
+	SDIO_CMD_LOG_END;
+
+	return bRes;
 }
 
-// CMD6
+UINT SdioClockSwitch(int mode, int group, BYTE value, BYTE *getData)
+{	// CMD6 : Check & Switch Clock (sub)
+	UINT bRes = DEF_FAIL;
+	UINT nResp = 0, nArg = 0, nTemp = 0;
+	UINT nSize = 64;
+
+	SDIO_CMD_LOG_START;
+
+	nArg = mode << 31 | 0x00FFFFFF;
+	nArg &= ~(0xFF << (group * 4));
+	nArg |= value << (group * 4);
+
+	gprintf("nArg(mode:%d) : 0x%08X\n", mode, nArg);
+
+	nTemp = SdioGetDataBlockByte(sdinfo.nCH);
+	SdioSetDataBlockByte(sdinfo.nCH, nSize);			// Data Block Byte를 64으로 설정
+	SdioSetCmdDataReadS(sdinfo.nCH, 6);					// Data Read command를 6으로 설정
+
+	//hwflush_dcache_range(getData, getData+nSize);
+	bRes = SdioDataReadS(sdinfo.nCH, (ULONG)getData, 0, 1);
+	//hwflush_dcache_range(getData, getData+nSize);
+	SdioGetResp(sdinfo.nCH, &nResp, ecrtR1);
+	gprintf("[ 6] res(%d) RESP(0x%08X)\n", bRes, nResp);
+
+	SdioSetDataBlockByte(sdinfo.nCH, nTemp);	// Data Block Byte를 원상복귀
+	SdioSetCmdDataReadS(sdinfo.nCH, 17);		// Data Read command를 17으로 설정(기본 Read 명령으로 설정)
+
+	SDIO_CMD_LOG_END;
+
+	return bRes;
+}
+
 UINT SdioCdSetClock(void)
-{
-	return DEF_FAIL;
+{	// CMD6 : Check & Switch Clock (main)
+	UINT bRes = DEF_FAIL;
+	BYTE status[64] = {0};
+
+	SDIO_CMD_LOG_START;
+
+	if (sdinfo.ssr.SPEED_CLASS >= SD_SPEED_CLASS10) {
+		if (sdinfo.scr.SD_SPEC < SCR_SPEC_VER_1) {
+			gprintf("spec ver 1.0 or 1.01\n");
+			goto if_speed;
+		}
+
+		if (!(sdinfo.csd.csd_v2.CCC & SCR_CCC_SWITCH)) {
+			gprintf("card lacks mandatory switch function, performance might suffer.\n");
+			goto if_speed;
+		}
+
+		if (SdioClockSwitch(0, 0, 1, status) == DEF_FAIL) {
+			gprintf("problem reading switch capabilities, performance might suffer.\n");
+			goto if_speed;
+		}
+
+		DELAY_MS(50);
+
+#if 0
+		printf("status Get\n");
+		Sdio0PrintSFS(status);
+#endif
+
+		if (!(status[13] & 0x02)) {
+			eprintf("\n");
+			goto if_speed;
+		}
+
+		if (SdioClockSwitch(1, 0, 1, status) == DEF_FAIL) {
+			eprintf("\n");
+			goto if_speed;
+		}
+
+		if ((status[16] & 0x0F) != 1) {
+			eprintf("Problem switching card into high-speed mode!\n");
+		} else {
+			gprintf("Set High speed mode\n");
+			SdioSetClockDiv(sdinfo.nCH, 0);
+//			SdioSetClockDiv(sdinfo.nCH, 1);
+//			SdioSetClockDiv(sdinfo.nCH, 2);
+		}
+
+		bRes = DEF_OK;
+	} else {
+if_speed:
+		gprintf("Set Default speed mode\n");
+		SdioSetClockDiv(sdinfo.nCH, 1);
+		bRes = DEF_OK;
+	}
+
+	sdinfo.nSetClock = SdioGetClockDiv(sdinfo.nCH);
+
+	SDIO_CMD_LOG_END;
+
+	return bRes;
 }
 
-// CMD19
 UINT SdioCdTuningCommand(void)
-{
-	return DEF_FAIL;
+{	// CMD19 : 4.2.4.5 Tuning Command
+	UINT bRes = DEF_FAIL;
+	UINT nResp, nTemp = 0, nSize = 64;
+	BYTE getData[64] = {0};
+	BYTE checkData[64] = {	0xFF,0x0F,0xFF,0x00,0xFF,0xCC,0xC3,0xCC,0xC3,0x3C,0xCC,0xFF,0xFE,0xFF,0xFE,0xEF,
+							0xFF,0xDF,0xFF,0xDD,0xFF,0xFB,0xFF,0xFB,0xBF,0xFF,0x7F,0xFF,0x77,0xF7,0xBD,0xEF,
+							0xFF,0xF0,0xFF,0xF0,0x0F,0xFC,0xCC,0x3C,0xCC,0x33,0xCC,0xCF,0xFF,0xEF,0xFF,0xEE,
+							0xFF,0xFD,0xFF,0xFD,0xDF,0xFF,0xBF,0xFF,0xBB,0xFF,0xF7,0xFF,0xF7,0x7F,0x7B,0xDE};
+
+	SDIO_CMD_LOG_START;
+
+	nTemp = SdioGetDataBlockByte(sdinfo.nCH);
+	SdioSetDataBlockByte(sdinfo.nCH, nSize);			// Data Block Byte를 64으로 설정
+	SdioSetCmdDataReadS(sdinfo.nCH, 19);				// Data Read command를 19으로 설정
+
+	//hwflush_dcache_range(getData, getData+nSize);
+	bRes = SdioDataReadS(sdinfo.nCH, (ULONG)getData, 0, 1);
+	//hwflush_dcache_range(getData, getData+nSize);
+	SdioGetResp(sdinfo.nCH, &nResp, ecrtR1);
+	gprintf("[19] res(%d) RESP(0x%08X)\n", bRes, nResp);
+
+	if (bRes == DEF_OK) {
+		for (UINT i = 0; i < nSize; i++) {
+			if (checkData[i] != getData[i]) {
+				eprintf("Tuning Block Pattern Mismatch\n");
+				hexDump("Tuning Block Pattern", getData, nSize);
+				SdioCdClockDown();	// 낮춘 상태에서 다시 테스트 해야하지 않을까?
+				break;
+			}
+		}
+	}
+
+	SdioSetDataBlockByte(sdinfo.nCH, nTemp);	// Data Block Byte를 원상복귀
+	SdioSetCmdDataReadS(sdinfo.nCH, 17);		// Data Read command를 17으로 설정(기본 Read 명령으로 설정)
+
+	SDIO_CMD_LOG_END;
+
+	return bRes;
 }
 
-// CMD16
 UINT SdioCdSetBlockLength(void)
-{
-	return DEF_FAIL;
+{	// CMD16 : Define the block length
+	UINT bRes = DEF_FAIL;
+	UINT nResp = 0;
+	UINT nTemp = 0;
+
+	SDIO_CMD_LOG_START;
+
+	nTemp = SdioGetDataBlockByte(sdinfo.nCH);
+	bRes = SdioCmd(sdinfo.nCH, 16, nTemp, 1, 0, 0);
+	SdioGetResp(sdinfo.nCH, &nResp, ecrtR1);
+	gprintf("[16] res(%d) RESP(0x%08X)\n", bRes, nResp);
+
+	SDIO_CMD_LOG_END;
+
+	return bRes;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -586,6 +807,12 @@ UINT SdioCdInitProcess(void)
 		sdinfo.nErrorCode = 9;
 		goto done_fail;
 	}
+
+	printf("TEST CMD ACMD13 =========================================\n");
+	printf("TEST CMD ACMD13 =========================================\n");
+	printf("TEST CMD ACMD13 =========================================\n");
+	sdinfo.nErrorCode = 99;
+	goto done_fail;
 
 	// ACMD 51
 	if (SdioCdGetSCR() == DEF_FAIL) {

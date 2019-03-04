@@ -87,6 +87,7 @@ tMonCmd gCmdList[] =
 //TEST
 	{"sysreg",		cmd_test_sysreg,	sSysreg			},
 	{"sd",			cmd_test_sdio,		sSdioTest		},
+//	{"dma",			cmd_test_dma,		sDmaTest		},
 
 	{0,				0,					0				}
 };
@@ -310,6 +311,28 @@ int UsrCmd_i(int argc, char *argv[])
 
 int UsrCmd_j(int argc, char *argv[])
 {
+extern void DdrTestOff(void);
+//extern void DdrTestOn(int var);
+extern void DdrTestOn(int var, int RD_mask, int RD_edge, int RD_ltc, int WR_ltc); // 0x0~0xf, 0x0~0xff, 0~1, 0~15, 0~7
+extern void DdrTestProcess(void);
+
+	//for (int j = 0; j < 256; j++) {
+	int j = 0x20;
+		for (int k = 0; k < 2; k++) {
+			for (int l = 0; l < 16; l++) {
+				for (int m = 0; m < 8; m++) {
+					for (int i = 0; i < 16; i++) {
+						DdrTestOn(i, j, k, l, m);
+						vTaskDelay(1);
+						DdrTestProcess();
+						DdrTestOff();
+						//vTaskDelay(10);
+					}
+				}
+			}
+		}
+	//}
+
 	return 0;
 	UNUSED(argc);
 	UNUSED(argv);

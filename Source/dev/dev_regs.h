@@ -103,11 +103,17 @@
 #define REG_BASE_SHA			0x44E00000
 #define REG_BASE_CHKSUM			0x44F00000
 #define REG_BASE_SYS			0x45000000
-#define REG_BASE_DMA0			0x45100000
-#define REG_BASE_DMA1			0x45100020
-#define REG_BASE_I2S			0x45200000
-#define REG_BASE_IRQ			0x45300000
-#define REG_BASE_ADC			0x45400000
+#define REG_BASE_BDMA0			0x45100000
+#define REG_BASE_BDMA1			0x45100020
+#define REG_BASE_BDMA2			0x45100040
+#define REG_BASE_BDMA3			0x45100060
+#define REG_BASE_CDMA0			0x45200000
+#define REG_BASE_CDMA1			0x45200020
+#define REG_BASE_CDMA2			0x45200040
+#define REG_BASE_CDMA3			0x45200060
+#define REG_BASE_I2S			0x45300000
+#define REG_BASE_IRQ			0x45400000
+#define REG_BASE_ADC			0x45500000
 
 //******************************************************************************
 // 3. System define
@@ -115,7 +121,8 @@
 #define OSC_FREQ				(25*1000*1000)
 #define MCK_FREQ				(50*1000*1000)
 
-#define DMA_CNT					2
+#define BDMA_CNT				4
+#define CDMA_CNT				4
 #define GPIO_CNT				72
 #define SDIO_CNT				2
 #define UART_CNT				9
@@ -133,8 +140,22 @@
 
 #include "dev_reg.h"
 
+#if 0
+#pragma scalar_storage_order big-endian
+_regs_	UINT GPIO_IN : 1;
+		UINT GPIO_OUT : 1;
+		UINT GPIO_OEN : 1;
+		UINT GPIO_IRQ_DIR : 2;
+		UINT GPIO_IRQ_EN : 1;
+		UINT GPIO_IRQ_CLR : 1;
+		UINT GPIO_IRQ : 1;
+		UINT _rev0 : 24;
+_rege_	_GPIO_PIN;
+#else
 _regs_ BF_8(UINT GPIO_IN : 1 ,UINT GPIO_OUT : 1 ,UINT GPIO_OEN : 1 ,UINT GPIO_IRQ_DIR : 2 ,UINT GPIO_IRQ_EN : 1 ,UINT GPIO_IRQ_CLR : 1 ,UINT GPIO_IRQ : 1 , UINT _rev0 : 24 ) _rege_ _GPIO_PIN;
+#endif
 
+#pragma scalar_storage_order little-endian
 _regs_ BF_5(UINT _rev0 : 28, UINT BITMODE : 1 ,UINT IOMODE : 1 ,UINT MODE : 1 ,UINT EN : 1 ) _rege_ _SDIO_REG0;
 _regs_ BF_4(UINT _rev0 : 17, UINT CLK_EN : 1 ,UINT CLK_SELECT : 2 ,UINT CLK_DIV : 12 ) _rege_ _SDIO_REG1;
 _regs_ BF_1(UINT CMD_ARG : 32 ) _rege_ _SDIO_REG2;
@@ -163,7 +184,7 @@ _regs_ BF_2(UINT CLK_DIV : 16 , UINT _rev0 : 16 ) _rege_ _I2C_REG1;
 _regs_ BF_7(UINT _rev0 : 26, UINT MST_COL : 1 ,UINT MST_ACK : 1 ,UINT MST_REPEAT : 1 ,UINT MST_LAST : 1 ,UINT MST_RW : 1 ,UINT MST_GO : 1 ) _rege_ _I2C_REG2;
 _regs_ BF_8(UINT _rev0 : 19, UINT I2C_SDA : 1 ,UINT I2C_SCL : 1 ,UINT SLV_ACK_IN : 1 ,UINT SLV_GO : 1 ,UINT SLV_RW : 1 ,UINT SLV_ACK_OUT : 1 ,UINT SLV_ADR : 7 ) _rege_ _I2C_REG3;
 
-_regs_ BF_9(UINT _rev0 : 4, UINT JOB_PTR : 8 ,UINT DONE_PTR : 6 ,UINT IRQ : 1 ,UINT IRQ_EN : 1 ,UINT IRQ_CLR : 1 ,UINT VALUE : 8 ,UINT MODE : 2 ,UINT GO : 1 ) _rege_ _DMA_REG0;
+_regs_ BF_10(UINT _rev0 : 1, UINT DONE_VAL : 1 ,UINT DONE_PTR : 8 ,UINT JOB_PTR : 8 ,UINT IRQ : 1 ,UINT IRQ_EN : 1 ,UINT IRQ_CLR : 1 ,UINT VALUE : 8 ,UINT MODE : 2 ,UINT GO : 1 ) _rege_ _DMA_REG0;
 _regs_ BF_1(UINT SRC : 32 ) _rege_ _DMA_REG1;
 _regs_ BF_1(UINT DST : 32 ) _rege_ _DMA_REG2;
 _regs_ BF_1(UINT LEN : 32 ) _rege_ _DMA_REG3;
@@ -253,17 +274,29 @@ extern void SpiIrqClear(UINT nCH);
 extern UINT SpiIsIrq(UINT nCH);
 extern void IrqSpi(UINT nCH);
 
-extern void DmaInit(void);
-extern void DmaMemCpy_isr(UINT nCH, BYTE *apbDst, BYTE *apbSrc, UINT anNum);
-extern void DmaMemCpy_isr_async(UINT nCH, BYTE *apbDst, BYTE *apbSrc, UINT anNum);
-extern void DmaMemSet_isr(UINT nCH, BYTE *apbDst, BYTE abVal, UINT anNum);
-extern void DmaMemSet_isr_async(UINT nCH, BYTE *apbDst, BYTE abVal, UINT anNum);
-extern void DmaIrqCallback(UINT nCH, irq_fn irqfn, void *arg);
-extern void DmaIrqOn(UINT nCH);
-extern void DmaIrqOff(UINT nCH);
-extern void DmaIrqClear(UINT nCH);
-extern UINT DmaIsIrq(UINT nCH);
-extern void IrqDma(void);
+extern void BDmaInit(void);
+extern void BDmaMemCpy_isr(UINT nCH, BYTE *apbDst, BYTE *apbSrc, UINT anNum);
+extern void BDmaMemCpy_isr_async(UINT nCH, BYTE *apbDst, BYTE *apbSrc, UINT anNum);
+extern void BDmaMemSet_isr(UINT nCH, BYTE *apbDst, BYTE abVal, UINT anNum);
+extern void BDmaMemSet_isr_async(UINT nCH, BYTE *apbDst, BYTE abVal, UINT anNum);
+extern void BDmaIrqCallback(UINT nCH, irq_fn irqfn, void *arg);
+extern void BDmaIrqOn(UINT nCH);
+extern void BDmaIrqOff(UINT nCH);
+extern void BDmaIrqClear(UINT nCH);
+extern UINT BDmaIsIrq(UINT nCH);
+extern void IrqBDma(UINT nCH);
+
+extern void CDmaInit(void);
+extern void CDmaMemCpy_isr(UINT nCH, BYTE *apbDst, BYTE *apbSrc, UINT anNum);
+extern void CDmaMemCpy_isr_async(UINT nCH, BYTE *apbDst, BYTE *apbSrc, UINT anNum);
+extern void CDmaMemSet_isr(UINT nCH, BYTE *apbDst, BYTE abVal, UINT anNum);
+extern void CDmaMemSet_isr_async(UINT nCH, BYTE *apbDst, BYTE abVal, UINT anNum);
+extern void CDmaIrqCallback(UINT nCH, irq_fn irqfn, void *arg);
+extern void CDmaIrqOn(UINT nCH);
+extern void CDmaIrqOff(UINT nCH);
+extern void CDmaIrqClear(UINT nCH);
+extern UINT CDmaIsIrq(UINT nCH);
+extern void IrqCDma(UINT nCH);
 
 extern void TimerInit(UINT nCH);
 extern void TimerDeInit(UINT nCH);
@@ -296,6 +329,13 @@ extern UINT SdioGetClockDiv(UINT nCH);
 extern void SdioClockEnable(UINT nCH);
 extern void SdioClockDisable(UINT nCH);
 extern void SdioClockDivPrint(UINT nCH, char *strBuffer);
+extern UINT SdioGetDataBlockByte(UINT nCH);
+extern void SdioSetDataBlockByte(UINT nCH, UINT BlkByte);
+extern UINT SdioDataReadS(UINT nCH, ULONG MemDst, UINT BlkAdr, UINT BlkCnt);
+extern void SdioSetCmdDataWriteS(UINT nCH, UINT nCmd);
+extern void SdioSetCmdDataWriteM(UINT nCH, UINT nCmd);
+extern void SdioSetCmdDataReadS(UINT nCH, UINT nCmd);
+extern void SdioSetCmdDataReadM(UINT nCH, UINT nCmd);
 extern void SdioIrqCallback_Io(UINT nCH, irq_fn irqfn, void *arg);
 extern void SdioIrqCallback_Cmd(UINT nCH, irq_fn irqfn, void *arg);
 extern void SdioIrqCallback_Dat(UINT nCH, irq_fn irqfn, void *arg);

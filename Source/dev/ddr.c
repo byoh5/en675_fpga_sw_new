@@ -1,7 +1,7 @@
 #include "dev.h"
 #include "rv_utils.h" // dmwrite32, dmread32
 //#define TEST_DDR_SIZE DDR_SIZE
-#define TEST_DDR_SIZE 1*1024
+#define TEST_DDR_SIZE 1*64
 
 #if 1
 void DdrTest(void)
@@ -12,9 +12,9 @@ void DdrTest(void)
 	printf("DDR Test - Write\n");
 	for(pDDR = (volatile UINT *)DDR_BASE; pDDR < (volatile UINT *)(DDR_BASE+TEST_DDR_SIZE); pDDR++)
 	{
-		if (((long)pDDR) % (long)(1024*1024) == 0) {
+		//if (((long)pDDR) % (long)(1024*1024) == 0) {
 			printf("DDR Test - Write(0x%08X)\n", pDDR);
-		}
+		//}
 		dmwrite32((uint)pDDR, (uint)pDDR);
 	}
 	printf("DDR Test - Check\n");
@@ -22,9 +22,9 @@ void DdrTest(void)
 	{
 		long getdata = dmread32((uint)pDDR);
 		if (getdata != (long)pDDR) {
-			printf("DDR Test - X: 0x%08X 0x%08X\n", getdata, pDDR);
+			printf("DDR Test - X: 0x%08X 0x%08X\n", pDDR, getdata);
 		} else {
-			printf("DDR Test - O: 0x%08X 0x%08X\n", getdata, pDDR);
+			printf("DDR Test - O: 0x%08X 0x%08X\n", pDDR, getdata);
 		}
 	}
 	printf("DDR Test - Done\n");
@@ -114,12 +114,68 @@ static void DdrParamBypass(UINT var)
 
 void DdrInit(void)
 {
+	DdrTestOff();
+
 	DDR_RD_EN_MASK  = 0x20;
 	DDR_RD_VAL_EDGE = 1;
 	DDR_RD_VAL_LTC	= 6;
 	DDR_WR_LTC 		= 1;
-	DdrParamBypass(3);
+	DdrParamBypass(5);
 
 	DDR_PWR_REQ = (DDR_PWR_CUR)? 0 : 1;
 	while(DDR_PWR_REQ);
 }
+
+void DdrTestProcess(void)
+{
+	volatile UINT *pDDR = (volatile UINT *)DDR_BASE;
+
+	//hwflush_dcache_range(DDR_BASE, DDR_BASE + 16*1024);
+	int ok = 0, fail = 0;
+
+	//printf("DDR Test - Write\n");
+	for (pDDR = (volatile UINT *)DDR_BASE; pDDR < (volatile UINT *)(DDR_BASE+TEST_DDR_SIZE); pDDR++) {
+		dmwrite32((uint)pDDR, (uint)pDDR);
+	}
+	//printf("DDR Test - Check\n");
+	for (pDDR = (volatile UINT *)DDR_BASE; pDDR < (volatile UINT *)(DDR_BASE+TEST_DDR_SIZE); pDDR++) {
+		long getdata = dmread32((uint)pDDR);
+		if (getdata != (long)pDDR) {
+			//printf("DDR Test - X: 0x%08X 0x%08lX\n", pDDR, getdata);
+			fail++;
+		} else {
+			//printf("DDR Test - O: 0x%08X 0x%08lX\n", pDDR, getdata);
+			ok++;
+		}
+	}
+	printf("Done(O:%d/X:%d)\n", ok, fail);
+	if (ok > 0) {
+		printf("Stop!\n");
+		while(1);
+	}
+
+}
+
+void DdrTestOff(void)
+{
+	if (DDR_PWR_CUR) {
+		DDR_PWR_REQ = 1;
+	}
+	while (DDR_PWR_REQ);
+}
+
+void DdrTestOn(int var, int RD_mask, int RD_edge, int RD_ltc, int WR_ltc)
+{
+	printf("DDR Test - RD(MASK:%2x, EDGE:%d, LTC:%2x) WR(LTC:%x) Param(%x) - ", RD_mask, RD_edge, RD_ltc, WR_ltc, var);
+
+//	_regs_ BF_5(UINT RD_EN_MASK : 8 ,UINT _rev0 : 16, UINT RD_VAL_EDGE : 1 ,UINT RD_VAL_LTC : 4 ,UINT WR_LTC : 3 ) _rege_ _DDR_5;
+	DDR_RD_EN_MASK  = 0x20; // 0 ~ 0xff
+	DDR_RD_VAL_EDGE = 1; // 0, 1
+	DDR_RD_VAL_LTC	= 6; // 0 ~ 15
+	DDR_WR_LTC 		= 1; // 0 ~ 7
+	DdrParamBypass(var); // 0 ~ 15
+
+	DDR_PWR_REQ = (DDR_PWR_CUR)? 0 : 1;
+	while(DDR_PWR_REQ);
+}
+

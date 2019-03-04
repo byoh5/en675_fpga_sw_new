@@ -132,6 +132,8 @@ void enx_peri_init(void)
 #endif
 	//UartRxIrqCallback(7, Uart7RxIrqTest, NULL);
 	//UartRxIrqOn(7);
+	BDmaInit();
+	CDmaInit();
 }
 
 void enx_device_init(void)
@@ -182,13 +184,204 @@ void enx_device_init(void)
 
 extern int cmd_test_sysreg(int argc, char *argv[]);
 
+#if 0
+typedef union {
+	int test;
+	struct {
+		int a:4;
+		int b:12;
+		int c:8;
+		int d:8;
+	}
+}TEST_A;
+
+#pragma scalar_storage_order big-endian
+typedef union {
+	int test;
+	struct {
+		int a:4;
+		int b:12;
+		int c:8;
+		int d:8;
+	}
+}TEST_B;
+#endif
+
+typedef union {
+    unsigned long value[2];
+    unsigned char byte[16];
+
+    struct {
+        unsigned int a : 2;
+        unsigned int b : 1;
+        unsigned int c : 7;
+        unsigned int d : 6;
+        unsigned int e : 16;
+
+        unsigned int f;
+
+        unsigned int g : 8;
+        unsigned int h : 8;
+        unsigned int i : 4;
+        unsigned int j : 4;
+        unsigned int k :16;
+
+        unsigned int l : 6;
+        unsigned int m : 2;
+        unsigned int n : 4;
+        unsigned int o : 4;
+        unsigned int p : 8;
+    } field;
+} v;
+
+void test_v_printf(v *ssr)
+{
+	printf("===================================================\n");
+	printf("ssr->a	[127:126] : %u(0x%08X)\n", ssr->field.a, ssr->field.a);
+	printf("ssr->b	[125:125] : %u(0x%08X)\n", ssr->field.b, ssr->field.b);
+	printf("ssr->c	[124:118] : %u(0x%08X)\n", ssr->field.c, ssr->field.c);
+	printf("ssr->d	[117:112] : %u(0x%08X)\n", ssr->field.d, ssr->field.d);
+	printf("ssr->e	[111: 96] : %u(0x%08X)\n", ssr->field.e, ssr->field.e);
+	printf("ssr->f	[ 95: 64] : %u(0x%08X)\n", ssr->field.f, ssr->field.f);
+	printf("ssr->g	[ 63: 56] : %u(0x%08X)\n", ssr->field.g, ssr->field.g);
+	printf("ssr->h	[ 55: 48] : %u(0x%08X)\n", ssr->field.h, ssr->field.h);
+	printf("ssr->i	[ 47: 44] : %u(0x%08X)\n", ssr->field.i, ssr->field.i);
+	printf("ssr->j	[ 43: 40] : %u(0x%08X)\n", ssr->field.j, ssr->field.j);
+	printf("ssr->k	[ 39: 24] : %u(0x%08X)\n", ssr->field.k, ssr->field.k);
+	printf("ssr->l	[ 23: 18] : %u(0x%08X)\n", ssr->field.l, ssr->field.l);
+	printf("ssr->m	[ 17: 16] : %u(0x%08X)\n", ssr->field.m, ssr->field.m);
+	printf("ssr->n	[ 15: 12] : %u(0x%08X)\n", ssr->field.n, ssr->field.n);
+	printf("ssr->o	[ 11:  8] : %u(0x%08X)\n", ssr->field.o, ssr->field.o);
+	printf("ssr->p	[  7:  0] : %u(0x%08X)\n", ssr->field.p, ssr->field.p);
+}
+
+#if 0
+typedef union {
+    unsigned long value[1];
+    unsigned char byte[8];
+    struct {
+        unsigned int a1 : 1;
+        unsigned int a2 : 1;
+        unsigned int a3 : 1;
+        unsigned int a4 : 1;
+        unsigned int a5 : 1;
+        unsigned int a6 : 1;
+        unsigned int a7 : 1;
+        unsigned int a8 : 1;
+
+        unsigned int b1 : 1;
+        unsigned int b2 : 1;
+        unsigned int b3 : 1;
+        unsigned int b4 : 1;
+        unsigned int b5 : 1;
+        unsigned int b6 : 1;
+        unsigned int b7 : 1;
+        unsigned int b8 : 1;
+
+        unsigned int c1 : 1;
+        unsigned int c2 : 1;
+        unsigned int c3 : 1;
+        unsigned int c4 : 1;
+        unsigned int c5 : 1;
+        unsigned int c6 : 1;
+        unsigned int c7 : 1;
+        unsigned int c8 : 1;
+
+        unsigned int d1 : 1;
+        unsigned int d2 : 1;
+        unsigned int d3 : 1;
+        unsigned int d4 : 1;
+        unsigned int d5 : 1;
+        unsigned int d6 : 1;
+        unsigned int d7 : 1;
+        unsigned int d8 : 1;
+
+        unsigned int e1 : 1;
+        unsigned int e2 : 1;
+        unsigned int e3 : 1;
+        unsigned int e4 : 1;
+        unsigned int e5 : 1;
+        unsigned int e6 : 1;
+        unsigned int e7 : 1;
+        unsigned int e8 : 1;
+
+        unsigned int f1 : 1;
+        unsigned int f2 : 1;
+        unsigned int f3 : 1;
+        unsigned int f4 : 1;
+        unsigned int f5 : 1;
+        unsigned int f6 : 1;
+        unsigned int f7 : 1;
+        unsigned int f8 : 1;
+
+        unsigned int g1 : 1;
+        unsigned int g2 : 1;
+        unsigned int g3 : 1;
+        unsigned int g4 : 1;
+        unsigned int g5 : 1;
+        unsigned int g6 : 1;
+        unsigned int g7 : 1;
+        unsigned int g8 : 1;
+
+        unsigned int h1 : 1;
+        unsigned int h2 : 1;
+        unsigned int h3 : 1;
+        unsigned int h4 : 1;
+        unsigned int h5 : 1;
+        unsigned int h6 : 1;
+        unsigned int h7 : 1;
+        unsigned int h8 : 1;
+    } field;
+} q;
+
+
+void test_q_printf(q *__q)
+{
+	printf("===================================================\n");
+	printf("__q->a1 [127] : %u(0x%08X)\n", __q->field.a1, __q->field.a1);
+	printf("__q->b	[125] : %u(0x%08X)\n", __q->field.b, __q->field.b);
+	printf("__q->c	[124] : %u(0x%08X)\n", __q->field.c, __q->field.c);
+	printf("__q->d	[117] : %u(0x%08X)\n", __q->field.d, __q->field.d);
+	printf("__q->e	[111] : %u(0x%08X)\n", __q->field.e, __q->field.e);
+	printf("__q->f	[ 95] : %u(0x%08X)\n", __q->field.f, __q->field.f);
+	printf("__q->g	[ 63] : %u(0x%08X)\n", __q->field.g, __q->field.g);
+	printf("__q->h	[ 55] : %u(0x%08X)\n", __q->field.h, __q->field.h);
+	printf("__q->i	[ 47] : %u(0x%08X)\n", __q->field.i, __q->field.i);
+	printf("__q->j	[ 43] : %u(0x%08X)\n", __q->field.j, __q->field.j);
+	printf("__q->k	[ 39] : %u(0x%08X)\n", __q->field.k, __q->field.k);
+	printf("__q->l	[ 23] : %u(0x%08X)\n", __q->field.l, __q->field.l);
+	printf("__q->m	[ 17] : %u(0x%08X)\n", __q->field.m, __q->field.m);
+	printf("__q->n	[ 15] : %u(0x%08X)\n", __q->field.n, __q->field.n);
+	printf("__q->o	[ 11] : %u(0x%08X)\n", __q->field.o, __q->field.o);
+	printf("__q->p	[  7] : %u(0x%08X)\n", __q->field.p, __q->field.p);
+}
+#endif
+
 void main_0(int cpu_id)
 {
 	*mtime = 0; // timer init
 
 	enx_peri_init();
 	printf("Start EN675\n");
+#if 0
+	TEST_A a;
+	TEST_B b;
+	a.a = 0x1;		a.b = 0x234;		a.c = 0x56;		a.d = 0x78;
+	b.a = 0x1;		b.b = 0x234;		b.c = 0x56;		b.d = 0x78;
+	printf("Sizeof (%d / %d)\n", sizeof(a), sizeof(b));
+	printf("addr A: 0x%08X\n", a.test);
+	printf("addr B: 0x%08X\n", b.test);
+#endif
+#if 0
+	UINT k[4] = {0x11223344, 0x55667788, 0x99aabbcc, 0xddeeff00};
+	UINT j[4] = {0};
 
+	hwflush_dcache_range((UINT)j, ((UINT)j)+16);
+	DmaMemCpy_isr(0, j, k, 16);
+	hwflush_dcache_range((UINT)j, ((UINT)j)+16);
+
+	printf("j: %X %X %X %X\n", j[0], j[1], j[2], j[3]);
+#endif
 #if 0
 	uint64_t a = 100;
 	uint64_t b = 50;
@@ -200,14 +393,44 @@ void main_0(int cpu_id)
 	float b = 1.2f;
 	printf("%d\n", (int)(a/b));
 #endif
+#if 0
+	// 80 00 00 00 05 00 00 00
+	// 04 00 90 00 00 01 1b 00  ................
+	v test_v;
+	test_v.value[0] = 0x8000000005000000;
+	test_v.value[1] = 0x0400900000011b00;
+	hexDump("V", &test_v, 16);
 
+	printf("=======================================\n");
+	int ss, ee;
+	UINT *un32getData = &test_v;
+	ss = 127;
+	ee = 96;
+	for (int k = 0; k < 4; k++) {
+		printf("DATA[%3d:%3d] %u(0x%08X)\n", ss, ee, un32getData[k], un32getData[k]);
+		ss -= 32;
+		ee -= 32;
+	}
+	printf("=======================================\n");
+	ss = 127; ee = 128;
+	BYTE *un8getData = &test_v;
+	for (int k = 0; k < 8; k++) {
+		printf("DATA[%3d:%3d] %u(0x%02X)\n", ss, ee, un8getData[k], un8getData[k]);
+		ss -= 8;
+		ee -= 8;
+	}
+	printf("=======================================\n");
+	test_v_printf(&test_v);
+	printf("END====================================\n");
+	while(1);
+#endif
 	enx_externalirq_init();
 	//enx_timerirq_init();
 
 	enx_device_init();
 
-	//DdrInit();
-	//DdrTest();
+//	DdrInit();
+//	DdrTest();
 
 	g_key = 0xA; // CPU0 Ready!
 

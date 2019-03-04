@@ -196,14 +196,38 @@ _regs_ BF_9(UINT RX_DAT : 8 ,UINT TX_DAT : 8 ,UINT _rev0 : 10, UINT ACT : 1 ,UIN
 _regs_ BF_2(UINT CLK_DIV : 16 , UINT _rev0 : 16 ) _rege_ _I2C8_1;
 _regs_ BF_7(UINT _rev0 : 26, UINT MST_COL : 1 ,UINT MST_ACK : 1 ,UINT MST_REPEAT : 1 ,UINT MST_LAST : 1 ,UINT MST_RW : 1 ,UINT MST_GO : 1 ) _rege_ _I2C8_2;
 _regs_ BF_8(UINT _rev0 : 19, UINT I2C_SDA : 1 ,UINT I2C_SCL : 1 ,UINT SLV_ACK_IN : 1 ,UINT SLV_GO : 1 ,UINT SLV_RW : 1 ,UINT SLV_ACK_OUT : 1 ,UINT SLV_ADR : 7 ) _rege_ _I2C8_3;
-_regs_ BF_9(UINT _rev0 : 4, UINT JOB_PTR : 8 ,UINT DONE_PTR : 6 ,UINT IRQ : 1 ,UINT IRQ_EN : 1 ,UINT IRQ_CLR : 1 ,UINT VALUE : 8 ,UINT MODE : 2 ,UINT GO : 1 ) _rege_ _DMA0_0;
-_regs_ BF_1(UINT SRC : 32 ) _rege_ _DMA0_1;
-_regs_ BF_1(UINT DST : 32 ) _rege_ _DMA0_2;
-_regs_ BF_1(UINT LEN : 32 ) _rege_ _DMA0_3;
-_regs_ BF_9(UINT _rev0 : 4, UINT JOB_PTR : 8 ,UINT DONE_PTR : 6 ,UINT IRQ : 1 ,UINT IRQ_EN : 1 ,UINT IRQ_CLR : 1 ,UINT VALUE : 8 ,UINT MODE : 2 ,UINT GO : 1 ) _rege_ _DMA1_0;
-_regs_ BF_1(UINT SRC : 32 ) _rege_ _DMA1_1;
-_regs_ BF_1(UINT DST : 32 ) _rege_ _DMA1_2;
-_regs_ BF_1(UINT LEN : 32 ) _rege_ _DMA1_3;
+_regs_ BF_10(UINT _rev0 : 1, UINT DONE_VAL : 1 ,UINT DONE_PTR : 8 ,UINT JOB_PTR : 8 ,UINT IRQ : 1 ,UINT IRQ_EN : 1 ,UINT IRQ_CLR : 1 ,UINT VALUE : 8 ,UINT MODE : 2 ,UINT GO : 1 ) _rege_ _BDMA0_0;
+_regs_ BF_1(UINT SRC : 32 ) _rege_ _BDMA0_1;
+_regs_ BF_1(UINT DST : 32 ) _rege_ _BDMA0_2;
+_regs_ BF_1(UINT LEN : 32 ) _rege_ _BDMA0_3;
+_regs_ BF_10(UINT _rev0 : 1, UINT DONE_VAL : 1 ,UINT DONE_PTR : 8 ,UINT JOB_PTR : 8 ,UINT IRQ : 1 ,UINT IRQ_EN : 1 ,UINT IRQ_CLR : 1 ,UINT VALUE : 8 ,UINT MODE : 2 ,UINT GO : 1 ) _rege_ _BDMA1_0;
+_regs_ BF_1(UINT SRC : 32 ) _rege_ _BDMA1_1;
+_regs_ BF_1(UINT DST : 32 ) _rege_ _BDMA1_2;
+_regs_ BF_1(UINT LEN : 32 ) _rege_ _BDMA1_3;
+_regs_ BF_10(UINT _rev0 : 1, UINT DONE_VAL : 1 ,UINT DONE_PTR : 8 ,UINT JOB_PTR : 8 ,UINT IRQ : 1 ,UINT IRQ_EN : 1 ,UINT IRQ_CLR : 1 ,UINT VALUE : 8 ,UINT MODE : 2 ,UINT GO : 1 ) _rege_ _BDMA2_0;
+_regs_ BF_1(UINT SRC : 32 ) _rege_ _BDMA2_1;
+_regs_ BF_1(UINT DST : 32 ) _rege_ _BDMA2_2;
+_regs_ BF_1(UINT LEN : 32 ) _rege_ _BDMA2_3;
+_regs_ BF_10(UINT _rev0 : 1, UINT DONE_VAL : 1 ,UINT DONE_PTR : 8 ,UINT JOB_PTR : 8 ,UINT IRQ : 1 ,UINT IRQ_EN : 1 ,UINT IRQ_CLR : 1 ,UINT VALUE : 8 ,UINT MODE : 2 ,UINT GO : 1 ) _rege_ _BDMA3_0;
+_regs_ BF_1(UINT SRC : 32 ) _rege_ _BDMA3_1;
+_regs_ BF_1(UINT DST : 32 ) _rege_ _BDMA3_2;
+_regs_ BF_1(UINT LEN : 32 ) _rege_ _BDMA3_3;
+_regs_ BF_10(UINT _rev0 : 1, UINT DONE_VAL : 1 ,UINT DONE_PTR : 8 ,UINT JOB_PTR : 8 ,UINT IRQ : 1 ,UINT IRQ_EN : 1 ,UINT IRQ_CLR : 1 ,UINT VALUE : 8 ,UINT MODE : 2 ,UINT GO : 1 ) _rege_ _CDMA0_0;
+_regs_ BF_1(UINT SRC : 32 ) _rege_ _CDMA0_1;
+_regs_ BF_1(UINT DST : 32 ) _rege_ _CDMA0_2;
+_regs_ BF_1(UINT LEN : 32 ) _rege_ _CDMA0_3;
+_regs_ BF_10(UINT _rev0 : 1, UINT DONE_VAL : 1 ,UINT DONE_PTR : 8 ,UINT JOB_PTR : 8 ,UINT IRQ : 1 ,UINT IRQ_EN : 1 ,UINT IRQ_CLR : 1 ,UINT VALUE : 8 ,UINT MODE : 2 ,UINT GO : 1 ) _rege_ _CDMA1_0;
+_regs_ BF_1(UINT SRC : 32 ) _rege_ _CDMA1_1;
+_regs_ BF_1(UINT DST : 32 ) _rege_ _CDMA1_2;
+_regs_ BF_1(UINT LEN : 32 ) _rege_ _CDMA1_3;
+_regs_ BF_10(UINT _rev0 : 1, UINT DONE_VAL : 1 ,UINT DONE_PTR : 8 ,UINT JOB_PTR : 8 ,UINT IRQ : 1 ,UINT IRQ_EN : 1 ,UINT IRQ_CLR : 1 ,UINT VALUE : 8 ,UINT MODE : 2 ,UINT GO : 1 ) _rege_ _CDMA2_0;
+_regs_ BF_1(UINT SRC : 32 ) _rege_ _CDMA2_1;
+_regs_ BF_1(UINT DST : 32 ) _rege_ _CDMA2_2;
+_regs_ BF_1(UINT LEN : 32 ) _rege_ _CDMA2_3;
+_regs_ BF_10(UINT _rev0 : 1, UINT DONE_VAL : 1 ,UINT DONE_PTR : 8 ,UINT JOB_PTR : 8 ,UINT IRQ : 1 ,UINT IRQ_EN : 1 ,UINT IRQ_CLR : 1 ,UINT VALUE : 8 ,UINT MODE : 2 ,UINT GO : 1 ) _rege_ _CDMA3_0;
+_regs_ BF_1(UINT SRC : 32 ) _rege_ _CDMA3_1;
+_regs_ BF_1(UINT DST : 32 ) _rege_ _CDMA3_2;
+_regs_ BF_1(UINT LEN : 32 ) _rege_ _CDMA3_3;
 _regs_ BF_5(UINT _rev0 : 28, UINT IRQ : 1 ,UINT IRQ_EN : 1 ,UINT IRQ_CLR : 1 ,UINT GO : 1 ) _rege_ _CHKSUM_0;
 _regs_ BF_1(UINT ADR : 32 ) _rege_ _CHKSUM_1;
 _regs_ BF_1(UINT LEN : 32 ) _rege_ _CHKSUM_2;
@@ -625,7 +649,7 @@ _regs_ BF_2(UINT _rev0 : 16, UINT DAT_BLKCNT : 16 ) _rege_ _SDIO1_14;
 _regs_ BF_4(UINT _rev0 : 18, UINT DAT_STOP_CMD : 6 ,UINT _rev1 : 2, UINT DAT_IORW_CMD : 6 ) _rege_ _SDIO1_15;
 _regs_ BF_8(UINT _rev0 : 2, UINT DAT_WRCMD_S : 6 ,UINT _rev1 : 2, UINT DAT_WRCMD_M : 6 ,UINT _rev2 : 2, UINT DAT_RDCMD_S : 6 ,UINT _rev3 : 2, UINT DAT_RDCMD_M : 6 ) _rege_ _SDIO1_16;
 _regs_ BF_32(UINT ISP : 1 ,UINT ISP30 : 1 ,UINT ISP29 : 1 ,UINT ISP28 : 1 ,UINT ISP27 : 1 ,UINT ISP26 : 1 ,UINT ISP25 : 1 ,UINT ISP24 : 1 ,UINT ISP23 : 1 ,UINT ISP22 : 1 ,UINT ISP21 : 1 ,UINT ISP20 : 1 ,UINT ISP19 : 1 ,UINT ISP18 : 1 ,UINT ISP17 : 1 ,UINT ISP16 : 1 ,UINT ISP15 : 1 ,UINT ISP14 : 1 ,UINT ISP13 : 1 ,UINT ISP12 : 1 ,UINT ISP11 : 1 ,UINT ISP10 : 1 ,UINT ISP9 : 1 ,UINT ISP8 : 1 ,UINT ISP7 : 1 ,UINT ISP6 : 1 ,UINT ISP5 : 1 ,UINT ISP4 : 1 ,UINT ISP3 : 1 ,UINT ISP2 : 1 ,UINT ISP1 : 1 ,UINT ISP0 : 1 ) _rege_ _IRQ_0;
-_regs_ BF_5(UINT CDC : 1 ,UINT _rev0 : 28, UINT DMA : 1 ,UINT H264 : 1 ,UINT H265 : 1 ) _rege_ _IRQ_1;
+_regs_ BF_12(UINT CDC : 1 ,UINT _rev0 : 21, UINT CDMA3 : 1 ,UINT CDMA2 : 1 ,UINT CDMA1 : 1 ,UINT CDMA0 : 1 ,UINT BDMA3 : 1 ,UINT BDMA2 : 1 ,UINT BDMA1 : 1 ,UINT BDMA0 : 1 ,UINT H264 : 1 ,UINT H265 : 1 ) _rege_ _IRQ_1;
 _regs_ BF_8(UINT ETH : 1 ,UINT _rev0 : 25, UINT USB_DMA : 1 ,UINT USB_MC : 1 ,UINT I2S_RX : 1 ,UINT I2S_TX : 1 ,UINT ETH_RX : 1 ,UINT ETH_TX : 1 ) _rege_ _IRQ_2;
 _regs_ BF_4(UINT SDIO : 1 ,UINT _rev0 : 29, UINT SDIO1 : 1 ,UINT SDIO0 : 1 ) _rege_ _IRQ_3;
 _regs_ BF_5(UINT UTIL : 1 ,UINT _rev0 : 28, UINT CHKSUM : 1 ,UINT SHA : 1 ,UINT AES : 1 ) _rege_ _IRQ_4;
@@ -1657,28 +1681,102 @@ _regs_ BF_5(UINT CH7_EN : 1 ,UINT CH7_MAG : 1 ,UINT CH7_MUL : 3 ,UINT _rev0 : 11
 #define I2C8_SLV_RW _bm(_I2C8_3,REG_BASE_I2C8, (3<<3),SLV_RW) // 1 Bit, 1'h0, RW
 #define I2C8_SLV_ACK_OUT _bm(_I2C8_3,REG_BASE_I2C8, (3<<3),SLV_ACK_OUT) // 1 Bit, 1'h0, RW
 #define I2C8_SLV_ADR _bm(_I2C8_3,REG_BASE_I2C8, (3<<3),SLV_ADR) // 7 Bit, 1'h0, RW
-#define DMA0_JOB_PTR _bm(_DMA0_0,REG_BASE_DMA0, (0<<3),JOB_PTR) // 8 Bit, 0, RW
-#define DMA0_DONE_PTR _bm(_DMA0_0,REG_BASE_DMA0, (0<<3),DONE_PTR) // 6 Bit, 0, R
-#define DMA0_IRQ _bm(_DMA0_0,REG_BASE_DMA0, (0<<3),IRQ) // 1 Bit, 0, R
-#define DMA0_IRQ_EN _bm(_DMA0_0,REG_BASE_DMA0, (0<<3),IRQ_EN) // 1 Bit, 0, RW
-#define DMA0_IRQ_CLR _bm(_DMA0_0,REG_BASE_DMA0, (0<<3),IRQ_CLR) // 1 Bit, 0, W
-#define DMA0_VALUE _bm(_DMA0_0,REG_BASE_DMA0, (0<<3),VALUE) // 8 Bit, 0, RW
-#define DMA0_MODE _bm(_DMA0_0,REG_BASE_DMA0, (0<<3),MODE) // 2 Bit, 0, RW
-#define DMA0_GO _bm(_DMA0_0,REG_BASE_DMA0, (0<<3),GO) // 1 Bit, 0, RW
-#define DMA0_SRC _bm(_DMA0_1,REG_BASE_DMA0, (1<<3),SRC) // 32 Bit, 0, RW
-#define DMA0_DST _bm(_DMA0_2,REG_BASE_DMA0, (2<<3),DST) // 32 Bit, 0, RW
-#define DMA0_LEN _bm(_DMA0_3,REG_BASE_DMA0, (3<<3),LEN) // 32 Bit, 0, RW
-#define DMA1_JOB_PTR _bm(_DMA1_0,REG_BASE_DMA1, (0<<3),JOB_PTR) // 8 Bit, 0, RW
-#define DMA1_DONE_PTR _bm(_DMA1_0,REG_BASE_DMA1, (0<<3),DONE_PTR) // 6 Bit, 0, R
-#define DMA1_IRQ _bm(_DMA1_0,REG_BASE_DMA1, (0<<3),IRQ) // 1 Bit, 0, R
-#define DMA1_IRQ_EN _bm(_DMA1_0,REG_BASE_DMA1, (0<<3),IRQ_EN) // 1 Bit, 0, RW
-#define DMA1_IRQ_CLR _bm(_DMA1_0,REG_BASE_DMA1, (0<<3),IRQ_CLR) // 1 Bit, 0, W
-#define DMA1_VALUE _bm(_DMA1_0,REG_BASE_DMA1, (0<<3),VALUE) // 8 Bit, 0, RW
-#define DMA1_MODE _bm(_DMA1_0,REG_BASE_DMA1, (0<<3),MODE) // 2 Bit, 0, RW
-#define DMA1_GO _bm(_DMA1_0,REG_BASE_DMA1, (0<<3),GO) // 1 Bit, 0, RW
-#define DMA1_SRC _bm(_DMA1_1,REG_BASE_DMA1, (1<<3),SRC) // 32 Bit, 0, RW
-#define DMA1_DST _bm(_DMA1_2,REG_BASE_DMA1, (2<<3),DST) // 32 Bit, 0, RW
-#define DMA1_LEN _bm(_DMA1_3,REG_BASE_DMA1, (3<<3),LEN) // 32 Bit, 0, RW
+#define BDMA0_DONE_VAL _bm(_BDMA0_0,REG_BASE_BDMA0, (0<<3),DONE_VAL) // 1 Bit, 1'h0, R
+#define BDMA0_DONE_PTR _bm(_BDMA0_0,REG_BASE_BDMA0, (0<<3),DONE_PTR) // 8 Bit, 0, R
+#define BDMA0_JOB_PTR _bm(_BDMA0_0,REG_BASE_BDMA0, (0<<3),JOB_PTR) // 8 Bit, 0, RW
+#define BDMA0_IRQ _bm(_BDMA0_0,REG_BASE_BDMA0, (0<<3),IRQ) // 1 Bit, 0, R
+#define BDMA0_IRQ_EN _bm(_BDMA0_0,REG_BASE_BDMA0, (0<<3),IRQ_EN) // 1 Bit, 0, RW
+#define BDMA0_IRQ_CLR _bm(_BDMA0_0,REG_BASE_BDMA0, (0<<3),IRQ_CLR) // 1 Bit, 0, W
+#define BDMA0_VALUE _bm(_BDMA0_0,REG_BASE_BDMA0, (0<<3),VALUE) // 8 Bit, 0, RW
+#define BDMA0_MODE _bm(_BDMA0_0,REG_BASE_BDMA0, (0<<3),MODE) // 2 Bit, 0, RW
+#define BDMA0_GO _bm(_BDMA0_0,REG_BASE_BDMA0, (0<<3),GO) // 1 Bit, 0, RW
+#define BDMA0_SRC _bm(_BDMA0_1,REG_BASE_BDMA0, (1<<3),SRC) // 32 Bit, 0, RW
+#define BDMA0_DST _bm(_BDMA0_2,REG_BASE_BDMA0, (2<<3),DST) // 32 Bit, 0, RW
+#define BDMA0_LEN _bm(_BDMA0_3,REG_BASE_BDMA0, (3<<3),LEN) // 32 Bit, 0, RW
+#define BDMA1_DONE_VAL _bm(_BDMA1_0,REG_BASE_BDMA1, (0<<3),DONE_VAL) // 1 Bit, 1'h0, R
+#define BDMA1_DONE_PTR _bm(_BDMA1_0,REG_BASE_BDMA1, (0<<3),DONE_PTR) // 8 Bit, 0, R
+#define BDMA1_JOB_PTR _bm(_BDMA1_0,REG_BASE_BDMA1, (0<<3),JOB_PTR) // 8 Bit, 0, RW
+#define BDMA1_IRQ _bm(_BDMA1_0,REG_BASE_BDMA1, (0<<3),IRQ) // 1 Bit, 0, R
+#define BDMA1_IRQ_EN _bm(_BDMA1_0,REG_BASE_BDMA1, (0<<3),IRQ_EN) // 1 Bit, 0, RW
+#define BDMA1_IRQ_CLR _bm(_BDMA1_0,REG_BASE_BDMA1, (0<<3),IRQ_CLR) // 1 Bit, 0, W
+#define BDMA1_VALUE _bm(_BDMA1_0,REG_BASE_BDMA1, (0<<3),VALUE) // 8 Bit, 0, RW
+#define BDMA1_MODE _bm(_BDMA1_0,REG_BASE_BDMA1, (0<<3),MODE) // 2 Bit, 0, RW
+#define BDMA1_GO _bm(_BDMA1_0,REG_BASE_BDMA1, (0<<3),GO) // 1 Bit, 0, RW
+#define BDMA1_SRC _bm(_BDMA1_1,REG_BASE_BDMA1, (1<<3),SRC) // 32 Bit, 0, RW
+#define BDMA1_DST _bm(_BDMA1_2,REG_BASE_BDMA1, (2<<3),DST) // 32 Bit, 0, RW
+#define BDMA1_LEN _bm(_BDMA1_3,REG_BASE_BDMA1, (3<<3),LEN) // 32 Bit, 0, RW
+#define BDMA2_DONE_VAL _bm(_BDMA2_0,REG_BASE_BDMA2, (0<<3),DONE_VAL) // 1 Bit, 1'h0, R
+#define BDMA2_DONE_PTR _bm(_BDMA2_0,REG_BASE_BDMA2, (0<<3),DONE_PTR) // 8 Bit, 0, R
+#define BDMA2_JOB_PTR _bm(_BDMA2_0,REG_BASE_BDMA2, (0<<3),JOB_PTR) // 8 Bit, 0, RW
+#define BDMA2_IRQ _bm(_BDMA2_0,REG_BASE_BDMA2, (0<<3),IRQ) // 1 Bit, 0, R
+#define BDMA2_IRQ_EN _bm(_BDMA2_0,REG_BASE_BDMA2, (0<<3),IRQ_EN) // 1 Bit, 0, RW
+#define BDMA2_IRQ_CLR _bm(_BDMA2_0,REG_BASE_BDMA2, (0<<3),IRQ_CLR) // 1 Bit, 0, W
+#define BDMA2_VALUE _bm(_BDMA2_0,REG_BASE_BDMA2, (0<<3),VALUE) // 8 Bit, 0, RW
+#define BDMA2_MODE _bm(_BDMA2_0,REG_BASE_BDMA2, (0<<3),MODE) // 2 Bit, 0, RW
+#define BDMA2_GO _bm(_BDMA2_0,REG_BASE_BDMA2, (0<<3),GO) // 1 Bit, 0, RW
+#define BDMA2_SRC _bm(_BDMA2_1,REG_BASE_BDMA2, (1<<3),SRC) // 32 Bit, 0, RW
+#define BDMA2_DST _bm(_BDMA2_2,REG_BASE_BDMA2, (2<<3),DST) // 32 Bit, 0, RW
+#define BDMA2_LEN _bm(_BDMA2_3,REG_BASE_BDMA2, (3<<3),LEN) // 32 Bit, 0, RW
+#define BDMA3_DONE_VAL _bm(_BDMA3_0,REG_BASE_BDMA3, (0<<3),DONE_VAL) // 1 Bit, 1'h0, R
+#define BDMA3_DONE_PTR _bm(_BDMA3_0,REG_BASE_BDMA3, (0<<3),DONE_PTR) // 8 Bit, 0, R
+#define BDMA3_JOB_PTR _bm(_BDMA3_0,REG_BASE_BDMA3, (0<<3),JOB_PTR) // 8 Bit, 0, RW
+#define BDMA3_IRQ _bm(_BDMA3_0,REG_BASE_BDMA3, (0<<3),IRQ) // 1 Bit, 0, R
+#define BDMA3_IRQ_EN _bm(_BDMA3_0,REG_BASE_BDMA3, (0<<3),IRQ_EN) // 1 Bit, 0, RW
+#define BDMA3_IRQ_CLR _bm(_BDMA3_0,REG_BASE_BDMA3, (0<<3),IRQ_CLR) // 1 Bit, 0, W
+#define BDMA3_VALUE _bm(_BDMA3_0,REG_BASE_BDMA3, (0<<3),VALUE) // 8 Bit, 0, RW
+#define BDMA3_MODE _bm(_BDMA3_0,REG_BASE_BDMA3, (0<<3),MODE) // 2 Bit, 0, RW
+#define BDMA3_GO _bm(_BDMA3_0,REG_BASE_BDMA3, (0<<3),GO) // 1 Bit, 0, RW
+#define BDMA3_SRC _bm(_BDMA3_1,REG_BASE_BDMA3, (1<<3),SRC) // 32 Bit, 0, RW
+#define BDMA3_DST _bm(_BDMA3_2,REG_BASE_BDMA3, (2<<3),DST) // 32 Bit, 0, RW
+#define BDMA3_LEN _bm(_BDMA3_3,REG_BASE_BDMA3, (3<<3),LEN) // 32 Bit, 0, RW
+#define CDMA0_DONE_VAL _bm(_CDMA0_0,REG_BASE_CDMA0, (0<<3),DONE_VAL) // 1 Bit, 1'h0, R
+#define CDMA0_DONE_PTR _bm(_CDMA0_0,REG_BASE_CDMA0, (0<<3),DONE_PTR) // 8 Bit, 0, R
+#define CDMA0_JOB_PTR _bm(_CDMA0_0,REG_BASE_CDMA0, (0<<3),JOB_PTR) // 8 Bit, 0, RW
+#define CDMA0_IRQ _bm(_CDMA0_0,REG_BASE_CDMA0, (0<<3),IRQ) // 1 Bit, 0, R
+#define CDMA0_IRQ_EN _bm(_CDMA0_0,REG_BASE_CDMA0, (0<<3),IRQ_EN) // 1 Bit, 0, RW
+#define CDMA0_IRQ_CLR _bm(_CDMA0_0,REG_BASE_CDMA0, (0<<3),IRQ_CLR) // 1 Bit, 0, W
+#define CDMA0_VALUE _bm(_CDMA0_0,REG_BASE_CDMA0, (0<<3),VALUE) // 8 Bit, 0, RW
+#define CDMA0_MODE _bm(_CDMA0_0,REG_BASE_CDMA0, (0<<3),MODE) // 2 Bit, 0, RW
+#define CDMA0_GO _bm(_CDMA0_0,REG_BASE_CDMA0, (0<<3),GO) // 1 Bit, 0, RW
+#define CDMA0_SRC _bm(_CDMA0_1,REG_BASE_CDMA0, (1<<3),SRC) // 32 Bit, 0, RW
+#define CDMA0_DST _bm(_CDMA0_2,REG_BASE_CDMA0, (2<<3),DST) // 32 Bit, 0, RW
+#define CDMA0_LEN _bm(_CDMA0_3,REG_BASE_CDMA0, (3<<3),LEN) // 32 Bit, 0, RW
+#define CDMA1_DONE_VAL _bm(_CDMA1_0,REG_BASE_CDMA1, (0<<3),DONE_VAL) // 1 Bit, 1'h0, R
+#define CDMA1_DONE_PTR _bm(_CDMA1_0,REG_BASE_CDMA1, (0<<3),DONE_PTR) // 8 Bit, 0, R
+#define CDMA1_JOB_PTR _bm(_CDMA1_0,REG_BASE_CDMA1, (0<<3),JOB_PTR) // 8 Bit, 0, RW
+#define CDMA1_IRQ _bm(_CDMA1_0,REG_BASE_CDMA1, (0<<3),IRQ) // 1 Bit, 0, R
+#define CDMA1_IRQ_EN _bm(_CDMA1_0,REG_BASE_CDMA1, (0<<3),IRQ_EN) // 1 Bit, 0, RW
+#define CDMA1_IRQ_CLR _bm(_CDMA1_0,REG_BASE_CDMA1, (0<<3),IRQ_CLR) // 1 Bit, 0, W
+#define CDMA1_VALUE _bm(_CDMA1_0,REG_BASE_CDMA1, (0<<3),VALUE) // 8 Bit, 0, RW
+#define CDMA1_MODE _bm(_CDMA1_0,REG_BASE_CDMA1, (0<<3),MODE) // 2 Bit, 0, RW
+#define CDMA1_GO _bm(_CDMA1_0,REG_BASE_CDMA1, (0<<3),GO) // 1 Bit, 0, RW
+#define CDMA1_SRC _bm(_CDMA1_1,REG_BASE_CDMA1, (1<<3),SRC) // 32 Bit, 0, RW
+#define CDMA1_DST _bm(_CDMA1_2,REG_BASE_CDMA1, (2<<3),DST) // 32 Bit, 0, RW
+#define CDMA1_LEN _bm(_CDMA1_3,REG_BASE_CDMA1, (3<<3),LEN) // 32 Bit, 0, RW
+#define CDMA2_DONE_VAL _bm(_CDMA2_0,REG_BASE_CDMA2, (0<<3),DONE_VAL) // 1 Bit, 1'h0, R
+#define CDMA2_DONE_PTR _bm(_CDMA2_0,REG_BASE_CDMA2, (0<<3),DONE_PTR) // 8 Bit, 0, R
+#define CDMA2_JOB_PTR _bm(_CDMA2_0,REG_BASE_CDMA2, (0<<3),JOB_PTR) // 8 Bit, 0, RW
+#define CDMA2_IRQ _bm(_CDMA2_0,REG_BASE_CDMA2, (0<<3),IRQ) // 1 Bit, 0, R
+#define CDMA2_IRQ_EN _bm(_CDMA2_0,REG_BASE_CDMA2, (0<<3),IRQ_EN) // 1 Bit, 0, RW
+#define CDMA2_IRQ_CLR _bm(_CDMA2_0,REG_BASE_CDMA2, (0<<3),IRQ_CLR) // 1 Bit, 0, W
+#define CDMA2_VALUE _bm(_CDMA2_0,REG_BASE_CDMA2, (0<<3),VALUE) // 8 Bit, 0, RW
+#define CDMA2_MODE _bm(_CDMA2_0,REG_BASE_CDMA2, (0<<3),MODE) // 2 Bit, 0, RW
+#define CDMA2_GO _bm(_CDMA2_0,REG_BASE_CDMA2, (0<<3),GO) // 1 Bit, 0, RW
+#define CDMA2_SRC _bm(_CDMA2_1,REG_BASE_CDMA2, (1<<3),SRC) // 32 Bit, 0, RW
+#define CDMA2_DST _bm(_CDMA2_2,REG_BASE_CDMA2, (2<<3),DST) // 32 Bit, 0, RW
+#define CDMA2_LEN _bm(_CDMA2_3,REG_BASE_CDMA2, (3<<3),LEN) // 32 Bit, 0, RW
+#define CDMA3_DONE_VAL _bm(_CDMA3_0,REG_BASE_CDMA3, (0<<3),DONE_VAL) // 1 Bit, 1'h0, R
+#define CDMA3_DONE_PTR _bm(_CDMA3_0,REG_BASE_CDMA3, (0<<3),DONE_PTR) // 8 Bit, 0, R
+#define CDMA3_JOB_PTR _bm(_CDMA3_0,REG_BASE_CDMA3, (0<<3),JOB_PTR) // 8 Bit, 0, RW
+#define CDMA3_IRQ _bm(_CDMA3_0,REG_BASE_CDMA3, (0<<3),IRQ) // 1 Bit, 0, R
+#define CDMA3_IRQ_EN _bm(_CDMA3_0,REG_BASE_CDMA3, (0<<3),IRQ_EN) // 1 Bit, 0, RW
+#define CDMA3_IRQ_CLR _bm(_CDMA3_0,REG_BASE_CDMA3, (0<<3),IRQ_CLR) // 1 Bit, 0, W
+#define CDMA3_VALUE _bm(_CDMA3_0,REG_BASE_CDMA3, (0<<3),VALUE) // 8 Bit, 0, RW
+#define CDMA3_MODE _bm(_CDMA3_0,REG_BASE_CDMA3, (0<<3),MODE) // 2 Bit, 0, RW
+#define CDMA3_GO _bm(_CDMA3_0,REG_BASE_CDMA3, (0<<3),GO) // 1 Bit, 0, RW
+#define CDMA3_SRC _bm(_CDMA3_1,REG_BASE_CDMA3, (1<<3),SRC) // 32 Bit, 0, RW
+#define CDMA3_DST _bm(_CDMA3_2,REG_BASE_CDMA3, (2<<3),DST) // 32 Bit, 0, RW
+#define CDMA3_LEN _bm(_CDMA3_3,REG_BASE_CDMA3, (3<<3),LEN) // 32 Bit, 0, RW
 #define CHKSUM_IRQ _bm(_CHKSUM_0,REG_BASE_CHKSUM, (0<<3),IRQ) // 1 Bit, 0, R
 #define CHKSUM_IRQ_EN _bm(_CHKSUM_0,REG_BASE_CHKSUM, (0<<3),IRQ_EN) // 1 Bit, 0, RW
 #define CHKSUM_IRQ_CLR _bm(_CHKSUM_0,REG_BASE_CHKSUM, (0<<3),IRQ_CLR) // 1 Bit, 0, W
@@ -2815,7 +2913,14 @@ _regs_ BF_5(UINT CH7_EN : 1 ,UINT CH7_MAG : 1 ,UINT CH7_MUL : 3 ,UINT _rev0 : 11
 #define IRQ_ISP1 _bm(_IRQ_0,REG_BASE_IRQ, (0<<3),ISP1) // 1 Bit, 1'h0, R
 #define IRQ_ISP0 _bm(_IRQ_0,REG_BASE_IRQ, (0<<3),ISP0) // 1 Bit, 1'h0, R
 #define IRQ_CDC _bm(_IRQ_1,REG_BASE_IRQ, (1<<3),CDC) // 1 Bit, 1'h0, R
-#define IRQ_DMA _bm(_IRQ_1,REG_BASE_IRQ, (1<<3),DMA) // 1 Bit, 1'h0, R
+#define IRQ_CDMA3 _bm(_IRQ_1,REG_BASE_IRQ, (1<<3),CDMA3) // 1 Bit, 1'h0, R
+#define IRQ_CDMA2 _bm(_IRQ_1,REG_BASE_IRQ, (1<<3),CDMA2) // 1 Bit, 1'h0, R
+#define IRQ_CDMA1 _bm(_IRQ_1,REG_BASE_IRQ, (1<<3),CDMA1) // 1 Bit, 1'h0, R
+#define IRQ_CDMA0 _bm(_IRQ_1,REG_BASE_IRQ, (1<<3),CDMA0) // 1 Bit, 1'h0, R
+#define IRQ_BDMA3 _bm(_IRQ_1,REG_BASE_IRQ, (1<<3),BDMA3) // 1 Bit, 1'h0, R
+#define IRQ_BDMA2 _bm(_IRQ_1,REG_BASE_IRQ, (1<<3),BDMA2) // 1 Bit, 1'h0, R
+#define IRQ_BDMA1 _bm(_IRQ_1,REG_BASE_IRQ, (1<<3),BDMA1) // 1 Bit, 1'h0, R
+#define IRQ_BDMA0 _bm(_IRQ_1,REG_BASE_IRQ, (1<<3),BDMA0) // 1 Bit, 1'h0, R
 #define IRQ_H264 _bm(_IRQ_1,REG_BASE_IRQ, (1<<3),H264) // 1 Bit, 1'h0, R
 #define IRQ_H265 _bm(_IRQ_1,REG_BASE_IRQ, (1<<3),H265) // 1 Bit, 1'h0, R
 #define IRQ_ETH _bm(_IRQ_2,REG_BASE_IRQ, (2<<3),ETH) // 1 Bit, 1'h0, R

@@ -129,7 +129,15 @@ void enx_exirq_source1(void)
 void enx_exirq_source2(void)
 {
 	if (IRQ_CDC) {
-		if (IRQ_DMA){IrqDma();};
+
+		if(IRQ_BDMA0){IrqBDma(0);};
+		if(IRQ_BDMA1){IrqBDma(1);};
+		if(IRQ_BDMA2){IrqBDma(2);};
+		if(IRQ_BDMA3){IrqBDma(3);};
+		if(IRQ_CDMA0){IrqCDma(0);};
+		if(IRQ_CDMA1){IrqCDma(1);};
+		if(IRQ_CDMA2){IrqCDma(2);};
+		if(IRQ_CDMA3){IrqCDma(3);};
 		if (IRQ_H265){printf("IRQ_H265\n");};
 		if (IRQ_H264){printf("IRQ_H264\n");};
 	}

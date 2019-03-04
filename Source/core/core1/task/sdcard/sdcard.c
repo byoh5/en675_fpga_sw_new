@@ -18,7 +18,7 @@ init_start:
 	if (SdioCdInitProcess() == DEF_FAIL) {
 		printf("SD card IN(init fail)\n");
 		bSDState = sd_ERR;
-		goto init_end;
+//		goto init_end;
 	}
 	if (flag == 2) {
 		SdioCdClockDown();
@@ -31,7 +31,7 @@ init_start:
 init_err:
 	if (flag == 1) {
 		flag = 2;
-		goto init_start;
+//		goto init_start;
 	}
 
 init_end:

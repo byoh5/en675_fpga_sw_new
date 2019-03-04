@@ -1,9 +1,11 @@
 ﻿EN675 CPU code
 =====================================
 
+
 코드 구성
 ---------
 
+FPGA ver 19.03.04 입니다.
 이 코드는 Flash와 DDR이 없는 환경에서 테스트 되었습니다. SRAM에서 작동중입니다.
 CPU0, 1, 2, 3은 source/core폴더에서 core0, core1, core2, core3의 main_.c 파일을 root로 합니다.
 CPU1의 FreeRTOS는 DDR 구성이 된 후 업데이트 예정입니다.

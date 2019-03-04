@@ -10,7 +10,12 @@ enum {
 	SD_SPEED_REV
 };
 
-typedef struct { BF_5(
+
+
+//#pragma scalar_storage_order big-endian
+typedef __attribute__((__aligned__(16))) struct {
+#if 0
+BF_5(
 	uint32 DAT_BUS_WIDTH				:2,
 	uint32 SECURED_MODE 				:1,
 	uint32 RSF							:7,
@@ -32,6 +37,43 @@ BF_5(
 	uint32 UHS_AU_SIZE					:4,
 	uint32 _res3						:8
 )
+#else
+#if 1
+	uint32 DAT_BUS_WIDTH				:2;
+	uint32 SECURED_MODE 				:1;
+	uint32 RSF							:7;
+	uint32 _res1						:6;
+	uint32 SD_CARD_TYPE 				:16;
+	uint32 SIZE_OF_PROTECTED_AREA;
+	uint32 SPEED_CLASS					:8;
+	uint32 PERFORMANCE_MOVE 			:8;
+	uint32 AU_SIZE						:4;
+	uint32 _res2						:4;
+	uint32 ERASE_SIZE					:16;
+	uint32 ERASE_TIMEOUT				:6;
+	uint32 ERASE_OFFSET 				:2;
+	uint32 UHS_SPEED_GRADE				:4;
+	uint32 UHS_AU_SIZE					:4;
+	uint32 _res3						:8;
+#else
+	uint32 DAT_BUS_WIDTH				:2;
+	uint32 SECURED_MODE 				:1;
+	uint32 RSF							:7;
+	uint32 _res1						:6;
+	uint32 SD_CARD_TYPE                 :16;
+	uint8 SIZE_OF_PROTECTED_AREA[4];
+	uint8 SPEED_CLASS;
+	uint8 PERFORMANCE_MOVE;
+	uint8 AU_SIZE						:4;
+	uint8 _res2						:4;
+	uint8 ERASE_SIZE[2];
+	uint8 ERASE_TIMEOUT				:6;
+	uint8 ERASE_OFFSET 				:2;
+	uint8 UHS_SPEED_GRADE				:4;
+	uint8 UHS_AU_SIZE					:4;
+	uint8 _res3;
+#endif
+#endif
 	uint32 _res4;
 	uint32 _res5;
 	uint32 _res6;
@@ -44,9 +86,10 @@ BF_5(
 	uint32 _res13;
 	uint32 _res14;
 	uint32 _res15;
-}__attribute__ ((packed)) SD_SSR;
+} SD_SSR;
 
-typedef struct { BF_28(
+//#pragma scalar_storage_order little-endian
+typedef __attribute__((__aligned__(16))) struct { BF_28(
 	uint32 OUT_OF_RANGE 				:1,
 	uint32 ADDRESS_ERROR 				:1,
 	uint32 BLOCK_LEN_ERROR 				:1,
@@ -77,7 +120,7 @@ typedef struct { BF_28(
 	uint32 _res7						:1
 )}__attribute__ ((packed)) SD_SC;
 
-typedef struct { BF_5(
+typedef __attribute__((__aligned__(16))) struct { BF_5(
 	uint32 CSD_STRUCTURE				:2,
 	uint32 _res1						:6,
 	uint32 TAAC							:8,
@@ -119,7 +162,7 @@ typedef struct { BF_5(
 	uint32 _res6						:1
 )}__attribute__ ((packed)) SD_CSD_v1;
 
-typedef struct { BF_5(
+typedef __attribute__((__aligned__(16))) struct { BF_5(
 	uint32 CSD_STRUCTURE				:2,
 	uint32 _res1						:6,
 	uint32 TAAC							:8,
@@ -157,13 +200,35 @@ typedef struct { BF_5(
 	uint32 _res7						:1
 )}__attribute__ ((packed)) SD_CSD_v2;
 
-typedef union {
+typedef __attribute__((__aligned__(16))) union {
 	UINT a[4];
 	SD_CSD_v1 csd_v1;
 	SD_CSD_v2 csd_v2;
 } SD_CSD;
 
-typedef struct { BF_17(
+#if 0
+#pragma scalar_storage_order big-endian
+typedef __attribute__((__aligned__(16))) struct {
+	uint32 busy 						:1;
+	uint32 CCS 							:1;
+	uint32 UHSIICS 						:1;
+	uint32 _res1						:4;
+	uint32 VDD18						:1;
+	uint32 VDD35_36						:1;
+	uint32 VDD34_35						:1;
+	uint32 VDD33_34 					:1;
+	uint32 VDD32_33						:1;
+	uint32 VDD31_32						:1;
+	uint32 VDD30_31 					:1;
+	uint32 VDD29_30						:1;
+	uint32 VDD28_29						:1;
+	uint32 VDD27_28 					:1;
+	uint32 _res2 						:7;
+	uint32 VDDLOW	 					:1;
+	uint32 _res3						:7
+}__attribute__ ((packed)) SD_OCR;
+#else
+typedef __attribute__((__aligned__(16))) struct { BF_17(
 	uint32 busy 						:1,
 	uint32 CCS 							:1,
 	uint32 UHSIICS 						:1,
@@ -182,8 +247,9 @@ typedef struct { BF_17(
 	uint32 VDDLOW	 					:1,
 	uint32 _res3						:7
 )}__attribute__ ((packed)) SD_OCR;
+#endif
 
-typedef struct { BF_3(
+typedef __attribute__((__aligned__(16))) struct { BF_3(
 	uint32 MID 							:8,
 	uint32 OID							:16,
 	uint32 PNM1							:8
@@ -203,7 +269,7 @@ typedef struct { BF_3(
 	uint32 _res2 						:1
 )}__attribute__ ((packed)) SD_CID;
 
-typedef struct { BF_9(
+typedef __attribute__((__aligned__(16))) struct { BF_9(
 	uint32 SCR_STRUCTURE 				:4,
 	uint32 SD_SPEC						:4,
 	uint32 DATA_STAT_AFTER_ERASE		:1,
@@ -217,8 +283,7 @@ typedef struct { BF_9(
 	uint32 _res2;
 }__attribute__ ((packed)) SD_SCRreg;
 
-
-typedef struct {
+typedef __attribute__((__aligned__(16))) struct {
 	UINT nCH;
 	UINT nErrorCode;
 	UINT nActive;
@@ -230,7 +295,7 @@ typedef struct {
 	SD_CSD csd;
 	UINT rca;
 	SD_SCRreg scr;
-	UINT t1[6];
+	//UINT t1[6];
 	SD_SSR ssr;
 	SD_SC sc;
 } SDIO_SD;

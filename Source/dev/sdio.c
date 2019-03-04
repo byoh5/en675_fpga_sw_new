@@ -15,7 +15,8 @@ _regs_ BF_4(
 		UINT CLK_EN : 1 ,
 		UINT CLK_SELECT : 2 ,
 		UINT CLK_DIV : 12 ) _rege_ _SDIO_REG1;
-_regs_ BF_1(UINT CMD_ARG : 32 ) _rege_ _SDIO_REG2;
+_regs_ BF_1(
+		UINT CMD_ARG : 32 ) _rege_ _SDIO_REG2;
 _regs_ BF_10(
 		UINT _rev0 : 1,
 		UINT CMD_IDX : 7 ,
@@ -27,15 +28,31 @@ _regs_ BF_10(
 		UINT CMD_RESP_TYPE : 1 ,
 		UINT CMD_RESP_EN : 1 ,
 		UINT CMD_EN : 1 ) _rege_ _SDIO_REG3;
-_regs_ BF_1(UINT CMD_RESP_TLMT : 32 ) _rege_ _SDIO_REG4;
-_regs_ BF_1(UINT DAT_ADR : 32 ) _rege_ _SDIO_REG5;
+_regs_ BF_4(
+		UINT _rev0 : 18,
+		UINT CMD_RESP_IDX : 6 ,
+		UINT _rev1 : 1,
+		UINT CMD_RESP_CRC : 7 ) _rege_ _SDIO_REG4;
+_regs_ BF_1(
+		UINT CMD_RESP_DAT127_96 : 32 ) _rege_ _SDIO_REG5;
+_regs_ BF_1(
+		UINT CMD_RESP_DAT95_64 : 32 ) _rege_ _SDIO_REG6;
+_regs_ BF_1(
+		UINT CMD_RESP_DAT63_32 : 32 ) _rege_ _SDIO_REG7;
+_regs_ BF_1(
+		UINT CMD_RESP_DAT31_0 : 32 ) _rege_ _SDIO_REG8;
+_regs_ BF_1(
+		UINT CMD_RESP_TLMT : 32 ) _rege_ _SDIO_REG9;
+_regs_ BF_1(
+		UINT DAT_ADR : 32 ) _rege_ _SDIO_REG10;
 _regs_ BF_3(
 		UINT _rev0 : 4,
 		UINT DAT_BLKBYTE : 12 ,
-		UINT DAT_BLKNUM : 16 ) _rege_ _SDIO_REG6;
-_regs_ BF_1(UINT DAT_BLKADR : 32 ) _rege_ _SDIO_REG7;
+		UINT DAT_BLKNUM : 16 ) _rege_ _SDIO_REG11;
+_regs_ BF_1(
+		UINT DAT_BLKADR : 32 ) _rege_ _SDIO_REG12;
 _regs_ BF_13(
-		UINT DAT_FAIL : 1 ,
+		UINT DAT_CRCERR : 1 ,
 		UINT _rev0 : 20,
 		UINT IO_IRQ : 1 ,
 		UINT IO_IRQ_CLR : 1 ,
@@ -47,20 +64,24 @@ _regs_ BF_13(
 		UINT DAT_IRQ_CLR : 1 ,
 		UINT DAT_IRQ_EN : 1 ,
 		UINT DAT_WE : 1 ,
-		UINT DAT_EN : 1 ) _rege_ _SDIO_REG8;
-_regs_ BF_4(UINT _rev0 : 18,
+		UINT DAT_EN : 1 ) _rege_ _SDIO_REG13;
+_regs_ BF_2(
+		UINT _rev0 : 16,
+		UINT DAT_BLKCNT : 16 ) _rege_ _SDIO_REG14;
+_regs_ BF_4(
+		UINT _rev0 : 18,
 		UINT DAT_STOP_CMD : 6 ,
 		UINT _rev1 : 2,
-		UINT DAT_IORW_CMD : 6 ) _rege_ _SDIO_REG9;
-_regs_ BF_8(UINT _rev0 : 2,
+		UINT DAT_IORW_CMD : 6 ) _rege_ _SDIO_REG15;
+_regs_ BF_8(
+		UINT _rev0 : 2,
 		UINT DAT_WRCMD_S : 6 ,
 		UINT _rev1 : 2,
 		UINT DAT_WRCMD_M : 6 ,
 		UINT _rev2 : 2,
 		UINT DAT_RDCMD_S : 6 ,
 		UINT _rev3 : 2,
-		UINT DAT_RDCMD_M : 6 ) _rege_ _SDIO_REG10;
-
+		UINT DAT_RDCMD_M : 6 ) _rege_ _SDIO_REG16;
 #endif
 
 static _SDIO_REG0 *arrSDIOReg0[SDIO_CNT];
@@ -115,7 +136,7 @@ void SdioInit(UINT nCH, UINT Speed_Hz)
 	arrSDIOReg9[nCH]->CMD_RESP_TLMT = 0x00000200;
 	arrSDIOReg0[nCH]->BITMODE = 1;
 	arrSDIOReg0[nCH]->MODE = 1;
-	arrSDIOReg0[nCH]->IOMODE = 0;
+	arrSDIOReg0[nCH]->IOMODE = 0; // 0:card 1:io
 	arrSDIOReg1[nCH]->CLK_SELECT = 1;
 	arrSDIOReg1[nCH]->CLK_DIV = (MCK_FREQ / (2 * Speed_Hz) - 1);
 	arrSDIOReg1[nCH]->CLK_EN = 1;
@@ -226,6 +247,53 @@ void SdioClockDisable(UINT nCH)
 void SdioClockDivPrint(UINT nCH, char *strBuffer)
 {
 	sprintf(strBuffer, "%uHz/CLK_DIV:%u", MCK_FREQ / ((arrSDIOReg1[nCH]->CLK_DIV + 1) * 2), arrSDIOReg1[nCH]->CLK_DIV);
+}
+
+UINT SdioGetDataBlockByte(UINT nCH)
+{
+	return arrSDIOReg11[nCH]->DAT_BLKBYTE;
+}
+
+void SdioSetDataBlockByte(UINT nCH, UINT BlkByte)
+{
+	arrSDIOReg11[nCH]->DAT_BLKBYTE = BlkByte;
+}
+
+UINT SdioDataReadS(UINT nCH, ULONG MemDst, UINT BlkAdr, UINT BlkCnt)
+{
+	arrSDIOReg10[nCH]->DAT_ADR = MemDst;
+	arrSDIOReg11[nCH]->DAT_BLKNUM = BlkCnt;
+	arrSDIOReg12[nCH]->DAT_BLKADR = BlkAdr;
+	arrSDIOReg13[nCH]->DAT_WE = 0;
+	arrSDIOReg13[nCH]->DAT_EN = 1;
+	while (arrSDIOReg13[nCH]->DAT_EN);
+
+	if (arrSDIOReg3[nCH]->CMD_RESP_TOUT || arrSDIOReg3[nCH]->CMD_RESP_CRCERR || arrSDIOReg13[nCH]->DAT_CRCERR) {
+		printf("DRS CMD(%u) Arg(%u) CMDCRC(%u:0x%02X), RESPTOUT(%u), DATCRC(%u)\n", arrSDIOReg16[nCH]->DAT_RDCMD_S, BlkAdr, arrSDIOReg3[nCH]->CMD_RESP_CRCERR, arrSDIOReg4[nCH]->CMD_RESP_CRC, arrSDIOReg3[nCH]->CMD_RESP_TOUT, arrSDIOReg13[nCH]->DAT_CRCERR);
+		return DEF_FAIL;
+	}
+
+	return DEF_OK;
+}
+
+void SdioSetCmdDataWriteS(UINT nCH, UINT nCmd)
+{
+	arrSDIOReg16[nCH]->DAT_WRCMD_S = nCmd;
+}
+
+void SdioSetCmdDataWriteM(UINT nCH, UINT nCmd)
+{
+	arrSDIOReg16[nCH]->DAT_WRCMD_M = nCmd;
+}
+
+void SdioSetCmdDataReadS(UINT nCH, UINT nCmd)
+{
+	arrSDIOReg16[nCH]->DAT_RDCMD_S = nCmd;
+}
+
+void SdioSetCmdDataReadM(UINT nCH, UINT nCmd)
+{
+	arrSDIOReg16[nCH]->DAT_RDCMD_M = nCmd;
 }
 
 void SdioIrqCallback_Io(UINT nCH, irq_fn irqfn, void *arg)
