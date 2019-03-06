@@ -7,14 +7,9 @@
 /* storage control modules to the FatFs module with a defined API.       */
 /*-----------------------------------------------------------------------*/
 
+#include "dev.h"
 #include "ff.h"			/* Obtains integer types */
 #include "diskio.h"		/* Declarations of disk functions */
-
-/* Definitions of physical drive number for each drive */
-#define DEV_RAM		0	/* Example: Map Ramdisk to physical drive 0 */
-#define DEV_MMC		1	/* Example: Map MMC/SD card to physical drive 1 */
-#define DEV_USB		2	/* Example: Map USB MSD to physical drive 2 */
-
 
 /*-----------------------------------------------------------------------*/
 /* Get Drive Status                                                      */
@@ -24,30 +19,29 @@ DSTATUS disk_status (
 	BYTE pdrv		/* Physical drive nmuber to identify the drive */
 )
 {
-	DSTATUS stat = RES_PARERR;
-	int result;
-
 	switch (pdrv) {
-	case DEV_RAM :
-		//result = RAM_disk_status();
-
-		// translate the reslut code here
-
-		return stat;
-
-	case DEV_MMC :
-		//result = MMC_disk_status();
-
-		// translate the reslut code here
-
-		return stat;
-
+#if (LOAD_FS_FLS==1)
+	case DEV_FLS :
+		return 0;
+#endif
+#if (LOAD_FS_SDCARD==1)
+	case DEV_SD :
+		if (SdioCdDet()) {
+			return (STA_NODISK | STA_NOINIT);
+		}
+		if (SdioCdGetActive()) {
+			return 0;
+		}
+		break;
+#endif
+#if (LOAD_FS_USB==1)
 	case DEV_USB :
-		//result = USB_disk_status();
-
-		// translate the reslut code here
-
-		return stat;
+		return (STA_NODISK | STA_NOINIT);
+#endif
+#if (LOAD_FS_MEM==1)
+	case DEV_MEM:
+		return (STA_NODISK | STA_NOINIT);
+#endif
 	}
 	return STA_NOINIT;
 }
@@ -62,30 +56,29 @@ DSTATUS disk_initialize (
 	BYTE pdrv				/* Physical drive nmuber to identify the drive */
 )
 {
-	DSTATUS stat = RES_PARERR;
-	int result;
-
 	switch (pdrv) {
-	case DEV_RAM :
-		//result = RAM_disk_initialize();
-
-		// translate the reslut code here
-
-		return stat;
-
-	case DEV_MMC :
-		//result = MMC_disk_initialize();
-
-		// translate the reslut code here
-
-		return stat;
-
+#if (LOAD_FS_FLS==1)
+	case DEV_FLS :
+		return 0;
+#endif
+#if (LOAD_FS_SDCARD==1)
+	case DEV_SD :
+		if (SdioCdDet()) {
+			return (STA_NODISK | STA_NOINIT);
+		}
+		if (SdioCdGetActive()) {
+			return 0;
+		}
+		break;
+#endif
+#if (LOAD_FS_USB==1)
 	case DEV_USB :
-		//result = USB_disk_initialize();
-
-		// translate the reslut code here
-
-		return stat;
+		return (STA_NODISK | STA_NOINIT);
+#endif
+#if (LOAD_FS_MEM==1)
+	case DEV_MEM:
+		return (STA_NODISK | STA_NOINIT);
+#endif
 	}
 	return STA_NOINIT;
 }
@@ -104,38 +97,41 @@ DRESULT disk_read (
 )
 {
 	DRESULT res = RES_PARERR;
-	int result;
 
-	switch (pdrv) {
-	case DEV_RAM :
-		// translate the arguments here
-
-		//result = RAM_disk_read(buff, sector, count);
-
-		// translate the reslut code here
-
-		return res;
-
-	case DEV_MMC :
-		// translate the arguments here
-
-		//result = MMC_disk_read(buff, sector, count);
-
-		// translate the reslut code here
-
-		return res;
-
-	case DEV_USB :
-		// translate the arguments here
-
-		//result = USB_disk_read(buff, sector, count);
-
-		// translate the reslut code here
-
+	if (count == 0) {
 		return res;
 	}
 
-	return RES_PARERR;
+	switch (pdrv) {
+#if (LOAD_FS_FLS==1)
+	case DEV_FLS :
+		break;
+#endif
+#if (LOAD_FS_SDCARD==1)
+	case DEV_SD :
+		res = RES_OK;
+		flprintf("CNT(%2u) buff(0x%08X) addr(0x%08X)\n", count, buff, sector);
+		if (count == 1) {
+			if (SdioCdReadS((BYTE *)buff, (UINT)sector) == DEF_FAIL) {
+				res = RES_ERROR;
+			}
+		} else {
+			if (SdioCdReadM((BYTE *)buff, (UINT)sector, (UINT)count) == DEF_FAIL) {
+				res = RES_ERROR;
+			}
+		}
+		break;
+#endif
+#if (LOAD_FS_USB==1)
+	case DEV_USB :
+		break;
+#endif
+#if (LOAD_FS_MEM==1)
+	case DEV_MEM:
+		break;
+#endif
+	}
+	return res;
 }
 
 
@@ -157,34 +153,23 @@ DRESULT disk_write (
 	int result;
 
 	switch (pdrv) {
-	case DEV_RAM :
-		// translate the arguments here
-
-		//result = RAM_disk_write(buff, sector, count);
-
-		// translate the reslut code here
-
+#if (LOAD_FS_FLS==1)
+	case DEV_FLS :
 		return res;
-
-	case DEV_MMC :
-		// translate the arguments here
-
-		//result = MMC_disk_write(buff, sector, count);
-
-		// translate the reslut code here
-
+#endif
+#if (LOAD_FS_SDCARD==1)
+	case DEV_SD :
 		return res;
-
+#endif
+#if (LOAD_FS_USB==1)
 	case DEV_USB :
-		// translate the arguments here
-
-		//result = USB_disk_write(buff, sector, count);
-
-		// translate the reslut code here
-
 		return res;
+#endif
+#if (LOAD_FS_MEM==1)
+	case DEV_MEM:
+		return res;
+#endif
 	}
-
 	return RES_PARERR;
 }
 
@@ -202,28 +187,82 @@ DRESULT disk_ioctl (
 )
 {
 	DRESULT res = RES_PARERR;
-	int result;
+//	int result;
+
+	WORD  *pW  = (WORD  *)buff;
+	DWORD *pDw = (DWORD *)buff;
 
 	switch (pdrv) {
-	case DEV_RAM :
-
-		// Process of the command for the RAM drive
-
+#if (LOAD_FS_FLS==1)
+	case DEV_FLS :
+		switch (cmd) {
+		case CTRL_SYNC:
+			res = RES_OK;
+			break;
+		case GET_SECTOR_COUNT:
+			*pDw = NO_OF_SERCTORS;
+			res = RES_OK;
+		case GET_SECTOR_SIZE:
+			*pW = (WORD)ERASE_BLOCK_SIZE;
+			res = RES_OK;
+			break;
+		case GET_BLOCK_SIZE:
+			*pDw = (DWORD)1;
+			res = RES_OK;
+			break;
+		case CTRL_TRIM:
+			res = RES_OK;
+			break;
+		}
 		return res;
-
-	case DEV_MMC :
-
-		// Process of the command for the MMC/SD card
-
-		return res;
-
+#endif
+#if (LOAD_FS_SDCARD==1)
+	case DEV_SD :
+		switch (cmd) {
+		case CTRL_SYNC :
+			res = RES_OK;
+			break;
+		case GET_SECTOR_COUNT :
+			*pDw = (DWORD)SdioCdGetSectorCnt();
+			res = RES_OK;
+			break;
+		case GET_SECTOR_SIZE :
+			*pW = (WORD)512;
+			res = RES_OK;
+			break;
+		case GET_BLOCK_SIZE :
+			*pDw = (DWORD)(SdioCdGetAUSize()+1);
+			res = RES_OK;
+			break;
+		case CTRL_TRIM :
+			res = SdioCdE((UINT)pDw[0], (UINT)pDw[1]);
+			break;
+		}
+		break;
+#endif
+#if (LOAD_FS_USB==1)
 	case DEV_USB :
-
-		// Process of the command the USB drive
-
 		return res;
+#endif
+#if (LOAD_FS_MEM==1)
+	case DEV_MEM:
+		return res;
+#endif
 	}
-
-	return RES_PARERR;
+	return res;
 }
 
+/*-----------------------------------------------------------------------*/
+/* Time Functions                                                        */
+/*-----------------------------------------------------------------------*/
+DWORD get_fattime(void)
+{
+	struct tm tmout;
+	enx_get_tmtime(gptMsgShare.TIME, &tmout, DEF_YES);
+	return    ((DWORD)(tmout.tm_year - 80)	<< 25)		// (tTime->tm_year + 1900 - 1980)
+			| ((DWORD)(tmout.tm_mon + 1)	<< 21)
+			| ((DWORD)(tmout.tm_mday)		<< 16)
+			| ((DWORD)(tmout.tm_hour)		<< 11)
+			| ((DWORD)(tmout.tm_min)		<<  5)
+			| ((DWORD)(tmout.tm_sec / 2)	<<  0);
+}

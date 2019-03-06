@@ -12,6 +12,7 @@
 #include "shell.h"
 #include "shell_cmd.h"
 #include "shell_cmd_common.h"
+#include "shell_cmd_fs.h"
 #include "shell_cmd_sdio.h"
 #include "string.h"
 
@@ -83,6 +84,33 @@ tMonCmd gCmdList[] =
 	{"task",		cmd_task_status,	sTaskStatus		},
 	{"memory",		cmd_mem_ststus,		sMemStatus		},
 	{"time",		cmd_time,			sTimeCmd		},
+
+//FileSystem
+#if defined(__FILESYSTEM__)
+	{"ls",			UsrLSCmd,			sUsrLSCmd		},
+//	{"diskinit",	UsrDiskInitCmd,		sDiskInitCmd	},
+//	{"format",		UsrFormatCmd,		sFormatCmd		},
+//	{"mkdir",		UsrMKRMDIRCmd,		sMKDIRCmd		},
+//	{"rmdir",		UsrMKRMDIRCmd,		sRMDIRCmd		},
+//	{"rm",			UsrRMCmd,			sRMCmd			},
+	{"pwd",			UsrPWDCmd,			sPWDCmd			},
+	{"cd",			UsrCDCmd,			sCDCmd			},
+//	{"fcat",		UsrFCatCmd,			sFCatCmd		},
+//	{"fcreate",		UsrFCreateCmd,		sFCreateCmd		},
+//	{"fcopy",       UsrFCopyCmd,        sFCopyCmd		},
+#if defined(__ETH__) || defined(__WIFI__)
+#if (ENX_FTPD_use==1)
+	{"ftpd",		UsrFtpdCmd,			sFtpdCmd		},
+#endif
+#endif
+//	{"fstat",		UsrFstatCmd,		sFstatCmd		},
+//	{"fhash",       UsrFileHash,        sFileHash       },
+#if (LOAD_FS_SDCARD==1)
+//	{"sdtest",      UsrSDCardSpeedTestCmd, sSDCardSpeedTestCmd},
+//	{"sdsave",		UsrMakevidCmd,		sMakevidCmd		},
+#endif
+//	{"ftest",		UseFatTest,			sFatTestCmd		},
+#endif
 
 //TEST
 	{"sysreg",		cmd_test_sysreg,	sSysreg			},
@@ -297,13 +325,153 @@ int UsrCmd_g(int argc, char *argv[])
 
 int UsrCmd_h(int argc, char *argv[])
 {
+	if (argc == 2) {
+		UINT test_size = atoi(argv[1]);
+		if (test_size == 0) {
+			printf("test size error\n");
+			return 0;
+		}
+		printf("DMA TEST(%dbyte)\n", test_size);
+
+		BYTE *dataA = pvPortCalloc(test_size, 1);
+		if (dataA == NULL) {
+			printf("malloc error A\n");
+			return 0;
+		} else {
+			printf("malloc A(0x%08X)\n", dataA);
+		}
+		BYTE *dataB = pvPortCalloc(test_size, 1);
+		if (dataB == NULL) {
+			printf("malloc error B\n");
+			return 0;
+		} else {
+			printf("malloc B(0x%08X)\n", dataB);
+		}
+
+		for (ULONG i = 0; i < test_size; i++) {
+			dataA[i] = i;
+		}
+
+		printf("malloc A address(0x%08X)\n", dataA);
+		printf("malloc B address(0x%08X)\n", dataB);
+
+		printf("dma copy start\n");
+		//hwflush_dcache_range(dataB, dataB+test_size);
+
+		hexDump("A", dataA, test_size);
+		hexDump("B", dataB, test_size);
+
+		CDmaMemCpy_isr(0, dataB, dataA, test_size);
+		//hwflush_dcache_range(dataB, dataB+test_size);
+		printf("dma copy end\n");
+
+		hexDump("A", dataA, test_size);
+		hexDump("B", dataB, test_size);
+
+		vPortFree(dataA);
+		vPortFree(dataB);
+		printf("free ok\n");
+	}
 	return 0;
 	UNUSED(argc);
 	UNUSED(argv);
 }
 
+#define MALIGN16 __attribute__((__aligned__(16)))
+MALIGN16 char SRAMDST2[64] = {0};
+
 int UsrCmd_i(int argc, char *argv[])
 {
+	char *SRAMDST2;
+	char *SRAMSRC2;
+
+	int shift = 0;
+	while(1) {
+		// C DMA TEST//////////////////////////////////////////////////////////////////////////////////////////////////////////
+		_printf("\n----------------------------------CPU DMA TEST----------------------------------\n");
+		SRAMSRC2 = SRAM_BASE+(shift++);
+		//SRAMDST2 = pvPortCalloc(16, 1);
+		memset(SRAMDST2, 0, 16);
+
+		_printf("SRAMSRC2 %x\n",SRAMSRC2);
+		_printf("SRAMSRC2 DEFAULT : ");
+		for(int i = 0; i<0x10; i++) {
+			/**(SRAMSRC2+i) = i; */
+			_printf("%02X ", *(SRAMSRC2+i));
+		}
+		_printf("\n\n");
+		_printf("SRAMDST2 %x\n",SRAMDST2);
+		_printf("SRAMDST2 DEFAULT : ");
+		for(int i = 0; i<0x10; i++) {
+			_printf("%02X ", *(SRAMDST2+i));
+		}
+		_printf("\n\n");
+
+		CDmaMemCpy_isr(0, SRAMDST2, SRAMSRC2, 0x10);
+
+		_printf("\nSRAMDST2 after DMA C : ");
+		for(int i = 0; i<0x10; i++) {
+			_printf("%02X ", *(SRAMDST2+i));
+		}
+		_printf("\n");
+		for(int i=0; i<0x10;i++) {
+			if(*(SRAMDST2+i) != *(SRAMSRC2+i)) {
+				_printf("After DMA C SRAMSRC2 %x SRAMDST2 %x Failed Unmatched %dth %x %x!!!!!\n", SRAMSRC2, SRAMDST2, i,*(SRAMSRC2+i), *(SRAMDST2+i));
+				while(1);
+			}
+		}
+		vPortFree(SRAMDST2);
+		_printf("\n----------------------------------CPU DMA PASS----------------------------------\n");
+
+		// B DMA TEST//////////////////////////////////////////////////////////////////////////////////////////////////////////
+		_printf("\n----------------------------------BUS DMA TEST----------------------------------\n");
+		SRAMSRC2 = SRAM_BASE+(shift++);
+		//SRAMDST2 = pvPortCalloc(16, 1);
+		memset(SRAMDST2, 0, 16);
+
+		_printf("SRAMSRC2 %x\n",SRAMSRC2);
+		_printf("SRAMSRC2 DEFAULT : ");
+		for(int i = 0; i<0x10; i++) {
+			/**(SRAMSRC2+i) = i; */
+			_printf("%02X ", *(SRAMSRC2+i));
+		}
+		_printf("\n\n");
+		_printf("SRAMDST2 %x\n",SRAMDST2);
+		_printf("SRAMDST2 DEFAULT : ");
+		for(int i = 0; i<0x10; i++) {
+			_printf("%02X ", *(SRAMDST2+i));
+		}
+		_printf("\n\n");
+
+		BDmaMemCpy_isr(0, SRAMDST2, SRAMSRC2, 0x10);
+
+		_printf("\nSRAMDST2 after DMA B : ");
+		for(int i = 0; i<0x10; i++) {
+			_printf("%02X ", *(SRAMDST2+i));
+		}
+		_printf("\n");
+
+		//destination invalidate
+		hwflush_dcache_range(SRAMDST2, SRAMDST2+0x10);
+		_printf("SRAMDST2 after Flush : "); for(int i = 0; i<0x10; i++) {
+			_printf("%02X ", *(SRAMDST2+i));
+		}
+		_printf("\n\n");
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		for(int i=0; i<0x10;i++) {
+			if(*(SRAMDST2+i) != *(SRAMSRC2+i)) {
+				_printf("After DMA B SRAMSRC2 %x SRAMDST2 %x Failed Unmatched %dth %x %x!!!!!\n", SRAMSRC2, SRAMDST2, i,*(SRAMSRC2+i), *(SRAMDST2+i));
+				while(1);
+			}
+		}
+
+		_printf("\n----------------------------------BUS DMA PASS----------------------------------\n");
+
+		vPortFree(SRAMDST2);
+
+		if(shift > 0x1000) break;
+    }
+
 	return 0;
 	UNUSED(argc);
 	UNUSED(argv);

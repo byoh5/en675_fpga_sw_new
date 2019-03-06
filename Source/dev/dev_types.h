@@ -134,6 +134,21 @@ typedef volatile uint64			vuint64;	//	"
         const typeof( ((type *)0)->member ) *__mptr = (ptr); \
         (type *)( (char *)__mptr - offsetof(type,member) );})
 
+#define ATTR_MALIGN64	__attribute__((__aligned__(64)))
+#define ATTR_MALIGN16	__attribute__((__aligned__(16)))
+#define ATTR_BIGENDIAN	__attribute__((__scalar_storage_order__("big-endian")))
+#define ATTR_PACKED		__attribute__((packed))
+
+#ifndef max
+#define max(a,b)				(((a) > (b)) ? (a) : (b))
+#endif
+
+#ifndef min
+#define min(a,b)				(((a) < (b)) ? (a) : (b))
+#endif
+
+#define flprintf(fmt, args...) do { printf("    %04d:%s: "fmt, __LINE__, __func__, ##args); } while(0);
+
 //******************************************************************************
 // Register define
 //------------------------------------------------------------------------------
@@ -252,6 +267,22 @@ typedef enum {
 	ecrtR7
 } eCmdRespType;
 
+typedef enum {
+	esditREAD = 0,
+	esditWRITE = 1
+} eSDIO_DAT_IO_TYPE;
+
 typedef void (*user_delay_fn)(uint64 ms);
+
+//******************************************************************************
+// FileSystem define
+//------------------------------------------------------------------------------
+/* Definitions of physical drive number for each drive */
+typedef enum {
+	DEV_FLS,				// Serial Flash Memory
+	DEV_SD,					// microSD Card
+	DEV_USB,				// USB MSD
+	DEV_MEM,				// DDR Memory Disk
+} DriveNum;
 
 #endif // _DEV_TYPES_H_

@@ -437,8 +437,9 @@
 #endif
 #define UART8_SPEED			115200
 
-// TIMER0 define	
-#if 0
+// TIMER0 define
+#define USE_TIMER0			0
+#if USE_TIMER0
 #define TIMER0_PIN_INIT		SYS_GPIO0_MUX=1;
 #define TIMER0_PIN_DEINIT	SYS_GPIO0_MUX=0;
 #else
@@ -446,8 +447,9 @@
 #define TIMER0_PIN_DEINIT
 #endif
 
-// TIMER1 define	
-#if 0
+// TIMER1 define
+#define USE_TIMER1			0
+#if USE_TIMER1
 #define TIMER1_PIN_INIT		SYS_GPIO1_MUX=1;
 #define TIMER1_PIN_DEINIT	SYS_GPIO1_MUX=0;
 #else
@@ -455,8 +457,9 @@
 #define TIMER1_PIN_DEINIT
 #endif
 
-// TIMER2 define	
-#if 0
+// TIMER2 define
+#define USE_TIMER2			0
+#if USE_TIMER2
 #define TIMER2_PIN_INIT		SYS_GPIO2_MUX=1;
 #define TIMER2_PIN_DEINIT	SYS_GPIO2_MUX=0;
 #else
@@ -464,8 +467,9 @@
 #define TIMER2_PIN_DEINIT
 #endif
 
-// TIMER3 define	
-#if 0
+// TIMER3 define
+#define USE_TIMER3			0
+#if USE_TIMER3
 #define TIMER3_PIN_INIT		SYS_GPIO3_MUX=1;
 #define TIMER3_PIN_DEINIT	SYS_GPIO3_MUX=0;
 #else
@@ -473,8 +477,9 @@
 #define TIMER3_PIN_DEINIT
 #endif
 
-// TIMER4 define	
-#if 0
+// TIMER4 define
+#define USE_TIMER4			0
+#if USE_TIMER4
 #define TIMER4_PIN_INIT		SYS_GPIO4_MUX=1;
 #define TIMER4_PIN_DEINIT	SYS_GPIO4_MUX=0;
 #else
@@ -482,8 +487,9 @@
 #define TIMER4_PIN_DEINIT
 #endif
 
-// TIMER5 define	
-#if 0
+// TIMER5 define
+#define USE_TIMER5			0
+#if USE_TIMER5
 #define TIMER5_PIN_INIT		SYS_GPIO5_MUX=1;
 #define TIMER5_PIN_DEINIT	SYS_GPIO5_MUX=0;
 #else
@@ -491,8 +497,9 @@
 #define TIMER5_PIN_DEINIT
 #endif
 
-// TIMER6 define	
-#if 0
+// TIMER6 define
+#define USE_TIMER6			0
+#if USE_TIMER6
 #define TIMER6_PIN_INIT		SYS_GPIO6_MUX=1;
 #define TIMER6_PIN_DEINIT	SYS_GPIO6_MUX=0;
 #else
@@ -500,8 +507,9 @@
 #define TIMER6_PIN_DEINIT
 #endif
 
-// TIMER7 define	
-#if 0
+// TIMER7 define
+#define USE_TIMER7			0
+#if USE_TIMER7
 #define TIMER7_PIN_INIT		SYS_GPIO7_MUX=1;
 #define TIMER7_PIN_DEINIT	SYS_GPIO7_MUX=0;
 #else
@@ -509,8 +517,9 @@
 #define TIMER7_PIN_DEINIT
 #endif
 
-// TIMER8 define	
-#if 0
+// TIMER8 define
+#define USE_TIMER8			0
+#if USE_TIMER8
 #define TIMER8_PIN_INIT		SYS_GPIO8_MUX=1;
 #define TIMER8_PIN_DEINIT	SYS_GPIO8_MUX=0;
 #else
@@ -518,8 +527,9 @@
 #define TIMER8_PIN_DEINIT
 #endif
 
-// TIMER9 define	
-#if 0
+// TIMER9 define
+#define USE_TIMER9			0
+#if USE_TIMER9
 #define TIMER9_PIN_INIT		SYS_GPIO9_MUX=1;
 #define TIMER9_PIN_DEINIT	SYS_GPIO9_MUX=0;
 #else
@@ -527,8 +537,9 @@
 #define TIMER9_PIN_DEINIT
 #endif
 
-// TIMER10 define	
-#if 0
+// TIMER10 define
+#define USE_TIMER10			0
+#if USE_TIMER10
 #define TIMER10_PIN_INIT	SYS_GPIO10_MUX=1;
 #define TIMER10_PIN_DEINIT	SYS_GPIO10_MUX=0;
 #else
@@ -536,8 +547,9 @@
 #define TIMER10_PIN_DEINIT
 #endif
 
-// TIMER11 define	
-#if 0
+// TIMER11 define
+#define USE_TIMER11			0
+#if USE_TIMER11
 #define TIMER11_PIN_INIT	SYS_GPIO11_MUX=1;
 #define TIMER11_PIN_DEINIT	SYS_GPIO11_MUX=0;
 #else
@@ -545,8 +557,9 @@
 #define TIMER11_PIN_DEINIT
 #endif
 
-// TIMER12 define	
-#if 0
+// TIMER12 define
+#define USE_TIMER12			0
+#if USE_TIMER12
 #define TIMER12_PIN_INIT	SYS_GPIO12_MUX=1;
 #define TIMER12_PIN_DEINIT	SYS_GPIO12_MUX=0;
 #else
@@ -554,17 +567,19 @@
 #define TIMER12_PIN_DEINIT
 #endif
 
-// TIMER13 define	
-#if 0
-#define TIMER13_PIN_INIT		SYS_GPIO13_MUX=1;
+// TIMER13 define
+#define USE_TIMER13			0
+#if USE_TIMER13
+#define TIMER13_PIN_INIT	SYS_GPIO13_MUX=1;
 #define TIMER13_PIN_DEINIT	SYS_GPIO13_MUX=0;
 #else
 #define TIMER13_PIN_INIT
 #define TIMER13_PIN_DEINIT
 #endif
 
-// TIMER14 define	
-#if 0
+// TIMER14 define
+#define USE_TIMER14			0
+#if USE_TIMER14
 #define TIMER14_PIN_INIT	SYS_GPIO14_MUX=1;
 #define TIMER14_PIN_DEINIT	SYS_GPIO14_MUX=0;
 #else
@@ -572,8 +587,9 @@
 #define TIMER14_PIN_DEINIT
 #endif
 
-// TIMER15 define	
-#if 0
+// TIMER15 define
+#define USE_TIMER15			0
+#if USE_TIMER15
 #define TIMER15_PIN_INIT	SYS_GPIO15_MUX=1;
 #define TIMER15_PIN_DEINIT	SYS_GPIO15_MUX=0;
 #else
@@ -581,8 +597,9 @@
 #define TIMER15_PIN_DEINIT
 #endif
 
-// TIMER16 define	
-#if 0
+// TIMER16 define
+#define USE_TIMER16			0
+#if USE_TIMER16
 #define TIMER16_PIN_INIT	SYS_GPIO20_MUX=1;
 #define TIMER16_PIN_DEINIT	SYS_GPIO20_MUX=0;
 #else
@@ -590,8 +607,9 @@
 #define TIMER16_PIN_DEINIT
 #endif
 
-// TIMER17 define	
-#if 0
+// TIMER17 define
+#define USE_TIMER17			0
+#if USE_TIMER17
 #define TIMER17_PIN_INIT	SYS_GPIO21_MUX=1;
 #define TIMER17_PIN_DEINIT	SYS_GPIO21_MUX=0;
 #else
@@ -599,8 +617,9 @@
 #define TIMER17_PIN_DEINIT
 #endif
 
-// TIMER18 define	
-#if 0
+// TIMER18 define
+#define USE_TIMER18			0
+#if USE_TIMER18
 #define TIMER18_PIN_INIT	SYS_GPIO22_MUX=1;
 #define TIMER18_PIN_DEINIT	SYS_GPIO22_MUX=0;
 #else
@@ -608,8 +627,9 @@
 #define TIMER18_PIN_DEINIT
 #endif
 
-// TIMER19 define	
-#if 0
+// TIMER19 define
+#define USE_TIMER19			0
+#if USE_TIMER19
 #define TIMER19_PIN_INIT	SYS_GPIO23_MUX=1;
 #define TIMER19_PIN_DEINIT	SYS_GPIO23_MUX=0;
 #else
@@ -617,8 +637,9 @@
 #define TIMER19_PIN_DEINIT
 #endif
 
-// TIMER20 define	
-#if 0
+// TIMER20 define
+#define USE_TIMER20			0
+#if USE_TIMER20
 #define TIMER20_PIN_INIT	SYS_GPIO24_MUX=1;
 #define TIMER20_PIN_DEINIT	SYS_GPIO24_MUX=0;
 #else
@@ -626,8 +647,9 @@
 #define TIMER20_PIN_DEINIT
 #endif
 
-// TIMER21 define	
-#if 0
+// TIMER21 define
+#define USE_TIMER21			0
+#if USE_TIMER21
 #define TIMER21_PIN_INIT	SYS_GPIO25_MUX=1;
 #define TIMER21_PIN_DEINIT	SYS_GPIO25_MUX=0;
 #else
@@ -635,8 +657,9 @@
 #define TIMER21_PIN_DEINIT
 #endif
 
-// TIMER22 define	
-#if 0
+// TIMER22 define
+#define USE_TIMER22			0
+#if USE_TIMER22
 #define TIMER22_PIN_INIT	SYS_GPIO26_MUX=1;
 #define TIMER22_PIN_DEINIT	SYS_GPIO26_MUX=0;
 #else
@@ -644,8 +667,9 @@
 #define TIMER22_PIN_DEINIT
 #endif
 
-// TIMER23 define	
-#if 0
+// TIMER23 define
+#define USE_TIMER23			0
+#if USE_TIMER23
 #define TIMER23_PIN_INIT	SYS_GPIO27_MUX=1;
 #define TIMER23_PIN_DEINIT	SYS_GPIO27_MUX=0;
 #else
@@ -653,8 +677,9 @@
 #define TIMER23_PIN_DEINIT
 #endif
 
-// TIMER24 define	
-#if 0
+// TIMER24 define
+#define USE_TIMER24			0
+#if USE_TIMER24
 #define TIMER24_PIN_INIT	SYS_GPIO28_MUX=1;
 #define TIMER24_PIN_DEINIT	SYS_GPIO28_MUX=0;
 #else
@@ -662,8 +687,9 @@
 #define TIMER24_PIN_DEINIT
 #endif
 
-// TIMER25 define	
-#if 0
+// TIMER25 define
+#define USE_TIMER25			0
+#if USE_TIMER25
 #define TIMER25_PIN_INIT	SYS_GPIO29_MUX=1;
 #define TIMER25_PIN_DEINIT	SYS_GPIO29_MUX=0;
 #else
@@ -671,8 +697,9 @@
 #define TIMER25_PIN_DEINIT
 #endif
 
-// TIMER26 define	
-#if 0
+// TIMER26 define
+#define USE_TIMER26			0
+#if USE_TIMER26
 #define TIMER26_PIN_INIT	SYS_GPIO30_MUX=1;
 #define TIMER26_PIN_DEINIT	SYS_GPIO30_MUX=0;
 #else
@@ -680,8 +707,9 @@
 #define TIMER26_PIN_DEINIT
 #endif
 
-// TIMER27 define	
-#if 0
+// TIMER27 define
+#define USE_TIMER27			0
+#if USE_TIMER27
 #define TIMER27_PIN_INIT	SYS_GPIO31_MUX=1;
 #define TIMER27_PIN_DEINIT	SYS_GPIO31_MUX=0;
 #else
@@ -689,8 +717,9 @@
 #define TIMER27_PIN_DEINIT
 #endif
 
-// TIMER28 define	
-#if 0
+// TIMER28 define
+#define USE_TIMER28			0
+#if USE_TIMER28
 #define TIMER28_PIN_INIT	SYS_GPIO32_MUX=1;
 #define TIMER28_PIN_DEINIT	SYS_GPIO32_MUX=0;
 #else
@@ -698,8 +727,9 @@
 #define TIMER28_PIN_DEINIT
 #endif
 
-// TIMER29 define	
-#if 0
+// TIMER29 define
+#define USE_TIMER29			0
+#if USE_TIMER29
 #define TIMER29_PIN_INIT	SYS_GPIO33_MUX=1;
 #define TIMER29_PIN_DEINIT	SYS_GPIO33_MUX=0;
 #else
@@ -707,8 +737,9 @@
 #define TIMER29_PIN_DEINIT
 #endif
 
-// TIMER30 define	
-#if 0
+// TIMER30 define
+#define USE_TIMER30			0
+#if USE_TIMER30
 #define TIMER30_PIN_INIT	SYS_GPIO34_MUX=1;
 #define TIMER30_PIN_DEINIT	SYS_GPIO34_MUX=0;
 #else
@@ -716,8 +747,9 @@
 #define TIMER30_PIN_DEINIT
 #endif
 
-// TIMER31 define	
-#if 0
+// TIMER31 define
+#define USE_TIMER31			0
+#if USE_TIMER31
 #define TIMER31_PIN_INIT	SYS_GPIO35_MUX=1;
 #define TIMER31_PIN_DEINIT	SYS_GPIO35_MUX=0;
 #else
@@ -725,8 +757,9 @@
 #define TIMER31_PIN_DEINIT
 #endif
 
-// TIMER32 define	
-#if 0
+// TIMER32 define
+#define USE_TIMER32			0
+#if USE_TIMER32
 #define TIMER32_PIN_INIT	SYS_GPIO53_MUX=1;
 #define TIMER32_PIN_DEINIT	SYS_GPIO53_MUX=0;
 #else
@@ -734,8 +767,9 @@
 #define TIMER32_PIN_DEINIT
 #endif
 
-// TIMER33 define	
-#if 0
+// TIMER33 define
+#define USE_TIMER33			0
+#if USE_TIMER33
 #define TIMER33_PIN_INIT	SYS_GPIO54_MUX=1;
 #define TIMER33_PIN_DEINIT	SYS_GPIO54_MUX=0;
 #else
@@ -743,8 +777,9 @@
 #define TIMER33_PIN_DEINIT
 #endif
 
-// TIMER34 define	
-#if 0
+// TIMER34 define
+#define USE_TIMER34			0
+#if USE_TIMER34
 #define TIMER34_PIN_INIT	SYS_GPIO55_MUX=1;
 #define TIMER34_PIN_DEINIT	SYS_GPIO55_MUX=0;
 #else
@@ -752,8 +787,9 @@
 #define TIMER34_PIN_DEINIT
 #endif
 
-// TIMER35 define	
-#if 0
+// TIMER35 define
+#define USE_TIMER35			0
+#if USE_TIMER35
 #define TIMER35_PIN_INIT	SYS_GPIO56_MUX=1;
 #define TIMER35_PIN_DEINIT	SYS_GPIO56_MUX=0;
 #else
@@ -761,8 +797,9 @@
 #define TIMER35_PIN_DEINIT
 #endif
 
-// TIMER36 define	
-#if 0
+// TIMER36 define
+#define USE_TIMER36			0
+#if USE_TIMER36
 #define TIMER36_PIN_INIT	SYS_GPIO57_MUX=1;
 #define TIMER36_PIN_DEINIT	SYS_GPIO57_MUX=0;
 #else
@@ -770,8 +807,9 @@
 #define TIMER36_PIN_DEINIT
 #endif
 
-// TIMER37 define	
-#if 0
+// TIMER37 define
+#define USE_TIMER37			0
+#if USE_TIMER37
 #define TIMER37_PIN_INIT	SYS_GPIO58_MUX=1;
 #define TIMER37_PIN_DEINIT	SYS_GPIO58_MUX=0;
 #else
@@ -779,8 +817,9 @@
 #define TIMER37_PIN_DEINIT
 #endif
 
-// TIMER38 define	
-#if 0
+// TIMER38 define
+#define USE_TIMER38			0
+#if USE_TIMER38
 #define TIMER38_PIN_INIT	SYS_GPIO59_MUX=1;
 #define TIMER38_PIN_DEINIT	SYS_GPIO59_MUX=0;
 #else

@@ -49,7 +49,7 @@
 #define configUSE_TICKLESS_IDLE                 0
 #define configCPU_CLOCK_HZ                      100000000
 //#define configTICK_CLOCK_HZ                     1000000
-//#define configTICK_RATE_HZ                      1000
+#define configTICK_RATE_HZ                      TIME_TICK
 #define configMAX_PRIORITIES                    8
 #define configMINIMAL_STACK_SIZE                1024
 #define configMAX_TASK_NAME_LEN                 8

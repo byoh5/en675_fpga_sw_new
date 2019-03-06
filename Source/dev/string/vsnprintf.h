@@ -13,5 +13,6 @@
 // %%           : A % followed by another % character will write a single % to the stream
 extern int vsnprintf(char *buf, size_t size, const char *fmt, va_list args);			// vsnprintf.c
 extern int _printf(const char *format, ...);
+extern int _sprintf(char *buf, const char *format, ...);
 
 #endif /* __VSNPRINTF_H__ */

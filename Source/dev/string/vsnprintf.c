@@ -349,3 +349,13 @@ int _printf(const char *format, ...)
 	}
 	return len;
 }
+
+int _sprintf(char *buf, const char *format, ...)
+{
+	va_list args;
+	va_start(args, format);
+	int len = vsnprintf_(buf, PRINTFBUF_SIZE, format, args);
+	va_end(args);
+
+	return len;
+}

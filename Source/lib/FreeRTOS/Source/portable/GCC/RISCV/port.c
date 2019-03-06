@@ -37,12 +37,14 @@
 #include "portmacro.h"
 #include "dev.h"
 
+volatile BYTE gbXsrTaskSwitchNeeded;
+
 /* A variable is used to keep track of the critical section nesting.  This
 variable has to be stored as part of the task context and must be initialised to
 a non zero value to ensure interrupts don't inadvertently become unmasked before
 the scheduler starts.  As it is stored as part of the task context it will
 automatically be set to 0 when the first task is started. */
-static UBaseType_t uxCriticalNesting = 0xaaaaaaaa;
+static UBaseType_t uxCriticalNesting = 0xaaaaaaaaaaaaaaaa;
 
 /* Contains context when starting scheduler, save all 31 registers */
 #ifdef __gracefulExit

@@ -35,6 +35,7 @@ task.h is included from an application file. */
 #define MPU_WRAPPERS_INCLUDED_FROM_API_FILE
 
 /* FreeRTOS includes. */
+#include "dev.h" // use eyenix sprintf
 #include "FreeRTOS.h"
 #include "task.h"
 #include "timers.h"

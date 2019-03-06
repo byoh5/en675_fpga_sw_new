@@ -1,5 +1,7 @@
 #include "dev.h"
 
+#if USE_SPI0 | USE_SPI1 | USE_SPI2 | USE_SPI3 | USE_SPI4 | USE_SPI5 | USE_SPI6 | USE_SPI7 | USE_SPI8
+
 static _SPI_REG0 *arrSPIRX[SPI_CNT];
 static _SPI_REG1 *arrSPITX[SPI_CNT];
 static _SPI_REG2 *arrSPI[SPI_CNT];
@@ -153,13 +155,16 @@ UINT SpiIsIrq(UINT nCH)
 void IrqSpi(UINT nCH)
 {
 	if (SpiIsIrq(nCH)) {
-		_printf("SPI%d IRQ Get\n", nCH);
+		printf("SPI%u IRQ Get\n", nCH);
 		if (arrSPIIrq[nCH].irqfn) {
 			arrSPIIrq[nCH].irqfn(arrSPIIrq[nCH].arg);
 		}
 		SpiIrqClear(nCH);
 	}
 }
-
-
-
+#else
+void IrqSpi(UINT nCH)
+{
+	printf("SPI%u IRQ Get! SPI%u is inactive.\n", nCH, nCH);
+}
+#endif

@@ -128,7 +128,7 @@ void SdioInit(UINT nCH, UINT Speed_Hz)
 	arrSDIOReg14[nCH] = (_SDIO_REG14 *)(addrSDIO[nCH] + (14 << 3));
 	arrSDIOReg15[nCH] = (_SDIO_REG15 *)(addrSDIO[nCH] + (15 << 3));
 	arrSDIOReg16[nCH] = (_SDIO_REG16 *)(addrSDIO[nCH] + (16 << 3));
-
+#if 0
 	arrSDIOReg13[nCH]->IO_IRQ_EN = 0;
 	arrSDIOReg13[nCH]->CMD_IRQ_EN = 0;
 	arrSDIOReg13[nCH]->DAT_IRQ_EN = 0;
@@ -141,7 +141,7 @@ void SdioInit(UINT nCH, UINT Speed_Hz)
 	arrSDIOReg1[nCH]->CLK_DIV = (MCK_FREQ / (2 * Speed_Hz) - 1);
 	arrSDIOReg1[nCH]->CLK_EN = 1;
 	arrSDIOReg0[nCH]->EN = 1;
-
+#endif
 	arrSDIOIrq_Io[nCH].irqfn = NULL;
 	arrSDIOIrq_Io[nCH].arg = NULL;
 	arrSDIOIrq_Cmd[nCH].irqfn = NULL;
@@ -159,8 +159,10 @@ UINT SdioCmd(UINT nCH, BYTE Cmd, UINT Arg, BYTE RespEn, BYTE RespType, BYTE Resp
 	while (arrSDIOReg3[nCH]->CMD_EN) {
 		delay[nCH](1);
 	}
-
-	arrSDIOReg3[nCH]->CMD_IDX = Cmd;
+	flprintf("arrSDIOReg11[%u]->DAT_BLKBYTE => %u, %u\n", nCH, arrSDIOReg11[nCH]->DAT_BLKBYTE, SDIO0_DAT_BLKBYTE);
+	//arrSDIOReg3[nCH]->CMD_IDX = Cmd;
+	SDIO0_CMD_IDX = Cmd;
+	flprintf("arrSDIOReg11[%u]->DAT_BLKBYTE => %u, %u\n", nCH, arrSDIOReg11[nCH]->DAT_BLKBYTE, SDIO0_DAT_BLKBYTE);
 	arrSDIOReg2[nCH]->CMD_ARG = Arg;
 	arrSDIOReg3[nCH]->CMD_RESP_BUSY_EN = RespBusyEn;
 	arrSDIOReg3[nCH]->CMD_RESP_TYPE = RespType;
@@ -197,15 +199,6 @@ void SdioSetDelayfn(UINT nCH, user_delay_fn user_delay)
 
 void SdioGetResp(UINT nCH, UINT *nResp, eCmdRespType cmdType)
 {
-//#define SDIO0_CMD_RESP_DAT127_96 _bm(_SDIO0_5,REG_BASE_SDIO0, (5<<3),CMD_RESP_DAT127_96) // 32 Bit, 32'h0, R
-//#define SDIO0_CMD_RESP_DAT95_64 _bm(_SDIO0_6,REG_BASE_SDIO0, (6<<3),CMD_RESP_DAT95_64) // 32 Bit, 32'h0, R
-//#define SDIO0_CMD_RESP_DAT63_32 _bm(_SDIO0_7,REG_BASE_SDIO0, (7<<3),CMD_RESP_DAT63_32) // 32 Bit, 32'h0, R
-//#define SDIO0_CMD_RESP_DAT31_0 _bm(_SDIO0_8,REG_BASE_SDIO0, (8<<3),CMD_RESP_DAT31_0) // 32 Bit, 32'h0, R
-
-//	printf("RESP[0]: 0x%08X: 0x%08X\n", arrSDIOReg5[nCH]->CMD_RESP_DAT127_96, SDIO0_CMD_RESP_DAT127_96);
-//	printf("RESP[1]: 0x%08X: 0x%08X\n", arrSDIOReg6[nCH]->CMD_RESP_DAT95_64, SDIO0_CMD_RESP_DAT95_64);
-//	printf("RESP[2]: 0x%08X: 0x%08X\n", arrSDIOReg7[nCH]->CMD_RESP_DAT63_32, SDIO0_CMD_RESP_DAT63_32);
-//	printf("RESP[3]: 0x%08X: 0x%08X\n", arrSDIOReg8[nCH]->CMD_RESP_DAT31_0, SDIO0_CMD_RESP_DAT31_0);
 	nResp[0] = arrSDIOReg5[nCH]->CMD_RESP_DAT127_96;
 	if (cmdType == ecrtR2) {
 		nResp[1] = arrSDIOReg6[nCH]->CMD_RESP_DAT95_64;
@@ -259,14 +252,22 @@ void SdioSetDataBlockByte(UINT nCH, UINT BlkByte)
 	arrSDIOReg11[nCH]->DAT_BLKBYTE = BlkByte;
 }
 
-UINT SdioDataReadS(UINT nCH, ULONG MemDst, UINT BlkAdr, UINT BlkCnt)
+UINT SdioIsDataEn(UINT nCH)
+{
+	return arrSDIOReg13[nCH]->DAT_EN;
+}
+
+UINT SdioDataIO(UINT nCH, eSDIO_DAT_IO_TYPE DatWe, ULONG MemDst, UINT BlkAdr, UINT BlkCnt)
 {
 	arrSDIOReg10[nCH]->DAT_ADR = MemDst;
 	arrSDIOReg11[nCH]->DAT_BLKNUM = BlkCnt;
 	arrSDIOReg12[nCH]->DAT_BLKADR = BlkAdr;
-	arrSDIOReg13[nCH]->DAT_WE = 0;
+	arrSDIOReg13[nCH]->DAT_WE = DatWe;
 	arrSDIOReg13[nCH]->DAT_EN = 1;
+	uint64_t a = rdcycle();
 	while (arrSDIOReg13[nCH]->DAT_EN);
+	uint64_t b = rdcycle();
+	printf("DAT cycle %lu\n", b - a);
 
 	if (arrSDIOReg3[nCH]->CMD_RESP_TOUT || arrSDIOReg3[nCH]->CMD_RESP_CRCERR || arrSDIOReg13[nCH]->DAT_CRCERR) {
 		printf("DRS CMD(%u) Arg(%u) CMDCRC(%u:0x%02X), RESPTOUT(%u), DATCRC(%u)\n", arrSDIOReg16[nCH]->DAT_RDCMD_S, BlkAdr, arrSDIOReg3[nCH]->CMD_RESP_CRCERR, arrSDIOReg4[nCH]->CMD_RESP_CRC, arrSDIOReg3[nCH]->CMD_RESP_TOUT, arrSDIOReg13[nCH]->DAT_CRCERR);
@@ -399,6 +400,163 @@ void IrqSdio(UINT nCH)
 		}
 		SdioIrqClear_Dat(nCH);
 	}
+}
+
+void SdioRegShow(UINT nCH)
+{
+#if 0
+	_regs_ BF_5(UINT _rev0 : 28, UINT BITMODE : 1 ,UINT IOMODE : 1 ,UINT MODE : 1 ,UINT EN : 1 ) _rege_ _SDIO_REG0;
+	_regs_ BF_4(UINT _rev0 : 17, UINT CLK_EN : 1 ,UINT CLK_SELECT : 2 ,UINT CLK_DIV : 12 ) _rege_ _SDIO_REG1;
+	_regs_ BF_1(UINT CMD_ARG : 32 ) _rege_ _SDIO_REG2;
+	_regs_ BF_10(UINT _rev0 : 1, UINT CMD_IDX : 7 ,UINT _rev1 : 14, UINT CMD_RESP_TOUT : 1 ,UINT CMD_RESP_CRCERR : 1 ,UINT _rev2 : 4, UINT CMD_RESP_BUSY_EN : 1 ,UINT CMD_RESP_TYPE : 1 ,UINT CMD_RESP_EN : 1 ,UINT CMD_EN : 1 ) _rege_ _SDIO_REG3;
+	_regs_ BF_4(UINT _rev0 : 18, UINT CMD_RESP_IDX : 6 ,UINT _rev1 : 1, UINT CMD_RESP_CRC : 7 ) _rege_ _SDIO_REG4;
+	_regs_ BF_1(UINT CMD_RESP_DAT127_96 : 32 ) _rege_ _SDIO_REG5;
+	_regs_ BF_1(UINT CMD_RESP_DAT95_64 : 32 ) _rege_ _SDIO_REG6;
+	_regs_ BF_1(UINT CMD_RESP_DAT63_32 : 32 ) _rege_ _SDIO_REG7;
+	_regs_ BF_1(UINT CMD_RESP_DAT31_0 : 32 ) _rege_ _SDIO_REG8;
+	_regs_ BF_1(UINT CMD_RESP_TLMT : 32 ) _rege_ _SDIO_REG9;
+	_regs_ BF_1(UINT DAT_ADR : 32 ) _rege_ _SDIO_REG10;
+	_regs_ BF_3(UINT _rev0 : 4, UINT DAT_BLKBYTE : 12 ,UINT DAT_BLKNUM : 16 ) _rege_ _SDIO_REG11;
+	_regs_ BF_1(UINT DAT_BLKADR : 32 ) _rege_ _SDIO_REG12;
+	_regs_ BF_13(UINT DAT_CRCERR : 1 ,UINT _rev0 : 20, UINT IO_IRQ : 1 ,UINT IO_IRQ_CLR : 1 ,UINT IO_IRQ_EN : 1 ,UINT CMD_IRQ : 1 ,UINT CMD_IRQ_CLR : 1 ,UINT CMD_IRQ_EN : 1 ,UINT DAT_IRQ : 1 ,UINT DAT_IRQ_CLR : 1 ,UINT DAT_IRQ_EN : 1 ,UINT DAT_WE : 1 ,UINT DAT_EN : 1 ) _rege_ _SDIO_REG13;
+	_regs_ BF_2(UINT _rev0 : 16, UINT DAT_BLKCNT : 16 ) _rege_ _SDIO_REG14;
+	_regs_ BF_4(UINT _rev0 : 18, UINT DAT_STOP_CMD : 6 ,UINT _rev1 : 2, UINT DAT_IORW_CMD : 6 ) _rege_ _SDIO_REG15;
+	_regs_ BF_8(UINT _rev0 : 2, UINT DAT_WRCMD_S : 6 ,UINT _rev1 : 2, UINT DAT_WRCMD_M : 6 ,UINT _rev2 : 2, UINT DAT_RDCMD_S : 6 ,UINT _rev3 : 2, UINT DAT_RDCMD_M : 6 ) _rege_ _SDIO_REG16;
+#endif
+	printf("SDIO%u 0x%08X 0x%08X 0x%08X 0x%08X 0x%08X\n", nCH, arrSDIOReg0[nCH]->a, arrSDIOReg1[nCH]->a, arrSDIOReg2[nCH]->a, arrSDIOReg3[nCH]->a, arrSDIOReg4[nCH]->a);
+	printf("SDIO%u 0x%08X 0x%08X 0x%08X 0x%08X 0x%08X\n", nCH, arrSDIOReg5[nCH]->a, arrSDIOReg6[nCH]->a, arrSDIOReg7[nCH]->a, arrSDIOReg8[nCH]->a, arrSDIOReg9[nCH]->a);
+	printf("SDIO%u 0x%08X 0x%08X 0x%08X 0x%08X 0x%08X\n", nCH, arrSDIOReg10[nCH]->a, arrSDIOReg11[nCH]->a, arrSDIOReg12[nCH]->a, arrSDIOReg13[nCH]->a, arrSDIOReg14[nCH]->a);
+	printf("SDIO%u 0x%08X 0x%08X\n", nCH, arrSDIOReg15[nCH]->a, arrSDIOReg16[nCH]->a);
+}
+
+void SdioRegTest(UINT nCH)
+{
+	SdioRegShow(nCH);
+#if 0
+	arrSDIOReg0[nCH]->a = 0;
+	arrSDIOReg1[nCH]->a = 0;
+	arrSDIOReg2[nCH]->a = 0;
+	arrSDIOReg3[nCH]->a = 0;
+	arrSDIOReg4[nCH]->a = 0;
+	arrSDIOReg5[nCH]->a = 0;
+	arrSDIOReg6[nCH]->a = 0;
+	arrSDIOReg7[nCH]->a = 0;
+	arrSDIOReg8[nCH]->a = 0;
+	arrSDIOReg9[nCH]->a = 0;
+	arrSDIOReg10[nCH]->a = 0;
+	arrSDIOReg11[nCH]->a = 0;
+	arrSDIOReg12[nCH]->a = 0;
+	arrSDIOReg13[nCH]->a = 0;
+	arrSDIOReg14[nCH]->a = 0;
+	arrSDIOReg15[nCH]->a = 0;
+	arrSDIOReg16[nCH]->a = 0;
+#else
+	//arrSDIOReg1[nCH]->a = 0;
+#endif
+	SdioRegShow(nCH);
+	//arrSDIOReg0[nCH]->EN = 1;
+	SDIO0_EN = 1;
+	SdioRegShow(nCH);
+	//arrSDIOReg1[nCH]->CLK_EN = 1;
+	SDIO0_CLK_EN = 1;
+	//arrSDIOReg13[nCH]->IO_IRQ_CLR = 1;
+	SDIO0_IO_IRQ_CLR = 1;
+	//arrSDIOReg1[nCH]->CLK_SELECT = 0;
+	SDIO0_CLK_SELECT = 3;
+	printf("CLK_SEL(%d)\n", arrSDIOReg1[nCH]->CLK_SELECT);
+	arrSDIOReg13[nCH]->IO_IRQ_CLR = 1;
+	arrSDIOReg1[nCH]->CLK_SELECT = 3;
+	printf("CLK_SEL(%d)\n", arrSDIOReg1[nCH]->CLK_SELECT);
+	arrSDIOReg13[nCH]->IO_IRQ_CLR = 1;
+	SdioRegShow(nCH);
+	arrSDIOReg13[nCH]->IO_IRQ_CLR = 1;
+	SdioRegShow(nCH);
+	arrSDIOReg0[nCH]->BITMODE = 0xffffffff;
+	SdioRegShow(nCH);
+	arrSDIOReg0[nCH]->IOMODE = 0;
+	SdioRegShow(nCH);
+	arrSDIOReg0[nCH]->MODE = 0xffffffff;
+	SdioRegShow(nCH);
+	arrSDIOReg1[nCH]->CLK_SELECT = 0xffffffff;
+	SdioRegShow(nCH);
+	arrSDIOReg1[nCH]->CLK_DIV = 0xffffffff;
+	SdioRegShow(nCH);
+	arrSDIOReg2[nCH]->CMD_ARG = 0xffffffff;
+	SdioRegShow(nCH);
+	arrSDIOReg3[nCH]->CMD_IDX = 0xffffffff;
+	SdioRegShow(nCH);
+	arrSDIOReg3[nCH]->CMD_RESP_TOUT = 0xffffffff;
+	SdioRegShow(nCH);
+	arrSDIOReg3[nCH]->CMD_RESP_CRCERR = 0xffffffff;
+	SdioRegShow(nCH);
+	arrSDIOReg3[nCH]->CMD_RESP_BUSY_EN = 0xffffffff;
+	SdioRegShow(nCH);
+	arrSDIOReg3[nCH]->CMD_RESP_TYPE = 0xffffffff;
+	SdioRegShow(nCH);
+	arrSDIOReg3[nCH]->CMD_RESP_EN = 0xffffffff;
+	SdioRegShow(nCH);
+	//arrSDIOReg3[nCH]->CMD_EN = 0xffffffff;
+	//SdioRegShow(nCH);
+	arrSDIOReg4[nCH]->CMD_RESP_IDX = 0xffffffff;
+	SdioRegShow(nCH);
+	arrSDIOReg4[nCH]->CMD_RESP_CRC = 0xffffffff;
+	SdioRegShow(nCH);
+	arrSDIOReg5[nCH]->CMD_RESP_DAT127_96 = 0xffffffff;
+	SdioRegShow(nCH);
+	arrSDIOReg6[nCH]->CMD_RESP_DAT95_64 = 0xffffffff;
+	SdioRegShow(nCH);
+	arrSDIOReg7[nCH]->CMD_RESP_DAT63_32 = 0xffffffff;
+	SdioRegShow(nCH);
+	arrSDIOReg8[nCH]->CMD_RESP_DAT31_0 = 0xffffffff;
+	SdioRegShow(nCH);
+	arrSDIOReg9[nCH]->CMD_RESP_TLMT = 0xffffffff;
+	SdioRegShow(nCH);
+	arrSDIOReg10[nCH]->DAT_ADR = 0xffffffff;
+	SdioRegShow(nCH);
+	arrSDIOReg11[nCH]->DAT_BLKBYTE = 0xffffffff;
+	SdioRegShow(nCH);
+	arrSDIOReg11[nCH]->DAT_BLKNUM = 0xffffffff;
+	SdioRegShow(nCH);
+	arrSDIOReg12[nCH]->DAT_BLKADR = 0xffffffff;
+	SdioRegShow(nCH);
+	//arrSDIOReg13[nCH]->DAT_CRCERR = 0xffffffff;
+	//SdioRegShow(nCH);
+	//arrSDIOReg13[nCH]->IO_IRQ = 0xffffffff;
+	//SdioRegShow(nCH);
+	arrSDIOReg13[nCH]->IO_IRQ_CLR = 1;
+	SdioRegShow(nCH);
+	arrSDIOReg13[nCH]->IO_IRQ_EN = 0xffffffff;
+	SdioRegShow(nCH);
+	arrSDIOReg13[nCH]->CMD_IRQ = 0xffffffff;
+	SdioRegShow(nCH);
+	arrSDIOReg13[nCH]->CMD_IRQ_CLR = 0xffffffff;
+	SdioRegShow(nCH);
+	arrSDIOReg13[nCH]->CMD_IRQ_EN = 0xffffffff;
+	SdioRegShow(nCH);
+	arrSDIOReg13[nCH]->DAT_IRQ = 0xffffffff;
+	SdioRegShow(nCH);
+	arrSDIOReg13[nCH]->DAT_IRQ_CLR = 0xffffffff;
+	SdioRegShow(nCH);
+	arrSDIOReg13[nCH]->DAT_IRQ_EN = 0xffffffff;
+	SdioRegShow(nCH);
+	arrSDIOReg13[nCH]->DAT_WE = 0xffffffff;
+	SdioRegShow(nCH);
+	//arrSDIOReg13[nCH]->DAT_EN = 0xffffffff;
+	//SdioRegShow(nCH);
+	arrSDIOReg14[nCH]->DAT_BLKCNT = 0xffffffff;
+	SdioRegShow(nCH);
+	arrSDIOReg15[nCH]->DAT_STOP_CMD = 0xffffffff;
+	SdioRegShow(nCH);
+	arrSDIOReg15[nCH]->DAT_IORW_CMD = 0xffffffff;
+	SdioRegShow(nCH);
+	arrSDIOReg16[nCH]->DAT_WRCMD_S = 0xffffffff;
+	SdioRegShow(nCH);
+	arrSDIOReg16[nCH]->DAT_WRCMD_M = 0xffffffff;
+	SdioRegShow(nCH);
+	arrSDIOReg16[nCH]->DAT_RDCMD_S = 0xffffffff;
+	SdioRegShow(nCH);
+	arrSDIOReg16[nCH]->DAT_RDCMD_M = 0xffffffff;
+	SdioRegShow(nCH);
 }
 
 #if 0

@@ -1,6 +1,8 @@
 #include "dev.h"
 #include "syscall.h"
 
+#include "enx_freertos.h"
+
 volatile uint64_t* mtime =      (uint64_t*)(CLINT_BASE + 0xbff8);
 volatile uint64_t* timecmp =    (uint64_t*)(CLINT_BASE + 0x4000);
 
@@ -450,6 +452,7 @@ uintptr_t trap_from_machine_mode(uintptr_t mcause, uintptr_t mepc, uintptr_t reg
 				if (source != 0) {
 					_printf("CPU%d(%c) - IRQ%d\n", i/2, i%2==0 ? 'M':'S', i);
 				}
+				gbXsrTaskSwitchNeeded = 0;
 				switch (source) {
 				case 1:	enx_exirq_source1();	break;
 				case 2:	enx_exirq_source2();	break;
@@ -461,6 +464,9 @@ uintptr_t trap_from_machine_mode(uintptr_t mcause, uintptr_t mepc, uintptr_t reg
 				case 8:	enx_exirq_source8();	break;
 				}
 				*iClaimCompliet[i] = source; // Set Complete IRQ
+				if (gbXsrTaskSwitchNeeded) {
+					vTaskSwitchContext();				// Task switch required ?
+				}
 			}
 			break;
 

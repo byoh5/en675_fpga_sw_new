@@ -163,7 +163,7 @@ typedef struct {
 	DWORD	bitbase;		/* Allocation bitmap base sector */
 #endif
 	DWORD	winsect;		/* Current sector appearing in the win[] */
-	BYTE	win[FF_MAX_SS];	/* Disk access window for Directory, FAT (and file data at tiny cfg) */
+	ATTR_MALIGN64 BYTE	win[FF_MAX_SS];	/* Disk access window for Directory, FAT (and file data at tiny cfg) */
 } FATFS;
 
 
@@ -208,7 +208,7 @@ typedef struct {
 	DWORD*	cltbl;			/* Pointer to the cluster link map table (nulled on open, set by application) */
 #endif
 #if !FF_FS_TINY
-	BYTE	buf[FF_MAX_SS];	/* File private data read/write window */
+	ATTR_MALIGN64 BYTE	buf[FF_MAX_SS];	/* File private data read/write window */
 #endif
 } FIL;
 

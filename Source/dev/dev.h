@@ -10,6 +10,7 @@
 #include "bits.h"	// CPU
 #include "encoding.h"	// CPU
 #include "mtrap.h"	// CPU
+#include "rv_utils.h" // CPU
 
 #include "vsnprintf.h"	// dev/string
 #include "boot.h"	// core/shared
@@ -25,6 +26,7 @@
 #define DEBUG_UART_NUM 7
 
 #define printf _printf
+#define sprintf _sprintf
 
 // time ////////////////////////////////////////////////////////////////////////
 #define TIME_TICK			1000							// 1ms

@@ -140,26 +140,12 @@
 
 #include "dev_reg.h"
 
-#if 0
-#pragma scalar_storage_order big-endian
-_regs_	UINT GPIO_IN : 1;
-		UINT GPIO_OUT : 1;
-		UINT GPIO_OEN : 1;
-		UINT GPIO_IRQ_DIR : 2;
-		UINT GPIO_IRQ_EN : 1;
-		UINT GPIO_IRQ_CLR : 1;
-		UINT GPIO_IRQ : 1;
-		UINT _rev0 : 24;
-_rege_	_GPIO_PIN;
-#else
 _regs_ BF_8(UINT GPIO_IN : 1 ,UINT GPIO_OUT : 1 ,UINT GPIO_OEN : 1 ,UINT GPIO_IRQ_DIR : 2 ,UINT GPIO_IRQ_EN : 1 ,UINT GPIO_IRQ_CLR : 1 ,UINT GPIO_IRQ : 1 , UINT _rev0 : 24 ) _rege_ _GPIO_PIN;
-#endif
 
-#pragma scalar_storage_order little-endian
 _regs_ BF_5(UINT _rev0 : 28, UINT BITMODE : 1 ,UINT IOMODE : 1 ,UINT MODE : 1 ,UINT EN : 1 ) _rege_ _SDIO_REG0;
 _regs_ BF_4(UINT _rev0 : 17, UINT CLK_EN : 1 ,UINT CLK_SELECT : 2 ,UINT CLK_DIV : 12 ) _rege_ _SDIO_REG1;
 _regs_ BF_1(UINT CMD_ARG : 32 ) _rege_ _SDIO_REG2;
-_regs_ BF_10(UINT _rev0 : 1, UINT CMD_IDX : 7 ,UINT _rev1 : 14, UINT CMD_RESP_TOUT : 1 ,UINT CMD_RESP_CRCERR : 1 ,UINT _rev2 : 4, UINT CMD_RESP_BUSY_EN : 1 ,UINT CMD_RESP_TYPE : 1 ,UINT CMD_RESP_EN : 1 ,UINT CMD_EN : 1 ) _rege_ _SDIO_REG3;
+_regs_ BF_10(UINT _rev0 : 2, UINT CMD_IDX : 6 ,UINT _rev1 : 14, UINT CMD_RESP_TOUT : 1 ,UINT CMD_RESP_CRCERR : 1 ,UINT _rev2 : 4, UINT CMD_RESP_BUSY_EN : 1 ,UINT CMD_RESP_TYPE : 1 ,UINT CMD_RESP_EN : 1 ,UINT CMD_EN : 1 ) _rege_ _SDIO_REG3;
 _regs_ BF_4(UINT _rev0 : 18, UINT CMD_RESP_IDX : 6 ,UINT _rev1 : 1, UINT CMD_RESP_CRC : 7 ) _rege_ _SDIO_REG4;
 _regs_ BF_1(UINT CMD_RESP_DAT127_96 : 32 ) _rege_ _SDIO_REG5;
 _regs_ BF_1(UINT CMD_RESP_DAT95_64 : 32 ) _rege_ _SDIO_REG6;
@@ -184,7 +170,7 @@ _regs_ BF_2(UINT CLK_DIV : 16 , UINT _rev0 : 16 ) _rege_ _I2C_REG1;
 _regs_ BF_7(UINT _rev0 : 26, UINT MST_COL : 1 ,UINT MST_ACK : 1 ,UINT MST_REPEAT : 1 ,UINT MST_LAST : 1 ,UINT MST_RW : 1 ,UINT MST_GO : 1 ) _rege_ _I2C_REG2;
 _regs_ BF_8(UINT _rev0 : 19, UINT I2C_SDA : 1 ,UINT I2C_SCL : 1 ,UINT SLV_ACK_IN : 1 ,UINT SLV_GO : 1 ,UINT SLV_RW : 1 ,UINT SLV_ACK_OUT : 1 ,UINT SLV_ADR : 7 ) _rege_ _I2C_REG3;
 
-_regs_ BF_10(UINT _rev0 : 1, UINT DONE_VAL : 1 ,UINT DONE_PTR : 8 ,UINT JOB_PTR : 8 ,UINT IRQ : 1 ,UINT IRQ_EN : 1 ,UINT IRQ_CLR : 1 ,UINT VALUE : 8 ,UINT MODE : 2 ,UINT GO : 1 ) _rege_ _DMA_REG0;
+_regs_ BF_12(UINT _rev0 : 1, UINT DONE_VAL : 1 ,UINT _rev1 : 2, UINT DONE_PTR : 6 ,UINT _rev2 : 2, UINT JOB_PTR : 6 ,UINT IRQ : 1 ,UINT IRQ_EN : 1 ,UINT IRQ_CLR : 1 ,UINT VALUE : 8 ,UINT MODE : 2 ,UINT GO : 1 ) _rege_ _DMA_REG0;
 _regs_ BF_1(UINT SRC : 32 ) _rege_ _DMA_REG1;
 _regs_ BF_1(UINT DST : 32 ) _rege_ _DMA_REG2;
 _regs_ BF_1(UINT LEN : 32 ) _rege_ _DMA_REG3;
@@ -331,7 +317,8 @@ extern void SdioClockDisable(UINT nCH);
 extern void SdioClockDivPrint(UINT nCH, char *strBuffer);
 extern UINT SdioGetDataBlockByte(UINT nCH);
 extern void SdioSetDataBlockByte(UINT nCH, UINT BlkByte);
-extern UINT SdioDataReadS(UINT nCH, ULONG MemDst, UINT BlkAdr, UINT BlkCnt);
+extern UINT SdioIsDataEn(UINT nCH);
+extern UINT SdioDataIO(UINT nCH, eSDIO_DAT_IO_TYPE DatWe, ULONG MemDst, UINT BlkAdr, UINT BlkCnt);
 extern void SdioSetCmdDataWriteS(UINT nCH, UINT nCmd);
 extern void SdioSetCmdDataWriteM(UINT nCH, UINT nCmd);
 extern void SdioSetCmdDataReadS(UINT nCH, UINT nCmd);
@@ -352,11 +339,25 @@ extern UINT SdioIsIrq_Io(UINT nCH);
 extern UINT SdioIsIrq_Cmd(UINT nCH);
 extern UINT SdioIsIrq_Dat(UINT nCH);
 extern void IrqSdio(UINT nCH);
+extern void SdioRegShow(UINT nCH);
 
 extern void SdioCdInit(UINT nCH);
 extern UINT SdioCdDet(void);
 extern UINT SdioCdInitProcess(void);
 extern void SdioCdClockDown(void);
+extern void SdioCdClockRestore(void);
+
+extern UINT SdioCdGetActive(void);
+extern UINT SdioCdGetErrCode(void);
+extern UINT SdioCdGetAUSize(void);
+extern void SdioCdGetName(char *buf);
+extern UINT SdioCdGetSectorCnt(void);
+extern UINT SdioCdGetSize(void);
+extern UINT SdioCdE(UINT start_sctor, UINT end_sctor);
+extern UINT SdioCdReadS(const BYTE *buff, UINT sector);
+extern UINT SdioCdReadM(const BYTE *buff, UINT sector, UINT count);
+extern UINT SdioCdWriteS(const BYTE *buff, UINT sector);
+extern UINT SdioCdWriteM(const BYTE *buff, UINT sector, UINT count);
 
 extern void AdcInit(UINT Speed_Hz);
 extern void AdcOn(UINT nCH);

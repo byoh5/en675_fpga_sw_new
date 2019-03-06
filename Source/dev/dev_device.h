@@ -82,4 +82,29 @@
 #define WF_SDIO_CH	1
 #endif // __USE_WF__
 
+#if 1
+#define __FILESYSTEM__
+
+#if 0
+#define LOAD_FS_FLS 1
+#else
+#define LOAD_FS_FLS 0
+#endif // LOAD_FS_FLS
+#if 1
+#define LOAD_FS_SDCARD 1
+#else
+#define LOAD_FS_SDCARD 0
+#endif // LOAD_FS_SDCARD
+#if 0
+#define LOAD_FS_USB 1
+#else
+#define LOAD_FS_USB 0
+#endif // LOAD_FS_USB
+#if 0
+#define LOAD_FS_MEM 1
+#else
+#define LOAD_FS_MEM 0
+#endif // LOAD_FS_MEM
+#endif // __FILESYSTEM__
+
 #endif // __DEV_DEVICE_H__

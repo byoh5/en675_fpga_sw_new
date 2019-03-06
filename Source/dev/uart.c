@@ -1,5 +1,7 @@
 #include "dev.h"
 
+#if USE_UART0 | USE_UART1 | USE_UART2 | USE_UART3 | USE_UART4 | USE_UART5 | USE_UART6 | USE_UART7 | USE_UART8
+
 static _UART_REG0 *arrUART[UART_CNT];
 static _UART_REG1 *arrUARTRX[UART_CNT];
 static _UART_REG2 *arrUARTTX[UART_CNT];
@@ -190,3 +192,9 @@ void IrqUart(UINT nCH)
 		UartTxIrqClear(nCH);
 	}
 }
+#else
+void IrqUart(UINT nCH)
+{
+	printf("UART%u IRQ Get! UART%u is inactive.\n", nCH, nCH);
+}
+#endif

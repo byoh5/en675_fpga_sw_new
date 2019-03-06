@@ -1,5 +1,7 @@
 #include "dev.h"
 
+#if USE_I2C0 | USE_I2C1 | USE_I2C2 | USE_I2C3 | USE_I2C4 | USE_I2C5 | USE_I2C6 | USE_I2C7 | USE_I2C8
+
 static _I2C_REG0 *arrI2CCONT[I2C_CNT];
 static _I2C_REG1 *arrI2CCLK[I2C_CNT];
 static _I2C_REG2 *arrI2CMST[I2C_CNT];
@@ -101,7 +103,7 @@ UINT I2cCheck(UINT nCH, BYTE addr)
 
 void I2cChCheck(UINT nCH)
 {
-	_printf("I2C %uCH Address Test\n", nCH);
+	printf("I2C%u Address Test\n", nCH);
 	for (UINT i = 0; i < 256; i++) {
 		if (I2cCheck(nCH, i) == DEF_OK) {
 			_printf("[%X]", i);
@@ -109,7 +111,7 @@ void I2cChCheck(UINT nCH)
 			_printf(".");
 		}
 	}
-	_printf("Test Done.\n");
+	printf("Test Done.\n");
 }
 
 void I2cIrqCallback(UINT nCH, irq_fn irqfn, void *arg)
@@ -141,10 +143,16 @@ UINT I2cIsIrq(UINT nCH)
 void IrqI2c(UINT nCH)
 {
 	if (I2cIsIrq(nCH)) {
-		_printf("I2C%d IRQ Get\n", nCH);
+		printf("I2C%u IRQ Get\n", nCH);
 		if (arrI2CIrq[nCH].irqfn) {
 			arrI2CIrq[nCH].irqfn(arrI2CIrq[nCH].arg);
 		}
 		I2cIrqClear(nCH);
 	}
 }
+#else
+void IrqI2c(UINT nCH)
+{
+	printf("I2C%u IRQ Get! I2C%u is inactive.\n", nCH, nCH);
+}
+#endif

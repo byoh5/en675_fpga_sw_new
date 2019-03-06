@@ -1,5 +1,7 @@
 #include "dev.h"
 
+#if USE_TIMER0 | USE_TIMER1 | USE_TIMER2 | USE_TIMER3 | USE_TIMER4 | USE_TIMER5 | USE_TIMER6 | USE_TIMER7 | USE_TIMER8 | USE_TIMER9 | USE_TIMER10 | USE_TIMER11 | USE_TIMER12 | USE_TIMER13 | USE_TIMER14 | USE_TIMER15 | USE_TIMER16 | USE_TIMER17 | USE_TIMER18 | USE_TIMER19 | USE_TIMER20 | USE_TIMER21 | USE_TIMER22 | USE_TIMER23 | USE_TIMER24 | USE_TIMER25 | USE_TIMER26 | USE_TIMER27 | USE_TIMER28 | USE_TIMER29 | USE_TIMER30 | USE_TIMER31 | USE_TIMER32 | USE_TIMER33 | USE_TIMER34 | USE_TIMER35 | USE_TIMER36 | USE_TIMER37 | USE_TIMER38
+
 static _TIMER_REG0 *arrTMR0[TIMER_CNT];
 static _TIMER_REG1 *arrTMR1[TIMER_CNT];
 static tIhnd arrTIMERIrq[UART_CNT];
@@ -186,10 +188,16 @@ UINT TimerIsIrq(UINT nCH)
 void IrqTimer(UINT nCH)
 {
 	if (TimerIsIrq(nCH)) {
-		_printf("Timer%d IRQ Get\n", nCH);
+		printf("Timer%u IRQ Get\n", nCH);
 		if (arrTIMERIrq[nCH].irqfn) {
 			arrTIMERIrq[nCH].irqfn(arrTIMERIrq[nCH].arg);
 		}
 		TimerIrqClear(nCH);
 	}
 }
+#else
+void IrqTimer(UINT nCH)
+{
+	_printf("Timer%u IRQ Get! Timer%u is inactive.\n", nCH, nCH);
+}
+#endif

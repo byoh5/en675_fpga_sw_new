@@ -269,6 +269,25 @@ void *pvReturn = NULL;
 }
 /*-----------------------------------------------------------*/
 
+void *pvPortRealloc(void *pv , size_t xWantedSize )
+{
+	if (pv) {
+		vPortFree(pv);
+		pv = NULL;
+		return pvPortMalloc(xWantedSize);
+	} else {
+		return NULL;
+	}
+}
+
+void *pvPortCalloc( size_t n_elements, size_t elem_size )
+{
+	void *pv = pvPortMalloc(n_elements * elem_size);
+	memset(pv, 0, n_elements * elem_size);
+	return pv;
+
+}
+
 void vPortFree( void *pv )
 {
 uint8_t *puc = ( uint8_t * ) pv;
