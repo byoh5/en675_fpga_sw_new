@@ -7,6 +7,7 @@
 #include "shell_cmd_fs.h"
 
 #include <stdlib.h>		// for atoi
+#include <string.h>		// for strstr
 
 #if defined(__FILESYSTEM__)
 #include "enx_file.h"
@@ -40,7 +41,7 @@ const char *sFatTestCmd[]   = {"File system Test",              (char*)0};
 //-------------------------------------------------------------------------------------------------
 //...............................................
 //
-INT16S UsrLSCmd(INT32S argc, char *argv[])
+int UsrLSCmd(INT32S argc, char *argv[])
 {
 	char strGetcwd[256] = {0};
 	f_getcwd(strGetcwd, 256);
@@ -59,7 +60,7 @@ INT16S UsrLSCmd(INT32S argc, char *argv[])
 
 //...............................................
 //
-INT16S UsrDiskInitCmd(INT32S argc, char *argv[])
+int UsrDiskInitCmd(INT32S argc, char *argv[])
 {
 	if (argc != 2) {
 		printf("error : ex) init 0:   // 0: driver default init\r\n");
@@ -74,7 +75,7 @@ INT16S UsrDiskInitCmd(INT32S argc, char *argv[])
 
 //...............................................
 //
-INT16S UsrFormatCmd(INT32S argc, char *argv[])
+int UsrFormatCmd(INT32S argc, char *argv[])
 {
 	if (argc != 2) {
 		printf("error : ex) format 0:   // 0: driver format\r\n");
@@ -107,7 +108,7 @@ INT16S UsrFormatCmd(INT32S argc, char *argv[])
 
 //...............................................
 //
-INT16S UsrMKRMDIRCmd(INT32S argc, char *argv[])
+int UsrMKRMDIRCmd(INT32S argc, char *argv[])
 {
 #if 0
 	if (argc == 2) {
@@ -134,7 +135,7 @@ INT16S UsrMKRMDIRCmd(INT32S argc, char *argv[])
 
 //...............................................
 //
-INT16S UsrRMCmd(INT32S argc, char *argv[])
+int UsrRMCmd(INT32S argc, char *argv[])
 {
 #if 0
 	if (argc == 2) {
@@ -182,7 +183,7 @@ INT16S UsrRMCmd(INT32S argc, char *argv[])
 
 //...............................................
 //
-INT16S UsrPWDCmd(INT32S argc, char *argv[])
+int UsrPWDCmd(INT32S argc, char *argv[])
 {
 	char strGetcwd[256] = {0};
 	FRESULT res = f_getcwd(strGetcwd, 256);
@@ -198,7 +199,7 @@ INT16S UsrPWDCmd(INT32S argc, char *argv[])
 
 //...............................................
 //
-INT16S UsrCDCmd(INT32S argc, char *argv[])
+int UsrCDCmd(INT32S argc, char *argv[])
 {
 	if (argc == 2) {
 #if (LOAD_FS_FLS==1)
@@ -232,7 +233,7 @@ INT16S UsrCDCmd(INT32S argc, char *argv[])
 #define SAVEK 512
 #define SAVE_BUFF (SAVEK*1024)
 
-INT16S UsrFCatCmd(INT32S argc, char *argv[])
+int UsrFCatCmd(INT32S argc, char *argv[])
 {
 #if 0
 	if (argc != 4) {
@@ -344,7 +345,7 @@ INT16S UsrFCatCmd(INT32S argc, char *argv[])
 	return 0;
 }
 
-INT16S UsrFCreateCmd(INT32S argc, char *argv[])
+int UsrFCreateCmd(INT32S argc, char *argv[])
 {
 #if 0
 	if (argc != 5 && argc != 6) {
@@ -434,7 +435,7 @@ fcreate_done:
 	return 0;
 }
 
-INT16S UsrFCopyCmd(INT32S argc, char *argv[])
+int UsrFCopyCmd(INT32S argc, char *argv[])
 {
 #if 0
 	if (argc != 3) {
@@ -496,7 +497,7 @@ done:
 	return 0;
 }
 
-INT16S UsrFstatCmd(INT32S argc, char *argv[])
+int UsrFstatCmd(INT32S argc, char *argv[])
 {
 	if (argc != 2) {
 		printf("Error : ex) fstat filename\r\n");
@@ -520,7 +521,7 @@ INT16S UsrFstatCmd(INT32S argc, char *argv[])
 	return 0;
 }
 
-INT16S UsrFileHash(INT32S argc, char *argv[])
+int UsrFileHash(INT32S argc, char *argv[])
 {
 #if 0
 	if (argc != 2) {
@@ -582,7 +583,7 @@ done:
 }
 
 #if (LOAD_FS_SDCARD==1)
-INT16S UsrSDCardSpeedTestCmd(INT32S argc, char *argv[])
+int UsrSDCardSpeedTestCmd(INT32S argc, char *argv[])
 {
 #if 0
 	const UINT arrUnitsize[] = {512, 1*1024, 2*1024, 4*1024, 8*1024, 16*1024, 32*1024, /*64*1024, 128*1024, 256*1024, 512*1024, 1024*1024*/};
@@ -724,7 +725,7 @@ done1:
 	UNUSED(argv);
 }
 
-INT16S UsrMakevidCmd(INT32S argc, char *argv[])
+int UsrMakevidCmd(INT32S argc, char *argv[])
 {
 #if 0
 	if (argc != 2) {
@@ -765,7 +766,7 @@ INT16S UsrMakevidCmd(INT32S argc, char *argv[])
 }
 #endif
 
-INT16S UseFatTest(INT32S argc, char *argv[])
+int UseFatTest(INT32S argc, char *argv[])
 {
 	return 0;
 	UNUSED(argc);

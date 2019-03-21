@@ -2,7 +2,7 @@
 
 void Sha224(BYTE *apbSrc, UINT len)
 {
-	SHA_SRC = (UINT)apbSrc;
+	SHA_SRC = (intptr_t)apbSrc;
 	SHA_LEN = len;
 	SHA_IRQ_EN = 1;
 	SHA_MODE = 0;
@@ -12,7 +12,7 @@ void Sha224(BYTE *apbSrc, UINT len)
 
 void Sha256(BYTE *apbSrc, UINT len)
 {
-	SHA_SRC = (UINT)apbSrc;
+	SHA_SRC = (intptr_t)apbSrc;
 	SHA_LEN = len;
 	SHA_IRQ_EN = 1;
 	SHA_MODE = 1;

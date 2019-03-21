@@ -195,14 +195,14 @@ FRESULT fat_mkdir(DriveNum dnNum, char *strPath)
 
 BYTE fat_get_freesize(DriveNum dnNum)
 {
-	FRESULT res;
-	TCHAR buf[4] = {0};
-	FATFS *fs;
-	DWORD fre_clust, tot_sect;
 	BYTE bFreesize = 0;
 #if 1
-	flprintf("Disable f_mkfs\n");
+	flprintf("Disable f_getfree\n");
 #else
+	FRESULT res;
+	TCHAR buf[4] = {0};
+	FATFS *fs = NULL;
+	DWORD fre_clust, tot_sect;
 	sprintf(buf, "%d:", dnNum);
 	res = f_getfree((const TCHAR *)buf, &fre_clust, &fs);
 	if (res != FR_OK) {
@@ -211,7 +211,6 @@ BYTE fat_get_freesize(DriveNum dnNum)
 	}
 	tot_sect = fs->n_fatent - 2;	//  * fs->csize
 	bFreesize = (BYTE)((fre_clust*100.0)/tot_sect);
-#endif
 #ifdef ENX_DEBUG
 	unsigned int nVer;
 	int nPow = 0;
@@ -226,7 +225,7 @@ BYTE fat_get_freesize(DriveNum dnNum)
 	}
 	printf("Disk Size (free size is %uKB, total size %uKB) ", (fre_clust << nPow), (tot_sect << nPow));
 #endif
-
+#endif
 	printf("%d:/ Free %d%%\n", dnNum, bFreesize);
 	return bFreesize;
 }

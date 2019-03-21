@@ -17,6 +17,7 @@
 
 #define ARRAY_SIZE(x)			(sizeof(x) / sizeof((x)[0]))
 
+#include <stdint.h>							// for xxxx_t
 #include <limits.h>							// for __xxxx_MAX__
 #include <stdarg.h>							// for va_list
 

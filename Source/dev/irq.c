@@ -141,7 +141,6 @@ void enx_exirq_source2(void)
 		if(IRQ_CDMA2){IrqCDma(2);};
 		if(IRQ_CDMA3){IrqCDma(3);};
 		if (IRQ_H265){printf("IRQ_H265\n");};
-		if (IRQ_H264){printf("IRQ_H264\n");};
 	}
 }
 

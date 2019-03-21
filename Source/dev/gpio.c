@@ -1,12 +1,14 @@
 #include "dev.h"
 
 static _GPIO_PIN *arrGPIO[GPIO_CNT];
+static _GPIO_MUX *arrGPIOMUX[GPIO_CNT];
 static tIhnd arrGPIOIrq[GPIO_CNT];
 
 void GpioInit(void)
 {
 	for (uint64_t i = 0; i < GPIO_CNT; i++) {
 		arrGPIO[i] = (_GPIO_PIN *)(REG_BASE_GPIO + (i << 3));
+		arrGPIOMUX[i] = (_GPIO_MUX *)(REG_BASE_SYS + ((256 + i) << 3));
 		arrGPIOIrq[i].irqfn = NULL;
 		arrGPIOIrq[i].arg = NULL;
 	}
@@ -28,6 +30,11 @@ void GpioBothEdge(UINT nCH)
 	arrGPIO[nCH]->GPIO_IRQ_DIR = 2;
 }
 
+UINT GpioGetEdge(UINT nCH)
+{	// Direction : Gpio direction get to input
+	return arrGPIO[nCH]->GPIO_IRQ_DIR;
+}
+
 void GpioInDir(UINT nCH)
 {	// Direction : Gpio direction set to output
 	arrGPIO[nCH]->GPIO_OEN = 1;
@@ -40,7 +47,7 @@ void GpioOutDir(UINT nCH)
 
 UINT GpioGetDir(UINT nCH)
 {	// Direction : Gpio direction get to input
-	return arrGPIO[nCH]->GPIO_OUT;
+	return arrGPIO[nCH]->GPIO_OEN;
 }
 
 void GpioSetHi(UINT nCH)
@@ -53,20 +60,28 @@ void GpioSetLo(UINT nCH)
 	arrGPIO[nCH]->GPIO_OUT = 0;
 }
 
-void GpioFuncPin(UINT nCH)
+UINT GpioGetOut(UINT nCH)
+{
+	return arrGPIO[nCH]->GPIO_OUT;
+}
+
+void GpioFuncPin(UINT nCH, UINT nSel)
 {	// Multi Function Selection
-	_printf("%s Not implemented.(ch:%d)\n", __func__, nCH);
+	if (nSel > 3) {
+		printf("Error GPIO%02u Function Selection(%u)\n", nCH, nSel);
+	} else {
+		arrGPIOMUX[nCH]->GPIO_MUX = nSel;
+	}
 }
 
 void GpioFuncPinOff(UINT nCH)
 {	// GPIO Selectin
-	_printf("%s Not implemented.(ch:%d)\n", __func__, nCH);
+	arrGPIOMUX[nCH]->GPIO_MUX = 0;
 }
 
 UINT GpioGetFuncPin(UINT nCH)
 {	// Multi Function Selection
-	_printf("%s Not implemented.(ch:%d)\n", __func__, nCH);
-	return 0;
+	return arrGPIOMUX[nCH]->GPIO_MUX;
 }
 
 UINT GpioGetPin(UINT nCH)
@@ -88,6 +103,11 @@ void GpioIrqOn(UINT nCH)
 void GpioIrqOff(UINT nCH)
 {	// Direction : Gpio interrupt disable
 	arrGPIO[nCH]->GPIO_IRQ_EN = 0;
+}
+
+UINT GpioGetIrqEn(UINT nCH)
+{
+	return arrGPIO[nCH]->GPIO_IRQ_EN;
 }
 
 void GpioIrqClear(UINT nCH)

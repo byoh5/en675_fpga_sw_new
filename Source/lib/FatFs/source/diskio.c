@@ -26,12 +26,14 @@ DSTATUS disk_status (
 #endif
 #if (LOAD_FS_SDCARD==1)
 	case DEV_SD :
+#if defined(__USE_SDIOCD__)
 		if (SdioCdDet()) {
 			return (STA_NODISK | STA_NOINIT);
 		}
 		if (SdioCdGetActive()) {
 			return 0;
 		}
+#endif
 		break;
 #endif
 #if (LOAD_FS_USB==1)
@@ -63,12 +65,14 @@ DSTATUS disk_initialize (
 #endif
 #if (LOAD_FS_SDCARD==1)
 	case DEV_SD :
+#if defined(__USE_SDIOCD__)
 		if (SdioCdDet()) {
 			return (STA_NODISK | STA_NOINIT);
 		}
 		if (SdioCdGetActive()) {
 			return 0;
 		}
+#endif
 		break;
 #endif
 #if (LOAD_FS_USB==1)
@@ -109,17 +113,13 @@ DRESULT disk_read (
 #endif
 #if (LOAD_FS_SDCARD==1)
 	case DEV_SD :
+#if defined(__USE_SDIOCD__)
 		res = RES_OK;
 		flprintf("CNT(%2u) buff(0x%08X) addr(0x%08X)\n", count, buff, sector);
-		if (count == 1) {
-			if (SdioCdReadS((BYTE *)buff, (UINT)sector) == DEF_FAIL) {
-				res = RES_ERROR;
-			}
-		} else {
-			if (SdioCdReadM((BYTE *)buff, (UINT)sector, (UINT)count) == DEF_FAIL) {
-				res = RES_ERROR;
-			}
+		if (SdioCdRead((BYTE *)buff, (UINT)sector, (UINT)count) == DEF_FAIL) {
+			res = RES_ERROR;
 		}
+#endif
 		break;
 #endif
 #if (LOAD_FS_USB==1)
@@ -218,6 +218,7 @@ DRESULT disk_ioctl (
 #endif
 #if (LOAD_FS_SDCARD==1)
 	case DEV_SD :
+#if defined(__USE_SDIOCD__)
 		switch (cmd) {
 		case CTRL_SYNC :
 			res = RES_OK;
@@ -238,6 +239,7 @@ DRESULT disk_ioctl (
 			res = SdioCdE((UINT)pDw[0], (UINT)pDw[1]);
 			break;
 		}
+#endif
 		break;
 #endif
 #if (LOAD_FS_USB==1)

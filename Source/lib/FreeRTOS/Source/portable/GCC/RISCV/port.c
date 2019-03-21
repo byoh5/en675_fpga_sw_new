@@ -256,6 +256,7 @@ void vMemoryHeapInit(void)
 	0xa0000 bytes starting from address 0x90000000.  The block starting at
 	0x80000000 has the lower start address so appears in the array fist. */
 
+#if 0
 	register long t0 asm("t0") = 0;
 	register long t1 asm("t1") = 0;
 	asm("la t0, _heap_start");
@@ -270,7 +271,12 @@ void vMemoryHeapInit(void)
 	    { ( uint8_t * ) t0, t1 - t0 },
 	    { NULL, 0 } /* Terminates the array. */
 	};
-
+#else
+	const HeapRegion_t xHeapRegions[] = {
+		    { ( uint8_t * ) 0x80100000UL, 0x100000 },
+		    { NULL, 0 } /* Terminates the array. */
+		};
+#endif
 	uiTotalHeapMemorySize = 0;
 	int len = sizeof(xHeapRegions) / sizeof(xHeapRegions[0]);
 	for (int i = 0; i < len; i++) {
@@ -312,12 +318,16 @@ void vMemoryHeapInfoPrint(void)
 
 void vTaskInfoPrint(void)
 {
-#define TaskStatusCount 40
+//#define TaskStatusCount 40
 	uint32_t uiTotal = 0;
 	UBaseType_t uxTask = 0;
-	TaskStatus_t etiList[TaskStatusCount];
+	//TaskStatus_t etiList[TaskStatusCount];
+	TaskStatus_t *etiList;
+	UBaseType_t TaskStatusCount = uxTaskGetNumberOfTasks();
+	etiList = pvPortCalloc(sizeof(TaskStatus_t), TaskStatusCount);
 
-	memset(etiList, 0, sizeof(etiList));
+//	memset(etiList, 0, sizeof(etiList));
+//	printf("TaskStatus: %u\n", sizeof(etiList));
 	uxTask = uxTaskGetSystemState(etiList, TaskStatusCount, &uiTotal);
 
 	_printf("---------------------------------Task List(%02d)----------------------------------\n", uxTask);
@@ -338,6 +348,8 @@ void vTaskInfoPrint(void)
 	}
 	_printf("--------------------------------------------------------------------------------\n");
 	_printf("-State(0:Run 1:Ready 2:Blocked 4:Deleted 3:Suspended) TotalRunTime(%10lu)--\n", uiTotal);
+
+	vPortFree(etiList);
 }
 /*-----------------------------------------------------------*/
 
@@ -345,7 +357,7 @@ void vTaskInfoPrint(void)
 TaskHandle_t vTaskCreate(const char *name, TaskFunction_t thread, void *arg, int stacksize, int prio)
 {
 	TaskHandle_t objTask;
-	int result = xTaskCreate(thread, (const char * const)name, stacksize/4, arg, prio, &objTask);
+	int result = xTaskCreate(thread, (const char * const)name, stacksize/sizeof(StackType_t), arg, prio, &objTask);
 	if (result == pdPASS) {
 		_printf("vTaskCreate : pass : %s(%x) -size(%d)\n", name, objTask, stacksize);
 		return objTask;

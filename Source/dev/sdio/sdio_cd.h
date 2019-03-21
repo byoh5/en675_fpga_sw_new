@@ -1,6 +1,65 @@
 #ifndef _SDIO_CD_H_
 #define	_SDIO_CD_H_
 
+#if defined(__USE_SDIOCD__)
+/* Standard SD commands (4.0)               type | argument               | response */
+
+/* Class 0 - Basic Commands */
+#define SDCMD_GO_IDLE_STATE            0 /* bc   |                             | -   */
+#define SDCMD_ALL_SEND_CID             2 /* bcr  |                             | R2  */
+#define SDCMD_SEND_RELATIVE_ADDR       3 /* bcr  |                             | R6  */
+#define SDCMD_SET_DSR                  4 /* bc   | [31:16] DSR                 | -   */
+#define SDCMD_SELECT_CARD              7 /* ac   | [31:16] RCA                 | R1b */
+#define SDCMD_SEND_IF_COND             8 /* bcr  | [11: 8] VHS [ 7: 0] Check Pattern | R7  */
+#define SDCMD_SEND_CSD                 9 /* ac   | [31:16] RCA                 | R2  */
+#define SDCMD_SEND_CID                10 /* ac   | [31:16] RCA                 | R2  */
+#define SDCMD_VOLTAGE_SWITCH          11 /* ac   | [31: 0] 0                   | R1  */
+#define SDCMD_STOP_TRANSMISSION       12 /* ac   |                             | R1b */
+#define SDCMD_SEND_STATUS             13 /* ac   | [31:16] RCA                 | R1  */
+#define SDCMD_GO_INACTIVE_STATE       15 /* ac   | [31:16] RCA                 | -   */
+
+/* Class 2 - Block-Oriented Read Commands */
+#define SDCMD_SET_BLOCKLEN            16 /* ac   | [31: 0] Block Length        | R1  */
+#define SDCMD_READ_SINGLE_BLOCK       17 /* adtc | [31: 0] Data Address        | R1  */
+#define SDCMD_READ_MULTIPLE_BLOCK     18 /* adtc | [31: 0] Data Address        | R1  */
+#define SDCMD_SEND_TUNING_BLOCK       19 /* adtc | [31: 0] 0                   | R1  */
+#define SDCMD_SPEED_CLASS_CONTROL     20 /* ac   | [31:28] SCC [27: 0] 0       | R1  */
+#define SDCMD_SET_BLOCK_COUNT         23 /* ac   | [31: 0] Block Count         | R1  */
+
+/* Class 4 - Block-Oriented Write Commands */
+#define SDCMD_WRITE_BLOCK             24 /* adtc | [31: 0] Data Address        | R1  */
+#define SDCMD_WRITE_MULTIPLE_BLOCK    25 /* adtc | [31: 0] Data Address        | R1  */
+#define SDCMD_PROGRAM_CSD             27 /* adtc |                             | R1  */
+
+/* Class 5 - Erase Commands */
+#define SDCMD_ERASE_WR_BLK_START      32 /* ac   | [31: 0] Data Address        | R1  */
+#define SDCMD_ERASE_WR_BLK_END        33 /* ac   | [31: 0] Data Address        | R1  */
+#define SDCMD_ERASE                   38 /* ac   |                             | R1b */
+
+/* Class 6 - Block-Oriented Write Protection Commands */
+#define SDCMD_SET_WRITE_PROT          28 /* ac   | [31: 0] Data Address        | R1b */
+#define SDCMD_CLR_WRITE_PROT          29 /* ac   | [31: 0] Data Address        | R1b */
+#define SDCMD_SEND_WRITE_PROT         30 /* adtc | [31: 0] WPData Address      | R1  */
+
+/* Class 7 - Lock Card */
+#define SDCMD_LOCK_UNLOCK             42 /* adtc | [31: 0] 0                   | R1  */
+
+/* Class 8 - Application-Specific Commands */
+#define SDCMD_APP_CMD                 55 /* ac   | [31:16] RCA                 | R1  */
+#define SDCMD_GEN_CMD                 56 /* adtc | [ 0] RD/WR                  | R1  */
+
+/* Class 10 - Switch Function Commands */
+#define SDCMD_SWITCH_FUNC              6 /* adtc | [31] mode [15:12] G4 [11: 8] G3 [ 7: 4] G2 [ 3: 0] G1 | R1  */
+
+/* Application Specific Commands */
+#define SDCMD_SET_BUS_WIDTH            6 /* ac   | [ 1: 0] Bus Width           | R1  */
+#define SDCMD_SD_STATUS               13 /* adtc |                             | R1  */
+#define SDCMD_SEND_NUM_WR_BLOCKS      22 /* adtc |                             | R1  */
+#define SDCMD_SET_WR_BLK_ERASE_COUNT  23 /* ac   | [22: 0] Number of Blocks    | R1  */
+#define SDCMD_SD_SEND_OP_COND         41 /* ac   | [30] HCS [28] XPC [24] S18R [23: 0] Vdd Voltage Window | R3  */
+#define SDCMD_SET_CLR_CARD_DETECT     42 /* ac   | [ 0] Set_CD                 | R1  */
+#define SDCMD_SEND_SCR                51 /* adtc |                             | R1  */
+
 enum {
 	SD_SPEED_CLASS0,
 	SD_SPEED_CLASS2,
@@ -39,6 +98,7 @@ typedef ATTR_BIGENDIAN ATTR_MALIGN16 struct {
 	uint32 _res13;
 	uint32 _res14;
 	uint32 _res15;
+//	uint32 _res112[112];
 } ATTR_PACKED SD_SSR;
 
 typedef ATTR_BIGENDIAN ATTR_MALIGN16 struct {
@@ -52,6 +112,7 @@ typedef ATTR_BIGENDIAN ATTR_MALIGN16 struct {
 	uint32 _res1						:9;
 	uint32 CMD_SUPPORT					:2;
 	uint32 _res2;
+//	uint32 _res112[112+14];
 } ATTR_PACKED SD_SCRreg;
 
 typedef ATTR_BIGENDIAN ATTR_MALIGN16 struct {
@@ -84,10 +145,12 @@ typedef ATTR_BIGENDIAN ATTR_MALIGN16 struct {
 	uint32 _res6;
 	uint32 _res7;
 	uint32 _res8;
+//	uint32 _res112[112];
 } ATTR_PACKED SD_SFS;
 
 typedef ATTR_BIGENDIAN ATTR_MALIGN16 struct {
 	uint8 Tuning[64];
+//	uint32 _res112[112];
 } ATTR_PACKED SD_Tuning;
 
 typedef ATTR_MALIGN16 struct { BF_28(
@@ -254,16 +317,18 @@ typedef ATTR_MALIGN16 struct {
 	UINT nVoltageMode;
 	UINT nSetClock;
 
+	UINT rca;
 	SD_OCR ocr;
 	SD_CID cid;
 	SD_CSD csd;
-	UINT rca;
-	SD_SCRreg scr;
-	//UINT t1[6];
-	SD_SSR ssr;
 	SD_SC sc;
-	SD_SFS sfs;
-	SD_Tuning stuning;
-} SDIO_SD;
 
+	SD_SCRreg scr; // 8byte
+	ULONG t1[7];
+	SD_SSR ssr; // 64byte
+	SD_SFS sfs; // 64byte
+	SD_Tuning stuning; // 64byte
+	//ULONG t2[8];
+} SDIO_SD;
+#endif // __USE_SD__
 #endif // _SDIO_CD_H_

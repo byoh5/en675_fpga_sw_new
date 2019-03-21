@@ -292,6 +292,7 @@ init_next:
 
   #la sp, stacks + RISCV_PGSIZE - MENTRY_FRAME_SIZE + 0x2D140
   li sp, 0xA003C000
+  #li sp, 0xA0040000
   csrr a0, mhartid
   slli a2, a0, RISCV_PGSHIFT
   add sp, sp, a2

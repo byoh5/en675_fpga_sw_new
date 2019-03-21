@@ -12,6 +12,8 @@ SET ( CORE1_HDRS
 	task/shell/shell_cmd_common.h
 	task/shell/shell_cmd_fs.h
 	task/shell/shell_cmd_sdio.h
+	task/shell/shell_cmd_mem.h
+	task/shell/shell_cmd_eth.h
 	task/ledblink/ledblink.h
 	task/sdcard/sdcard.h
 )
@@ -24,6 +26,8 @@ SET ( CORE1_SRCS
 	task/shell/shell_cmd_common.c
 	task/shell/shell_cmd_fs.c
 	task/shell/shell_cmd_sdio.c
+	task/shell/shell_cmd_mem.c
+	task/shell/shell_cmd_eth.c
 	task/ledblink/ledblink.c
 	task/sdcard/sdcard.c
 )

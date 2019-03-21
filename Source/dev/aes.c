@@ -15,8 +15,8 @@ void AesInit(void)
 
 void Aes128Enc(BYTE *apbDst, BYTE *apbSrc, UINT len)
 {
-	AES_SRC = (UINT)apbSrc;
-	AES_DST = (UINT)apbDst;
+	AES_SRC = (intptr_t)apbSrc;
+	AES_DST = (intptr_t)apbDst;
 	AES_LEN = len;
 	AES_IRQ_EN = 1;
 	AES_KEY_LEN = 0;
@@ -27,8 +27,8 @@ void Aes128Enc(BYTE *apbDst, BYTE *apbSrc, UINT len)
 
 void Aes128Dec(BYTE *apbDst, BYTE *apbSrc, UINT len)
 {
-	AES_SRC = (UINT)apbSrc;
-	AES_DST = (UINT)apbDst;
+	AES_SRC = (intptr_t)apbSrc;
+	AES_DST = (intptr_t)apbDst;
 	AES_LEN = len;
 	AES_IRQ_EN = 1;
 	AES_KEY_LEN = 0;
@@ -39,8 +39,8 @@ void Aes128Dec(BYTE *apbDst, BYTE *apbSrc, UINT len)
 
 void Aes256Enc(BYTE *apbDst, BYTE *apbSrc, UINT len)
 {
-	AES_SRC = (UINT)apbSrc;
-	AES_DST = (UINT)apbDst;
+	AES_SRC = (intptr_t)apbSrc;
+	AES_DST = (intptr_t)apbDst;
 	AES_LEN = len;
 	AES_IRQ_EN = 1;
 	AES_KEY_LEN = 1;
@@ -51,8 +51,8 @@ void Aes256Enc(BYTE *apbDst, BYTE *apbSrc, UINT len)
 
 void Aes256Dec(BYTE *apbDst, BYTE *apbSrc, UINT len)
 {
-	AES_SRC = (UINT)apbSrc;
-	AES_DST = (UINT)apbDst;
+	AES_SRC = (intptr_t)apbSrc;
+	AES_DST = (intptr_t)apbDst;
 	AES_LEN = len;
 	AES_IRQ_EN = 1;
 	AES_KEY_LEN = 1;

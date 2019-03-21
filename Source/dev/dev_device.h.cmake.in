@@ -69,11 +69,11 @@
 #endif // __USE_LED2__
 
 #if ${USE_SD}
-#define __USE_SD__
+#define __USE_SDIOCD__
 #define SD_GPIO_RST	${USE_SD_RST}
 #define SD_GPIO_IRQ	${USE_SD_IRQ}
 #define SD_SDIO_CH	${USE_SD_SDIO}
-#endif // __USE_SD__
+#endif // __USE_SDIOCD__
 
 #if ${USE_WF}
 #define __USE_WF__
@@ -84,7 +84,6 @@
 
 #if ${USE_FIESYSTEM}
 #define __FILESYSTEM__
-
 #if ${USE_FS_FLS}
 #define LOAD_FS_FLS 1
 #else

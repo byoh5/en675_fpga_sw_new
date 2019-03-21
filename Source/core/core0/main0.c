@@ -30,11 +30,10 @@ void test_freertos(void)
 	vMemoryHeapInit();
 
 	vTaskCreate("shell", ShellTask, NULL, 4096, 3);
-	vTaskCreate("ledblink", LedblinkTask, NULL, 1024, 3);
-#ifdef __USE_SD__
-	vTaskCreate("sdcard", SdcardTask, NULL, 4096, 3);
+	vTaskCreate("ledblink", LedblinkTask, NULL, 2048, 5);
+#ifdef __FS_SDCARD__
+	vTaskCreate("sdcard", SdcardTask, NULL, 8192, 3);
 #endif
-
 
 	vTaskStartScheduler();
 }
@@ -42,7 +41,6 @@ void test_freertos(void)
 
 void enx_peri_init(void)
 {
-	GpioInit();
 #if USE_UART0
 	UartInit(0, UART0_SPEED);
 #endif
@@ -70,33 +68,51 @@ void enx_peri_init(void)
 #if USE_UART8
 	UartInit(8, UART8_SPEED);
 #endif
+
+	BDmaInit();
+	CDmaInit();
+	DdrInit();
+	hwflush_dcache_range(DDR_BASE, 16*1024);
+	BDmaMemSet_isr(0, (BYTE *)DDR_BASE, 0x00, DDR_SIZE);
+	hwflush_dcache_range(DDR_BASE, 16*1024);
+
 #if USE_I2C0
 	I2cInit(0, I2C0_SPEED);
+//	I2cChCheck(0);
 #endif
 #if USE_I2C1
 	I2cInit(1, I2C1_SPEED);
+//	I2cChCheck(1);
 #endif
 #if USE_I2C2
 	I2cInit(2, I2C2_SPEED);
+//	I2cChCheck(2);
 #endif
 #if USE_I2C3
 	I2cInit(3, I2C3_SPEED);
+//	I2cChCheck(3);
 #endif
 #if USE_I2C4
 	I2cInit(4, I2C4_SPEED);
+//	I2cChCheck(4);
 #endif
 #if USE_I2C5
 	I2cInit(5, I2C5_SPEED);
+//	I2cChCheck(5);
 #endif
 #if USE_I2C6
 	I2cInit(6, I2C6_SPEED);
+//	I2cChCheck(6);
 #endif
 #if USE_I2C7
 	I2cInit(7, I2C7_SPEED);
+//	I2cChCheck(7);
 #endif
 #if USE_I2C8
 	I2cInit(8, I2C8_SPEED);
+//	I2cChCheck(8);
 #endif
+
 #if USE_SPI0
 	SpiInit(0, SPI0_SPEED, 0, 0);
 #endif
@@ -130,25 +146,16 @@ void enx_peri_init(void)
 #if USE_SDIO1
 	SdioInit(1, SDIO1_SPEED);
 #endif
+
+	GpioInit();
+
 	//UartRxIrqCallback(7, Uart7RxIrqTest, NULL);
 	//UartRxIrqOn(7);
-	BDmaInit();
-	CDmaInit();
+
 }
 
 void enx_device_init(void)
 {
-#if 0
-	for (int i=0;i<256;i++) {
-		UINT a = I2cCheck(7, i);
-		if (a == DEF_OK) {
-			printf("[%X]");
-		} else {
-			printf(".");
-		}
-	}
-#endif
-
 #ifdef __USE_LED0__
 	GpioOutDir(GPIO_LED0);
 #endif
@@ -163,15 +170,14 @@ void enx_device_init(void)
 
 #ifdef __ETHERNET__
 	EthInit();
-	EthphyInit(ETHPHY_MDIO_ADR);
 #endif
 
 #ifdef __RTC_LOAD__
 	rtc_init();
 #endif
-	set_devicetime(TimeZone_GMT, 2019, 2, 25, 10, 0, 0);
+	set_devicetime(TimeZone_GMT, 2019, 3, 20, 10, 0, 0);
 
-#ifdef __USE_SD__
+#ifdef __FS_SDCARD__
 	GpioInDir(SD_GPIO_RST);
 	GpioInDir(SD_GPIO_IRQ);
 	SdioCdInit(SD_SDIO_CH);
@@ -189,83 +195,28 @@ void main_0(int cpu_id)
 	*mtime = 0; // timer init
 
 	enx_peri_init();
-	printf("Start EN675\n");
-#if 0
-	TEST_A a;
-	TEST_B b;
-	a.a = 0x1;		a.b = 0x234;		a.c = 0x56;		a.d = 0x78;
-	b.a = 0x1;		b.b = 0x234;		b.c = 0x56;		b.d = 0x78;
-	printf("Sizeof (%d / %d)\n", sizeof(a), sizeof(b));
-	printf("addr A: 0x%08X\n", a.test);
-	printf("addr B: 0x%08X\n", b.test);
-#endif
-#if 0
-	UINT k[4] = {0x11223344, 0x55667788, 0x99aabbcc, 0xddeeff00};
-	UINT j[4] = {0};
 
-	hwflush_dcache_range((UINT)j, ((UINT)j)+16);
-	DmaMemCpy_isr(0, j, k, 16);
-	hwflush_dcache_range((UINT)j, ((UINT)j)+16);
-
-	printf("j: %X %X %X %X\n", j[0], j[1], j[2], j[3]);
-#endif
-#if 0
-	uint64_t a = 100;
-	uint64_t b = 50;
-	uint64_t c = a+b;
-	printf("%d,%d\n", a-b, c);
-#endif
+	printf("Start EN675 - %u\n");
 #if 0
 	float a = 3.2f;
 	float b = 1.2f;
 	printf("%d\n", (int)(a/b));
-#endif
-#if 0
-	// 80 00 00 00 05 00 00 00
-	// 04 00 90 00 00 01 1b 00  ................
-	v test_v;
-	test_v.value[0] = 0x8000000005000000;
-	test_v.value[1] = 0x0400900000011b00;
-	hexDump("V", &test_v, 16);
-
-	printf("=======================================\n");
-	int ss, ee;
-	UINT *un32getData = &test_v;
-	ss = 127;
-	ee = 96;
-	for (int k = 0; k < 4; k++) {
-		printf("DATA[%3d:%3d] %u(0x%08X)\n", ss, ee, un32getData[k], un32getData[k]);
-		ss -= 32;
-		ee -= 32;
-	}
-	printf("=======================================\n");
-	ss = 127; ee = 128;
-	BYTE *un8getData = &test_v;
-	for (int k = 0; k < 8; k++) {
-		printf("DATA[%3d:%3d] %u(0x%02X)\n", ss, ee, un8getData[k], un8getData[k]);
-		ss -= 8;
-		ee -= 8;
-	}
-	printf("=======================================\n");
-	test_v_printf(&test_v);
-	printf("END====================================\n");
-	while(1);
 #endif
 	enx_externalirq_init();
 	//enx_timerirq_init();
 
 	enx_device_init();
 
-//	DdrInit();
-//	DdrTest();
+	//DdrTest();
 
 	g_key = 0xA; // CPU0 Ready!
 
 	printf("Init Device\n");
 
+#if 1
 	test_freertos();
-
-#if 0
+#else
+	enx_timerirq_init();
 	int k = 0;
 	while (1) {
 		//IrqStatus();

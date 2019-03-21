@@ -108,7 +108,6 @@ init_end:
 void SdcardTask(void *pvParameters)
 {
 	vTaskDelay(2000); // Log 겹치기 방지용
-
 	while (1) {
 		UINT SDDet = SdioCdDet();
 		if (SDDet == 0) { // SD card IN
@@ -143,7 +142,7 @@ void SdcardTask(void *pvParameters)
 				cnt = 0;
 			}
 		}
-		vTaskDelay(200);
+		vTaskDelay(5);
 	}
 	UNUSED(pvParameters);
 }
@@ -180,6 +179,10 @@ void getSDGBSizeU(UINT *buf)
 		*buf = 128;// 128GB
 	} else if (nSDSize <= 256) {
 		*buf = 256;// 256GB
+	} else if (nSDSize <= 512) {
+		*buf = 512;// 512GB
+	} else if (nSDSize <= 1024) {
+		*buf = 1024;// 1024GB
 	} else {
 		*buf = 0;
 		printf("Size Check Error(%dGB?)\n", nSDSize);

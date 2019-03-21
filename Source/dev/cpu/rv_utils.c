@@ -30,8 +30,9 @@ extern void hwflush_dcache_line(uint);
 
 //------------------------------------------------------------------------------
 //
-void hwflush_dcache_range(uint sadr, uint eadr)
+void hwflush_dcache_range(ulong sadr, ulong size)
 {
+	ulong eadr = sadr + size;
 	sadr = ((sadr >> DC_BBITS) << DC_BBITS);
 	while (sadr < eadr) {
 		hwflush_dcache_line(sadr);
@@ -41,40 +42,40 @@ void hwflush_dcache_range(uint sadr, uint eadr)
 
 //------------------------------------------------------------------------------
 //
-void dmwrite8(uint adr, uchar wdat)
+void dmwrite8(ulong adr, uchar wdat)
 {
 	asm volatile("fence rw,rw");									// to finish prev read/write
-	volatile uchar* wadr = (uchar*)adr;						// write to DC
+	volatile uchar* wadr = (volatile uchar*)adr;						// write to DC
 	*wadr = wdat;                             		
 	                                          		
 	//swflush_dcache_line(adr);										// sw flush DC to write to memory
 	hwflush_dcache_line(adr);											// hw flush DC to write to memory
 }
 
-void dmwrite16(uint adr, ushort wdat)
+void dmwrite16(ulong adr, ushort wdat)
 {
 	asm volatile("fence rw,rw");
-	volatile ushort* wadr = (ushort*)adr;	
+	volatile ushort* wadr = (volatile ushort*)adr;
 	*wadr = wdat;
 	
 	//swflush_dcache_line(adr);										// sw flush DC to write to memory
 	hwflush_dcache_line(adr);											// hw flush DC to write to memory
 }
 
-void dmwrite32(uint adr, uint wdat)
+void dmwrite32(ulong adr, uint wdat)
 {
 	asm volatile("fence rw,rw");
-	volatile uint* wadr = (uint*)adr;	
+	volatile uint* wadr = (volatile uint*)adr;
 	*wadr = wdat;
 	
 	//swflush_dcache_line(adr);										// sw flush DC to write to memory
 	hwflush_dcache_line(adr);											// hw flush DC to write to memory
 }
 
-void dmwrite64(uint adr, ulong wdat)
+void dmwrite64(ulong adr, ulong wdat)
 {
 	asm volatile("fence rw,rw");
-	volatile ulong* wadr = (ulong*)adr;	
+	volatile ulong* wadr = (volatile ulong*)adr;
 	*wadr = wdat;
 	
 	//swflush_dcache_line(adr);										// sw flush DC to write to memory
@@ -83,43 +84,43 @@ void dmwrite64(uint adr, ulong wdat)
 
 //------------------------------------------------------------------------------
 //
-uchar dmread8(uint adr)
+uchar dmread8(ulong adr)
 {
 	//swflush_dcache_line(adr);										// sw flush DC to write to memory
 	hwflush_dcache_line(adr);											// hw flush DC to write to memory
                                           			
 	asm volatile("fence rw,rw");            			
-	volatile uchar* radr = (uchar*)adr;						// read from memory 
+	volatile uchar* radr = (volatile uchar*)adr;						// read from memory
 	return *radr;	
 }
 
-ushort dmread16(uint adr)
+ushort dmread16(ulong adr)
 {
 	//swflush_dcache_line(adr);										// sw flush DC to write to memory
 	hwflush_dcache_line(adr);											// hw flush DC to write to memory
 
 	asm volatile("fence rw,rw");
-	volatile ushort* radr = (ushort*)adr;	
+	volatile ushort* radr = (volatile ushort*)adr;
 	return *radr;	
 }
 
-uint dmread32(uint adr)
+uint dmread32(ulong adr)
 {
 	//swflush_dcache_line(adr);										// sw flush DC to write to memory
 	hwflush_dcache_line(adr);											// hw flush DC to write to memory
 
 	asm volatile("fence rw,rw");
-	volatile uint* radr = (uint*)adr;	
+	volatile uint* radr = (volatile uint*)adr;
 	return *radr;	
 }
 
-ulong dmread64(uint adr)
+ulong dmread64(ulong adr)
 {
 	//swflush_dcache_line(adr);										// sw flush DC to write to memory
 	hwflush_dcache_line(adr);											// hw flush DC to write to memory
 
 	asm volatile("fence rw,rw");
-	volatile ulong* radr = (ulong*)adr;	
+	volatile ulong* radr = (volatile ulong*)adr;
 	return *radr;	
 }
 

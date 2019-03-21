@@ -160,6 +160,7 @@
 .macro popREGFILE
 	/* Restore registers,
 	Skip global pointer because that does not change */
+
 	LOAD	x1,   1 * REGBYTES(sp)
 #	LOAD	x2,   2 * REGBYTES(sp)
 #	LOAD	x3,   3 * REGBYTES(sp)

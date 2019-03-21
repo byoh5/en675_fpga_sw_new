@@ -5,12 +5,11 @@
 코드 구성
 ---------
 
-FPGA ver 19.03.06 입니다.
-이 코드는 Flash와 DDR이 없는 환경에서 테스트 되었습니다. SRAM에서 작동중입니다.
+FPGA ver 19.03.20 입니다.
+이 코드는 Flash이 없는 환경에서 테스트 되었습니다. Source Code는 SRAM에서 작동중입니다.
 CPU0, 1, 2, 3은 source/core폴더에서 core0, core1, core2, core3의 main_.c 파일을 root로 합니다.
-CPU1의 FreeRTOS는 DDR 구성이 된 후 업데이트 예정입니다.
-스택 배정문제로 현재 오작동의 여지가 있습니다.
-CPU0은 FPGA 보드의 LED점멸(GPIO55)과 UART7의 출력(USB동글의 UART0과 연결)으로 작동하고 있습니다.
+CPU0에서 임시로 freeRTOS가 작동중입니다. DDR 0x80100000 ~ 0x80200000 영역을 Memory Heap 영역으로 사용합니다.
+만약 freeRTOS를 사용하지 않는다면 main_0의 #if 1 ~ #else ~ #endif 부분을 찾아 수정하시면 됩니다.
 
 
 이클립스 구성

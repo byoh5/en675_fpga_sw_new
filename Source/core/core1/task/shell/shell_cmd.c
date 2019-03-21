@@ -14,6 +14,8 @@
 #include "shell_cmd_common.h"
 #include "shell_cmd_fs.h"
 #include "shell_cmd_sdio.h"
+#include "shell_cmd_eth.h"
+#include "shell_cmd_mem.h"
 #include "string.h"
 
 //*************************************************************************************************
@@ -40,6 +42,7 @@ extern int cmd_mem_ststus(int argc, char *argv[]);
 
 // Test
 extern int cmd_test_sysreg(int argc, char *argv[]);
+extern int cmd_test_dump(int argc, char *argv[]);
 
 const char *sHelpDisp[]	    = {"Shell command list (! : Repeat command)",        (char*)0};
 const char *sUsrCmd_a[]     = {":",                                              (char*)0};
@@ -59,6 +62,8 @@ const char *sReboot[]       = {"system reboot",                                 
 const char *sTaskStatus[]   = {"show freeRTOS task status",                      (char*)0};
 const char *sMemStatus[]    = {"show memory status",                             (char*)0};
 const char *sSysreg[]       = {"Test(System Reg)",                               (char*)0};
+const char *sDump[]         = {"Test(Dump)",                                     (char*)0};
+const char *sCDump[]        = {"Test(hwflush_dcache_range & Dump)",              (char*)0};
 
 tMonCmd gCmdList[] =
 {
@@ -113,9 +118,16 @@ tMonCmd gCmdList[] =
 #endif
 
 //TEST
+	{"dump",		cmd_test_dump,		sDump			},
+	{"cdump",		cmd_test_dump,		sCDump			},
 	{"sysreg",		cmd_test_sysreg,	sSysreg			},
-	{"sd",			cmd_test_sdio,		sSdioTest		},
-//	{"dma",			cmd_test_dma,		sDmaTest		},
+#if defined(__USE_SDIOCD__)
+	{"tsd",			cmd_test_sdio,		sSdioTest		},
+#endif
+	{"tmem",		cmd_test_memory,	sMemoryTest		},
+	{"tdma",		cmd_test_dma,		sDmaTest		},
+	{"teth",		cmd_test_eth,		sEthTest		},
+	{"tmdio",		cmd_test_ethphyreg, sEthphyRegTest	},
 
 	{0,				0,					0				}
 };
@@ -325,153 +337,14 @@ int UsrCmd_g(int argc, char *argv[])
 
 int UsrCmd_h(int argc, char *argv[])
 {
-	if (argc == 2) {
-		UINT test_size = atoi(argv[1]);
-		if (test_size == 0) {
-			printf("test size error\n");
-			return 0;
-		}
-		printf("DMA TEST(%dbyte)\n", test_size);
-
-		BYTE *dataA = pvPortCalloc(test_size, 1);
-		if (dataA == NULL) {
-			printf("malloc error A\n");
-			return 0;
-		} else {
-			printf("malloc A(0x%08X)\n", dataA);
-		}
-		BYTE *dataB = pvPortCalloc(test_size, 1);
-		if (dataB == NULL) {
-			printf("malloc error B\n");
-			return 0;
-		} else {
-			printf("malloc B(0x%08X)\n", dataB);
-		}
-
-		for (ULONG i = 0; i < test_size; i++) {
-			dataA[i] = i;
-		}
-
-		printf("malloc A address(0x%08X)\n", dataA);
-		printf("malloc B address(0x%08X)\n", dataB);
-
-		printf("dma copy start\n");
-		//hwflush_dcache_range(dataB, dataB+test_size);
-
-		hexDump("A", dataA, test_size);
-		hexDump("B", dataB, test_size);
-
-		CDmaMemCpy_isr(0, dataB, dataA, test_size);
-		//hwflush_dcache_range(dataB, dataB+test_size);
-		printf("dma copy end\n");
-
-		hexDump("A", dataA, test_size);
-		hexDump("B", dataB, test_size);
-
-		vPortFree(dataA);
-		vPortFree(dataB);
-		printf("free ok\n");
-	}
+	int *a = malloc(64);
 	return 0;
 	UNUSED(argc);
 	UNUSED(argv);
 }
 
-#define MALIGN16 __attribute__((__aligned__(16)))
-MALIGN16 char SRAMDST2[64] = {0};
-
 int UsrCmd_i(int argc, char *argv[])
 {
-	char *SRAMDST2;
-	char *SRAMSRC2;
-
-	int shift = 0;
-	while(1) {
-		// C DMA TEST//////////////////////////////////////////////////////////////////////////////////////////////////////////
-		_printf("\n----------------------------------CPU DMA TEST----------------------------------\n");
-		SRAMSRC2 = SRAM_BASE+(shift++);
-		//SRAMDST2 = pvPortCalloc(16, 1);
-		memset(SRAMDST2, 0, 16);
-
-		_printf("SRAMSRC2 %x\n",SRAMSRC2);
-		_printf("SRAMSRC2 DEFAULT : ");
-		for(int i = 0; i<0x10; i++) {
-			/**(SRAMSRC2+i) = i; */
-			_printf("%02X ", *(SRAMSRC2+i));
-		}
-		_printf("\n\n");
-		_printf("SRAMDST2 %x\n",SRAMDST2);
-		_printf("SRAMDST2 DEFAULT : ");
-		for(int i = 0; i<0x10; i++) {
-			_printf("%02X ", *(SRAMDST2+i));
-		}
-		_printf("\n\n");
-
-		CDmaMemCpy_isr(0, SRAMDST2, SRAMSRC2, 0x10);
-
-		_printf("\nSRAMDST2 after DMA C : ");
-		for(int i = 0; i<0x10; i++) {
-			_printf("%02X ", *(SRAMDST2+i));
-		}
-		_printf("\n");
-		for(int i=0; i<0x10;i++) {
-			if(*(SRAMDST2+i) != *(SRAMSRC2+i)) {
-				_printf("After DMA C SRAMSRC2 %x SRAMDST2 %x Failed Unmatched %dth %x %x!!!!!\n", SRAMSRC2, SRAMDST2, i,*(SRAMSRC2+i), *(SRAMDST2+i));
-				while(1);
-			}
-		}
-		vPortFree(SRAMDST2);
-		_printf("\n----------------------------------CPU DMA PASS----------------------------------\n");
-
-		// B DMA TEST//////////////////////////////////////////////////////////////////////////////////////////////////////////
-		_printf("\n----------------------------------BUS DMA TEST----------------------------------\n");
-		SRAMSRC2 = SRAM_BASE+(shift++);
-		//SRAMDST2 = pvPortCalloc(16, 1);
-		memset(SRAMDST2, 0, 16);
-
-		_printf("SRAMSRC2 %x\n",SRAMSRC2);
-		_printf("SRAMSRC2 DEFAULT : ");
-		for(int i = 0; i<0x10; i++) {
-			/**(SRAMSRC2+i) = i; */
-			_printf("%02X ", *(SRAMSRC2+i));
-		}
-		_printf("\n\n");
-		_printf("SRAMDST2 %x\n",SRAMDST2);
-		_printf("SRAMDST2 DEFAULT : ");
-		for(int i = 0; i<0x10; i++) {
-			_printf("%02X ", *(SRAMDST2+i));
-		}
-		_printf("\n\n");
-
-		BDmaMemCpy_isr(0, SRAMDST2, SRAMSRC2, 0x10);
-
-		_printf("\nSRAMDST2 after DMA B : ");
-		for(int i = 0; i<0x10; i++) {
-			_printf("%02X ", *(SRAMDST2+i));
-		}
-		_printf("\n");
-
-		//destination invalidate
-		hwflush_dcache_range(SRAMDST2, SRAMDST2+0x10);
-		_printf("SRAMDST2 after Flush : "); for(int i = 0; i<0x10; i++) {
-			_printf("%02X ", *(SRAMDST2+i));
-		}
-		_printf("\n\n");
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		for(int i=0; i<0x10;i++) {
-			if(*(SRAMDST2+i) != *(SRAMSRC2+i)) {
-				_printf("After DMA B SRAMSRC2 %x SRAMDST2 %x Failed Unmatched %dth %x %x!!!!!\n", SRAMSRC2, SRAMDST2, i,*(SRAMSRC2+i), *(SRAMDST2+i));
-				while(1);
-			}
-		}
-
-		_printf("\n----------------------------------BUS DMA PASS----------------------------------\n");
-
-		vPortFree(SRAMDST2);
-
-		if(shift > 0x1000) break;
-    }
-
 	return 0;
 	UNUSED(argc);
 	UNUSED(argv);
@@ -546,9 +419,102 @@ int cmd_perl_check(int argc, char *argv[])
 	UNUSED(argc);
 	UNUSED(argv);
 }
+const char * const gpio_mux_name[][4] = {
+	{"GPIO00", "PWM00", "SPI0_CS",   "UART0_RX"},
+	{"GPIO01", "PWM01", "SPI0_MISO", "UART0_TX"},
+	{"GPIO02", "PWM02", "SPI0_MOSI", "I2C0_SDA"},
+	{"GPIO03", "PWM03", "SPI0_SCK",  "I2C0_SCL"},
+	{"GPIO04", "PWM04", "UART0_RX",  "SPI0_CS"},
+	{"GPIO05", "PWM05", "UART0_TX",  "SPI0_MISO"},
+	{"GPIO06", "PWM06", "I2C0_SDA",  "SPI0_MOSI"},
+	{"GPIO07", "PWM07", "I2C0_SCL",  "SPI0_SCK"},
+
+	{"GPIO08", "PWM08", "SPI1_CS",   "UART1_RX"},
+	{"GPIO09", "PWM09", "SPI1_MISO", "UART1_TX"},
+	{"GPIO10", "PWM10", "SPI1_MOSI", "I2C1_SDA"},
+	{"GPIO11", "PWM11", "SPI1_SCK",  "I2C1_SCL"},
+	{"GPIO12", "PWM12", "UART1_RX",  "SPI1_CS"},
+	{"GPIO13", "PWM13", "UART1_TX",  "SPI1_MISO"},
+	{"GPIO14", "PWM14", "I2C1_SDA",  "SPI1_MOSI"},
+	{"GPIO15", "PWM15", "I2C1_SCL",  "SPI1_SCK"},
+
+	{"GPIO16", "I2S_WCK", "SPI2_CS",   "UART2_RX"},
+	{"GPIO17", "I2S_DIN", "SPI2_MISO", "UART2_TX"},
+	{"GPIO18", "I2S_DOUT", "SPI2_MOSI", "I2C2_SDA"},
+	{"GPIO19", "I2S_BCK", "SPI2_SCK",  "I2C2_SCL"},
+	{"GPIO20", "PWM16", "UART2_RX",  "SPI2_CS"},
+	{"GPIO21", "PWM17", "UART2_TX",  "SPI2_MISO"},
+	{"GPIO22", "PWM18", "I2C2_SDA",  "SPI2_MOSI"},
+	{"GPIO23", "PWM19", "I2C2_SCL",  "SPI2_SCK"},
+
+	{"GPIO24", "PWM20", "SPI3_CS",   "UART3_RX"},
+	{"GPIO25", "PWM21", "SPI3_MISO", "UART3_TX"},
+	{"GPIO26", "PWM22", "SPI3_MOSI", "I2C3_SDA"},
+	{"GPIO27", "PWM23", "SPI3_SCK",  "I2C3_SCL"},
+	{"GPIO28", "PWM24", "UART3_RX",  "SPI3_CS"},
+	{"GPIO29", "PWM25", "UART3_TX",  "SPI3_MISO"},
+	{"GPIO30", "PWM26", "I2C3_SDA",  "SPI3_MOSI"},
+	{"GPIO31", "PWM27", "I2C3_SCL",  "SPI3_SCK"},
+
+	{"GPIO32", "PWM28", "SPI4_CS",   "UART4_RX"},
+	{"GPIO33", "PWM29", "SPI4_MISO", "UART4_TX"},
+	{"GPIO34", "PWM30", "SPI4_MOSI", "I2C4_SDA"},
+	{"GPIO35", "PWM31", "SPI4_SCK",  "I2C4_SCL"},
+	{"GPIO36", "ETH_RXD0", "UART4_RX",  "SPI4_CS"},
+	{"GPIO37", "ETH_RXD1", "UART4_TX",  "SPI4_MISO"},
+	{"GPIO38", "ETH_RXD2", "I2C4_SDA",  "SPI4_MOSI"},
+	{"GPIO39", "ETH_RXD3", "I2C4_SCL",  "SPI4_SCK"},
+
+	{"GPIO40", "ETH_RXDV", "SPI5_CS",   "UART5_RX"},
+	{"GPIO41", "ETH_RXER", "SPI5_MISO", "UART5_TX"},
+	{"GPIO42", "ETH_COL", "SPI5_MOSI", "I2C5_SDA"},
+	{"GPIO43", "ETH_CRS", "SPI5_SCK",  "I2C5_SCL"},
+	{"GPIO44", "ETH_RCK", "UART5_RX",  "SPI5_CS"},
+	{"GPIO45", "ETH_TCK", "UART5_TX",  "SPI5_MISO"},
+	{"GPIO46", "ETH_TXD0", "I2C5_SDA",  "SPI5_MOSI"},
+	{"GPIO47", "ETH_TXD1", "I2C5_SCL",  "SPI5_SCK"},
+
+	{"GPIO48", "ETH_TXD2", "SPI6_CS",   "UART6_RX"},
+	{"GPIO49", "ETH_TXD3", "SPI6_MISO", "UART6_TX"},
+	{"GPIO50", "ETH_TXEN", "SPI6_MOSI", "I2C6_SDA"},
+	{"GPIO51", "ETH_MDC", "SPI6_SCK",  "I2C6_SCL"},
+	{"GPIO52", "ETH_MDIO", "UART6_RX",  "SPI6_CS"},
+	{"GPIO53", "PWM32", "UART6_TX",  "SPI6_MISO"},
+	{"GPIO54", "PWM33", "I2C6_SDA",  "SPI6_MOSI"},
+	{"GPIO55", "PWM34", "I2C6_SCL",  "SPI6_SCK"},
+
+	{"GPIO56", "PWM35", "SPI7_CS",   "UART7_RX"},
+	{"GPIO57", "PWM36", "SPI7_MISO", "UART7_TX"},
+	{"GPIO58", "PWM37", "SPI7_MOSI", "I2C7_SDA"},
+	{"GPIO59", "PWM38", "SPI7_SCK",  "I2C7_SCL"},
+	{"GPIO60", "ULPI_NXT", "UART7_RX",  "SPI7_CS"},
+	{"GPIO61", "ULPI_STP", "UART7_TX",  "SPI7_MISO"},
+	{"GPIO62", "ULPI_DIR", "I2C7_SDA",  "SPI7_MOSI"},
+	{"GPIO63", "ULPI_CLK", "I2C7_SCL",  "SPI7_SCK"},
+
+	{"GPIO64", "ULPI_D0", "SPI8_CS",   "UART8_RX"},
+	{"GPIO65", "ULPI_D1", "SPI8_MISO", "UART8_TX"},
+	{"GPIO66", "ULPI_D2", "SPI8_MOSI", "I2C8_SDA"},
+	{"GPIO67", "ULPI_D3", "SPI8_SCK",  "I2C8_SCL"},
+	{"GPIO68", "ULPI_D4", "UART8_RX",  "SPI8_CS"},
+	{"GPIO69", "ULPI_D5", "UART8_TX",  "SPI8_MISO"},
+	{"GPIO70", "ULPI_D6", "I2C8_SDA",  "SPI8_MOSI"},
+	{"GPIO71", "ULPI_D7", "I2C8_SCL",  "SPI8_SCK"}
+};
 
 int cmd_perl_gpio(int argc, char *argv[])
 {
+
+	if (argc == 1) {
+		printf("GPIO Status =============================================\n");
+		printf("      | IN  | OUT | OEN | DIR | IRQEN | IRQ |  Function |\n");
+		printf("======|=====|=====|=====|=====|=======|=====|===========|\n");
+		for (uint64_t i = 0; i < GPIO_CNT; i++) {
+			printf("GPIO%02u|  %u  |  %u  |  %u  |  %2u |   %u   |  %u  | %9s |\n", i,
+					GpioGetPin(i), GpioGetOut(i), GpioGetEdge(i), GpioGetDir(i), GpioGetIrqEn(i), GpioIsIrq(i), gpio_mux_name[i][GpioGetFuncPin(i)]);
+		}
+	}
+
 	return 0;
 	UNUSED(argc);
 	UNUSED(argv);
@@ -561,9 +527,18 @@ int cmd_reboot(int argc, char *argv[])
 	UNUSED(argv);
 }
 
-int cmd_task_status(int argc, char *argv[])
+void test(void)
 {
 	vTaskInfoPrint();
+}
+
+int cmd_task_status(int argc, char *argv[])
+{
+	vMemoryHeapInfoPrint();
+	vTaskInfoPrint();
+	//vMemoryHeapInfoPrint();
+	test();
+	vMemoryHeapInfoPrint();
 	return 0;
 	UNUSED(argc);
 	UNUSED(argv);
@@ -633,6 +608,31 @@ int cmd_test_sysreg(int argc, char *argv[])
 			Shell_Unknown();
 			break;
 		}
+	} else {
+		Shell_Unknown();
+	}
+	return 0;
+	UNUSED(argc);
+	UNUSED(argv);
+}
+
+int cmd_test_dump(int argc, char *argv[])
+{
+	if (argc == 2 || argc == 3) {
+		UINT getLen = 512;
+		if (argc == 3) {
+			getLen = atoi(argv[2]);
+		}
+		printf("      Input: 0x%s\n", argv[1]);
+		ULONG getData = strtol(argv[1], NULL, 16);
+		printf("Check Input: 0x%08lX\n", getData);
+		printf("Check Size : %u\n", getLen);
+
+		if (strcmp(argv[0], "cdump") == 0) {
+			printf("call hwflush_dcache_range\n");
+			hwflush_dcache_range(getData, getLen);
+		}
+		hexDump("Memory Dump", (void *)getData, getLen);
 	} else {
 		Shell_Unknown();
 	}

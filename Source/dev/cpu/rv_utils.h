@@ -16,18 +16,18 @@
 #include "dev.h"
 
 extern void flush_dcache_line(unsigned int);
-extern void hwflush_dcache_range(uint sadr, uint eadr);
+extern void hwflush_dcache_range(ulong sadr, ulong size);
 
 // direct memory access using software flush/invalidation
-extern void dmwrite8(uint adr, uchar wdat);
-extern void dmwrite16(uint adr, ushort wdat);
-extern void dmwrite32(uint adr, uint wdat);
-extern void dmwrite64(uint adr, ulong wdat);
+extern void dmwrite8(ulong adr, uchar wdat);
+extern void dmwrite16(ulong adr, ushort wdat);
+extern void dmwrite32(ulong adr, uint wdat);
+extern void dmwrite64(ulong adr, ulong wdat);
 
-extern uchar dmread8(uint adr);
-extern ushort dmread16(uint adr);
-extern uint dmread32(uint adr);
-extern ulong dmread64(uint adr);
+extern uchar dmread8(ulong adr);
+extern ushort dmread16(ulong adr);
+extern uint dmread32(ulong adr);
+extern ulong dmread64(ulong adr);
 
 // misc
 extern void rv_util_test();

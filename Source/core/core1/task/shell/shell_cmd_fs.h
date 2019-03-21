@@ -16,23 +16,23 @@
 //-------------------------------------------------------------------------------------------------
 // Function
 #if defined(__FILESYSTEM__)
-extern INT16S UsrDiskInitCmd(INT32S argc, char *argv[]);
-extern INT16S UsrLSCmd(INT32S argc, char *argv[]);
-extern INT16S UsrFormatCmd(INT32S argc, char *argv[]);
-extern INT16S UsrMKRMDIRCmd(INT32S argc, char *argv[]);
-extern INT16S UsrRMCmd(INT32S argc, char *argv[]);
-extern INT16S UsrPWDCmd(INT32S argc, char *argv[]);
-extern INT16S UsrCDCmd(INT32S argc, char *argv[]);
-extern INT16S UsrFCatCmd(INT32S argc, char *argv[]);
-extern INT16S UsrFCreateCmd(INT32S argc, char *argv[]);
-extern INT16S UsrFCopyCmd(INT32S argc, char *argv[]);
-extern INT16S UsrFstatCmd(INT32S argc, char *argv[]);
-extern INT16S UsrFileHash(INT32S argc, char *argv[]);
+extern int UsrDiskInitCmd(INT32S argc, char *argv[]);
+extern int UsrLSCmd(INT32S argc, char *argv[]);
+extern int UsrFormatCmd(INT32S argc, char *argv[]);
+extern int UsrMKRMDIRCmd(INT32S argc, char *argv[]);
+extern int UsrRMCmd(INT32S argc, char *argv[]);
+extern int UsrPWDCmd(INT32S argc, char *argv[]);
+extern int UsrCDCmd(INT32S argc, char *argv[]);
+extern int UsrFCatCmd(INT32S argc, char *argv[]);
+extern int UsrFCreateCmd(INT32S argc, char *argv[]);
+extern int UsrFCopyCmd(INT32S argc, char *argv[]);
+extern int UsrFstatCmd(INT32S argc, char *argv[]);
+extern int UsrFileHash(INT32S argc, char *argv[]);
 #if (LOAD_FS_SDCARD==1)
-extern INT16S UsrSDCardSpeedTestCmd(INT32S argc, char *argv[]);
-extern INT16S UsrMakevidCmd(INT32S argc, char *argv[]);
+extern int UsrSDCardSpeedTestCmd(INT32S argc, char *argv[]);
+extern int UsrMakevidCmd(INT32S argc, char *argv[]);
 #endif
-extern INT16S UseFatTest(INT32S argc, char *argv[]);
+extern int UseFatTest(INT32S argc, char *argv[]);
 #endif
 
 //-------------------------------------------------------------------------------------------------

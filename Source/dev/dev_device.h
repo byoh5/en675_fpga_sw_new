@@ -27,7 +27,7 @@
 #endif // __RTC_S35390A__
 #endif // __RTC_LOAD__
 
-#if 0
+#if 1
 #define __NETWORK__
 #if 1
 #define __ETHERNET__
@@ -68,14 +68,14 @@
 #define GPIO_LED2	8
 #endif // __USE_LED2__
 
-#if 1
-#define __USE_SD__
+#if 0
+#define __USE_SDIOCD__
 #define SD_GPIO_RST	33
 #define SD_GPIO_IRQ	32
 #define SD_SDIO_CH	0
-#endif // __USE_SD__
+#endif // __USE_SDIOCD__
 
-#if 1
+#if 0
 #define __USE_WF__
 #define WF_GPIO_RST	35
 #define WF_GPIO_IRQ	34
@@ -84,13 +84,12 @@
 
 #if 1
 #define __FILESYSTEM__
-
 #if 0
 #define LOAD_FS_FLS 1
 #else
 #define LOAD_FS_FLS 0
 #endif // LOAD_FS_FLS
-#if 1
+#if 0
 #define LOAD_FS_SDCARD 1
 #else
 #define LOAD_FS_SDCARD 0

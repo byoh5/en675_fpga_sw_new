@@ -11,6 +11,7 @@ CONFIGURE_FILE ( dev_device.h.cmake.in ${CMAKE_CURRENT_SOURCE_DIR}/dev_device.h)
 # 소스 코드
 SET ( DEV_HDRS
 	dev.h
+	dev_debug.h
 	dev_device.h
 	dev_types.h
 	dev_reg.h
@@ -22,13 +23,13 @@ SET ( DEV_HDRS
 	cpu/mtrap.h
 	cpu/syscall.h
 	cpu/rv_utils.h
-	string/vsnprintf.h
 	ethernet/ethphy.h
 	ethernet/ksz8081mnx.h
 	rtc/rtc.h
 	rtc/pcf8563.h
 	rtc/s35390a.h
 	sdio/sdio_cd.h
+	string/vsnprintf.h
 )
 
 SET ( DEV_SRCS

@@ -1,30 +1,23 @@
-#ifndef _SDCARD_H_
-#define _SDCARD_H_
+#ifndef _SHELL_USR_MEM_H_
+#define _SHELL_USR_MEM_H_
+
+#include "shell.h"
 
 //*************************************************************************************************
 // Misc
 //-------------------------------------------------------------------------------------------------
-// 
-enum {
-	sd_OFF = 0,
-	sd_INIT = 1,
-	sd_READY = 2,
-	sd_IDLE = 3,
-	sd_SAVE = 4,
-	sd_ERR = 5,
-	sd_ERR_IDLE = 6
-};
+//
 
 //*************************************************************************************************
 // Extern
 //-------------------------------------------------------------------------------------------------
 // Function
-extern void SdcardTask(void *pvParameters);
-extern void getSDGBSizeT(char *buf);
-extern void getSDGBSizeU(UINT *buf);
+extern int cmd_test_dma(int argc, char *argv[]);
+extern int cmd_test_memory(int argc, char *argv[]);
 
 //-------------------------------------------------------------------------------------------------
 // Variable
+extern const char *sDmaTest[];
+extern const char *sMemoryTest[];
 
-
-#endif // _SDCARD_H_
+#endif // _SHELL_USR_MEM_H_

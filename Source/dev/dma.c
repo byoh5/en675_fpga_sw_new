@@ -1,10 +1,17 @@
 #include "dev.h"
+#include "enx_freertos.h"
 
 static _DMA_REG0 *arrBDMA[BDMA_CNT];
 static _DMA_REG1 *arrBDMASRC[BDMA_CNT];
 static _DMA_REG2 *arrBDMADST[BDMA_CNT];
 static _DMA_REG3 *arrBDMALEN[BDMA_CNT];
 static tIhnd arrBDMAIrq[BDMA_CNT];
+
+static _DMA_REG0 *arrCDMA[CDMA_CNT];
+static _DMA_REG1 *arrCDMASRC[CDMA_CNT];
+static _DMA_REG2 *arrCDMADST[CDMA_CNT];
+static _DMA_REG3 *arrCDMALEN[CDMA_CNT];
+static tIhnd arrCDMAIrq[CDMA_CNT];
 
 void BDmaInit(void)
 {
@@ -22,44 +29,71 @@ void BDmaInit(void)
 
 void BDmaMemCpy_isr(UINT nCH, BYTE *apbDst, BYTE *apbSrc, UINT anNum)
 {
-	arrBDMA[nCH]->JOB_PTR = 1;
+//	portENTER_CRITICAL();
+
+//	printf("\n1 BDMA[%u]->a: 0x%08X\n", nCH, arrBDMA[nCH]->a);
+//	printf("1 CDMA[%u]->a: 0x%08X\n", nCH, arrCDMA[nCH]->a);
+//	printf("JOB(%2u) DONE(%2u)\n", arrBDMA[nCH]->JOB_PTR, arrBDMA[nCH]->DONE_PTR);
+
+//	printf("1");
+	arrBDMA[nCH]->JOB_PTR++;
+//	printf("2");
 	arrBDMA[nCH]->MODE = 0;
-	arrBDMASRC[nCH]->SRC = (UINT)apbSrc;
-	arrBDMADST[nCH]->DST = (UINT)apbDst;
+//	printf("3");
+	arrBDMASRC[nCH]->SRC = (intptr_t)apbSrc;
+//	printf("4");
+	arrBDMADST[nCH]->DST = (intptr_t)apbDst;
+//	printf("5");
 	arrBDMALEN[nCH]->LEN = anNum;
+//	printf("6");
+//	printf("\nJOB(%2u) DONE(%2u)\n", arrBDMA[nCH]->JOB_PTR, arrBDMA[nCH]->DONE_PTR);
 	arrBDMA[nCH]->GO = 1;
-	while (arrBDMA[nCH]->DONE_PTR!=1 | !arrBDMA[nCH]->DONE_VAL);
+
+	while (arrBDMA[nCH]->DONE_PTR != arrBDMA[nCH]->JOB_PTR) {
+//		printf("8");
+	}
+
+//	printf("\nJOB(%2u) DONE(%2u)\n", arrBDMA[nCH]->JOB_PTR, arrBDMA[nCH]->DONE_PTR);
+
+//	printf("2 BDMA[%u]->a: 0x%08X\n", nCH, arrBDMA[nCH]->a);
+//	printf("2 CDMA[%u]->a: 0x%08X\n", nCH, arrCDMA[nCH]->a);
+
+//	portEXIT_CRITICAL();
 }
 
-void BDmaMemCpy_isr_async(UINT nCH, BYTE *apbDst, BYTE *apbSrc, UINT anNum)
+UINT BDmaMemCpy_isr_async(UINT nCH, BYTE *apbDst, BYTE *apbSrc, UINT anNum)
 {
-	arrBDMA[nCH]->JOB_PTR = 1;
+	UINT doneID = arrBDMA[nCH]->JOB_PTR;
+	arrBDMA[nCH]->JOB_PTR++;
 	arrBDMA[nCH]->MODE = 0;
-	arrBDMASRC[nCH]->SRC = (UINT)apbSrc;
-	arrBDMADST[nCH]->DST = (UINT)apbDst;
+	arrBDMASRC[nCH]->SRC = (intptr_t)apbSrc;
+	arrBDMADST[nCH]->DST = (intptr_t)apbDst;
 	arrBDMALEN[nCH]->LEN = anNum;
 	arrBDMA[nCH]->GO = 1;
+	return doneID;
 }
 
 void BDmaMemSet_isr(UINT nCH, BYTE *apbDst, BYTE abVal, UINT anNum)
 {
-	arrBDMA[nCH]->JOB_PTR = 2;
+	arrBDMA[nCH]->JOB_PTR++;
 	arrBDMA[nCH]->VALUE = abVal;
 	arrBDMA[nCH]->MODE = 1;
-	arrBDMADST[nCH]->DST = (UINT)apbDst;
+	arrBDMADST[nCH]->DST = (intptr_t)apbDst;
 	arrBDMALEN[nCH]->LEN = anNum;
 	arrBDMA[nCH]->GO = 1;
-	while (arrBDMA[nCH]->DONE_PTR!=2 | !arrBDMA[nCH]->DONE_VAL);
+	while (arrBDMA[nCH]->DONE_PTR != arrBDMA[nCH]->JOB_PTR);
 }
 
-void BDmaMemSet_isr_async(UINT nCH, BYTE *apbDst, BYTE abVal, UINT anNum)
+UINT BDmaMemSet_isr_async(UINT nCH, BYTE *apbDst, BYTE abVal, UINT anNum)
 {
-	arrBDMA[nCH]->JOB_PTR = 2;
+	UINT doneID = arrBDMA[nCH]->JOB_PTR;
+	arrBDMA[nCH]->JOB_PTR++;
 	arrBDMA[nCH]->VALUE = abVal;
 	arrBDMA[nCH]->MODE = 1;
-	arrBDMADST[nCH]->DST = (UINT)apbDst;
+	arrBDMADST[nCH]->DST = (intptr_t)apbDst;
 	arrBDMALEN[nCH]->LEN = anNum;
 	arrBDMA[nCH]->GO = 1;
+	return doneID;
 }
 
 void BDmaIrqCallback(UINT nCH, irq_fn irqfn, void *arg)
@@ -99,12 +133,6 @@ void IrqBDma(UINT nCH)
 	}
 }
 
-static _DMA_REG0 *arrCDMA[CDMA_CNT];
-static _DMA_REG1 *arrCDMASRC[CDMA_CNT];
-static _DMA_REG2 *arrCDMADST[CDMA_CNT];
-static _DMA_REG3 *arrCDMALEN[CDMA_CNT];
-static tIhnd arrCDMAIrq[CDMA_CNT];
-
 void CDmaInit(void)
 {
 	const uint64_t addrDMA[CDMA_CNT] = {REG_BASE_CDMA0, REG_BASE_CDMA1, REG_BASE_CDMA2, REG_BASE_CDMA3};
@@ -121,44 +149,50 @@ void CDmaInit(void)
 
 void CDmaMemCpy_isr(UINT nCH, BYTE *apbDst, BYTE *apbSrc, UINT anNum)
 {
-	arrCDMA[nCH]->JOB_PTR = 1;
+	portENTER_CRITICAL();
+	arrCDMA[nCH]->JOB_PTR++;
 	arrCDMA[nCH]->MODE = 0;
-	arrCDMASRC[nCH]->SRC = (UINT)apbSrc;
-	arrCDMADST[nCH]->DST = (UINT)apbDst;
+	arrCDMASRC[nCH]->SRC = (intptr_t)apbSrc;
+	arrCDMADST[nCH]->DST = (intptr_t)apbDst;
 	arrCDMALEN[nCH]->LEN = anNum;
 	arrCDMA[nCH]->GO = 1;
-	while (arrCDMA[nCH]->DONE_PTR!=1 | !arrCDMA[nCH]->DONE_VAL);
+	while (arrCDMA[nCH]->DONE_PTR != arrCDMA[nCH]->JOB_PTR);
+	portEXIT_CRITICAL();
 }
 
-void CDmaMemCpy_isr_async(UINT nCH, BYTE *apbDst, BYTE *apbSrc, UINT anNum)
+UINT CDmaMemCpy_isr_async(UINT nCH, BYTE *apbDst, BYTE *apbSrc, UINT anNum)
 {
-	arrCDMA[nCH]->JOB_PTR = 1;
+	UINT doneID = arrCDMA[nCH]->JOB_PTR;
+	arrCDMA[nCH]->JOB_PTR++;
 	arrCDMA[nCH]->MODE = 0;
-	arrCDMASRC[nCH]->SRC = (UINT)apbSrc;
-	arrCDMADST[nCH]->DST = (UINT)apbDst;
+	arrCDMASRC[nCH]->SRC = (intptr_t)apbSrc;
+	arrCDMADST[nCH]->DST = (intptr_t)apbDst;
 	arrCDMALEN[nCH]->LEN = anNum;
 	arrCDMA[nCH]->GO = 1;
+	return doneID;
 }
 
 void CDmaMemSet_isr(UINT nCH, BYTE *apbDst, BYTE abVal, UINT anNum)
 {
-	arrCDMA[nCH]->JOB_PTR = 2;
+	arrCDMA[nCH]->JOB_PTR++;
 	arrCDMA[nCH]->VALUE = abVal;
 	arrCDMA[nCH]->MODE = 1;
-	arrCDMADST[nCH]->DST = (UINT)apbDst;
+	arrCDMADST[nCH]->DST = (intptr_t)apbDst;
 	arrCDMALEN[nCH]->LEN = anNum;
 	arrCDMA[nCH]->GO = 1;
-	while (arrCDMA[nCH]->DONE_PTR!=2 | !arrCDMA[nCH]->DONE_VAL);
+	while (arrCDMA[nCH]->DONE_PTR != arrCDMA[nCH]->JOB_PTR);
 }
 
-void CDmaMemSet_isr_async(UINT nCH, BYTE *apbDst, BYTE abVal, UINT anNum)
+UINT CDmaMemSet_isr_async(UINT nCH, BYTE *apbDst, BYTE abVal, UINT anNum)
 {
-	arrCDMA[nCH]->JOB_PTR = 2;
+	UINT doneID = arrCDMA[nCH]->JOB_PTR;
+	arrCDMA[nCH]->JOB_PTR++;
 	arrCDMA[nCH]->VALUE = abVal;
 	arrCDMA[nCH]->MODE = 1;
-	arrCDMADST[nCH]->DST = (UINT)apbDst;
+	arrCDMADST[nCH]->DST = (intptr_t)apbDst;
 	arrCDMALEN[nCH]->LEN = anNum;
 	arrCDMA[nCH]->GO = 1;
+	return doneID;
 }
 
 void CDmaIrqCallback(UINT nCH, irq_fn irqfn, void *arg)

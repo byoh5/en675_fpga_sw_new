@@ -334,9 +334,10 @@ repeat:
 	return str - buf;
 }
 
+static char buf[PRINTFBUF_SIZE];
 int _printf(const char *format, ...)
 {
-	char buf[PRINTFBUF_SIZE], *pbuf;
+	char *pbuf;
 	va_list args;
 	va_start(args, format);
 	int len = vsnprintf_(buf, PRINTFBUF_SIZE, format, args);

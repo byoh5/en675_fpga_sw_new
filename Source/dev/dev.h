@@ -5,6 +5,8 @@
 #include "dev_regs.h"	// EN675
 #include "dev_peri.h"	// EN675
 #include "dev_device.h"	// EN675
+#include "dev_debug.h"	// EN675
+#include "dev_verify.h"	// EN675
 
 #include "asm.h"	// CPU
 #include "bits.h"	// CPU
@@ -20,6 +22,8 @@
 
 #include <time.h>	// time_t
 #include "rtc.h"
+
+register uint64_t sp asm("sp");
 
 // uart printf out /////////////////////////////////////////////////////////////
 

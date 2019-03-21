@@ -342,9 +342,9 @@ size_t sys_brk(size_t pos)
 int sys_uname(void* buf)
 {
 	const int sz = 65;
-	strcpy(buf + 0*sz, "Proxy Kernel");
+	strcpy(buf + 0*sz, "Eyenix EN675");
 	strcpy(buf + 1*sz, "");
-	strcpy(buf + 2*sz, "4.15.0");
+	strcpy(buf + 2*sz, "0.0.1");
 	strcpy(buf + 3*sz, "");
 	strcpy(buf + 4*sz, "");
 	strcpy(buf + 5*sz, "");

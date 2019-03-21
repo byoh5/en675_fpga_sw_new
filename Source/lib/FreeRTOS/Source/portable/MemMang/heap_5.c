@@ -68,6 +68,7 @@
  *
  */
 #include <stdlib.h>
+#include <string.h> // memset
 
 /* Defining MPU_WRAPPERS_INCLUDED_FROM_API_FILE prevents task.h from redefining
 all the API functions to use the MPU wrappers.  That should only be done when
@@ -269,7 +270,7 @@ void *pvReturn = NULL;
 }
 /*-----------------------------------------------------------*/
 
-void *pvPortRealloc(void *pv , size_t xWantedSize )
+void *pvPortRealloc( void *pv , size_t xWantedSize )
 {
 	if (pv) {
 		vPortFree(pv);
@@ -285,7 +286,6 @@ void *pvPortCalloc( size_t n_elements, size_t elem_size )
 	void *pv = pvPortMalloc(n_elements * elem_size);
 	memset(pv, 0, n_elements * elem_size);
 	return pv;
-
 }
 
 void vPortFree( void *pv )
