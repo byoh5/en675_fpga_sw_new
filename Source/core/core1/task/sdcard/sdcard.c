@@ -29,7 +29,7 @@ init_start:
 	vTaskDelay(10);
 	FRESULT fres;
 	bSDState = sd_INIT;
-	if (SdioCdInitProcess() == DEF_FAIL) {
+	if (SdioCdInitProcess() == ENX_FAIL) {
 		printf("SD card IN(init fail)\n");
 		bSDState = sd_ERR;
 		goto init_end;
@@ -60,9 +60,9 @@ init_start:
 			SdioCdGetName(sdname);
 			getSDGBSizeT(sdsize);
 			tprintf("SD card IN(%s, %s)\r\n", sdname, sdsize);
-//			fres = drive_init(DEV_SD);
-//			if (fres != FR_OK)		goto init_err;
-//			flag = 2;
+			fres = drive_init(DEV_SD);
+			if (fres != FR_OK)		goto init_err;
+			flag = 2;
 #if 0
 			if (fwupdate_filecheck(DEV_SD, "EN673.bin")) {
 				FWUPDATE_INFO* fwinfo = (FWUPDATE_INFO*)pvPortCalloc(1, sizeof(FWUPDATE_INFO));
@@ -98,7 +98,7 @@ init_start:
 init_err:
 	if (flag == 1) {
 		flag = 2;
-//		goto init_start;
+		goto init_start;
 	}
 
 init_end:
@@ -107,7 +107,7 @@ init_end:
 
 void SdcardTask(void *pvParameters)
 {
-	vTaskDelay(2000); // Log 겹치기 방지용
+	vTaskDelay(200); // Log 겹치기 방지용
 	while (1) {
 		UINT SDDet = SdioCdDet();
 		if (SDDet == 0) { // SD card IN
@@ -118,8 +118,19 @@ void SdcardTask(void *pvParameters)
 			case sd_INIT:	// Do nothing until initialization is finished.
 				break;
 			case sd_READY:
-				break;
+				//drive_init(DEV_SD);
+				//muxer_videnc_init();
+				bSDState = sd_IDLE;
+				//break;	// next Idle state
 			case sd_IDLE:	// sd_IDLE state by "SDcardInit" or "sdsave off"
+
+
+
+
+
+
+
+
 				break;
 			case sd_SAVE:	// sd_SAVE state by "SDcardInitTask" or "sdsave on"
 				break;
@@ -145,6 +156,11 @@ void SdcardTask(void *pvParameters)
 		vTaskDelay(5);
 	}
 	UNUSED(pvParameters);
+}
+
+int getSDState(void)
+{
+	return bSDState;
 }
 
 void getSDGBSizeT(char *buf)
@@ -187,5 +203,62 @@ void getSDGBSizeU(UINT *buf)
 		*buf = 0;
 		printf("Size Check Error(%dGB?)\n", nSDSize);
 	}
+}
+
+ENX_OKFAIL getSDTimeCheck(void)
+{
+#if 0
+	char strCmpPath[FF_MAX_LFN + 1] = {0};
+	char strPath[128] = {0};
+	FRESULT fres;
+	FILINFO finfo;
+	DIR dir;
+	int nYear_Old, nMonth_Old, nDay_Old, nHour_Old, nMin_Old, nSec_Old;
+	int nYear_New, nMonth_New, nDay_New, nHour_New, nMin_New, nSec_New;
+	int nGetRes = 0, nNewDay = 0;
+	nYear_New = nMonth_New = nDay_New = nHour_New = nMin_New = nSec_New = 0;
+
+	// 현재시간을 가져온다. 이 시간은 RTC과 같다.
+	struct tm tmout;
+	enx_get_tmtime(gptMsgShare.TIME, &tmout, DEF_YES);
+	sprintf(strCmpPath, SAVE_NOR_NAME_FORMAT, tmout.tm_year+1900-2000, tmout.tm_mon+1, tmout.tm_mday, tmout.tm_hour, tmout.tm_min, tmout.tm_sec);
+
+	sprintf(strPath, "%d:/%s", DEV_SD, SD_DIR_NOR);
+	fres = f_findfirst(&dir, &finfo, strPath, SAVE_NOR_NAME_PATTERN);
+	while (fres == FR_OK && finfo.fname[0]) {
+		if (!(finfo.fattrib & AM_DIR)) {
+			if (strlen(finfo.fname) == SAVE_FILENAME_LENS) {
+				nGetRes = sscanf(finfo.fname, SAVE_NOR_NAME_FORMAT, &nYear_Old, &nMonth_Old, &nDay_Old, &nHour_Old, &nMin_Old, &nSec_Old);
+				if (nGetRes == 6) {
+					if (strcmp(strCmpPath, finfo.fname) < 0) {
+						strcpy(strCmpPath, finfo.fname);
+						nYear_New = nYear_Old;
+						nMonth_New = nMonth_Old;
+						nDay_New = nDay_Old;
+						nHour_New = nHour_Old;
+						nMin_New = nMin_Old;
+						nSec_New = nSec_Old;
+						nNewDay = 1;
+					}
+				}
+			}
+		}
+		fres = f_findnext(&dir, &finfo);
+	}
+	f_closedir(&dir);
+
+	// 만약, 현재 시간이 가장 마지막 저장파일보다 과거라면,
+	// 가장 마지막 저장파일의 +1분을 현재 시간으로 설정한다. -> 60분 등 over할 가능성이 존재, 초를 무조건 59초로 한다.
+	if (nNewDay) {
+		if (set_devicetime(TimeZone_LOC, nYear_New+2000, nMonth_New, nDay_New, nHour_New, nMin_New, 59) == ENX_FAIL) {
+			printf("time set fail\n");
+			return ENX_FAIL;
+		}
+		return ENX_OK;
+	}
+	return ENX_FAIL;
+#else
+	ENX_ASSERT(0);
+#endif
 }
 #endif

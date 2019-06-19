@@ -19,11 +19,11 @@ static SDIO_SD sdinfo;
 
 static void SdioCdLog_hwflush_dcache_range(uint sadr, uint size)
 {
-	printf("H/W Flush Addr  0x%08X->0x%08X, Byte %lubyte\n", sadr, sadr + size, size);
-	uint64_t a = rdcycle();
+	//printf("\nH/W Flush Addr  0x%08X->0x%08X, Byte %lubyte\n", sadr, sadr + size, size);
+	//uint64_t s = BenchTimeStart();
 	hwflush_dcache_range(sadr, size);
-	uint64_t b = rdcycle();
-	printf("H/W Flush Cycle %lu\n", b - a);
+	//uint64_t us = BenchTimeStop(s);
+	//printf("H/W Flush %luus\n", us);
 }
 
 #define ENX_SDIOCD_FLUSH_DCACHE SdioCdLog_hwflush_dcache_range
@@ -298,13 +298,13 @@ static UINT SdioCdReset(void)
 	nArg = CMD8_VHS | CMD8_PATTERN;
 	nRes = SdioCmd(sdinfo.nCH, SDCMD_SEND_IF_COND, nArg, &nResp, ecrtR7);
 
-	if ((nRes == DEF_OK) && (nResp & nArg)) {
+	if ((nRes == ENX_OK) && (nResp & nArg)) {
 		ENX_LOG_END(DBG_SDIO_CD_CMD);
-		return DEF_OK;
+		return ENX_OK;
 	} else {
 		ENX_DEBUGF(DBG_SDIO_CD_ERR, "End(FAIL) : RESP(0x%08X)\n", nResp);
 		ENX_LOG_END(DBG_SDIO_CD_CMD);
-		return DEF_FAIL;
+		return ENX_FAIL;
 	}
 }
 
@@ -324,19 +324,19 @@ static UINT SdioCdInitialization(void)
 	for (UINT nTryCnt = SD_TRY_CNT; nTryCnt; nTryCnt--) {
 		if (SdioCdDet()) {
 			ENX_DEBUGF(DBG_SDIO_CD_ERR, "End(FAIL) : SDcard no detect\n");
-			nRes = DEF_FAIL;
+			nRes = ENX_FAIL;
 			break;
 		}
 
 		SdioCdAppCmd(0);
 		nRes = SdioCmd(sdinfo.nCH, SDCMD_SD_SEND_OP_COND, nArg, pResp, ecrtR3);
 
-		if (nRes == DEF_OK) {
+		if (nRes == ENX_OK) {
 			if (sdinfo.ocr.busy == 1) {
-				nRes = DEF_OK;
+				nRes = ENX_OK;
 				break;
 			} else {
-				nRes = DEF_FAIL;
+				nRes = ENX_FAIL;
 			}
 		}
 
@@ -349,7 +349,7 @@ static UINT SdioCdInitialization(void)
 
 	ENX_LOG_END(DBG_SDIO_CD_CMD);
 
-	return DEF_OK;
+	return ENX_OK;
 }
 
 static UINT SdioCdSwitchVoltage(void)
@@ -361,17 +361,17 @@ static UINT SdioCdSwitchVoltage(void)
 	nRes = SdioCmd(sdinfo.nCH, SDCMD_VOLTAGE_SWITCH, 0x00000000, &nResp, ecrtR1);
 
 	// Switch 1.8V
-	if (nRes == DEF_OK) {
+	if (nRes == ENX_OK) {
 //		PAD_SDIO0_CMD_PU = 1;		// CMD pull-up disable
 //		PAD_SDIO0_DAT_PU = 1;		// DAT pull-up disable
-		SdioClockDisable(sdinfo.nCH);	// CLK disable
+		SdioSetClockEn(sdinfo.nCH, ENX_OFF);// CLK disable
 		DELAY_MS(5);				// 5ms delay(min.)
 
 		ENX_DEBUGF(DBG_SDIO_CD_CMD, "Set Default speed mode\n");
 		SdioSetClockDiv(sdinfo.nCH, 25*1000*1000);
 
 //		PAD_SDIO0_MSEL = 0x3F;		// 1.8v
-		SdioClockEnable(sdinfo.nCH);// CLK enable
+		SdioSetClockEn(sdinfo.nCH, ENX_ON);// CLK enable
 //		PAD_SDIO0_CMD_PU = 0;		// CMD pull-up enable
 //		PAD_SDIO0_DAT_PU = 0;		// DAT pull-up enable
 
@@ -390,7 +390,7 @@ static UINT SdioCdSwitchVoltage(void)
 static UINT SdioCdGetCID(int nType)
 {	// CMD2, 10(R2): Type:0(CMD2) Type:1(CMD10)
 	UINT *pResp;
-	UINT nRes = DEF_FAIL;
+	UINT nRes = ENX_FAIL;
 
 	ENX_LOG_START(DBG_SDIO_CD_CMD);
 
@@ -441,9 +441,9 @@ static UINT SdioCdGetCSD(void)
 	SdioPrintCSD(&sdinfo.csd);
 #endif
 
-	if ((nRes == DEF_OK) && (sdinfo.csd.csd_v2.PERM_WRITE_PROTECT == 1)) {
+	if ((nRes == ENX_OK) && (sdinfo.csd.csd_v2.PERM_WRITE_PROTECT == 1)) {
 		ENX_DEBUGF(DBG_SDIO_CD_ERR, "PERM_WRITE_PROTECT enable!\n");
-		nRes = DEF_FAIL;
+		nRes = ENX_FAIL;
 	}
 
 	ENX_LOG_END(DBG_SDIO_CD_CMD);
@@ -469,8 +469,8 @@ static UINT SdioCdBusWidthChange(void)
 	nArg = SD_BUS_WIDTH_4;
 	nRes = SdioCmd(sdinfo.nCH, SDCMD_SET_BUS_WIDTH, nArg, &nResp, ecrtR1);
 
-	if (nRes == DEF_OK) {
-		SdioSet4BitMode(sdinfo.nCH);
+	if (nRes == ENX_OK) {
+		SdioSetBitMode(sdinfo.nCH, SDIO_4BIT_MODE);
 	}
 #endif
 	ENX_LOG_END(DBG_SDIO_CD_CMD);
@@ -485,24 +485,24 @@ static UINT SdioCdRegDataRead(UINT nCmd, UINT nArg, UINT *nResp, eCmdRespType cm
 
 	nTemp = SdioGetDataBlockByte(sdinfo.nCH);
 	SdioSetDataBlockByte(sdinfo.nCH, nSize);		// Data Block Byte를 설정
-	SdioSetCmdDataS(sdinfo.nCH, esditREAD, nCmd);	// Data Read command를 설정
+	SdioSetDataCmd(sdinfo.nCH, SDIO_DIO_SINGLE_READ, nCmd);	// Data Read command를 설정
 
 	ENX_SDIOCD_IRQ_LOCK();
 	ENX_SDIOCD_FLUSH_DCACHE((ULONG)getData, nSize);
-	nRes = SdioDataIO(sdinfo.nCH, esditREAD, (ULONG)getData, nArg, 1);
+	nRes = SdioDataIO(sdinfo.nCH, SDIO_DIO_SINGLE_READ, (ULONG)getData, nArg, 1);
 	ENX_SDIOCD_FLUSH_DCACHE((ULONG)getData, nSize);
 	memcpy(pSdioReg, getData, nSize);
 	ENX_SDIOCD_IRQ_UNLOCK();
 
 	SdioSetDataBlockByte(sdinfo.nCH, nTemp);	// Data Block Byte를 원상복귀
-	SdioSetCmdDataS(sdinfo.nCH, esditREAD, SDCMD_READ_SINGLE_BLOCK); // Data Read command를 17으로 설정(기본 Read 명령으로 설정)
+	SdioSetDataCmd(sdinfo.nCH, SDIO_DIO_SINGLE_READ, SDCMD_READ_SINGLE_BLOCK); // Data Read command를 17으로 설정(기본 Read 명령으로 설정)
 
 	SdioGetResp(sdinfo.nCH, nResp, cmdType);
-	ENX_DEBUGF(DBG_SDIO_CD_CMD, "[%2d] res(%c) RESP0(0x%08X)\n", nCmd, nRes == DEF_OK ? 'O' : 'X', nResp[0]);
+	ENX_DEBUGF(DBG_SDIO_CD_CMD, "[%2d] res(%c) RESP0(0x%08X)\n", nCmd, nRes == ENX_OK ? 'O' : 'X', nResp[0]);
 	if (cmdType == ecrtR2) {
-		ENX_DEBUGF(DBG_SDIO_CD_CMD, "[%2d] res(%c) RESP1(0x%08X)\n", nCmd, nRes == DEF_OK ? 'O' : 'X', nResp[1]);
-		ENX_DEBUGF(DBG_SDIO_CD_CMD, "[%2d] res(%c) RESP2(0x%08X)\n", nCmd, nRes == DEF_OK ? 'O' : 'X', nResp[2]);
-		ENX_DEBUGF(DBG_SDIO_CD_CMD, "[%2d] res(%c) RESP3(0x%08X)\n", nCmd, nRes == DEF_OK ? 'O' : 'X', nResp[3]);
+		ENX_DEBUGF(DBG_SDIO_CD_CMD, "[%2d] res(%c) RESP1(0x%08X)\n", nCmd, nRes == ENX_OK ? 'O' : 'X', nResp[1]);
+		ENX_DEBUGF(DBG_SDIO_CD_CMD, "[%2d] res(%c) RESP2(0x%08X)\n", nCmd, nRes == ENX_OK ? 'O' : 'X', nResp[2]);
+		ENX_DEBUGF(DBG_SDIO_CD_CMD, "[%2d] res(%c) RESP3(0x%08X)\n", nCmd, nRes == ENX_OK ? 'O' : 'X', nResp[3]);
 	}
 
 	return nRes;
@@ -518,7 +518,7 @@ static UINT SdioCdGetSSR(void)
 	nRes = SdioCdRegDataRead(SDCMD_SD_STATUS, 0x00000000, &nResp, ecrtR1, &sdinfo.ssr, sizeof(SD_SSR));
 
 #if (DBG_SDIO_CD_CMD & ENX_DBG_STATE)
-	if (nRes == DEF_OK) {
+	if (nRes == ENX_OK) {
 		SdioPrintSSR(&sdinfo.ssr);
 	}
 #endif
@@ -530,7 +530,7 @@ static UINT SdioCdGetSSR(void)
 
 static UINT SdioCdGetSCR(void)
 {	// ACMD51(R1) : Data bus response / 8byte
-	UINT nRes = DEF_FAIL;
+	UINT nRes = ENX_FAIL;
 	UINT nResp, nTemp = 0;
 
 	ENX_LOG_START(DBG_SDIO_CD_CMD);
@@ -539,7 +539,7 @@ static UINT SdioCdGetSCR(void)
 	nRes = SdioCdRegDataRead(SDCMD_SEND_SCR, 0x00000000, &nResp, ecrtR1, &sdinfo.scr, sizeof(SD_SCRreg));
 
 #if (DBG_SDIO_CD_CMD & ENX_DBG_STATE)
-	if (nRes == DEF_OK) {
+	if (nRes == ENX_OK) {
 		SdioPrintSCR(&sdinfo.scr);
 	}
 #endif
@@ -563,7 +563,7 @@ static UINT SdioClockSwitch(UINT mode, UINT group, BYTE value)
 	nRes = SdioCdRegDataRead(SDCMD_SWITCH_FUNC, nArg, &nResp, ecrtR1, &sdinfo.sfs, sizeof(SD_SFS));
 
 #if (DBG_SDIO_CD_CMD & ENX_DBG_STATE)
-	if (nRes == DEF_OK) {
+	if (nRes == ENX_OK) {
 		SdioPrintSFS(&sdinfo.sfs);
 	}
 #endif
@@ -575,7 +575,7 @@ static UINT SdioClockSwitch(UINT mode, UINT group, BYTE value)
 
 static UINT SdioCdSetClock(void)
 {	// CMD6 : Check & Switch Clock (main)
-	UINT nRes = DEF_FAIL;
+	UINT nRes = ENX_FAIL;
 
 	ENX_LOG_START(DBG_SDIO_CD_CMD);
 
@@ -597,7 +597,7 @@ static UINT SdioCdSetClock(void)
 			}
 		}
 
-		if (SdioClockSwitch(0, 0, 1) == DEF_FAIL) {
+		if (SdioClockSwitch(0, 0, 1) == ENX_FAIL) {
 			ENX_DEBUGF(DBG_SDIO_CD_ERR, "Problem reading switch capabilities, performance might suffer.\n");
 			goto if_speed;
 		}
@@ -609,7 +609,7 @@ static UINT SdioCdSetClock(void)
 			goto if_speed;
 		}
 
-		if (SdioClockSwitch(1, 0, 1) == DEF_FAIL) {
+		if (SdioClockSwitch(1, 0, 1) == ENX_FAIL) {
 			ENX_DEBUGF(DBG_SDIO_CD_ERR, "Clock switching failed.\n");
 			goto if_speed;
 		}
@@ -618,18 +618,18 @@ static UINT SdioCdSetClock(void)
 			ENX_DEBUGF(DBG_SDIO_CD_ERR, "Problem switching card into high-speed mode!\n");
 		} else {
 			ENX_DEBUGF(DBG_SDIO_CD_CMD, "Set High speed mode\n");
-//			SdioSetClockDiv(sdinfo.nCH, 0);
+			SdioSetClockDiv(sdinfo.nCH, 0);
 //			SdioSetClockDiv(sdinfo.nCH, 1);
-			SdioSetClockDiv(sdinfo.nCH, 6);
+//			SdioSetClockDiv(sdinfo.nCH, 6);
 		}
 
-		nRes = DEF_OK;
+		nRes = ENX_OK;
 	} else {
 if_speed:
 		ENX_DEBUGF(DBG_SDIO_CD_CMD, "Set Default speed mode\n");
 //		SdioSetClockDiv(sdinfo.nCH, 1);
 		SdioSetClockDiv(sdinfo.nCH, 10);
-		nRes = DEF_OK;
+		nRes = ENX_OK;
 	}
 
 	sdinfo.nSetClock = SdioGetClockDiv(sdinfo.nCH);
@@ -652,7 +652,7 @@ static UINT SdioCdTuningCommand(void)
 sd_tuning:
 	nRes = SdioCdRegDataRead(SDCMD_SEND_TUNING_BLOCK, 0x00000000, &nResp, ecrtR1, &sdinfo.stuning, sizeof(SD_Tuning));
 
-	if (nRes == DEF_OK) {
+	if (nRes == ENX_OK) {
 		for (UINT i = 0; i < sizeof(SD_Tuning); i++) {
 			if (checkData[i] != sdinfo.stuning.Tuning[i]) {
 				hexDump("Tuning Block Pattern Mismatch", sdinfo.stuning.Tuning, sizeof(SD_Tuning));
@@ -662,7 +662,7 @@ sd_tuning:
 					nTry++;
 					goto sd_tuning;
 				} else {
-					nRes = DEF_FAIL;
+					nRes = ENX_FAIL;
 				}
 				break;
 			}
@@ -692,12 +692,11 @@ static UINT SdioCdSetBlockLength(void)
 // SDIO-CD Process
 static uint64_t sdio_data_address = 1;
 
-UINT SdioCdInitProcess(void)
+ENX_OKFAIL SdioCdInitProcess(void)
 {
 	ENX_LOG_START(DBG_SDIO_CD_CMD);
 
 #if (DBG_SDIO_CD_CMD & ENX_DBG_STATE)
-	printf("%20s SP-TEST [0x%08X]\n", __func__, sp);
 	printf("SDIO-SD reg [0x%08X] nCH\n", (UINT *)&sdinfo.nCH);
 	printf("SDIO-SD reg [0x%08X] nErrorCode\n", (UINT *)&sdinfo.nErrorCode);
 	printf("SDIO-SD reg [0x%08X] nActive\n", (UINT *)&sdinfo.nActive);
@@ -737,13 +736,13 @@ UINT SdioCdInitProcess(void)
 #endif
 
 	// CMD 0, 8
-	if (SdioCdReset() == DEF_FAIL) {
+	if (SdioCdReset() == ENX_FAIL) {
 		sdinfo.nErrorCode = 1;
 		goto done_fail;
 	}
 
 	// ACMD 41
-	if (SdioCdInitialization() == DEF_FAIL) {
+	if (SdioCdInitialization() == ENX_FAIL) {
 		sdinfo.nErrorCode = 2;
 		goto done_fail;
 	}
@@ -751,7 +750,7 @@ UINT SdioCdInitProcess(void)
 	sdinfo.nVoltageMode = 0;
 	if (sdinfo.ocr.VDD18 && sdinfo.ocr.CCS) {
 		// CMD 11
-		if (SdioCdSwitchVoltage() == DEF_FAIL) {
+		if (SdioCdSwitchVoltage() == ENX_FAIL) {
 			sdinfo.nErrorCode = 3;
 		} else {
 			sdinfo.nVoltageMode = 1;
@@ -759,48 +758,48 @@ UINT SdioCdInitProcess(void)
 	}
 
 	// CMD 2
-	if (SdioCdGetCID(0) == DEF_FAIL) {
+	if (SdioCdGetCID(0) == ENX_FAIL) {
 		sdinfo.nErrorCode = 4;
 		goto done_fail;
 	}
 
 	// CMD 3
-	if (SdioCdGetRCA() == DEF_FAIL) {
+	if (SdioCdGetRCA() == ENX_FAIL) {
 		sdinfo.nErrorCode = 5;
 		goto done_fail;
 	}
 
 	// CMD 9
-	if (SdioCdGetCSD() == DEF_FAIL) {
+	if (SdioCdGetCSD() == ENX_FAIL) {
 		sdinfo.nErrorCode = 6;
 		goto done_fail;
 	}
 
 	// CMD 10
-	if (SdioCdGetCID(1) == DEF_FAIL) {
+	if (SdioCdGetCID(1) == ENX_FAIL) {
 		sdinfo.nErrorCode = 7;
 		goto done_fail;
 	}
 
 	// CMD 7, 42, ACMD 6
-	if (SdioCdBusWidthChange() == DEF_FAIL) {
+	if (SdioCdBusWidthChange() == ENX_FAIL) {
 		sdinfo.nErrorCode = 8;
 		goto done_fail;
 	}
 
 	// ACMD 13
-	if (SdioCdGetSSR() == DEF_FAIL) {
+	if (SdioCdGetSSR() == ENX_FAIL) {
 		sdinfo.nErrorCode = 9;
 		goto done_fail;
 	}
 
 	// ACMD 51
-	if (SdioCdGetSCR() == DEF_FAIL) {
+	if (SdioCdGetSCR() == ENX_FAIL) {
 		sdinfo.nErrorCode = 10;
 		goto done_fail;
 	}
 	if (sdio_data_address != (uint64_t)SDIO_DATA_BASE) {
-		printf("Error!!\n");
+		_Rprintf("Error!!\n");
 		printf("SDIO data address 0x%08X -> 0x%08X\n", sdio_data_address, SDIO_DATA_BASE);
 		ENX_SDIOCD_FLUSH_DCACHE((ULONG)pSDIO_DATA_BASE, 1024);
 		hexDump("pSDIO_DATA_BASE", pSDIO_DATA_BASE, 1024);
@@ -809,21 +808,21 @@ UINT SdioCdInitProcess(void)
 	}
 
 	// CMD 6
-	if (SdioCdSetClock() == DEF_FAIL) {
+	if (SdioCdSetClock() == ENX_FAIL) {
 		sdinfo.nErrorCode = 11;
 		goto done_fail;
 	}
 
 	// CMD 19
 	if(sdinfo.nVoltageMode == 1) {	// UHS-1 1.8v
-		if (SdioCdTuningCommand() == DEF_FAIL) {
+		if (SdioCdTuningCommand() == ENX_FAIL) {
 			sdinfo.nErrorCode = 12;
 			goto done_fail;
 		}
 	}
 
 	// CMD 16
-	if (SdioCdSetBlockLength() == DEF_FAIL) {
+	if (SdioCdSetBlockLength() == ENX_FAIL) {
 		sdinfo.nErrorCode = 13;
 		goto done_fail;
 	}
@@ -831,16 +830,16 @@ UINT SdioCdInitProcess(void)
 	sdinfo.nActive = 1;
 
 	SdioClockDivPrint(sdinfo.nCH, strClockPrint);
-	printf("SDIO%u(MicroSD) Init OK(%s)\n", sdinfo.nCH, strClockPrint);
+	_Gprintf("SDIO%u(MicroSD) Init OK(%s)\n", sdinfo.nCH, strClockPrint);
 
 	ENX_LOG_END(DBG_SDIO_CD_CMD);
-	return DEF_OK;
+	return ENX_OK;
 done_fail:
 	SdioClockDivPrint(sdinfo.nCH, strClockPrint);
-	printf("SDIO%u(MicroSD) Init Fail(err:%u)(%s)\n", sdinfo.nCH, sdinfo.nErrorCode, strClockPrint);
+	_Rprintf("SDIO%u(MicroSD) Init Fail(err:%u)(%s)\n", sdinfo.nCH, sdinfo.nErrorCode, strClockPrint);
 
 	ENX_LOG_END(DBG_SDIO_CD_CMD);
-	return DEF_FAIL;
+	return ENX_FAIL;
 }
 
 void SdioCdClockDown(void)
@@ -874,10 +873,10 @@ void SdioCdInit(UINT nCH)
 	sdinfo.nCH = nCH;
 	sdinfo.nErrorCode = 0;
 
-	GpioSetLo(SD_GPIO_RST); // LO:ON HI:OFF
+	GpioSetOut(SD_GPIO_RST, GPIO_OUT_LOW); // LO:ON HI:OFF
 	SdioSetDelayfn(sdinfo.nCH, (user_delay_fn)ENX_SDIOCD_DELAY);
 
-//	GpioInDir(SD_GPIO_IRQ);
+//	GpioSetDir(SD_GPIO_IRQ, GPIO_DIR_IN);
 //	GpioRiseEdge(SD_GPIO_IRQ);
 //	GpioIrqCallback(SD_GPIO_IRQ, SdioCdDetectIrq, NULL);
 //	GpioIrqOn(SD_GPIO_IRQ);
@@ -954,9 +953,10 @@ UINT SdioCdGetSize(void)
 	return nSector >> 11;
 }
 
-UINT SdioCdE(UINT start_sctor, UINT end_sctor)
+ENX_OKFAIL SdioCdE(UINT start_sctor, UINT end_sctor)
 {	// CMD32(R1), 33(R1), 38(R1b) : Erase
-	UINT nResp = 0, nRes, nBlocSp, nBlocEp;
+	ENX_OKFAIL nRes;
+	UINT nResp = 0, nBlocSp, nBlocEp;
 
 	ENX_LOG_START(DBG_SDIO_CD_CMD);
 
@@ -982,15 +982,23 @@ UINT SdioCdE(UINT start_sctor, UINT end_sctor)
 	return nRes;
 }
 
-UINT SdioCdRead(const BYTE *buff, UINT sector, UINT count)
+ENX_OKFAIL SdioCdRead(const BYTE *buff, UINT sector, UINT count)
 {
-	UINT nResp = 0, nRes, nAddr = 0, nGetByte = 0;
+	ENX_OKFAIL nRes;
+	UINT nResp = 0, nAddr = 0, nGetByte = 0;
 	UINT *getData = (UINT *)buff;
 
 	if(sdinfo.ocr.CCS) {
 		nAddr = sector;
 	} else {
 		nAddr = sector << 9;
+	}
+
+	if (SDIO0_DAT_BUSY) {
+		_Yprintf("SDIO0_DAT_BUSY\n");
+		while(SDIO0_DAT_BUSY) {
+			ENX_SDIOCD_DELAY(0);
+		}
 	}
 
 	while (SdioIsDataEn(sdinfo.nCH) == 1) {
@@ -1001,22 +1009,26 @@ UINT SdioCdRead(const BYTE *buff, UINT sector, UINT count)
 
 	ENX_SDIOCD_IRQ_LOCK();
 	ENX_SDIOCD_FLUSH_DCACHE((ULONG)getData, nGetByte);
-	printf("READ(%c)-start, Addr(0x%08X) Size(%u)\n", count == 1 ? 'S' : 'M', getData, nGetByte);
-	nRes = SdioDataIO(sdinfo.nCH, esditREAD, (ULONG)getData, nAddr, count);
+	//printf("READ(%c)-start, Addr(0x%08X) Size(%u)\n", count == 1 ? 'S' : 'M', getData, nGetByte);
+	nRes = SdioDataIO(sdinfo.nCH, count > 1 ? SDIO_DIO_MULTI_READ : SDIO_DIO_SINGLE_READ, (ULONG)getData, nAddr, count);
 	SdioGetResp(sdinfo.nCH, &nResp, ecrtR1);
-	ENX_SDIOCD_FLUSH_DCACHE((ULONG)getData, nGetByte);
+	//ENX_SDIOCD_FLUSH_DCACHE((ULONG)getData, nGetByte);
 	ENX_SDIOCD_IRQ_UNLOCK();
 
-	hexDump("READ-done", getData, nGetByte);
-	ENX_DEBUGF(DBG_SDIO_CD_DAT, "[%2u] res(%d) RESP(0x%08X)\n",
-			count == 1 ? SdioGetCmdDataS(sdinfo.nCH, esditREAD) : SdioGetCmdDataM(sdinfo.nCH, esditREAD), nRes, nResp);
+	//if (nGetByte > 1024)
+	//	hexDump("READ-done", getData, 1024);
+	//else
+	//	hexDump("READ-done", getData, nGetByte);
+	//ENX_DEBUGF(DBG_SDIO_CD_DAT, "[%2u] res(%d) RESP(0x%08X)\n",
+	//		count == 1 ? SdioGetCmdDataS(sdinfo.nCH, esditREAD) : SdioGetCmdDataM(sdinfo.nCH, esditREAD), nRes, nResp);
 
 	return nRes;
 }
 
-UINT SdioCdWrite(const BYTE *buff, UINT sector, UINT count)
+ENX_OKFAIL SdioCdWrite(const BYTE *buff, UINT sector, UINT count)
 {
-	UINT nResp = 0, nRes, nAddr = 0, nGetByte = 0;
+	ENX_OKFAIL nRes;
+	UINT nResp = 0, nAddr = 0, nGetByte = 0;
 	UINT *getData = (UINT *)buff;
 
 	if(sdinfo.ocr.CCS) {
@@ -1033,14 +1045,14 @@ UINT SdioCdWrite(const BYTE *buff, UINT sector, UINT count)
 
 	ENX_SDIOCD_IRQ_LOCK();
 	ENX_SDIOCD_FLUSH_DCACHE((ULONG)getData, nGetByte);
-	hexDump("WRITE-start", getData, nGetByte);
-	nRes = SdioDataIO(sdinfo.nCH, esditWRITE, (ULONG)getData, nAddr, count);
+	//hexDump("WRITE-start", getData, nGetByte);
+	nRes = SdioDataIO(sdinfo.nCH, count > 1 ? SDIO_DIO_MULTI_WRITE : SDIO_DIO_SINGLE_WRITE, (ULONG)getData, nAddr, count);
 	SdioGetResp(sdinfo.nCH, &nResp, ecrtR1);
 	ENX_SDIOCD_IRQ_UNLOCK();
 
-	printf("WRITE(%c)-done, Addr(0x%08X) Size(%u)\n", count == 1 ? 'S' : 'M', getData, nGetByte);
-	ENX_DEBUGF(DBG_SDIO_CD_DAT, "[%2u] res(%d) RESP(0x%08X) \n",
-			count == 1 ? SdioGetCmdDataS(sdinfo.nCH, esditWRITE) : SdioGetCmdDataM(sdinfo.nCH, esditWRITE), nRes, nResp);
+	//printf("WRITE(%c)-done, Addr(0x%08X) Size(%u)\n", count == 1 ? 'S' : 'M', getData, nGetByte);
+	//ENX_DEBUGF(DBG_SDIO_CD_DAT, "[%2u] res(%d) RESP(0x%08X) \n",
+	//		count == 1 ? SdioGetCmdDataS(sdinfo.nCH, esditWRITE) : SdioGetCmdDataM(sdinfo.nCH, esditWRITE), nRes, nResp);
 
 	return nRes;
 }

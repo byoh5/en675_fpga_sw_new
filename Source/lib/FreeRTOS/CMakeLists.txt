@@ -25,7 +25,7 @@ SET ( FREERTOS_HDRS
 	Source/include/stream_buffer.h
 	Source/include/task.h
 	Source/include/timers.h
-	Source/portable/GCC/RISCV/portmacro.h
+	Source/portable/GCC/RISC-V/portmacro.h
 )
 
 SET ( FREERTOS_SRCS
@@ -36,8 +36,8 @@ SET ( FREERTOS_SRCS
 	Source/stream_buffer.c
 	Source/tasks.c
 	Source/timers.c
-	Source/portable/GCC/RISCV/port.c
-	Source/portable/GCC/RISCV/portasm.S
+	Source/portable/GCC/RISC-V/port.c
+	Source/portable/GCC/RISC-V/portasm.S
 	Source/portable/MemMang/heap_5.c
 )
 

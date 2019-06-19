@@ -123,6 +123,7 @@ again:
  *
  * @param arg unused argument
  */
+
 static void
 tcpip_thread(void *arg)
 {

@@ -2,24 +2,14 @@
 
 #if USE_I2C0 | USE_I2C1 | USE_I2C2 | USE_I2C3 | USE_I2C4 | USE_I2C5 | USE_I2C6 | USE_I2C7 | USE_I2C8
 
-static _I2C_REG0 *arrI2CCONT[I2C_CNT];
-static _I2C_REG1 *arrI2CCLK[I2C_CNT];
-static _I2C_REG2 *arrI2CMST[I2C_CNT];
-static _I2C_REG3 *arrI2CSLV[I2C_CNT];
-static tIhnd arrI2CIrq[I2C_CNT];
+static volatile _I2C_REG0 * const arrI2CCONT[I2C_CNT] = {(_I2C_REG0 *)(REG_BASE_I2C0+(0<<3)), (_I2C_REG0 *)(REG_BASE_I2C1+(0<<3)), (_I2C_REG0 *)(REG_BASE_I2C2+(0<<3)), (_I2C_REG0 *)(REG_BASE_I2C3+(0<<3)), (_I2C_REG0 *)(REG_BASE_I2C4+(0<<3)), (_I2C_REG0 *)(REG_BASE_I2C5+(0<<3)), (_I2C_REG0 *)(REG_BASE_I2C6+(0<<3)), (_I2C_REG0 *)(REG_BASE_I2C7+(0<<3)), (_I2C_REG0 *)(REG_BASE_I2C8+(0<<3))};
+static volatile _I2C_REG1 * const arrI2CCLK[I2C_CNT]  = {(_I2C_REG1 *)(REG_BASE_I2C0+(1<<3)), (_I2C_REG1 *)(REG_BASE_I2C1+(1<<3)), (_I2C_REG1 *)(REG_BASE_I2C2+(1<<3)), (_I2C_REG1 *)(REG_BASE_I2C3+(1<<3)), (_I2C_REG1 *)(REG_BASE_I2C4+(1<<3)), (_I2C_REG1 *)(REG_BASE_I2C5+(1<<3)), (_I2C_REG1 *)(REG_BASE_I2C6+(1<<3)), (_I2C_REG1 *)(REG_BASE_I2C7+(1<<3)), (_I2C_REG1 *)(REG_BASE_I2C8+(1<<3))};
+static volatile _I2C_REG2 * const arrI2CMST[I2C_CNT]  = {(_I2C_REG2 *)(REG_BASE_I2C0+(2<<3)), (_I2C_REG2 *)(REG_BASE_I2C1+(2<<3)), (_I2C_REG2 *)(REG_BASE_I2C2+(2<<3)), (_I2C_REG2 *)(REG_BASE_I2C3+(2<<3)), (_I2C_REG2 *)(REG_BASE_I2C4+(2<<3)), (_I2C_REG2 *)(REG_BASE_I2C5+(2<<3)), (_I2C_REG2 *)(REG_BASE_I2C6+(2<<3)), (_I2C_REG2 *)(REG_BASE_I2C7+(2<<3)), (_I2C_REG2 *)(REG_BASE_I2C8+(2<<3))};
+static volatile _I2C_REG3 * const arrI2CSLV[I2C_CNT]  = {(_I2C_REG3 *)(REG_BASE_I2C0+(3<<3)), (_I2C_REG3 *)(REG_BASE_I2C1+(3<<3)), (_I2C_REG3 *)(REG_BASE_I2C2+(3<<3)), (_I2C_REG3 *)(REG_BASE_I2C3+(3<<3)), (_I2C_REG3 *)(REG_BASE_I2C4+(3<<3)), (_I2C_REG3 *)(REG_BASE_I2C5+(3<<3)), (_I2C_REG3 *)(REG_BASE_I2C6+(3<<3)), (_I2C_REG3 *)(REG_BASE_I2C7+(3<<3)), (_I2C_REG3 *)(REG_BASE_I2C8+(3<<3))};
+ISRD static tIhnd arrI2CIrq[I2C_CNT];
 
 void I2cInit(UINT nCH, UINT Speed_Hz)
 {
-	const uint64_t addrI2C[UART_CNT] = {
-			REG_BASE_I2C0, REG_BASE_I2C1, REG_BASE_I2C2, REG_BASE_I2C3, REG_BASE_I2C4,
-			REG_BASE_I2C5, REG_BASE_I2C6, REG_BASE_I2C7, REG_BASE_I2C8
-	};
-
-	arrI2CCONT[nCH] = (_I2C_REG0 *)(addrI2C[nCH] + (0 << 3));
-	arrI2CCLK[nCH] = (_I2C_REG1 *)(addrI2C[nCH] + (1 << 3));
-	arrI2CMST[nCH] = (_I2C_REG2 *)(addrI2C[nCH] + (2 << 3));
-	arrI2CSLV[nCH] = (_I2C_REG3 *)(addrI2C[nCH] + (3 << 3));
-
 	arrI2CCLK[nCH]->CLK_DIV = (MCK_FREQ / (8 * Speed_Hz) - 1);	// Clock divider for I2C controller
 	arrI2CCONT[nCH]->MODE = 0;		// Controller mode / 0:Master, 1:Slave
 	arrI2CCONT[nCH]->BIT_MODE = 0;	// Data bit direction / 0:MSB first, 1:LSB first
@@ -54,11 +44,6 @@ void I2cDeInit(UINT nCH)
 	arrI2CIrq[nCH].irqfn = NULL;
 	arrI2CIrq[nCH].arg = NULL;
 
-	arrI2CCONT[nCH] = NULL;
-	arrI2CCLK[nCH] = NULL;
-	arrI2CMST[nCH] = NULL;
-	arrI2CSLV[nCH] = NULL;
-
 	// pin mux setting
 	switch (nCH) {
 		case 0:	I2C0_PIN_DEINIT;	break;
@@ -78,6 +63,7 @@ UINT I2cWrite(UINT nCH, BYTE dat, BYTE last, BYTE repeat)
 	arrI2CCONT[nCH]->TX_DAT = dat;
 	arrI2CMST[nCH]->a = ((repeat<<3) | ((repeat | last)<<2) | 3);
 	while (arrI2CMST[nCH]->MST_GO);
+	printf("[%u]", arrI2CMST[nCH]->MST_ACK);
 	return arrI2CMST[nCH]->MST_ACK;
 }
 
@@ -88,24 +74,22 @@ UINT I2cRead(UINT nCH, BYTE last, BYTE repeat)
 	return arrI2CCONT[nCH]->RX_DAT;
 }
 
-UINT I2cCheck(UINT nCH, BYTE addr)
+ENX_OKFAIL I2cCheck(UINT nCH, BYTE addr)
 {
-	UINT flag = DEF_FAIL;
 	for (UINT i = 0; i < 10; i++) {
 		if (I2cWrite(nCH, addr, 1, 0) == 0) {
-			flag = DEF_OK;
-			break;
+			return ENX_OK;
 		}
 		WaitXus(10);
 	}
-	return flag;
+	return ENX_FAIL;
 }
 
 void I2cChCheck(UINT nCH)
 {
 	printf("I2C%u Address Test\n", nCH);
 	for (UINT i = 0; i < 256; i++) {
-		if (I2cCheck(nCH, i) == DEF_OK) {
+		if (I2cCheck(nCH, i) == ENX_OK) {
 			_printf("[%X]", i);
 		} else {
 			_printf(".");
@@ -114,20 +98,25 @@ void I2cChCheck(UINT nCH)
 	printf("Test Done.\n");
 }
 
+void I2cSlvTest(UINT nCH)
+{
+	arrI2CSLV[nCH]->a = 0;
+}
+
 void I2cIrqCallback(UINT nCH, irq_fn irqfn, void *arg)
 {
 	arrI2CIrq[nCH].irqfn = irqfn;
 	arrI2CIrq[nCH].arg = arg;
 }
 
-void I2cIrqOn(UINT nCH)
+void I2cSetIrqEn(UINT nCH, ENX_SWITCH sw)
 {
-	arrI2CCONT[nCH]->IRQ_EN = 1;
+	arrI2CCONT[nCH]->IRQ_EN = sw;
 }
 
-void I2cIrqOff(UINT nCH)
+ENX_SWITCH I2cGetIrqEn(UINT nCH)
 {
-	arrI2CCONT[nCH]->IRQ_EN = 0;
+	return arrI2CCONT[nCH]->IRQ_EN;
 }
 
 void I2cIrqClear(UINT nCH)
@@ -153,6 +142,7 @@ void IrqI2c(UINT nCH)
 #else
 void IrqI2c(UINT nCH)
 {
-	printf("I2C%u IRQ Get! I2C%u is inactive.\n", nCH, nCH);
+	_Rprintf("I2C%u IRQ Get! I2C%u is inactive.\n", nCH, nCH);
+	ENX_ASSERT(0);
 }
 #endif

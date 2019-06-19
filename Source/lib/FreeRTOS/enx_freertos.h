@@ -5,7 +5,7 @@
 #include "semphr.h"
 #include "timers.h"
 
-#define FreeRTOSVer "10.1.1"
+#define FreeRTOSVer "10.2.1" // May 13 2019
 
 extern void vMemoryHeapInit(void);
 extern void vMemoryHeapInfoPrint(void);
@@ -28,6 +28,9 @@ extern TaskHandle_t vTaskCreate(const char *name, TaskFunction_t thread, void *a
 #define LV3_STACK_SIZE		(32*1024)
 #define LV2_STACK_SIZE		(16*1024)
 #define LV1_STACK_SIZE		( 8*1024)
+#define LV0_STACK_SIZE		( 4*1024)
+
+extern void vPortSysTickHandler( void );
 
 extern volatile BYTE gbXsrTaskSwitchNeeded; // freeRTOS
 

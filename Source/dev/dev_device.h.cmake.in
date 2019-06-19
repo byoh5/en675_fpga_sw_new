@@ -1,7 +1,7 @@
 ﻿//******************************************************************************
 //	Copyright(c) Eyenix Co.,Ltd. 2003-
 //
-//	File Name:     dev_peri.h
+//	File Name:     dev_device.h
 //	Description:   EN675 Registere definition
 //	Author:        Team 2
 //
@@ -16,70 +16,157 @@
 #ifndef __DEV_DEVICE_H__
 #define __DEV_DEVICE_H__
 
+#define OSC_FREQ	${OSC_FREQ}
+#define MCK_FREQ	${MCK_FREQ}
+#define CPU_FREQ	${CPU_FREQ}
+
+#if ${USE_SFLS_EN25QH128A}
+#define __SFLS_EN25QH128A__
+#define __SFLS_EON__
+#define __SFLS_16MB__
+#endif
+#if ${USE_SFLS_EN25QH256}
+#define __SFLS_EN25QH256__
+#define __SFLS_EON__
+#define __SFLS_32MB__
+#endif
+#if ${USE_SFLS_W25Q64}
+#define __SFLS_W25Q64__
+#define __SFLS_WINBOND__
+#define __SFLS_8MB__
+#endif
+#if ${USE_SFLS_MX25L12835F}
+#define __SFLS_MX25L12835F__
+#define __SFLS_MACRONIX__
+#define __SFLS_16MB__
+#endif
+#if ${USE_SFLS_N25Q128A}
+#define __SFLS_N25Q128A__
+#define __SFLS_MICRON__
+#define __SFLS_16MB__
+#endif
+#if ${USE_SFLS_GD25Q128C}
+#define __SFLS_GD25Q128C__
+#define __SFLS_GIGADEVICE__
+#define __SFLS_16MB__
+#endif
+#if ${USE_SFLS_IS25LP064}
+#define __SFLS_IS25LP064__
+#define __SFLS_ISSI__
+#define __SFLS_8MB__
+#endif
+#if ${USE_SFLS_IS25LP128}
+#define __SFLS_IS25LP128__
+#define __SFLS_ISSI__
+#define __SFLS_16MB__
+#endif
+
+#if ${USE_FREERTOS}
+#define __FREERTOS__
+#endif // __FREERTOS__
+
+#if ${USE_ECM_STRING}
+#define __ECM_STRING__
+#endif // __ECM_STRING__
+
+#if ${USE_SENSOR}
+#define __SENSOR__
+#define SENSOR_RESET_GPIO_CH	${SENSOR_RESET_GPIO_CH}
+#define SENSOR_I2C_CH	${SENSOR_I2C_CH}
+#define SENSOR_SPI_CH	${SENSOR_SPI_CH}
+#endif // __SENSOR__
+
+#if ${USE_HDMI}
+#define __HDMI__
+#define HDMI_I2C_CA	0x90
+#define HDMI_I2C_CH	${HDMI_I2C_CH}
+#endif // __HDMI__
+
 #if ${USE_RTC}
 #define __RTC_LOAD__
-#define RTC_I2C_CH	${USE_RTC_I2C}
+#define RTC_I2C_CH	${RTC_I2C_CH}
 #if ${USE_RTC_PCF8563}
 #define __RTC_PCF8563__
+#define RTC_PCF8563_I2C_CA	0xa2
 #endif // __RTC_PCF8563__
 #if ${USE_RTC_S35390A}
 #define __RTC_S35390A__
+#define RTC_S35390A_I2C_CA	0x60
 #endif // __RTC_S35390A__
 #endif // __RTC_LOAD__
+
+#if ${USE_EEPROM}
+#define __EEPROM__
+#define EEPROM_I2C_CA	0xa0
+#define EEPROM_I2C_CH	${EEPROM_I2C_CH}
+#endif // __EEPROM__
 
 #if ${USE_NETWORK}
 #define __NETWORK__
 #if ${USE_ETHERNET}
 #define __ETHERNET__
-#define ETHPHY_GPIO_RST	${USE_ETHPHY_RST}
-#define ETHPHY_GPIO_IRQ	${USE_ETHPHY_IRQ}
+#define ETHPHY_GPIO_RST	${ETHPHY_RST_GPIO_CH}
+#define ETHPHY_GPIO_IRQ	${ETHPHY_IRQ_GPIO_CH}
 #define ETHPHY_MDIO_ADR	${USE_ETHPHY_MDIO_ADR}
 #if ${USE_ETHPHY_KSZ8081MNX}
 #define __ETHPHY_KSZ8081MNX__
+#define ETHPHY_TYPE_VAL 2
+#define ETHPHY_SPD_VAL 100
+#define ETHPHY_DUPLEX_VAL 2
 #endif // __ETHPHY_KSZ8081MNX__
 #if ${USE_ETHPHY_KSZ8081RNB}
 #define __ETHPHY_KSZ8081RNB__
+#define ETHPHY_TYPE_VAL 3
+#define ETHPHY_SPD_VAL 100
+#define ETHPHY_DUPLEX_VAL 2
 #endif // __ETHPHY_KSZ8081RNB__
 #if ${USE_ETHPHY_KSZ9031RNX}
 #define __ETHPHY_KSZ9031RNX__
+#define ETHPHY_TYPE_VAL 1
+#define ETHPHY_SPD_VAL 1000
+#define ETHPHY_DUPLEX_VAL 2
 #endif // __ETHPHY_KSZ9031RNX__
 #endif // __ETHERNET__
 #endif // __NETWORK__
 
 #if ${USE_AUDIO}
 #define __AUDIO__
-#define AUDIO_GPIO_RST	${USE_AUDIO_RST}
-#define AUDIO_GPIO_IRQ	${USE_AUDIO_IRQ}
-#define AUDIO_I2C_CH	${USE_AUDIO_I2C}
+#define AUDIO_GPIO_RST	${AUDIO_RST_GPIO_CH}
+#define AUDIO_GPIO_IRQ	${AUDIO_IRQ_GPIO_CH}
+#define AUDIO_I2C_CH	${AUDIO_I2C_CH}
+#if ${USE_AUDIO_TLV320AIC3206}
+#define __AUDIO_TLV320AIC3206__
+#define AUDIO_TLV320AIC3206_I2C_CA 0x30
+#endif
 #endif // __AUDIO__
 
 #if ${USE_LED0}
 #define __USE_LED0__
-#define GPIO_LED0	${USE_LED0_GPIO}
+#define GPIO_LED0	${LED0_GPIO_CH}
 #endif // __USE_LED0__
 
 #if ${USE_LED1}
 #define __USE_LED1__
-#define GPIO_LED1	${USE_LED1_GPIO}
+#define GPIO_LED1	${LED1_GPIO_CH}
 #endif // __USE_LED1__
 
 #if ${USE_LED2}
 #define __USE_LED2__
-#define GPIO_LED2	${USE_LED2_GPIO}
+#define GPIO_LED2	${LED2_GPIO_CH}
 #endif // __USE_LED2__
 
 #if ${USE_SD}
 #define __USE_SDIOCD__
 #define SD_GPIO_RST	${USE_SD_RST}
 #define SD_GPIO_IRQ	${USE_SD_IRQ}
-#define SD_SDIO_CH	${USE_SD_SDIO}
+#define SD_SDIO_CH	${SD_SDIO_CH}
 #endif // __USE_SDIOCD__
 
 #if ${USE_WF}
 #define __USE_WF__
 #define WF_GPIO_RST	${USE_WF_RST}
 #define WF_GPIO_IRQ	${USE_WF_IRQ}
-#define WF_SDIO_CH	${USE_WF_SDIO}
+#define WF_SDIO_CH	${WF_SDIO_CH}
 #endif // __USE_WF__
 
 #if ${USE_FIESYSTEM}

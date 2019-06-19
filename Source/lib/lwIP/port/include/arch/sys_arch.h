@@ -36,8 +36,8 @@
 #include "lwip/arch.h"
 
 #define SYS_ARCH_DECL_PROTECT(lev)
-#define SYS_ARCH_PROTECT(lev)		vPortEnterCritical()
-#define SYS_ARCH_UNPROTECT(lev)		vPortExitCritical()
+#define SYS_ARCH_PROTECT(lev)		portENTER_CRITICAL()
+#define SYS_ARCH_UNPROTECT(lev)		portEXIT_CRITICAL()
 
 /** This is returned by _fromisr() sys functions to tell the outermost function
  * that a higher priority task was woken and the scheduler needs to be invoked.

@@ -1,6 +1,6 @@
 /*
- * FreeRTOS Kernel V10.1.1
- * Copyright (C) 2018 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
+ * FreeRTOS Kernel V10.2.0
+ * Copyright (C) 2019 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -45,7 +45,7 @@
 //#include <stdint.h>
 
 #define configUSE_PREEMPTION                    1
-#define configUSE_PORT_OPTIMISED_TASK_SELECTION 0
+#define configUSE_PORT_OPTIMISED_TASK_SELECTION 1
 #define configUSE_TICKLESS_IDLE                 0
 //#define configCPU_CLOCK_HZ                      100000000
 //#define configTICK_CLOCK_HZ                     1000000
@@ -71,6 +71,7 @@
 #define configSUPPORT_DYNAMIC_ALLOCATION		1
 //#define configTOTAL_HEAP_SIZE					65536
 #define configAPPLICATION_ALLOCATED_HEAP		0
+#define configISR_STACK_SIZE_WORDS				4096 // 1024
 
 /* Hook function related definitions. */
 #define configUSE_IDLE_HOOK                     0

@@ -4,8 +4,8 @@
 #ifdef __RTC_PCF8563__
 
 /* I2C bus slave registers. */
-#define PCF8563_I2C_READ        0xa3
-#define PCF8563_I2C_WRITE       0xa2
+#define PCF8563_I2C_WRITE       (RTC_PCF8563_I2C_CA)
+#define PCF8563_I2C_READ        (PCF8563_I2C_WRITE | 1)
 
 /* Phillips PCF8563 registers. */
 #define PCF8563_CONTROL1        0x00            /* Control/Status register 1. */
@@ -32,7 +32,7 @@ typedef struct {
     int twentyfourhour;
 } pcf8563_t;
 
-int pcf8563_init(void);
+ENX_OKFAIL pcf8563_init(void);
 
 #endif
 #endif

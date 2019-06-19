@@ -2,7 +2,6 @@
 #include <time.h>	// struct tm
 #include <string.h> // memset
 
-#include "rtc.h"
 #include "pcf8563.h"
 #include "s35390a.h"
 
@@ -21,12 +20,12 @@ void rtc_init(void)
 {
 	rtc_clean();
 #ifdef __RTC_S35390A__
-	if(s35390a_init() == DEF_FAIL) {	// RTC Init
+	if(s35390a_init() == ENX_FAIL) {	// RTC Init
 		rtc_clean();					// init fail => rtc func pointer clean
 	}
 #endif
 #ifdef __RTC_PCF8563__
-	if (pcf8563_init() == DEF_FAIL) {	// RTC Init
+	if (pcf8563_init() == ENX_FAIL) {	// RTC Init
 		rtc_clean();					// init fail => rtc func pointer clean
 	}
 #endif
@@ -34,28 +33,28 @@ void rtc_init(void)
 
 /**
 	@return
-		FAIL : DEF_FAIL
-		OK   : DEF_OK
+		FAIL : ENX_FAIL
+		OK   : ENX_OK
 */
-int rtc_set_time(struct tm *_tm)
+ENX_OKFAIL rtc_set_time(struct tm *_tm)
 {
 	if(rtc_device.set_time)
 	{
 		return rtc_device.set_time(_tm);
 	}
-	return DEF_FAIL;
+	return ENX_FAIL;
 }
 
 /**
 	@return
-		FAIL : DEF_FAIL
-		OK   : DEF_OK
+		FAIL : ENX_FAIL
+		OK   : ENX_OK
 */
-int rtc_get_time(struct tm *_tm)
+ENX_OKFAIL rtc_get_time(struct tm *_tm)
 {
 	if(rtc_device.read_time)
 	{
 		return rtc_device.read_time(_tm);
 	}
-	return DEF_FAIL;
+	return ENX_FAIL;
 }

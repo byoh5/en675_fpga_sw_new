@@ -4,7 +4,6 @@
 #ifdef __RTC_S35390A__
 #include <string.h>
 #include <time.h>
-#include "rtc.h"
 #include "s35390a.h"
 
 #define I2C_LOCK	//while (CS_I2C2)
@@ -71,10 +70,10 @@ static UINT s35390a_check(void)
 	@param len : length of buf
 
 	@return :
-		DEF_OK : success.
-		DEF_FAIL : fail
+		ENX_OK : success.
+		ENX_FAIL : fail
 */
-static int 
+static ENX_OKFAIL 
 s35390a_read_regs(BYTE cmd, BYTE *buf, BYTE len)
 {
 	BYTE i = 0;
@@ -95,11 +94,11 @@ s35390a_read_regs(BYTE cmd, BYTE *buf, BYTE len)
 
 	I2C_UNLOCK;
 
-	return DEF_OK;
+	return ENX_OK;
 
 }
 
-static int 
+static ENX_OKFAIL 
 s35390a_write_regs(BYTE cmd, BYTE *buf, BYTE len)
 {
 	BYTE i = 0;
@@ -120,62 +119,58 @@ s35390a_write_regs(BYTE cmd, BYTE *buf, BYTE len)
 
 	I2C_UNLOCK;
 
-	return DEF_OK;
+	return ENX_OK;
 }
 
 /**
 	reset s35390a
 
 	@return
-		DEF_OK : OK
-		DEF_FAIL : FAIL
+		ENX_OK : OK
+		ENX_FAIL : FAIL
 */
-static int 
+static ENX_OKFAIL 
 s35390a_reset(void)
 {
 	BYTE buf[1];
-	int res;
 
-	if(s35390a_read_regs(S35390A_CMD_STATUS1, buf, sizeof(buf)) == DEF_FAIL)
-		return DEF_FAIL;
+	if(s35390a_read_regs(S35390A_CMD_STATUS1, buf, sizeof(buf)) == ENX_FAIL)
+		return ENX_FAIL;
 
 	if(!(buf[0] & (S35390A_FLAG_POC | S35390A_FLAG_BLD)))
-		return DEF_OK;
+		return ENX_OK;
 
 	buf[0] |= (S35390A_FLAG_RESET | S35390A_FLAG_24H);
 	buf[0] &= 0xf0;
 
-	if(s35390a_write_regs(S35390A_CMD_STATUS1, buf, sizeof(buf)) == DEF_FAIL)
-		return DEF_FAIL;
+	if(s35390a_write_regs(S35390A_CMD_STATUS1, buf, sizeof(buf)) == ENX_FAIL)
+		return ENX_FAIL;
 	
-	return DEF_OK;
+	return ENX_OK;
 }
 
 /**
 	@return 
-		DEF_OK : OK
-		DEF_FAIL : FAIL
+		ENX_OK : OK
+		ENX_FAIL : FAIL
 */
-static int 
+static ENX_OKFAIL 
 s35390a_disable_test_mode(void)
 {
 	BYTE buf[1];
-	int res;
 
-	res = ;
-
-	if(s35390a_read_regs(S35390A_CMD_STATUS2, buf, sizeof(buf)) == DEF_FAIL)
-		return DEF_FAIL;
+	if(s35390a_read_regs(S35390A_CMD_STATUS2, buf, sizeof(buf)) == ENX_FAIL)
+		return ENX_FAIL;
 
 	if(!(buf[0] & S35390A_FLAG_TEST))
-		return DEF_OK;
+		return ENX_OK;
 
 	buf[0] &= ~S35390A_FLAG_TEST;
 
-	if(s35390a_write_regs(S35390A_CMD_STATUS2, buf, sizeof(buf)) == DEF_FAIL)
-		return DEF_FAIL;
+	if(s35390a_write_regs(S35390A_CMD_STATUS2, buf, sizeof(buf)) == ENX_FAIL)
+		return ENX_FAIL;
 
-	return DEF_OK;
+	return ENX_OK;
 }
 
 static char 
@@ -205,14 +200,14 @@ s35390a_reg2hr(char reg)
 	return hour;
 }
 
-static int 
+static ENX_OKFAIL 
 s35390a_get_datetime(struct tm *_tm)
 {
 	int i;
 	BYTE buf[7];
 
-	if(s35390a_read_regs(S35390A_CMD_TIME1, buf, sizeof(buf)) == DEF_FAIL)
-		return DEF_FAIL;
+	if(s35390a_read_regs(S35390A_CMD_TIME1, buf, sizeof(buf)) == ENX_FAIL)
+		return ENX_FAIL;
 
 	/* This chip returns the bits of each byte in reverse order */
 	for(i=0;i<7;i++)
@@ -230,15 +225,15 @@ s35390a_get_datetime(struct tm *_tm)
 	return rtc_valid_tm(_tm);
 }
 
-static int 
+static ENX_OKFAIL 
 s35390a_set_datetime(struct tm *_tm)
 {
 	int i;
 	BYTE buf[7];
 //	printf("%s(%d) : sec(%d) min(%d) hour(%d) wday(%d) mday(%d) mon(%d) year(%d)\r\n", __func__, __LINE__, _tm->tm_sec, _tm->tm_min, _tm->tm_hour, _tm->tm_wday, _tm->tm_mday, _tm->tm_mon, _tm->tm_year);
 
-	if(rtc_valid_tm(_tm) == DEF_FAIL)
-		return DEF_FAIL;
+	if(rtc_valid_tm(_tm) == ENX_FAIL)
+		return ENX_FAIL;
 
 	buf[S35390A_BYTE_YEAR]  = bin2bcd(_tm->tm_year - 100);
 	buf[S35390A_BYTE_MONTH] = bin2bcd(_tm->tm_mon + 1);
@@ -260,17 +255,17 @@ s35390a_set_datetime(struct tm *_tm)
 	and init s35390
 
 	@return
-		0 : OK
-		1 : FAIL
+		0 : ENX_FAIL
+		1 : ENX_OK
 */
-int
+ENX_OKFAIL
 s35390a_init(void)
 {
 	BYTE buf[1];
  	struct tm _tm;
 	int get_res;
 
-	if(s35390a_check() == DEF_FAIL) 
+	if(s35390a_check() == ENX_FAIL) 
 	{
 		printf("  >>S35390A Not Connected...\r\n");
 		goto err;
@@ -278,14 +273,14 @@ s35390a_init(void)
 
 	printf("  >>S35390A Connected...\r\n");
 
-	if(s35390a_reset() == DEF_FAIL)
+	if(s35390a_reset() == ENX_FAIL)
 		goto err;
 
-	if(s35390a_disable_test_mode() == DEF_FAIL)
+	if(s35390a_disable_test_mode() == ENX_FAIL)
 		goto err;
 
 	get_res = s35390a_read_regs(S35390A_CMD_STATUS1, buf, sizeof(buf));
-	if(get_res == DEF_FAIL)
+	if(get_res == ENX_FAIL)
 		goto err;
 
 	if (buf[0] & S35390A_FLAG_24H)	s35390a.twentyfourhour = 1;
@@ -293,20 +288,20 @@ s35390a_init(void)
 
 	get_res = s35390a_get_datetime(&_tm);
 
-	if (get_res == DEF_FAIL)
+	if (get_res == ENX_FAIL)
 	{
 		printf("clock needs to be set\r\n");		
-		return DEF_FAIL;
+		return ENX_FAIL;
 	}
 
 	rtc_device.read_time = s35390a_get_datetime;
 	rtc_device.set_time  = s35390a_set_datetime;
 	strcpy(rtc_device.name, "S35390A");
 
-	return DEF_OK;
+	return ENX_OK;
 err:
     printf("rtc init is error\r\n");
-    return DEF_FAIL;
+    return ENX_FAIL;
 }
 #endif
 #endif

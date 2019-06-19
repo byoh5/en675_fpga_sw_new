@@ -1,6 +1,8 @@
 #ifndef _SDCARD_H_
 #define _SDCARD_H_
 
+#include "sdio_cd.h"
+
 //*************************************************************************************************
 // Misc
 //-------------------------------------------------------------------------------------------------
@@ -20,8 +22,10 @@ enum {
 //-------------------------------------------------------------------------------------------------
 // Function
 extern void SdcardTask(void *pvParameters);
+extern int getSDState(void);
 extern void getSDGBSizeT(char *buf);
 extern void getSDGBSizeU(UINT *buf);
+extern ENX_OKFAIL getSDTimeCheck(void);
 
 //-------------------------------------------------------------------------------------------------
 // Variable

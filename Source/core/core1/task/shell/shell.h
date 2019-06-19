@@ -24,7 +24,7 @@ typedef struct{
 #define	CMD_PREFILL         -6
 
 #define	CMDLINESIZE			64
-#define	ARGCNT				10
+#define	ARGCNT				16
 
 #define	CTLC				0x3
 
@@ -34,7 +34,7 @@ typedef struct{
 #define PROMPT_SIZE			30
 
 #define Shell_Unknown()	{	int __unknown; \
-							_printf("%s(%d) : errer case : input => ", __func__, __LINE__); \
+							_printf("    %4u:%s: errer case : input => ", __LINE__, __func__); \
 							for(__unknown=0;__unknown<argc;__unknown++) \
 								_printf("%s ", argv[__unknown]); \
 							_printf("\n"); \

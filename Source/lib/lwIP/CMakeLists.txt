@@ -221,12 +221,51 @@ set(lwipppp_HDRS
 # Port
 set(lwipport_HDRS
 	port/lwipopts.h
+	port/networkif.h
+	port/ethernetif.h
 	port/include/arch/cc.h
 	port/include/arch/perf.h
 	port/include/arch/sys_arch.h
 )
 set(lwipport_SRCS
 	port/sys_arch.c
+	port/networkif.c
+	port/ethernetif.c
+)
+
+# Apps
+set(lwipapps_HDRS
+	include/lwip/apps/altcp_proxyconnect.h
+	include/lwip/apps/altcp_tls_mbedtls_opts.h
+	include/lwip/apps/fs.h
+	include/lwip/apps/http_client.h
+	include/lwip/apps/httpd.h
+	include/lwip/apps/httpd_opts.h
+	include/lwip/apps/lwiperf.h
+	include/lwip/apps/mdns.h
+	include/lwip/apps/mdns_opts.h
+	include/lwip/apps/mdns_priv.h
+	include/lwip/apps/mqtt.h
+	include/lwip/apps/mqtt_opts.h
+	include/lwip/apps/mqtt_priv.h
+	include/lwip/apps/netbiosns.h
+	include/lwip/apps/netbiosns_opts.h
+	include/lwip/apps/smtp.h
+	include/lwip/apps/smtp_opts.h
+	include/lwip/apps/snmp.h
+	include/lwip/apps/snmp_core.h
+	include/lwip/apps/snmp_mib2.h
+	include/lwip/apps/snmp_opts.h
+	include/lwip/apps/snmp_scalar.h
+	include/lwip/apps/snmp_snmpv2_framework.h
+	include/lwip/apps/snmp_snmpv2_usm.h
+	include/lwip/apps/snmp_table.h
+	include/lwip/apps/snmp_threadsync.h
+	include/lwip/apps/snmpv3.h
+	include/lwip/apps/sntp.h
+	include/lwip/apps/sntp_opts.h
+	include/lwip/apps/tftp_opts.h
+	include/lwip/apps/tftp_server.h
 )
 
 SET ( LWIP_HDRS
@@ -238,6 +277,7 @@ SET ( LWIP_HDRS
 #	${lwipsixlowpan_HDRS}
 #	${lwipppp_HDRS}
 	${lwipport_HDRS}
+	${lwipapps_HDRS}
 )
 
 SET ( LWIP_SRCS

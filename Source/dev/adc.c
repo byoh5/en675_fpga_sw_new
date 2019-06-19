@@ -1,30 +1,43 @@
 #include "dev.h"
 
-static _ADC_REG0 *arrADC0;
-static _ADC_REG1 *arrADC1[ADC_CNT];
+static volatile _ADC_REG * const arrADC[ADC_CNT] = {
+		(_ADC_REG *)(REG_BASE_ADC+(1<<3)),
+		(_ADC_REG *)(REG_BASE_ADC+(2<<3)),
+		(_ADC_REG *)(REG_BASE_ADC+(3<<3)),
+		(_ADC_REG *)(REG_BASE_ADC+(4<<3)),
+		(_ADC_REG *)(REG_BASE_ADC+(5<<3)),
+		(_ADC_REG *)(REG_BASE_ADC+(6<<3)),
+		(_ADC_REG *)(REG_BASE_ADC+(7<<3)),
+		(_ADC_REG *)(REG_BASE_ADC+(8<<3))};
 
 void AdcInit(UINT Speed_Hz)
 {
-	arrADC0->CLK_LMT = (MCK_FREQ / Speed_Hz >> 1) - 1;
-	arrADC0->CKEN = 1;
-	for (uint64_t i = 0; i < ADC_CNT; i++) {
-		arrADC1[i] = (_ADC_REG1 *)(REG_BASE_ADC + ((i + 1) << 3));
-		arrADC1[i]->CHEN = 0;
+	ADC_CLK_LMT = (MCK_FREQ / Speed_Hz >> 1) - 1;
+	ADC_CKEN = 1;
+	for (uint64 i = 0; i < ADC_CNT; i++) {
+		arrADC[i]->EN = 0;
 	}
-	arrADC0->EN = 1;
+	ADC_EN = 1;
+
+	printf("ADC Init - %uHz\n", MCK_FREQ / ((ADC_CLK_LMT + 1) * 2));
 }
 
 void AdcOn(UINT nCH)
 {
-	arrADC1[nCH]->CHEN = 1;
+	arrADC[nCH]->EN = 1;
 }
 
 void AdcOff(UINT nCH)
 {
-	arrADC1[nCH]->CHEN = 0;
+	arrADC[nCH]->EN = 0;
+}
+
+BYTE AdcIsEnable(UINT nCH)
+{
+	return arrADC[nCH]->EN;
 }
 
 WORD AdcGet(UINT nCH)
 {
-	return (WORD)arrADC1[nCH]->DAT;
+	return (WORD)arrADC[nCH]->DAT;
 }

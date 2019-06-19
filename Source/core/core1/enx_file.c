@@ -7,6 +7,7 @@
 
 #include "enx_freertos.h"
 #include "enx_file.h"
+#include "sdcard.h"
 
 #include <stdlib.h>	// for atoi
 
@@ -143,7 +144,7 @@ FRESULT fat_mkdir(DriveNum dnNum, char *strPath)
 #endif
 #if (LOAD_FS_SDCARD==1)
 			if (dnNum == DEV_SD) {
-#if 1
+#if 0
 				flprintf("Disable f_mkfs\n");
 #else
 #if 1
@@ -173,7 +174,7 @@ FRESULT fat_mkdir(DriveNum dnNum, char *strPath)
 			}
 #endif
 		case FR_NO_PATH:
-#if 1
+#if 0
 			flprintf("Disable f_mkfs\n");
 #else
 			res = f_mkdir(strPath);
@@ -196,7 +197,7 @@ FRESULT fat_mkdir(DriveNum dnNum, char *strPath)
 BYTE fat_get_freesize(DriveNum dnNum)
 {
 	BYTE bFreesize = 0;
-#if 1
+#if 0
 	flprintf("Disable f_getfree\n");
 #else
 	FRESULT res;
@@ -292,7 +293,7 @@ FRESULT fat_ls(char *position)
 FRESULT fat_sdmkfs(DriveNum dnNum, int au)
 {
 	FRESULT res = FR_OK;
-#if 1
+#if 0
 	flprintf("Disable f_mkfs\n");
 #else
 	char drive[4] = {0};

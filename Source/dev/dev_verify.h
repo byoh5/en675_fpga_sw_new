@@ -24,4 +24,15 @@
 #endif
 #endif
 
+#if (USE_ETH==0)
+#if defined(__ETHERNET__)
+#error "You need to activate 'USE_ETH' or need to set USE_ETHERNET to 0."
+#endif
+#else
+#if !defined(__ETHERNET__)
+#error "You need to activate 'USE_ETH' or need to set USE_ETHERNET to 0."
+#endif
+#endif
+
+
 #endif //__DEV_VERIFY_H__

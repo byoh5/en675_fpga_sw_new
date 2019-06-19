@@ -16,6 +16,11 @@
 #ifndef __DEV_PERI_H__
 #define __DEV_PERI_H__
 
+#define EN675_FW_VERSION_MAJOR		${VERSION_MAJOR}
+#define EN675_FW_VERSION_MINOR		${VERSION_MINOR}
+#define EN675_FW_VERSION_PATCH		${VERSION_PATCH}
+#define EN675_FW_VERSION			${VERSION}
+
 // SDIO0 define
 #define USE_SDIO0			${USE_SDIO0}
 #if USE_SDIO0
@@ -47,6 +52,7 @@
 #define ETH_PIN_INIT
 #define ETH_PIN_DEINIT
 #endif
+#define MDIO_SPEED			${MDIO_SPEED}
 
 // USB define
 #define USE_USB				${USE_USB}
@@ -62,7 +68,7 @@
 #if USE_SPI0==2
 #define SPI0_PIN_INIT		SYS_GPIO0_MUX=2;SYS_GPIO1_MUX=2;SYS_GPIO2_MUX=2;SYS_GPIO3_MUX=2;
 #define SPI0_PIN_DEINIT		SYS_GPIO0_MUX=0;SYS_GPIO1_MUX=0;SYS_GPIO2_MUX=0;SYS_GPIO3_MUX=0;
-#elif ${USE_SPI0}==3
+#elif USE_SPI0==3
 #define SPI0_PIN_INIT		SYS_GPIO4_MUX=3;SYS_GPIO5_MUX=3;SYS_GPIO6_MUX=3;SYS_GPIO7_MUX=3;
 #define SPI0_PIN_DEINIT		SYS_GPIO4_MUX=0;SYS_GPIO5_MUX=0;SYS_GPIO6_MUX=0;SYS_GPIO7_MUX=0;
 #else
@@ -70,6 +76,8 @@
 #define SPI0_PIN_DEINIT
 #endif
 #define SPI0_SPEED			${SPI0_SPEED}
+#define SPI0_BIT			${SPI0_BIT}
+#define SPI0_LSB			${SPI0_LSB}
 
 // SPI1 define
 #define USE_SPI1			${USE_SPI1}
@@ -84,6 +92,8 @@
 #define SPI1_PIN_DEINIT
 #endif
 #define SPI1_SPEED			${SPI1_SPEED}
+#define SPI1_BIT			${SPI1_BIT}
+#define SPI1_LSB			${SPI1_LSB}
 
 // SPI2 define
 #define USE_SPI2			${USE_SPI2}
@@ -98,6 +108,8 @@
 #define SPI2_PIN_DEINIT
 #endif
 #define SPI2_SPEED			${SPI2_SPEED}
+#define SPI2_BIT			${SPI2_BIT}
+#define SPI2_LSB			${SPI2_LSB}
 
 // SPI3 define
 #define USE_SPI3			${USE_SPI3}
@@ -112,7 +124,8 @@
 #define SPI3_PIN_DEINIT
 #endif
 #define SPI3_SPEED			${SPI3_SPEED}
-
+#define SPI3_BIT			${SPI3_BIT}
+#define SPI3_LSB			${SPI3_LSB}
 
 // SPI4 define
 #define USE_SPI4			${USE_SPI4}
@@ -127,6 +140,8 @@
 #define SPI4_PIN_DEINIT
 #endif
 #define SPI4_SPEED			${SPI4_SPEED}
+#define SPI4_BIT			${SPI4_BIT}
+#define SPI4_LSB			${SPI4_LSB}
 
 // SPI5 define
 #define USE_SPI5			${USE_SPI5}
@@ -141,6 +156,8 @@
 #define SPI5_PIN_DEINIT
 #endif
 #define SPI5_SPEED			${SPI5_SPEED}
+#define SPI5_BIT			${SPI5_BIT}
+#define SPI5_LSB			${SPI5_LSB}
 
 // SPI6 define
 #define USE_SPI6			${USE_SPI6}
@@ -155,6 +172,8 @@
 #define SPI6_PIN_DEINIT
 #endif
 #define SPI6_SPEED			${SPI6_SPEED}
+#define SPI6_BIT			${SPI6_BIT}
+#define SPI6_LSB			${SPI6_LSB}
 
 // SPI7 define
 #define USE_SPI7			${USE_SPI7}
@@ -169,7 +188,8 @@
 #define SPI7_PIN_DEINIT
 #endif
 #define SPI7_SPEED			${SPI7_SPEED}
-
+#define SPI7_BIT			${SPI7_BIT}
+#define SPI7_LSB			${SPI7_LSB}
 
 // SPI8 define
 #define USE_SPI8			${USE_SPI8}
@@ -184,6 +204,8 @@
 #define SPI8_PIN_DEINIT
 #endif
 #define SPI8_SPEED			${SPI8_SPEED}
+#define SPI8_BIT			${SPI8_BIT}
+#define SPI8_LSB			${SPI8_LSB}
 
 // I2C0 define
 #define USE_I2C0			${USE_I2C0}

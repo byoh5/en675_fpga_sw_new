@@ -80,8 +80,8 @@
 #define ETHPHY_ANLPAR_ASY_PAUSE			(1<<11) // Asymmetric pause
 #define ETHPHY_ANLPAR_SY_PAUSE			(1<<10) // Symmetric pause
 #define ETHPHY_ANLPAR_100BASE4			(1<< 9) // 100BASE-T4
-#define ETHPHY_ANLPAR_100HALF			(1<< 7) // 100BASE-TX Full-Duplex
-#define ETHPHY_ANLPAR_100FULL			(1<< 8) // 100BASE_TX Half-Duplex
+#define ETHPHY_ANLPAR_100FULL			(1<< 8) // 100BASE_TX Full-Duplex
+#define ETHPHY_ANLPAR_100HALF			(1<< 7) // 100BASE-TX Half-Duplex
 #define ETHPHY_ANLPAR_10FULL			(1<< 6) // 10BASE-T Full-Duplex
 #define ETHPHY_ANLPAR_10HALF			(1<< 5) // 10BASE_T Half-Duplex
 #define ETHPHY_ANLPAR_SELECTOR_FIELD	(0x001F)// Selector Field
@@ -91,7 +91,7 @@
 #define ETHPHY_ANER_PARTNER_NEXT_PAGE	(1<< 3)	// Link Partner Next Page Able
 #define ETHPHY_ANER_NEXT_PAGE			(1<< 2)	// Next Page Able
 #define ETHPHY_ANER_PAGE_RECEIVED		(1<< 1)	// Page Received
-#define ETHPHY_ANER_PARTNER_AUTONEG		(1<< 10)// Link Partner Auto-Negotiation Able
+#define ETHPHY_ANER_PARTNER_AUTONEG		(1<< 0)// Link Partner Auto-Negotiation Able
 
 // Auto-Negotiation Next Page Register(0x7) Bit field
 #define ETHPHY_ANNPR_MESSAGE_PAGE		(1<<13)	// Message Page

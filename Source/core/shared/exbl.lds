@@ -3,8 +3,8 @@ OUTPUT_ARCH( "riscv" )
 MEMORY
 {
 	FLASH   : ORIGIN = 0xC0000000,                              LENGTH = 0x10000
-	SRAM    : ORIGIN = 0xA0000000,                              LENGTH = 0x40000
-	DDR     : ORIGIN = 0x80000000,                              LENGTH = 0x100000
+	SRAM    : ORIGIN = 0xA0000000,                              LENGTH = 0x100000
+	DDR     : ORIGIN = 0x80000000,                              LENGTH = 0x4000000
 }
 
 
@@ -70,6 +70,7 @@ SECTIONS
   /* data: Writable data */
   .data : 
   {
+    *(.ispmdata)
     *(.data)
     *(.data.*)
     *(.srodata*)
@@ -107,15 +108,17 @@ SECTIONS
     *(COMMON)
 
   __bss_e = .; 
-  } > SRAM
+  } > DDR
 
+/*} > SRAM */
   .heap : {
-   . = ALIGN(4);
+   . = ALIGN(64);
    _heap = .;
    _heap_start = .;
-   . += (64*1024);
+   . += (4*1024*1024);
    _heap_end = .;
-  } > SRAM
+  } > DDR
+/*} > SRAM */
 
   .sbi :
   {

@@ -1,18 +1,19 @@
 #include "dev.h"
 
 #include <time.h>
-#include "rtc.h"
 
 static const unsigned char rtc_days_in_month[] = {
 	31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
 };
 
+#if 0
 static const unsigned short rtc_ydays[2][13] = {
 	/* Normal years */
 	{ 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365 },
 	/* Leap years */
 	{ 0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366 }
 };
+#endif
 
 #define LEAPS_THRU_END_OF(y) ((y)/4 - (y)/100 + (y)/400)
 
@@ -27,10 +28,10 @@ int rtc_month_days(unsigned int month, unsigned int year)
 /*
  * Does the rtc_time represent a valid date/time?
 	@return 
-		OK   : DEF_OK
-		FAIL : DEF_FAIL
+		OK   : ENX_OK
+		FAIL : ENX_FAIL
 */
-int rtc_valid_tm(struct tm *_tm)
+ENX_OKFAIL rtc_valid_tm(struct tm *_tm)
 {
 	_tm->tm_isdst = 1;	// 입력값이 GMT+0시간이므로 1을 적용
 	if (_tm->tm_year < 70
@@ -40,6 +41,6 @@ int rtc_valid_tm(struct tm *_tm)
 		|| ((unsigned)_tm->tm_hour) >= 24
 		|| ((unsigned)_tm->tm_min) >= 60
 		|| ((unsigned)_tm->tm_sec) >= 60)
-		return DEF_FAIL;
-	return DEF_OK;
+		return ENX_FAIL;
+	return ENX_OK;
 }

@@ -30,6 +30,8 @@
 // 1. Function Debug Flag
 //------------------------------------------------------------------------------
 
+#define DGB_DMA_MSG				(ENX_DBG_OFF)
+
 #define DBG_SDIO_CD_CMD			(ENX_DBG_ON | ENX_DBG_STATE)
 #define DBG_SDIO_CD_DAT			(ENX_DBG_ON)
 #define DBG_SDIO_CD_ERR			(ENX_DBG_ON)
@@ -37,10 +39,11 @@
 
 #define DBG_ETHPHY_MSG			(ENX_DBG_ON)
 //#define DBG_ETHPHY_LOG			(ENX_DBG_ON)
-//#define DBG_ETHPHY_LOG			(ENX_DBG_ON | ENX_DBG_STATE)
-#define DBG_ETHPHY_LOG			(ENX_DBG_OFF)
+#define DBG_ETHPHY_LOG			(ENX_DBG_ON | ENX_DBG_STATE)
+//#define DBG_ETHPHY_LOG			(ENX_DBG_OFF)
 #define DBG_ETHPHY_ERR			(ENX_DBG_ON)
-#define DBG_MDIO_LOG			(ENX_DBG_OFF)
+#define DBG_MDIO_LOG			(ENX_DBG_ON)
+
 
 //******************************************************************************
 // 2. Debug Log
@@ -69,5 +72,7 @@
 #define ENX_LOG_START(debug)			do { } while(0);
 #define ENX_LOG_END(debug)				do { } while(0);
 #endif
+
+#define ENX_ASSERT(x)                         if( ( x ) == 0 ) { __asm volatile("csrc mstatus, 8"); printf("(%04d)%s : Assert!\n", __LINE__, __func__); for( ;; ); }
 
 #endif //__DEV_DEBUG_H__

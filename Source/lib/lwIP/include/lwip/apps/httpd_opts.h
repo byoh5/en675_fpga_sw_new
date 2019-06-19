@@ -128,7 +128,7 @@
 
 /* The maximum number of parameters that the CGI handler can be sent. */
 #if !defined LWIP_HTTPD_MAX_CGI_PARAMETERS || defined __DOXYGEN__
-#define LWIP_HTTPD_MAX_CGI_PARAMETERS 16
+#define LWIP_HTTPD_MAX_CGI_PARAMETERS 25 // 16
 #endif
 
 /** LWIP_HTTPD_SSI_MULTIPART==1: SSI handler function is called with 2 more
@@ -150,7 +150,7 @@
  * If this buffer is not long enough, use LWIP_HTTPD_SSI_MULTIPART.
  */
 #if !defined LWIP_HTTPD_MAX_TAG_INSERT_LEN || defined __DOXYGEN__
-#define LWIP_HTTPD_MAX_TAG_INSERT_LEN 192
+#define LWIP_HTTPD_MAX_TAG_INSERT_LEN (1024*3) // 192
 #endif
 
 #if !defined LWIP_HTTPD_POST_MANUAL_WND || defined __DOXYGEN__
@@ -159,7 +159,8 @@
 
 /** This string is passed in the HTTP header as "Server: " */
 #if !defined HTTPD_SERVER_AGENT || defined __DOXYGEN__
-#define HTTPD_SERVER_AGENT "lwIP/" LWIP_VERSION_STRING " (http://savannah.nongnu.org/projects/lwip)"
+//#define HTTPD_SERVER_AGENT "lwIP/" LWIP_VERSION_STRING " (http://savannah.nongnu.org/projects/lwip)"
+#define HTTPD_SERVER_AGENT DEVICE_SYSTEM_REALM
 #endif
 
 /** Set this to 1 if you want to include code that creates HTTP headers
@@ -168,7 +169,7 @@
  * the (readonly) fsdata will grow a bit as every file includes the HTTP
  * header. */
 #if !defined LWIP_HTTPD_DYNAMIC_HEADERS || defined __DOXYGEN__
-#define LWIP_HTTPD_DYNAMIC_HEADERS 0
+#define LWIP_HTTPD_DYNAMIC_HEADERS 1 // 0
 #endif
 
 #if !defined HTTPD_DEBUG || defined __DOXYGEN__
@@ -210,7 +211,7 @@
 
 /** The poll delay is X*500ms */
 #if !defined HTTPD_POLL_INTERVAL || defined __DOXYGEN__
-#define HTTPD_POLL_INTERVAL                 4
+#define HTTPD_POLL_INTERVAL                 1
 #endif
 
 /** Priority for tcp pcbs created by HTTPD (very low by default).
@@ -232,12 +233,12 @@
 /** Set this to one to show error pages when parsing a request fails instead
     of simply closing the connection. */
 #if !defined LWIP_HTTPD_SUPPORT_EXTSTATUS || defined __DOXYGEN__
-#define LWIP_HTTPD_SUPPORT_EXTSTATUS        0
+#define LWIP_HTTPD_SUPPORT_EXTSTATUS        1 // 0
 #endif
 
 /** Set this to 0 to drop support for HTTP/0.9 clients (to save some bytes) */
 #if !defined LWIP_HTTPD_SUPPORT_V09 || defined __DOXYGEN__
-#define LWIP_HTTPD_SUPPORT_V09              1
+#define LWIP_HTTPD_SUPPORT_V09              0 // 1
 #endif
 
 /** Set this to 1 to enable HTTP/1.1 persistent connections.
@@ -270,7 +271,7 @@
     copied from pbuf into this a global buffer when pbuf- or packet-queues
     are received - otherwise the input pbuf is used directly) */
 #if !defined LWIP_HTTPD_MAX_REQ_LENGTH || defined __DOXYGEN__
-#define LWIP_HTTPD_MAX_REQ_LENGTH           LWIP_MIN(1023, (LWIP_HTTPD_REQ_QUEUELEN * PBUF_POOL_BUFSIZE))
+#define LWIP_HTTPD_MAX_REQ_LENGTH           LWIP_MIN(2047, (LWIP_HTTPD_REQ_QUEUELEN * PBUF_POOL_BUFSIZE))
 #endif
 #endif /* LWIP_HTTPD_SUPPORT_REQUESTLIST */
 
@@ -325,7 +326,7 @@
 /* By default, the httpd is limited to send 2*pcb->mss to keep resource usage low
    when http is not an important protocol in the device. */
 #if !defined HTTPD_LIMIT_SENDING_TO_2MSS || defined __DOXYGEN__
-#define HTTPD_LIMIT_SENDING_TO_2MSS 1
+#define HTTPD_LIMIT_SENDING_TO_2MSS 0 // 1
 #endif
 
 /* Define this to a function that returns the maximum amount of data to enqueue.

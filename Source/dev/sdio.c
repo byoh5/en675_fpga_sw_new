@@ -1,52 +1,34 @@
 #include "dev.h"
-#include "exbl.h"
+
+#if USE_SDIO0 | USE_SDIO1
 
 #include <stdio.h> // sprintf
 
-static _SDIO_REG0 *arrSDIOReg0[SDIO_CNT];
-static _SDIO_REG1 *arrSDIOReg1[SDIO_CNT];
-static _SDIO_REG2 *arrSDIOReg2[SDIO_CNT];
-static _SDIO_REG3 *arrSDIOReg3[SDIO_CNT];
-static _SDIO_REG4 *arrSDIOReg4[SDIO_CNT];
-static _SDIO_REG5 *arrSDIOReg5[SDIO_CNT];
-static _SDIO_REG6 *arrSDIOReg6[SDIO_CNT];
-static _SDIO_REG7 *arrSDIOReg7[SDIO_CNT];
-static _SDIO_REG8 *arrSDIOReg8[SDIO_CNT];
-static _SDIO_REG9 *arrSDIOReg9[SDIO_CNT];
-static _SDIO_REG10 *arrSDIOReg10[SDIO_CNT];
-static _SDIO_REG11 *arrSDIOReg11[SDIO_CNT];
-static _SDIO_REG12 *arrSDIOReg12[SDIO_CNT];
-static _SDIO_REG13 *arrSDIOReg13[SDIO_CNT];
-static _SDIO_REG14 *arrSDIOReg14[SDIO_CNT];
-static _SDIO_REG15 *arrSDIOReg15[SDIO_CNT];
-static _SDIO_REG16 *arrSDIOReg16[SDIO_CNT];
-static tIhnd arrSDIOIrq_Io[SDIO_CNT];
-static tIhnd arrSDIOIrq_Cmd[SDIO_CNT];
-static tIhnd arrSDIOIrq_Dat[SDIO_CNT];
-static user_delay_fn delay[SDIO_CNT] = {WaitXus, WaitXus};
-static UINT arrSDIODefSpeed[SDIO_CNT];
+static volatile _SDIO_REG0 * const arrSDIOReg0[SDIO_CNT]   = {(_SDIO_REG0 *)(REG_BASE_SDIO0+(0<<3)), (_SDIO_REG0 *)(REG_BASE_SDIO1+(0<<3))};
+static volatile _SDIO_REG1 * const arrSDIOReg1[SDIO_CNT]   = {(_SDIO_REG1 *)(REG_BASE_SDIO0+(1<<3)), (_SDIO_REG1 *)(REG_BASE_SDIO1+(1<<3))};
+static volatile _SDIO_REG2 * const arrSDIOReg2[SDIO_CNT]   = {(_SDIO_REG2 *)(REG_BASE_SDIO0+(2<<3)), (_SDIO_REG2 *)(REG_BASE_SDIO1+(2<<3))};
+static volatile _SDIO_REG3 * const arrSDIOReg3[SDIO_CNT]   = {(_SDIO_REG3 *)(REG_BASE_SDIO0+(3<<3)), (_SDIO_REG3 *)(REG_BASE_SDIO1+(3<<3))};
+static volatile _SDIO_REG4 * const arrSDIOReg4[SDIO_CNT]   = {(_SDIO_REG4 *)(REG_BASE_SDIO0+(4<<3)), (_SDIO_REG4 *)(REG_BASE_SDIO1+(4<<3))};
+static volatile _SDIO_REG5 * const arrSDIOReg5[SDIO_CNT]   = {(_SDIO_REG5 *)(REG_BASE_SDIO0+(5<<3)), (_SDIO_REG5 *)(REG_BASE_SDIO1+(5<<3))};
+static volatile _SDIO_REG6 * const arrSDIOReg6[SDIO_CNT]   = {(_SDIO_REG6 *)(REG_BASE_SDIO0+(6<<3)), (_SDIO_REG6 *)(REG_BASE_SDIO1+(6<<3))};
+static volatile _SDIO_REG7 * const arrSDIOReg7[SDIO_CNT]   = {(_SDIO_REG7 *)(REG_BASE_SDIO0+(7<<3)), (_SDIO_REG7 *)(REG_BASE_SDIO1+(7<<3))};
+static volatile _SDIO_REG8 * const arrSDIOReg8[SDIO_CNT]   = {(_SDIO_REG8 *)(REG_BASE_SDIO0+(8<<3)), (_SDIO_REG8 *)(REG_BASE_SDIO1+(8<<3))};
+static volatile _SDIO_REG9 * const arrSDIOReg9[SDIO_CNT]   = {(_SDIO_REG9 *)(REG_BASE_SDIO0+(9<<3)), (_SDIO_REG9 *)(REG_BASE_SDIO1+(9<<3))};
+static volatile _SDIO_REG10 * const arrSDIOReg10[SDIO_CNT] = {(_SDIO_REG10 *)(REG_BASE_SDIO0+(10<<3)), (_SDIO_REG10 *)(REG_BASE_SDIO1+(10<<3))};
+static volatile _SDIO_REG11 * const arrSDIOReg11[SDIO_CNT] = {(_SDIO_REG11 *)(REG_BASE_SDIO0+(11<<3)), (_SDIO_REG11 *)(REG_BASE_SDIO1+(11<<3))};
+static volatile _SDIO_REG12 * const arrSDIOReg12[SDIO_CNT] = {(_SDIO_REG12 *)(REG_BASE_SDIO0+(12<<3)), (_SDIO_REG12 *)(REG_BASE_SDIO1+(12<<3))};
+static volatile _SDIO_REG13 * const arrSDIOReg13[SDIO_CNT] = {(_SDIO_REG13 *)(REG_BASE_SDIO0+(13<<3)), (_SDIO_REG13 *)(REG_BASE_SDIO1+(13<<3))};
+static volatile _SDIO_REG14 * const arrSDIOReg14[SDIO_CNT] = {(_SDIO_REG14 *)(REG_BASE_SDIO0+(14<<3)), (_SDIO_REG14 *)(REG_BASE_SDIO1+(14<<3))};
+static volatile _SDIO_REG15 * const arrSDIOReg15[SDIO_CNT] = {(_SDIO_REG15 *)(REG_BASE_SDIO0+(15<<3)), (_SDIO_REG15 *)(REG_BASE_SDIO1+(15<<3))};
+static volatile _SDIO_REG16 * const arrSDIOReg16[SDIO_CNT] = {(_SDIO_REG16 *)(REG_BASE_SDIO0+(16<<3)), (_SDIO_REG16 *)(REG_BASE_SDIO1+(16<<3))};
+ISRD static tIhnd arrSDIOIoIrq[SDIO_CNT];
+ISRD static tIhnd arrSDIOCmdIrq[SDIO_CNT];
+ISRD static tIhnd arrSDIODatIrq[SDIO_CNT];
+ISRD static user_delay_fn delay[SDIO_CNT] = {WaitXus, WaitXus};
+ISRD static UINT arrSDIODefSpeed[SDIO_CNT];
 
 void SdioInit(UINT nCH, UINT Speed_Hz)
 {
-	const uint64_t addrSDIO[SDIO_CNT] = {REG_BASE_SDIO0, REG_BASE_SDIO1};
-
-	arrSDIOReg0[nCH] = (_SDIO_REG0 *)(addrSDIO[nCH] + (0 << 3));
-	arrSDIOReg1[nCH] = (_SDIO_REG1 *)(addrSDIO[nCH] + (1 << 3));
-	arrSDIOReg2[nCH] = (_SDIO_REG2 *)(addrSDIO[nCH] + (2 << 3));
-	arrSDIOReg3[nCH] = (_SDIO_REG3 *)(addrSDIO[nCH] + (3 << 3));
-	arrSDIOReg4[nCH] = (_SDIO_REG4 *)(addrSDIO[nCH] + (4 << 3));
-	arrSDIOReg5[nCH] = (_SDIO_REG5 *)(addrSDIO[nCH] + (5 << 3));
-	arrSDIOReg6[nCH] = (_SDIO_REG6 *)(addrSDIO[nCH] + (6 << 3));
-	arrSDIOReg7[nCH] = (_SDIO_REG7 *)(addrSDIO[nCH] + (7 << 3));
-	arrSDIOReg8[nCH] = (_SDIO_REG8 *)(addrSDIO[nCH] + (8 << 3));
-	arrSDIOReg9[nCH] = (_SDIO_REG9 *)(addrSDIO[nCH] + (9 << 3));
-	arrSDIOReg10[nCH] = (_SDIO_REG10 *)(addrSDIO[nCH] + (10 << 3));
-	arrSDIOReg11[nCH] = (_SDIO_REG11 *)(addrSDIO[nCH] + (11 << 3));
-	arrSDIOReg12[nCH] = (_SDIO_REG12 *)(addrSDIO[nCH] + (12 << 3));
-	arrSDIOReg13[nCH] = (_SDIO_REG13 *)(addrSDIO[nCH] + (13 << 3));
-	arrSDIOReg14[nCH] = (_SDIO_REG14 *)(addrSDIO[nCH] + (14 << 3));
-	arrSDIOReg15[nCH] = (_SDIO_REG15 *)(addrSDIO[nCH] + (15 << 3));
-	arrSDIOReg16[nCH] = (_SDIO_REG16 *)(addrSDIO[nCH] + (16 << 3));
 #if 1
 	arrSDIOReg13[nCH]->IO_IRQ_EN = 0;
 	arrSDIOReg13[nCH]->CMD_IRQ_EN = 0;
@@ -63,24 +45,31 @@ void SdioInit(UINT nCH, UINT Speed_Hz)
 #else
 	SdioRegShow(nCH, DEF_YES);
 #endif
-	arrSDIOIrq_Io[nCH].irqfn = NULL;
-	arrSDIOIrq_Io[nCH].arg = NULL;
-	arrSDIOIrq_Cmd[nCH].irqfn = NULL;
-	arrSDIOIrq_Cmd[nCH].arg = NULL;
-	arrSDIOIrq_Dat[nCH].irqfn = NULL;
-	arrSDIOIrq_Dat[nCH].arg = NULL;
+	arrSDIOIoIrq[nCH].irqfn = NULL;
+	arrSDIOIoIrq[nCH].arg = NULL;
+	arrSDIOCmdIrq[nCH].irqfn = NULL;
+	arrSDIOCmdIrq[nCH].arg = NULL;
+	arrSDIODatIrq[nCH].irqfn = NULL;
+	arrSDIODatIrq[nCH].arg = NULL;
+
+	arrSDIOReg0[nCH]->CMD_TXEDGE = 1;
+	arrSDIOReg0[nCH]->CMD_RXEDGE = 0;
+	arrSDIOReg0[nCH]->DAT_RXEDGE = 0;
+	arrSDIOReg0[nCH]->DAT_TXEDGE = 0;
+	//printf("CMD RXE(%u)TXE(%u)\n", arrSDIOReg0[nCH]->CMD_RXEDGE, arrSDIOReg0[nCH]->CMD_TXEDGE);
+	//printf("DAT RXE(%u)TXE(%u)\n", arrSDIOReg0[nCH]->DAT_RXEDGE, arrSDIOReg0[nCH]->DAT_TXEDGE);
 
 	arrSDIODefSpeed[nCH] = Speed_Hz;
 
 	printf("SDIO%d Init - %uHz\n", nCH, MCK_FREQ / ((arrSDIOReg1[nCH]->CLK_DIV + 1) * 2));
 }
 
-UINT SdioCmd(UINT nCH, BYTE Cmd, UINT Arg, UINT *nResp, eCmdRespType cmdType)
+ENX_OKFAIL SdioCmd(UINT nCH, BYTE Cmd, UINT Arg, UINT *nResp, eCmdRespType cmdType)
 {
-	UINT nRes = DEF_OK;
+	ENX_OKFAIL nRes = ENX_OK;
 
 	while (arrSDIOReg3[nCH]->CMD_EN) {
-		delay[nCH](1);
+		//delay[nCH](1);
 	}
 
 	arrSDIOReg3[nCH]->CMD_IDX = Cmd;
@@ -115,27 +104,27 @@ UINT SdioCmd(UINT nCH, BYTE Cmd, UINT Arg, UINT *nResp, eCmdRespType cmdType)
 			//printf("1 CMD(%u) Arg(%u) CRCERR(%u:0x%02X), RESPTOUT(%u)\n", Cmd, Arg, arrSDIOReg3[nCH]->CMD_RESP_CRCERR, arrSDIOReg4[nCH]->CMD_RESP_CRC, arrSDIOReg3[nCH]->CMD_RESP_TOUT);
 			//break;
 		//}
-		delay[nCH](1);
+		//delay[nCH](1);
 	}
 
 	if (Cmd == 2 || Cmd == 9 || Cmd == 10 || Cmd == 41) {
 		if (arrSDIOReg3[nCH]->CMD_RESP_TOUT) {
 			printf("CMD(%u) Arg(%u) CRCERR(%u:0x%02X), RESPTOUT(%u) 1\n", Cmd, Arg, arrSDIOReg3[nCH]->CMD_RESP_CRCERR, arrSDIOReg4[nCH]->CMD_RESP_CRC, arrSDIOReg3[nCH]->CMD_RESP_TOUT);
-			nRes = DEF_FAIL;
+			nRes = ENX_FAIL;
 		}
 	} else {
 		if (arrSDIOReg3[nCH]->CMD_RESP_TOUT || arrSDIOReg3[nCH]->CMD_RESP_CRCERR) {
 			printf("CMD(%u) Arg(%u) CRCERR(%u:0x%02X), RESPTOUT(%u) 2\n", Cmd, Arg, arrSDIOReg3[nCH]->CMD_RESP_CRCERR, arrSDIOReg4[nCH]->CMD_RESP_CRC, arrSDIOReg3[nCH]->CMD_RESP_TOUT);
-			nRes = DEF_FAIL;
+			nRes = ENX_FAIL;
 		}
 	}
 
 	SdioGetResp(nCH, nResp, cmdType);
-	printf("[%2u] res(%c) RESP0(0x%08X)\n", Cmd, nRes == DEF_OK ? 'O' : 'X', nResp[0]);
+	printf("[%2u] res(%c) RESP0(0x%08X)\n", Cmd, nRes == ENX_OK ? 'O' : 'X', nResp[0]);
 	if (cmdType == ecrtR2) {
-		printf("[%2u] res(%c) RESP1(0x%08X)\n", Cmd, nRes == DEF_OK ? 'O' : 'X', nResp[1]);
-		printf("[%2u] res(%c) RESP2(0x%08X)\n", Cmd, nRes == DEF_OK ? 'O' : 'X', nResp[2]);
-		printf("[%2u] res(%c) RESP3(0x%08X)\n", Cmd, nRes == DEF_OK ? 'O' : 'X', nResp[3]);
+		printf("[%2u] res(%c) RESP1(0x%08X)\n", Cmd, nRes == ENX_OK ? 'O' : 'X', nResp[1]);
+		printf("[%2u] res(%c) RESP2(0x%08X)\n", Cmd, nRes == ENX_OK ? 'O' : 'X', nResp[2]);
+		printf("[%2u] res(%c) RESP3(0x%08X)\n", Cmd, nRes == ENX_OK ? 'O' : 'X', nResp[3]);
 	}
 
 	return nRes;
@@ -176,14 +165,14 @@ UINT SdioGetClockDiv(UINT nCH)
 	return arrSDIOReg1[nCH]->CLK_DIV;
 }
 
-void SdioClockEnable(UINT nCH)
+void SdioSetClockEn(UINT nCH, ENX_SWITCH sw)
 {
-	arrSDIOReg1[nCH]->CLK_EN = 1;
+	arrSDIOReg1[nCH]->CLK_EN = sw;
 }
 
-void SdioClockDisable(UINT nCH)
+ENX_SWITCH SdioGetClockEn(UINT nCH)
 {
-	arrSDIOReg1[nCH]->CLK_EN = 0;
+	return arrSDIOReg1[nCH]->CLK_EN;
 }
 
 void SdioClockDivPrint(UINT nCH, char *strBuffer)
@@ -191,24 +180,14 @@ void SdioClockDivPrint(UINT nCH, char *strBuffer)
 	sprintf(strBuffer, "%uHz/CLK_DIV:%u", MCK_FREQ / ((arrSDIOReg1[nCH]->CLK_DIV + 1) * 2), arrSDIOReg1[nCH]->CLK_DIV);
 }
 
-UINT SdioGetBitMode(UINT nCH)
+void SdioSetBitMode(UINT nCH, eSDIO_BIT_MODE bitmode)
+{
+	arrSDIOReg0[nCH]->BITMODE = bitmode;
+}
+
+eSDIO_BIT_MODE SdioGetBitMode(UINT nCH)
 {
 	return arrSDIOReg0[nCH]->BITMODE;
-}
-
-void SdioSet1BitMode(UINT nCH)
-{
-	arrSDIOReg0[nCH]->BITMODE = 0;
-}
-
-void SdioSet4BitMode(UINT nCH)
-{
-	arrSDIOReg0[nCH]->BITMODE = 1;
-}
-
-UINT SdioGetDataBlockByte(UINT nCH)
-{
-	return arrSDIOReg11[nCH]->DAT_BLKBYTE;
 }
 
 void SdioSetDataBlockByte(UINT nCH, UINT BlkByte)
@@ -216,183 +195,192 @@ void SdioSetDataBlockByte(UINT nCH, UINT BlkByte)
 	arrSDIOReg11[nCH]->DAT_BLKBYTE = BlkByte;
 }
 
+UINT SdioGetDataBlockByte(UINT nCH)
+{
+	return arrSDIOReg11[nCH]->DAT_BLKBYTE;
+}
+
 UINT SdioIsDataEn(UINT nCH)
 {
 	return arrSDIOReg13[nCH]->DAT_EN;
 }
 
-UINT SdioDataIO(UINT nCH, eSDIO_DAT_IO_TYPE DatWe, ULONG MemDst, UINT BlkAdr, UINT BlkCnt)
+ENX_OKFAIL SdioDataIO(UINT nCH, eSDIO_DIO_TYPE iotype, ULONG MemDst, UINT BlkAdr, UINT BlkCnt)
 {
 	arrSDIOReg10[nCH]->DAT_ADR = MemDst;
 	arrSDIOReg11[nCH]->DAT_BLKNUM = BlkCnt;
 	arrSDIOReg12[nCH]->DAT_BLKADR = BlkAdr;
-	arrSDIOReg13[nCH]->DAT_WE = DatWe;
+	arrSDIOReg13[nCH]->DAT_WE = iotype & 0x1;
 	arrSDIOReg13[nCH]->DAT_EN = 1;
 	//uint64_t a = rdcycle();
-	while (arrSDIOReg13[nCH]->DAT_EN);
+#if 1
+	while (arrSDIOReg13[nCH]->DAT_EN) {
+		//delay[nCH](1);
+	}
+#else
+	int a = 0;
+	while (arrSDIOReg13[nCH]->DAT_EN) {
+		//printf("\nCMD(%2u) Arg(0x%08X) CMD_RESP_BUSY(%u) CMDCRC(%u:0x%02X), RESPTOUT(%u/%u), DATCRC(%u)", arrSDIOReg3[nCH]->CMD_IDX, arrSDIOReg12[nCH]->DAT_BLKADR, SDIO0_CMD_RESP_BUSY_EN, arrSDIOReg3[nCH]->CMD_RESP_CRCERR, arrSDIOReg4[nCH]->CMD_RESP_CRC, arrSDIOReg3[nCH]->CMD_RESP_TOUT, SDIO0_CMD_RESP_TLMT, arrSDIOReg13[nCH]->DAT_CRCERR);
+		printf("\nArg(0x%08X) CMDCRC(%u:0x%02X), RESPTOUT(%u), DATCRC(%u)", arrSDIOReg12[nCH]->DAT_BLKADR, arrSDIOReg3[nCH]->CMD_RESP_CRCERR, arrSDIOReg4[nCH]->CMD_RESP_CRC, arrSDIOReg3[nCH]->CMD_RESP_TOUT, arrSDIOReg13[nCH]->DAT_CRCERR);
+		delay[nCH](1);
+		a++;
+		if (a > 20) {
+			_Rprintf("OUT");
+			SDIO0_DAT_EN = 0;
+		}
+	}
+#endif
 	//uint64_t b = rdcycle();
 	//printf("DAT cycle %lu\n", b - a);
 
 	if (arrSDIOReg3[nCH]->CMD_RESP_TOUT || arrSDIOReg3[nCH]->CMD_RESP_CRCERR || arrSDIOReg13[nCH]->DAT_CRCERR) {
-		printf("DRS CMD(%u) Arg(%u) CMDCRC(%u:0x%02X), RESPTOUT(%u), DATCRC(%u)\n", arrSDIOReg16[nCH]->DAT_RDCMD_S, BlkAdr, arrSDIOReg3[nCH]->CMD_RESP_CRCERR, arrSDIOReg4[nCH]->CMD_RESP_CRC, arrSDIOReg3[nCH]->CMD_RESP_TOUT, arrSDIOReg13[nCH]->DAT_CRCERR);
-		return DEF_FAIL;
+		UINT selcmd = SdioGetDataCmd(nCH, iotype);
+		printf("SDIO%u CMD(%u) Arg(0x%08X) CMDCRC(%u:0x%02X), RESPTOUT(%u), DATCRC(%u)\n", nCH, selcmd, BlkAdr, arrSDIOReg3[nCH]->CMD_RESP_CRCERR, arrSDIOReg4[nCH]->CMD_RESP_CRC, arrSDIOReg3[nCH]->CMD_RESP_TOUT, arrSDIOReg13[nCH]->DAT_CRCERR);
+		return ENX_FAIL;
 	}
 
-	return DEF_OK;
+	return ENX_OK;
 }
 
-void SdioSetCmdDataS(UINT nCH, eSDIO_DAT_IO_TYPE esditType, UINT nCmd)
+void SdioSetDataCmd(UINT nCH, eSDIO_DIO_TYPE iotype, UINT nCmd)
 {
-	switch (esditType) {
-	case esditREAD:
+	switch (iotype) {
+	case SDIO_DIO_SINGLE_READ:
 		arrSDIOReg16[nCH]->DAT_RDCMD_S = nCmd;
 		break;
-	case esditWRITE:
-		arrSDIOReg16[nCH]->DAT_WRCMD_S = nCmd;
-		break;
-	}
-}
-
-UINT SdioGetCmdDataS(UINT nCH, eSDIO_DAT_IO_TYPE esditType)
-{
-	switch (esditType) {
-	case esditREAD:
-		return arrSDIOReg16[nCH]->DAT_RDCMD_S;
-	case esditWRITE:
-		return arrSDIOReg16[nCH]->DAT_WRCMD_S;
-	}
-	return 0xFFFFFFFF;
-}
-
-void SdioSetCmdDataM(UINT nCH, eSDIO_DAT_IO_TYPE esditType, UINT nCmd)
-{
-	switch (esditType) {
-	case esditREAD:
+	case SDIO_DIO_MULTI_READ:
 		arrSDIOReg16[nCH]->DAT_RDCMD_M = nCmd;
 		break;
-	case esditWRITE:
+	case SDIO_DIO_SINGLE_WRITE:
+		arrSDIOReg16[nCH]->DAT_WRCMD_S = nCmd;
+		break;
+	case SDIO_DIO_MULTI_WRITE:
 		arrSDIOReg16[nCH]->DAT_WRCMD_M = nCmd;
 		break;
 	}
 }
 
-UINT SdioGetCmdDataM(UINT nCH, eSDIO_DAT_IO_TYPE esditType)
+UINT SdioGetDataCmd(UINT nCH, eSDIO_DIO_TYPE iotype)
 {
-	switch (esditType) {
-	case esditREAD:
+	switch (iotype) {
+	case SDIO_DIO_SINGLE_READ:
+		return arrSDIOReg16[nCH]->DAT_RDCMD_S;
+	case SDIO_DIO_MULTI_READ:
 		return arrSDIOReg16[nCH]->DAT_RDCMD_M;
-	case esditWRITE:
+	case SDIO_DIO_SINGLE_WRITE:
+		return arrSDIOReg16[nCH]->DAT_WRCMD_S;
+	case SDIO_DIO_MULTI_WRITE:
 		return arrSDIOReg16[nCH]->DAT_WRCMD_M;
 	}
 	return 0xFFFFFFFF;
 }
 
-void SdioIrqCallback_Io(UINT nCH, irq_fn irqfn, void *arg)
+void SdioIoIrqCallback(UINT nCH, irq_fn irqfn, void *arg)
 {
-	arrSDIOIrq_Io[nCH].irqfn = irqfn;
-	arrSDIOIrq_Io[nCH].arg = arg;
+	arrSDIOIoIrq[nCH].irqfn = irqfn;
+	arrSDIOIoIrq[nCH].arg = arg;
 }
 
-void SdioIrqCallback_Cmd(UINT nCH, irq_fn irqfn, void *arg)
+void SdioCmdIrqCallback(UINT nCH, irq_fn irqfn, void *arg)
 {
-	arrSDIOIrq_Cmd[nCH].irqfn = irqfn;
-	arrSDIOIrq_Cmd[nCH].arg = arg;
+	arrSDIOCmdIrq[nCH].irqfn = irqfn;
+	arrSDIOCmdIrq[nCH].arg = arg;
 }
 
-void SdioIrqCallback_Dat(UINT nCH, irq_fn irqfn, void *arg)
+void SdioDatIrqCallback(UINT nCH, irq_fn irqfn, void *arg)
 {
-	arrSDIOIrq_Dat[nCH].irqfn = irqfn;
-	arrSDIOIrq_Dat[nCH].arg = arg;
+	arrSDIODatIrq[nCH].irqfn = irqfn;
+	arrSDIODatIrq[nCH].arg = arg;
 }
 
-void SdioIrqOn_Io(UINT nCH)
+void SdioSetIoIrqEn(UINT nCH, ENX_SWITCH sw)
 {
-	arrSDIOReg13[nCH]->IO_IRQ_EN = 1;
+	arrSDIOReg13[nCH]->IO_IRQ_EN = sw;
 }
 
-void SdioIrqOn_Cmd(UINT nCH)
+void SdioSetCmdIrqEn(UINT nCH, ENX_SWITCH sw)
 {
-	arrSDIOReg13[nCH]->CMD_IRQ_EN = 1;
+	arrSDIOReg13[nCH]->CMD_IRQ_EN = sw;
 }
 
-void SdioIrqOn_Dat(UINT nCH)
+void SdioSetDatIrqEn(UINT nCH, ENX_SWITCH sw)
 {
-	arrSDIOReg13[nCH]->DAT_IRQ_EN = 1;
+	arrSDIOReg13[nCH]->DAT_IRQ_EN = sw;
 }
 
-void SdioIrqOff_Io(UINT nCH)
+ENX_SWITCH SdioGetIoIrqEn(UINT nCH)
 {
-	arrSDIOReg13[nCH]->IO_IRQ_EN = 0;
+	return arrSDIOReg13[nCH]->IO_IRQ_EN;
 }
 
-void SdioIrqOff_Cmd(UINT nCH)
+ENX_SWITCH SdioGetCmdIrqEn(UINT nCH)
 {
-	arrSDIOReg13[nCH]->CMD_IRQ_EN = 0;
+	return arrSDIOReg13[nCH]->CMD_IRQ_EN;
 }
 
-void SdioIrqOff_Dat(UINT nCH)
+ENX_SWITCH SdioGetDatIrqEn(UINT nCH)
 {
-	arrSDIOReg13[nCH]->DAT_IRQ_EN = 0;
+	return arrSDIOReg13[nCH]->DAT_IRQ_EN;
 }
 
-void SdioIrqClear_Io(UINT nCH)
+void SdioIoIrqClear(UINT nCH)
 {
 	arrSDIOReg13[nCH]->IO_IRQ_CLR = 1;
 }
 
-void SdioIrqClear_Cmd(UINT nCH)
+void SdioCmdIrqClear(UINT nCH)
 {
 	arrSDIOReg13[nCH]->CMD_IRQ_CLR = 1;
 }
 
-void SdioIrqClear_Dat(UINT nCH)
+void SdioDatIrqClear(UINT nCH)
 {
 	arrSDIOReg13[nCH]->DAT_IRQ_CLR = 1;
 }
 
-UINT SdioIsIrq_Io(UINT nCH)
+UINT SdioIoIsIrq(UINT nCH)
 {
 	return arrSDIOReg13[nCH]->IO_IRQ;
 }
 
-UINT SdioIsIrq_Cmd(UINT nCH)
+UINT SdioCmdIsIrq(UINT nCH)
 {
 	return arrSDIOReg13[nCH]->CMD_IRQ;
 }
 
-UINT SdioIsIrq_Dat(UINT nCH)
+UINT SdioDatIsIrq(UINT nCH)
 {
 	return arrSDIOReg13[nCH]->DAT_IRQ;
 }
 
 void IrqSdio(UINT nCH)
 {
-	if (SdioIsIrq_Io(nCH)) {
-		_printf("SDIO%d-IO IRQ Get\n", nCH);
-		if (arrSDIOIrq_Io[nCH].irqfn) {
-			arrSDIOIrq_Io[nCH].irqfn(arrSDIOIrq_Io[nCH].arg);
+	if (SdioIoIsIrq(nCH)) {
+		printf("SDIO%d-IO IRQ Get\n", nCH);
+		if (arrSDIOIoIrq[nCH].irqfn) {
+			arrSDIOIoIrq[nCH].irqfn(arrSDIOIoIrq[nCH].arg);
 		}
-		SdioIrqClear_Io(nCH);
+		SdioIoIrqClear(nCH);
 	}
 
-	if (SdioIsIrq_Cmd(nCH)) {
-		_printf("SDIO%d-CMD IRQ Get\n", nCH);
-		if (arrSDIOIrq_Cmd[nCH].irqfn) {
-			arrSDIOIrq_Cmd[nCH].irqfn(arrSDIOIrq_Cmd[nCH].arg);
+	if (SdioCmdIsIrq(nCH)) {
+		printf("SDIO%d-CMD IRQ Get\n", nCH);
+		if (arrSDIOCmdIrq[nCH].irqfn) {
+			arrSDIOCmdIrq[nCH].irqfn(arrSDIOCmdIrq[nCH].arg);
 		}
-		SdioIrqClear_Cmd(nCH);
+		SdioCmdIrqClear(nCH);
 	}
 
-	if (SdioIsIrq_Dat(nCH)) {
-		_printf("SDIO%d-DAT IRQ Get\n", nCH);
-		if (arrSDIOIrq_Dat[nCH].irqfn) {
-			arrSDIOIrq_Dat[nCH].irqfn(arrSDIOIrq_Dat[nCH].arg);
+	if (SdioDatIsIrq(nCH)) {
+		printf("SDIO%d-DAT IRQ Get\n", nCH);
+		if (arrSDIODatIrq[nCH].irqfn) {
+			arrSDIODatIrq[nCH].irqfn(arrSDIODatIrq[nCH].arg);
 		}
-		SdioIrqClear_Dat(nCH);
+		SdioDatIrqClear(nCH);
 	}
 }
 
-void SdioRegShow(UINT nCH, UINT isDetail)
+void SdioRegShow(UINT nCH, ENX_YN isDetail)
 {
 #if 0
 	_regs_ BF_5(UINT _rev0 : 28, UINT BITMODE : 1 ,UINT IOMODE : 1 ,UINT MODE : 1 ,UINT EN : 1 ) _rege_ _SDIO_REG0;
@@ -415,7 +403,7 @@ void SdioRegShow(UINT nCH, UINT isDetail)
 #endif
 	printf("SDIO%u Register View\n", nCH);
 	printf("========================================\n");
-	if (isDetail == DEF_OK) {
+	if (isDetail == ENX_YES) {
 		printf(" 0:0x%08X\n", arrSDIOReg0[nCH]->a);
 		printf("   %-20s: %u\n", "BITMODE", SDIO0_BITMODE);
 		printf("   %-20s: %u\n", "IOMODE", SDIO0_IOMODE);
@@ -746,5 +734,12 @@ void sdcd1_send_cmd(BYTE Idx, UINT Arg, BYTE RespBusyEn, BYTE RespType, BYTE Res
 	SDIO1_CMD_EN			=	1;
 	while(SDIO1_CMD_EN);
 	if(SDIO1_CMD_RESP_TOUT|SDIO1_CMD_RESP_CRCERR);
+}
+#endif
+#else
+void IrqSdio(UINT nCH)
+{
+	_Rprintf("SDIO%u IRQ Get! SDIO%u is inactive.\n", nCH, nCH);
+	ENX_ASSERT(0);
 }
 #endif

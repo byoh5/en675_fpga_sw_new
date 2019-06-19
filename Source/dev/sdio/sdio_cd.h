@@ -330,5 +330,22 @@ typedef ATTR_MALIGN16 struct {
 	SD_Tuning stuning; // 64byte
 	//ULONG t2[8];
 } SDIO_SD;
+
+extern void SdioCdInit(UINT nCH);
+extern UINT SdioCdDet(void);
+extern ENX_OKFAIL SdioCdInitProcess(void);
+extern void SdioCdClockDown(void);
+extern void SdioCdClockRestore(void);
+
+extern UINT SdioCdGetActive(void);
+extern UINT SdioCdGetErrCode(void);
+extern UINT SdioCdGetAUSize(void);
+extern void SdioCdGetName(char *buf);
+extern UINT SdioCdGetSectorCnt(void);
+extern UINT SdioCdGetSize(void);
+extern UINT SdioCdE(UINT start_sctor, UINT end_sctor);
+extern ENX_OKFAIL SdioCdRead(const BYTE *buff, UINT sector, UINT count);
+extern ENX_OKFAIL SdioCdWrite(const BYTE *buff, UINT sector, UINT count);
+
 #endif // __USE_SD__
 #endif // _SDIO_CD_H_

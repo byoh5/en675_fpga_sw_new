@@ -2,31 +2,28 @@
 
 #if USE_SPI0 | USE_SPI1 | USE_SPI2 | USE_SPI3 | USE_SPI4 | USE_SPI5 | USE_SPI6 | USE_SPI7 | USE_SPI8
 
-static _SPI_REG0 *arrSPIRX[SPI_CNT];
-static _SPI_REG1 *arrSPITX[SPI_CNT];
-static _SPI_REG2 *arrSPI[SPI_CNT];
-static tIhnd arrSPIIrq[SPI_CNT];
+static volatile _SPI_REG0 * const arrSPIRX[SPI_CNT] = {(_SPI_REG0 *)(REG_BASE_SPI0+(0<<3)), (_SPI_REG0 *)(REG_BASE_SPI1+(0<<3)), (_SPI_REG0 *)(REG_BASE_SPI2+(0<<3)), (_SPI_REG0 *)(REG_BASE_SPI3+(0<<3)), (_SPI_REG0 *)(REG_BASE_SPI4+(0<<3)), (_SPI_REG0 *)(REG_BASE_SPI5+(0<<3)), (_SPI_REG0 *)(REG_BASE_SPI6+(0<<3)), (_SPI_REG0 *)(REG_BASE_SPI7+(0<<3)), (_SPI_REG0 *)(REG_BASE_SPI8+(0<<3))};
+static volatile _SPI_REG1 * const arrSPITX[SPI_CNT] = {(_SPI_REG1 *)(REG_BASE_SPI0+(1<<3)), (_SPI_REG1 *)(REG_BASE_SPI1+(1<<3)), (_SPI_REG1 *)(REG_BASE_SPI2+(1<<3)), (_SPI_REG1 *)(REG_BASE_SPI3+(1<<3)), (_SPI_REG1 *)(REG_BASE_SPI4+(1<<3)), (_SPI_REG1 *)(REG_BASE_SPI5+(1<<3)), (_SPI_REG1 *)(REG_BASE_SPI6+(1<<3)), (_SPI_REG1 *)(REG_BASE_SPI7+(1<<3)), (_SPI_REG1 *)(REG_BASE_SPI8+(1<<3))};
+static volatile _SPI_REG2 * const arrSPI[SPI_CNT]   = {(_SPI_REG2 *)(REG_BASE_SPI0+(2<<3)), (_SPI_REG2 *)(REG_BASE_SPI1+(2<<3)), (_SPI_REG2 *)(REG_BASE_SPI2+(2<<3)), (_SPI_REG2 *)(REG_BASE_SPI3+(2<<3)), (_SPI_REG2 *)(REG_BASE_SPI4+(2<<3)), (_SPI_REG2 *)(REG_BASE_SPI5+(2<<3)), (_SPI_REG2 *)(REG_BASE_SPI6+(2<<3)), (_SPI_REG2 *)(REG_BASE_SPI7+(2<<3)), (_SPI_REG2 *)(REG_BASE_SPI8+(2<<3))};
+ISRD static tIhnd arrSPIIrq[SPI_CNT];
 
-void SpiInit(UINT nCH, UINT Speed_Hz, UINT WordSize, UINT BitDirection)
+void SpiInit(UINT nCH, UINT Speed_Hz, BYTE nBIT, BYTE isLSB)
 {
-	const uint64_t addrSPI[UART_CNT] = {
-			REG_BASE_SPI0, REG_BASE_SPI1, REG_BASE_SPI2, REG_BASE_SPI3, REG_BASE_SPI4,
-			REG_BASE_SPI5, REG_BASE_SPI6, REG_BASE_SPI7, REG_BASE_SPI8
-	};
+	arrSPI[nCH]->WS =	(BIT==8 ) ? 0 :		// SPI word size / 0:8bit, 1:16bit, 2:24bit, 3:32bit
+						(BIT==16) ? 1 :
+						(BIT==24) ? 2 : 3 ;
 
-	arrSPIRX[nCH] = (_SPI_REG0 *)(addrSPI[nCH] + (0 << 3));
-	arrSPITX[nCH] = (_SPI_REG1 *)(addrSPI[nCH] + (1 << 3));
-	arrSPI[nCH] = (_SPI_REG2 *)(addrSPI[nCH] + (2 << 3));
+	arrSPI[nCH]->BIT_MODE = isLSB;			// SPI bit direction / 0:MSB First, 1:LSB First
 
-	arrSPI[nCH]->EN = 1;				// SPI controller enabled
-	arrSPI[nCH]->WS = WordSize;			// SPI word size / 0:8bit, 1:16bit, 2:24bit, 3:32bit
-	arrSPI[nCH]->CS_OEN = 0;			// SPI chip select output enable
-	arrSPI[nCH]->CS_OUT = 1;			// SPI chip select output High
-	arrSPI[nCH]->ONE_BITMODE = BitDirection;// SPI bit direction / 0:MSB First, 1:LSB First
+	arrSPI[nCH]->EN = 1;					// SPI controller enabled
+	arrSPI[nCH]->CS_OEN = 0;				// SPI chip select output enable
+	arrSPI[nCH]->CS_OUT = 1;				// SPI chip select output High
+	arrSPI[nCH]->ONE_BITMODE = 0;
 	arrSPI[nCH]->CLK_DIV = (MCK_FREQ / (4 * Speed_Hz) - 1);
-	arrSPI[nCH]->IRQ_EN = 0;			// Interrupt Disabled
+	arrSPI[nCH]->IRQ_EN = 0;				// Interrupt Disabled
+
 	// L(Low) H(High) Pec(Positive Edge clock) Nec(Negative Edge clock)
-	arrSPI[nCH]->CLK_MODE = 0;			// 0:L+Pec, 1:L+Nec, 2:H+Pec, 3:H+Nec
+	arrSPI[nCH]->CLK_MODE = 0;				// 0:L+Pec, 1:L+Nec, 2:H+Pec, 3:H+Nec
 
 	arrSPIIrq[nCH].irqfn = NULL;
 	arrSPIIrq[nCH].arg = NULL;
@@ -61,10 +58,6 @@ void SpiDeinit(UINT nCH)
 	arrSPIIrq[nCH].irqfn = NULL;
 	arrSPIIrq[nCH].arg = NULL;
 
-	arrSPIRX[nCH] = NULL;
-	arrSPITX[nCH] = NULL;
-	arrSPI[nCH] = NULL;
-
 	// pin mux setting
 	switch (nCH) {
 		case 0:	SPI0_PIN_DEINIT;	break;
@@ -79,14 +72,14 @@ void SpiDeinit(UINT nCH)
 	}
 }
 
-void SpiCsLo(UINT nCH)
+void SpiSetCs(UINT nCH, ENX_HL hl)
 {
-	arrSPI[nCH]->CS_OUT = 0;
+	arrSPI[nCH]->CS_OUT = hl;
 }
 
-void SpiCsHi(UINT nCH)
+ENX_HL SpiGetCs(UINT nCH)
 {
-	arrSPI[nCH]->CS_OUT = 1;
+	return arrSPI[nCH]->CS_OUT;
 }
 
 void SpiWrite(UINT nCH, BYTE *dat)
@@ -132,14 +125,14 @@ void SpiIrqCallback(UINT nCH, irq_fn irqfn, void *arg)
 	arrSPIIrq[nCH].arg = arg;
 }
 
-void SpiIrqOn(UINT nCH)
+void SpiSetIrqEn(UINT nCH, ENX_SWITCH sw)
 {
-	arrSPI[nCH]->IRQ_EN = 1;
+	arrSPI[nCH]->IRQ_EN = sw;
 }
 
-void SpiIrqOff(UINT nCH)
+ENX_SWITCH SpiGetIrqEn(UINT nCH)
 {
-	arrSPI[nCH]->IRQ_EN = 0;
+	return arrSPI[nCH]->IRQ_EN;
 }
 
 void SpiIrqClear(UINT nCH)
@@ -165,6 +158,7 @@ void IrqSpi(UINT nCH)
 #else
 void IrqSpi(UINT nCH)
 {
-	printf("SPI%u IRQ Get! SPI%u is inactive.\n", nCH, nCH);
+	_Rprintf("SPI%u IRQ Get! SPI%u is inactive.\n", nCH, nCH);
+	ENX_ASSERT(0);
 }
 #endif

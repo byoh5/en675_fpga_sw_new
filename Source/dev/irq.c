@@ -3,8 +3,8 @@
 
 #include "enx_freertos.h"
 
-volatile uint64_t* mtime =      (uint64_t*)(CLINT_BASE + 0xbff8);
-volatile uint64_t* timecmp =    (uint64_t*)(CLINT_BASE + 0x4000);
+volatile uint64* mtime =      (uint64*)(CLINT_BASE + 0xbff8);
+volatile uint64* timecmp =    (uint64*)(CLINT_BASE + 0x4000);
 
 #define IRQ_PRIO1_BASE				0x0C000004 // RW: Source 1 priority (ISP)
 #define IRQ_PRIO2_BASE				0x0C000008 // RW: Source 2 priority (DMA, H.264, H.265)
@@ -55,7 +55,7 @@ static volatile unsigned int *iPrioBase[8] = {
 		(unsigned int *)IRQ_PRIO8_BASE,
 };
 
-static volatile unsigned int *iPanding = (unsigned int *)IRQ_PENDING_BASE;
+//static volatile unsigned int *iPanding = (unsigned int *)IRQ_PENDING_BASE;
 
 static volatile unsigned int *iEnables[8] = {
 		(unsigned int *)IRQ_ENABLES1_BASE,
@@ -90,128 +90,157 @@ static volatile unsigned int *iClaimCompliet[8] = {
 		(unsigned int *)IRQ_CLAIM_COMPLIET8_BASE,
 };
 
+#define IRQ_ISP_PRINTF(...)	//printf(__VA_ARGS__)
+volatile UINT gnVoIrqCnt = 0;
+
 void enx_exirq_source1(void)
 {
 	if (IRQ_ISP) {
-		printf("IRQ_ISP\n");
-		if (IRQ_ISP0){};
-		if (IRQ_ISP1){};
-		if (IRQ_ISP2){};
-		if (IRQ_ISP3){};
-		if (IRQ_ISP4){};
-		if (IRQ_ISP5){};
-		if (IRQ_ISP6){};
-		if (IRQ_ISP7){};
-		if (IRQ_ISP8){};
-		if (IRQ_ISP9){};
-		if (IRQ_ISP10){};
-		if (IRQ_ISP11){};
-		if (IRQ_ISP12){};
-		if (IRQ_ISP13){};
-		if (IRQ_ISP14){};
-		if (IRQ_ISP15){};
-		if (IRQ_ISP16){};
-		if (IRQ_ISP17){};
-		if (IRQ_ISP18){};
-		if (IRQ_ISP19){};
-		if (IRQ_ISP20){};
-		if (IRQ_ISP21){};
-		if (IRQ_ISP22){};
-		if (IRQ_ISP23){};
-		if (IRQ_ISP24){};
-		if (IRQ_ISP25){};
-		if (IRQ_ISP26){};
-		if (IRQ_ISP27){};
-		if (IRQ_ISP28){};
-		if (IRQ_ISP29){};
-		if (IRQ_ISP30){};
+		IRQ_ISP_PRINTF("IRQ_ISP:");
+		if (IRQ_ISP0){}
+		if (IRQ_ISP1){}
+		if (IRQ_ISP2){CLI_VLOCKOw(1); gnVoIrqCnt++;
+			//if(!(gnVoIrqCnt%(FPS_VDO*5))) _printf("VLOCKO_IRQ %d!!!\n", gnVoIrqCnt/FPS_VDO); else if(!(gnVoIrqCnt%FPS_VDO)) _printf_irq("VLOCKO_IRQ %d\n", gnVoIrqCnt/FPS_VDO);
+			IRQ_ISP_PRINTF("VLOCKO_IRQ\n");
+		}
+		if (IRQ_ISP3){}
+		if (IRQ_ISP4){}
+		if (IRQ_ISP5){}
+		if (IRQ_ISP6){}
+		if (IRQ_ISP7){}
+		if (IRQ_ISP8){}
+		if (IRQ_ISP9){}
+		if (IRQ_ISP10){}
+		if (IRQ_ISP11){}
+		if (IRQ_ISP12){}
+		if (IRQ_ISP13){}
+		if (IRQ_ISP14){}
+		if (IRQ_ISP15){}
+		if (IRQ_ISP16){}
+		if (IRQ_ISP17){}
+		if (IRQ_ISP18){}
+		if (IRQ_ISP19){}
+		if (IRQ_ISP20){}
+		if (IRQ_ISP21){}
+		if (IRQ_ISP22){}
+		if (IRQ_ISP23){}
+		if (IRQ_ISP24){}
+		if (IRQ_ISP25){}
+		if (IRQ_ISP26){}
+		if (IRQ_ISP27){}
+		if (IRQ_ISP28){}
+		if (IRQ_ISP29){}
+		if (IRQ_ISP30){}
+	} else {
+		IRQ_ISP_PRINTF("NO IRQ_ISP");
 	}
+
+	IRQ_ISP_PRINTF("\n");
 }
 
 void enx_exirq_source2(void)
 {
 	if (IRQ_CDC) {
-
-		if(IRQ_BDMA0){IrqBDma(0);};
-		if(IRQ_BDMA1){IrqBDma(1);};
-		if(IRQ_BDMA2){IrqBDma(2);};
-		if(IRQ_BDMA3){IrqBDma(3);};
-		if(IRQ_CDMA0){IrqCDma(0);};
-		if(IRQ_CDMA1){IrqCDma(1);};
-		if(IRQ_CDMA2){IrqCDma(2);};
-		if(IRQ_CDMA3){IrqCDma(3);};
-		if (IRQ_H265){printf("IRQ_H265\n");};
+		if (IRQ_BDMA0){IrqBDma(0);}
+		if (IRQ_BDMA1){IrqBDma(1);}
+		if (IRQ_BDMA2){IrqBDma(2);}
+		if (IRQ_BDMA3){IrqBDma(3);}
+		if (IRQ_CDMA0){IrqCDma(0);}
+		if (IRQ_CDMA1){IrqCDma(1);}
+		if (IRQ_CDMA2){IrqCDma(2);}
+		if (IRQ_CDMA3){IrqCDma(3);}
+		if (IRQ_H265){printf("IRQ_H265\n");}
+	} else {
+		printf("%u - %u/%u/%u/%u/%u/%u/%u/%u\n", IRQ_CDC, IRQ_BDMA0, IRQ_BDMA1, IRQ_BDMA2, IRQ_BDMA3, IRQ_CDMA0, IRQ_CDMA1, IRQ_CDMA2, IRQ_CDMA3);
 	}
 }
 
 void enx_exirq_source3(void)
 {
 	if (IRQ_ETH) {
-		if (IRQ_USB_DMA){printf("IRQ_USB_DMA\n");};
-		if (IRQ_USB_MC){printf("IRQ_USB_MC\n");};
-		if (IRQ_I2S_RX){printf("IRQ_I2S_RX\n");};
-		if (IRQ_I2S_TX){printf("IRQ_I2S_TX\n");};
-		if (IRQ_ETH_RX){printf("IRQ_ETH_RX\n");};
-		if (IRQ_ETH_TX){printf("IRQ_ETH_TX\n");};
+		if (IRQ_USB_DMA){printf("IRQ_USB_DMA\n");}
+		if (IRQ_USB_MC){printf("IRQ_USB_MC\n");}
+		if (IRQ_I2S_RX){IrqI2sRx();}
+		if (IRQ_I2S_TX){IrqI2sTx();}
+		if (IRQ_ETH_RX){IrqEthRx();}
+		if (IRQ_ETH_TX){IrqEthTx();}
+	} else {
+		printf("NO IRQ_ETH\n");
 	}
 }
 
 void enx_exirq_source4(void)
 {
 	if (IRQ_SDIO) {
-		if (IRQ_SDIO0){IrqSdio(0);};
-		if (IRQ_SDIO1){IrqSdio(1);};
+		if (IRQ_SDIO0){IrqSdio(0);}
+		if (IRQ_SDIO1){IrqSdio(1);}
+	} else {
+		printf("NO IRQ_SDIO\n");
 	}
 }
 
 void enx_exirq_source5(void)
 {
 	if (IRQ_UTIL) {
-		if (IRQ_AES){printf("IRQ_AES\n");};
-		if (IRQ_SHA){printf("IRQ_SHA\n");};
-		if (IRQ_CHKSUM){printf("IRQ_CHKSUM\n");};
+		if (IRQ_AES){IrqAes();}
+		if (IRQ_SHA){IrqSha();}
+		if (IRQ_CHKSUM){IrqChksum();}
+		if (IRQ_BUS){IrqBus();}
+	} else {
+		printf("NO IRQ_UTIL\n");
 	}
 }
 
 void enx_exirq_source6(void)
 {
+	int k = 0;
 	if (IRQ_UART) {
-		if (IRQ_UART0){IrqUart(0);};
-		if (IRQ_UART1){IrqUart(1);};
-		if (IRQ_UART2){IrqUart(2);};
-		if (IRQ_UART3){IrqUart(3);};
-		if (IRQ_UART4){IrqUart(4);};
-		if (IRQ_UART5){IrqUart(5);};
-		if (IRQ_UART6){IrqUart(6);};
-		if (IRQ_UART7){IrqUart(7);};
-		if (IRQ_UART8){IrqUart(8);};
+		if (IRQ_UART0){IrqUart(0);}
+		if (IRQ_UART1){IrqUart(1);}
+		if (IRQ_UART2){IrqUart(2);}
+		if (IRQ_UART3){IrqUart(3);}
+		if (IRQ_UART4){IrqUart(4);}
+		if (IRQ_UART5){IrqUart(5);}
+		if (IRQ_UART6){IrqUart(6);}
+		if (IRQ_UART7){IrqUart(7);}
+		if (IRQ_UART8){IrqUart(8);}
+	} else {
+		k++;
 	}
 	if (IRQ_SPI) {
-		if (IRQ_SPI0){IrqSpi(0);};
-		if (IRQ_SPI1){IrqSpi(1);};
-		if (IRQ_SPI2){IrqSpi(2);};
-		if (IRQ_SPI3){IrqSpi(3);};
-		if (IRQ_SPI4){IrqSpi(4);};
-		if (IRQ_SPI5){IrqSpi(5);};
-		if (IRQ_SPI6){IrqSpi(6);};
-		if (IRQ_SPI7){IrqSpi(7);};
-		if (IRQ_SPI8){IrqSpi(8);};
+		if (IRQ_SPI0){IrqSpi(0);}
+		if (IRQ_SPI1){IrqSpi(1);}
+		if (IRQ_SPI2){IrqSpi(2);}
+		if (IRQ_SPI3){IrqSpi(3);}
+		if (IRQ_SPI4){IrqSpi(4);}
+		if (IRQ_SPI5){IrqSpi(5);}
+		if (IRQ_SPI6){IrqSpi(6);}
+		if (IRQ_SPI7){IrqSpi(7);}
+		if (IRQ_SPI8){IrqSpi(8);}
+	} else {
+		k++;
 	}
 	if (IRQ_I2C) {
-		if (IRQ_I2C0){IrqI2c(0);};
-		if (IRQ_I2C1){IrqI2c(1);};
-		if (IRQ_I2C2){IrqI2c(2);};
-		if (IRQ_I2C3){IrqI2c(3);};
-		if (IRQ_I2C4){IrqI2c(4);};
-		if (IRQ_I2C5){IrqI2c(5);};
-		if (IRQ_I2C6){IrqI2c(6);};
-		if (IRQ_I2C7){IrqI2c(7);};
-		if (IRQ_I2C8){IrqI2c(8);};
+		if (IRQ_I2C0){IrqI2c(0);}
+		if (IRQ_I2C1){IrqI2c(1);}
+		if (IRQ_I2C2){IrqI2c(2);}
+		if (IRQ_I2C3){IrqI2c(3);}
+		if (IRQ_I2C4){IrqI2c(4);}
+		if (IRQ_I2C5){IrqI2c(5);}
+		if (IRQ_I2C6){IrqI2c(6);}
+		if (IRQ_I2C7){IrqI2c(7);}
+		if (IRQ_I2C8){IrqI2c(8);}
+	} else {
+		k++;
+	}
+	if (k == 3) {
+		printf("NO IRQ_UART/SPI/I2C\n");
 	}
 }
 
 void enx_exirq_source7(void)
 {
+	int k = 0;
 	if (IRQ_GPIO_G2) {
 		if (IRQ_GPIO71){IrqGpio(71);}
 		if (IRQ_GPIO70){IrqGpio(70);}
@@ -237,6 +266,8 @@ void enx_exirq_source7(void)
 		if (IRQ_GPIO50){IrqGpio(50);}
 		if (IRQ_GPIO49){IrqGpio(49);}
 		if (IRQ_GPIO48){IrqGpio(48);}
+	} else {
+		k++;
 	}
 	if (IRQ_GPIO_G1) {
 		if (IRQ_GPIO47){IrqGpio(47);}
@@ -263,6 +294,8 @@ void enx_exirq_source7(void)
 		if (IRQ_GPIO26){IrqGpio(26);}
 		if (IRQ_GPIO25){IrqGpio(25);}
 		if (IRQ_GPIO24){IrqGpio(24);}
+	} else {
+		k++;
 	}
 	if (IRQ_GPIO_G0) {
 		if (IRQ_GPIO23){IrqGpio(23);}
@@ -289,53 +322,66 @@ void enx_exirq_source7(void)
 		if (IRQ_GPIO2){IrqGpio(2);}
 		if (IRQ_GPIO1){IrqGpio(1);}
 		if (IRQ_GPIO0){IrqGpio(0);}
+	} else {
+		k++;
+	}
+	if (k == 3) {
+		printf("NO IRQ_GPIO_G0/1/2\n");
 	}
 }
 
 void enx_exirq_source8(void)
 {
+	int k = 0;
 	if (IRQ_TIMER_G1) {
-		if (IRQ_TIMER38){IrqTimer(38);};
-		if (IRQ_TIMER37){IrqTimer(37);};
-		if (IRQ_TIMER36){IrqTimer(36);};
-		if (IRQ_TIMER35){IrqTimer(35);};
-		if (IRQ_TIMER34){IrqTimer(34);};
-		if (IRQ_TIMER33){IrqTimer(33);};
-		if (IRQ_TIMER32){IrqTimer(32);};
-		if (IRQ_TIMER31){IrqTimer(31);};
-		if (IRQ_TIMER30){IrqTimer(30);};
-		if (IRQ_TIMER29){IrqTimer(29);};
-		if (IRQ_TIMER28){IrqTimer(28);};
-		if (IRQ_TIMER27){IrqTimer(27);};
-		if (IRQ_TIMER26){IrqTimer(26);};
-		if (IRQ_TIMER25){IrqTimer(25);};
-		if (IRQ_TIMER24){IrqTimer(24);};
-		if (IRQ_TIMER23){IrqTimer(23);};
-		if (IRQ_TIMER22){IrqTimer(22);};
-		if (IRQ_TIMER21){IrqTimer(21);};
-		if (IRQ_TIMER20){IrqTimer(20);};
+		if (IRQ_TIMER38){IrqTimer(38);}
+		if (IRQ_TIMER37){IrqTimer(37);}
+		if (IRQ_TIMER36){IrqTimer(36);}
+		if (IRQ_TIMER35){IrqTimer(35);}
+		if (IRQ_TIMER34){IrqTimer(34);}
+		if (IRQ_TIMER33){IrqTimer(33);}
+		if (IRQ_TIMER32){IrqTimer(32);}
+		if (IRQ_TIMER31){IrqTimer(31);}
+		if (IRQ_TIMER30){IrqTimer(30);}
+		if (IRQ_TIMER29){IrqTimer(29);}
+		if (IRQ_TIMER28){IrqTimer(28);}
+		if (IRQ_TIMER27){IrqTimer(27);}
+		if (IRQ_TIMER26){IrqTimer(26);}
+		if (IRQ_TIMER25){IrqTimer(25);}
+		if (IRQ_TIMER24){IrqTimer(24);}
+		if (IRQ_TIMER23){IrqTimer(23);}
+		if (IRQ_TIMER22){IrqTimer(22);}
+		if (IRQ_TIMER21){IrqTimer(21);}
+		if (IRQ_TIMER20){IrqTimer(20);}
+	} else {
+		k++;
 	}
 	if (IRQ_TIMER_G0) {
-		if (IRQ_TIMER19){IrqTimer(19);};
-		if (IRQ_TIMER18){IrqTimer(18);};
-		if (IRQ_TIMER17){IrqTimer(17);};
-		if (IRQ_TIMER16){IrqTimer(16);};
-		if (IRQ_TIMER15){IrqTimer(15);};
-		if (IRQ_TIMER14){IrqTimer(14);};
-		if (IRQ_TIMER13){IrqTimer(13);};
-		if (IRQ_TIMER12){IrqTimer(12);};
-		if (IRQ_TIMER11){IrqTimer(11);};
-		if (IRQ_TIMER10){IrqTimer(10);};
-		if (IRQ_TIMER9){IrqTimer(9);};
-		if (IRQ_TIMER8){IrqTimer(8);};
-		if (IRQ_TIMER7){IrqTimer(7);};
-		if (IRQ_TIMER6){IrqTimer(6);};
-		if (IRQ_TIMER5){IrqTimer(5);};
-		if (IRQ_TIMER4){IrqTimer(4);};
-		if (IRQ_TIMER3){IrqTimer(3);};
-		if (IRQ_TIMER2){IrqTimer(2);};
-		if (IRQ_TIMER1){IrqTimer(1);};
-		if (IRQ_TIMER0){IrqTimer(0);};
+		if (IRQ_TIMER19){IrqTimer(19);}
+		if (IRQ_TIMER18){IrqTimer(18);}
+		if (IRQ_TIMER17){IrqTimer(17);}
+		if (IRQ_TIMER16){IrqTimer(16);}
+		if (IRQ_TIMER15){IrqTimer(15);}
+		if (IRQ_TIMER14){IrqTimer(14);}
+		if (IRQ_TIMER13){IrqTimer(13);}
+		if (IRQ_TIMER12){IrqTimer(12);}
+		if (IRQ_TIMER11){IrqTimer(11);}
+		if (IRQ_TIMER10){IrqTimer(10);}
+		if (IRQ_TIMER9){IrqTimer(9);}
+		if (IRQ_TIMER8){IrqTimer(8);}
+		if (IRQ_TIMER7){IrqTimer(7);}
+		if (IRQ_TIMER6){IrqTimer(6);}
+		if (IRQ_TIMER5){IrqTimer(5);}
+		if (IRQ_TIMER4){IrqTimer(4);}
+		if (IRQ_TIMER3){IrqTimer(3);}
+		if (IRQ_TIMER2){IrqTimer(2);}
+		if (IRQ_TIMER1){IrqTimer(1);}
+		if (IRQ_TIMER0){IrqTimer(0);}
+	} else {
+		k++;
+	}
+	if (k == 2) {
+		printf("NO IRQ_TIMER_G0/1\n");
 	}
 }
 
@@ -348,82 +394,101 @@ void IrqStatus(void)
 	unsigned long mideleg = read_csr(mideleg);
 	unsigned long mcause = read_csr(mcause);
 
-	_printf("mstatus : %lX\n", mstatus);
-	_printf("mie     : %lX\n", mie);
-	_printf("mip     : %lX\n", mip);
-	_printf("mideleg : %lX\n", mideleg);
-	_printf("mcause  : %lX\n", mcause);
+	printf("mstatus : %lX\n", mstatus);
+	printf("mie     : %lX\n", mie);
+	printf("mip     : %lX\n", mip);
+	printf("mideleg : %lX\n", mideleg);
+	printf("mcause  : %lX\n", mcause);
 
-	_printf("IRQ Priority\n\t");
+	printf("IRQ Priority\n\t");
 	for (int i = 0; i < 8; i++) {
-		_printf("[0x%08X,%8bb]", iPrioBase[i], *iPrioBase[i]);
+		printf("[0x%08X,%8bb]", iPrioBase[i], *iPrioBase[i]);
 		if (i==3) {
-			_printf("\n\t");
+			printf("\n\t");
 		}
 	}
-	_printf("\n");
-	_printf("IRQ Pending\n\t[0x%08X,%8bb]\n", iPanding, *iPanding);
-	_printf("IRQ Enables\n\t");
+	printf("\n");
+	printf("IRQ Pending\n\t[0x%08X,%8bb]\n", iPanding, *iPanding);
+	printf("IRQ Enables\n\t");
 	for (int i = 0; i < 8; i++) {
-		_printf("[0x%08X,%8bb]", iEnables[i], *iEnables[i]);
+		printf("[0x%08X,%8bb]", iEnables[i], *iEnables[i]);
 		if (i==3) {
-			_printf("\n\t");
+			printf("\n\t");
 		}
 	}
-	_printf("\n");
-	_printf("IRQ Threshold\n\t");
+	printf("\n");
+	printf("IRQ Threshold\n\t");
 	for (int i = 0; i < 8; i++) {
-		_printf("[0x%08X,%8bb]", iThreshold[i], *iThreshold[i]);
+		printf("[0x%08X,%8bb]", iThreshold[i], *iThreshold[i]);
 		if (i==3) {
-			_printf("\n\t");
+			printf("\n\t");
 		}
 	}
-	_printf("\n");
-	_printf("IRQ ClaimCompliet\n\t");
+	printf("\n");
+	printf("IRQ ClaimCompliet\n\t");
 	for (int i = 0; i < 8; i++) {
 		UINT source = *iClaimCompliet[i];
-		_printf("[0x%08X,%8bb]", iClaimCompliet[i], source);
+		printf("[0x%08X,%8bb]", iClaimCompliet[i], source);
 		*iClaimCompliet[i] = source;
 		if (i==3) {
-			_printf("\n\t");
+			printf("\n\t");
 		}
 	}
-	_printf("\n");
+	printf("\n");
 
-	_printf("======================================================\n");
+	printf("======================================================\n");
 }
 #endif
-
+extern void network_ethif_check_buffer(void);
 static void __attribute__((noreturn)) bad_trap(uintptr_t mcause, uintptr_t mepc, uintptr_t regs[32])
 {
+	mepc -= 4;
 	switch (mcause) {
-	case CAUSE_MISALIGNED_FETCH:	_printf("Instruction address misaligned\n");	break;
-	case CAUSE_FETCH_ACCESS:		_printf("Instruction access fault\n");			break;
-	case CAUSE_ILLEGAL_INSTRUCTION:	_printf("Illegal instruction\n");				break;
-	case CAUSE_BREAKPOINT:			_printf("Breakpoint\n");						break;
-	case CAUSE_MISALIGNED_LOAD:		_printf("Load address misaligned\n");			break;
-	case CAUSE_LOAD_ACCESS:			_printf("Load access fault\n");					break;
-	case CAUSE_MISALIGNED_STORE:	_printf("Store/AMO address misaligned\n");		break;
-	case CAUSE_STORE_ACCESS:		_printf("Store/AMO access fault\n");			break;
-	//case 10:						_printf("Reserved\n");							break;
-	case CAUSE_FETCH_PAGE_FAULT:	_printf("Instruction page fault\n");			break;
-	case CAUSE_LOAD_PAGE_FAULT:		_printf("Load page fault\n");					break;
-	//case 14:						_printf("Reserved\n");							break;
-	case CAUSE_STORE_PAGE_FAULT:	_printf("Store/AMO page fault\n");				break;
-	default:						_printf("Reserved(%d)\n", mcause);				break;
+	case CAUSE_MISALIGNED_FETCH:	printf("Instruction address misaligned\n");	break;
+	case CAUSE_FETCH_ACCESS:		printf("Instruction access fault\n");			break;
+	case CAUSE_ILLEGAL_INSTRUCTION:	printf("Illegal instruction\n");				break;
+	case CAUSE_BREAKPOINT:			printf("Breakpoint\n");						break;
+	case CAUSE_MISALIGNED_LOAD:		printf("Load address misaligned\n");			break;
+	case CAUSE_LOAD_ACCESS:			printf("Load access fault\n");					break;
+	case CAUSE_MISALIGNED_STORE:	printf("Store/AMO address misaligned\n");		break;
+	case CAUSE_STORE_ACCESS:		printf("Store/AMO access fault\n");			break;
+	//case 10:						printf("Reserved\n");							break;
+	case CAUSE_FETCH_PAGE_FAULT:	printf("Instruction page fault\n");			break;
+	case CAUSE_LOAD_PAGE_FAULT:		printf("Load page fault\n");					break;
+	//case 14:						printf("Reserved\n");							break;
+	case CAUSE_STORE_PAGE_FAULT:	printf("Store/AMO page fault\n");				break;
+	default:						printf("Reserved(%d)\n", mcause);				break;
 	}
-	_printf("machine mode: unhandlable trap %d @ %p\n", read_csr(mcause), mepc);
+
+	printf("uptime      : %lus\n", gptMsgShare.UPTIME);
+
+	static const char* regnames[] = {
+		"ra", "t0", "t1", "t2",
+		"s0", "s1", "a0", "a1", "a2", "a3", "a4", "a5",
+		"a6", "a7", "s2", "s3", "s4", "s5", "s6", "s7",
+		"s8", "s9", "sA", "sB", "t3", "t4", "t5", "t6"
+	};
+
+	for (int i = 0; i < 28; i += 4) {
+		for(int j = 0; j < 4; j++)
+			printf("%s %16lx%c", regnames[i+j], regs[i+1+j], j < 3 ? ' ' : '\n');
+	}
+	printf("machine mode: unhandlable trap %lu @ mepc(0x%08lX) mstatus(0x%08lX)\n", read_csr(mcause), mepc, regs[29]);
+
+//	printk("pc %lx va %lx insn       %x sr %lx\n", tf->epc, tf->badvaddr,
+//			(uint32_t)tf->insn, tf->status);
+//	network_ethif_check_buffer();
 	while (1);
 }
 
 void enx_timerirq_next(void)
 {
     if (mtime && timecmp) {
-    	int cpu_id = read_csr(mhartid);
+    	uint64 cpu_id = read_csr(mhartid);
     	//timecmp[cpu_id] = *mtime + TIMECMP_NEXT_VAL; // 1ms
     	timecmp[cpu_id] = timecmp[cpu_id] + TIMECMP_NEXT_VAL; // 1ms
     	if (cpu_id == 0) {
-			static uint64_t gbTickCnt = TIME_TICK - 1;
+			static uint64 gbTickCnt = TIME_TICK - 1;
 			if (gbTickCnt == 0) {
 				gbTickCnt = TIME_TICK - 1;
 				gptMsgShare.TIME++;
@@ -435,9 +500,69 @@ void enx_timerirq_next(void)
     }
 }
 
+#ifdef __FREERTOS__
+void trap_from_machine_mode_freertos(uintptr_t mcause, uintptr_t mepc, uintptr_t regs[32])
+{
+	uint64 cpuid = read_csr(mhartid);
+	if ((mcause & 0x8000000000000000) != 0x0) {
+		mcause -= 0x8000000000000000;
+		switch (mcause) {
+		case IRQ_M_TIMER:
+			vPortSysTickHandler();
+			break;
+
+		case IRQ_M_EXT:
+			gbXsrTaskSwitchNeeded = 0;
+			for (int i = 0; i < 8; i++) {
+				volatile unsigned int source = *iClaimCompliet[i]; // Get Claim IRQ
+				if (source == 0) {
+					continue;
+				} else if (IRQ_ETH_RX == 0 && IRQ_CDC == 0 && IRQ_I2S_TX == 0) {
+					printf("CPU%u-OS-IRQ%d (%d/%c)\n", cpuid, source, i, i%2==0 ? 'M':'S');
+				}
+				switch (source) {
+				case 1:	enx_exirq_source1();	break;
+				case 2:	enx_exirq_source2();	break;
+				case 3:	enx_exirq_source3();	break;
+				case 4:	enx_exirq_source4();	break;
+				case 5:	enx_exirq_source5();	break;
+				case 6:	enx_exirq_source6();	break;
+				case 7:	enx_exirq_source7();	break;
+				case 8:	enx_exirq_source8();	break;
+				default: printf("Err irq\n");	break;
+				}
+				*iClaimCompliet[i] = source;	// Set Complete IRQ
+			}
+			portYIELD_FROM_ISR(gbXsrTaskSwitchNeeded);
+			break;
+
+		default:
+			printf("IRQ.1 0x%lX\n", mcause);
+			break;
+		}
+	} else {
+		switch(mcause) {
+		case CAUSE_USER_ECALL:
+		case CAUSE_SUPERVISOR_ECALL:
+		case CAUSE_MACHINE_ECALL:
+			if (regs[14] == ECALL_YIELD_CMD) {
+				vTaskSwitchContext();
+			} else {
+				regs[7] = do_syscall(regs[7], regs[8], regs[9], regs[10], regs[11], regs[12], regs[14]);
+			}
+			break;
+
+		default:
+			bad_trap(mcause, mepc, regs);
+			break;
+		}
+	}
+}
+#endif
+
 uintptr_t trap_from_machine_mode(uintptr_t mcause, uintptr_t mepc, uintptr_t regs[32])
 {
-	mcause = read_csr(mcause);
+	uint64 cpuid = read_csr(mhartid);
 	if ((mcause & 0x8000000000000000) != 0x0) {
 		mcause -= 0x8000000000000000;
 		switch (mcause) {
@@ -448,10 +573,11 @@ uintptr_t trap_from_machine_mode(uintptr_t mcause, uintptr_t mepc, uintptr_t reg
 		case IRQ_M_EXT:
 			for (int i = 0; i < 8; i++) {
 				volatile unsigned int source = *iClaimCompliet[i]; // Get Claim IRQ
-				if (source != 0) {
-					_printf("CPU%d(%c) - IRQ%d\n", i/2, i%2==0 ? 'M':'S', i);
+				if (source == 0) {
+					continue;
+				} else if (source != 1 && source != 6) {
+					printf("CPU%u-FW-IRQ%d (%d/%c)\n", cpuid, source, i, i%2==0 ? 'M':'S');
 				}
-				gbXsrTaskSwitchNeeded = 0;
 				switch (source) {
 				case 1:	enx_exirq_source1();	break;
 				case 2:	enx_exirq_source2();	break;
@@ -461,16 +587,14 @@ uintptr_t trap_from_machine_mode(uintptr_t mcause, uintptr_t mepc, uintptr_t reg
 				case 6:	enx_exirq_source6();	break;
 				case 7:	enx_exirq_source7();	break;
 				case 8:	enx_exirq_source8();	break;
+				default: printf("Err irq\n");	break;
 				}
 				*iClaimCompliet[i] = source; // Set Complete IRQ
-				if (gbXsrTaskSwitchNeeded) {
-					vTaskSwitchContext();				// Task switch required ?
-				}
 			}
 			break;
 
 		default:
-			_printf("IRQ.1 0x%lX\n", mcause);
+			printf("IRQ.1 0x%lX\n", mcause);
 			break;
 		}
 		return mepc;
@@ -490,10 +614,10 @@ uintptr_t trap_from_machine_mode(uintptr_t mcause, uintptr_t mepc, uintptr_t reg
 	}
 }
 
-static void enx_externalirq_perl(eIRQ_GROUP_INDEX perlIdx, uint64_t onoff, uint64_t type)
+static void enx_externalirq_perl(eIRQ_GROUP_INDEX perlIdx, uint64 onoff, uint64 type)
 {
 	if (type > 1) {
-		_printf("Error type(%lu) (M-mode:0 S-mode:1)\n", type);
+		printf("Error type(%lu) (M-mode:0 S-mode:1)\n", type);
 		return;
 	}
 
@@ -503,41 +627,43 @@ static void enx_externalirq_perl(eIRQ_GROUP_INDEX perlIdx, uint64_t onoff, uint6
 		*iPrioBase[perlIdx] = 0;
 	}
 
-	uint64_t cpuid = read_csr(mhartid);
+	uint64 cpuid = read_csr(mhartid) * 2;
 	*iEnables[cpuid+type] |= 1 << (perlIdx + 1);
 	*iThreshold[cpuid+type] = 0;
 }
 
 void enx_timerirq_init(void)
 {
-    /* reuse existing routine */
-	int cpu_id = read_csr(mhartid);
+	/* reuse existing routine */
+	uint64 cpu_id = read_csr(mhartid);
 	timecmp[cpu_id] = *mtime + TIMECMP_NEXT_VAL;		// Next timer Interrupt
 
-    set_csr(mie, MIP_MTIP);								// Enable the Machine-Timer bit in MIE
+	set_csr(mie, MIP_MTIP);								// Enable the Machine-Timer bit in MIE
 }
 
 void enx_externalirq_init(void)
 {
 	set_csr(mie, MIP_MEIP);								// Enable External Interrupts
 	set_csr(mstatus, MSTATUS_MIE);						// Machine Interrupt Enable
+
 //	set_csr(mstatus, MSTATUS_MPIE);						// Machine Previous Interrupt Enabler
 //	set_csr(mstatus, MSTATUS_MPP);						// Machine Previous Privilege Mode
 
-	enx_externalirq_perl(eigiISP, DEF_ON, 0);			// Enable ISP Interrupts
-	enx_externalirq_perl(eigiDMA, DEF_ON, 0);			// Enable DMA Interrupts
-	enx_externalirq_perl(eigiH264, DEF_ON, 0);			// Enable H264 Interrupts
-	enx_externalirq_perl(eigiH265, DEF_ON, 0);			// Enable H265 Interrupts
-	enx_externalirq_perl(eigiUSB, DEF_ON, 0);			// Enable USB Interrupts
-	enx_externalirq_perl(eigiI2S, DEF_ON, 0);			// Enable I2S Interrupts
-	enx_externalirq_perl(eigiETH, DEF_ON, 0);			// Enable ETH Interrupts
-	enx_externalirq_perl(eigiSDIO, DEF_ON, 0);			// Enable SDIO Interrupts
-	enx_externalirq_perl(eigiASE, DEF_ON, 0);			// Enable AES Interrupts
-	enx_externalirq_perl(eigiSHA, DEF_ON, 0);			// Enable SHA Interrupts
-	enx_externalirq_perl(eigiCHKSUM, DEF_ON, 0);		// Enable CHKSUM Interrupts
-	enx_externalirq_perl(eigiUART, DEF_ON, 0);			// Enable UART Interrupts
-	enx_externalirq_perl(eigiSPI, DEF_ON, 0);			// Enable SPI Interrupts
-	enx_externalirq_perl(eigiI2C, DEF_ON, 0);			// Enable I2C Interrupts
-	enx_externalirq_perl(eigiGPIO, DEF_ON, 0);			// Enable GPIO Interrupts
-	enx_externalirq_perl(eigiTIMER, DEF_ON, 0);			// Enable TIMER Interrupts
+	enx_externalirq_perl(eigiISP, ENX_ON, 0);			// Enable ISP Interrupts
+	enx_externalirq_perl(eigiDMA, ENX_ON, 0);			// Enable DMA Interrupts
+	enx_externalirq_perl(eigiH264, ENX_ON, 0);			// Enable H264 Interrupts
+	enx_externalirq_perl(eigiH265, ENX_ON, 0);			// Enable H265 Interrupts
+	enx_externalirq_perl(eigiUSB, ENX_ON, 0);			// Enable USB Interrupts
+	enx_externalirq_perl(eigiI2S, ENX_ON, 0);			// Enable I2S Interrupts
+	enx_externalirq_perl(eigiETH, ENX_ON, 0);			// Enable ETH Interrupts
+	enx_externalirq_perl(eigiSDIO, ENX_ON, 0);			// Enable SDIO Interrupts
+	enx_externalirq_perl(eigiASE, ENX_ON, 0);			// Enable AES Interrupts
+	enx_externalirq_perl(eigiSHA, ENX_ON, 0);			// Enable SHA Interrupts
+	enx_externalirq_perl(eigiCHKSUM, ENX_ON, 0);		// Enable CHKSUM Interrupts
+	enx_externalirq_perl(eigiBUS, ENX_ON, 0);			// Enable BUS Interrupts
+	enx_externalirq_perl(eigiUART, ENX_ON, 0);			// Enable UART Interrupts
+	enx_externalirq_perl(eigiSPI, ENX_ON, 0);			// Enable SPI Interrupts
+	enx_externalirq_perl(eigiI2C, ENX_ON, 0);			// Enable I2C Interrupts
+	enx_externalirq_perl(eigiGPIO, ENX_ON, 0);			// Enable GPIO Interrupts
+	enx_externalirq_perl(eigiTIMER, ENX_ON, 0);			// Enable TIMER Interrupts
 }

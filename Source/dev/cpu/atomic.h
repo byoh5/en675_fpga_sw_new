@@ -3,7 +3,7 @@
 #ifndef _RISCV_ATOMIC_H
 #define _RISCV_ATOMIC_H
 
-#include "config.h"
+//#include "config.h"
 #include "encoding.h"
 
 // Currently, interrupts are always disabled in M-mode.

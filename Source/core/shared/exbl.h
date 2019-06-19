@@ -5,7 +5,13 @@
 
 extern void WaitXus(uint64_t us);
 extern void WaitXms(uint64_t ms);
+extern ULONG BenchTimeStart(void);
+//extern ULONG BenchTimeStop(ULONG start_time);
+extern UINT BenchTimeStop(ULONG start_time);
 extern BYTE hex2ascii(BYTE hex);
 extern void hexDump(char *desc, void *addr, int len);
+extern void hexCmpDump(char *desc, void *addr1, void*addr2, int len);
+
+extern void sleep_(int cnt);
 
 #endif

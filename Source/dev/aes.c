@@ -1,5 +1,9 @@
 #include "dev.h"
 
+#if 1
+
+ISRD static tIhnd arrAESIrq;
+
 void AesInit(void)
 {
 	AES_KEY_255_224 = 0x12345678;
@@ -60,3 +64,47 @@ void Aes256Dec(BYTE *apbDst, BYTE *apbSrc, UINT len)
 	AES_REQ = 1;
 	while(AES_REQ);
 }
+
+void AesIrqCallback(irq_fn irqfn, void *arg)
+{
+	arrAESIrq.irqfn = irqfn;
+	arrAESIrq.arg = arg;
+}
+
+void AesSetIrqEn(ENX_SWITCH sw)
+{
+	AES_IRQ_EN = sw;
+}
+
+ENX_SWITCH AesGetIrqEn(void)
+{
+	return AES_IRQ_EN;
+}
+
+void AesIrqClear(void)
+{
+	AES_IRQ_CLR = 1;
+}
+
+UINT AesIsIrq(void)
+{
+	return AES_IRQ;
+}
+
+void IrqAes(void)
+{
+	if (AesIsIrq()) {
+		printf("AES IRQ Get\n");
+		if (arrAESIrq.irqfn) {
+			arrAESIrq.irqfn(arrAESIrq.arg);
+		}
+		AesIrqClear();
+	}
+}
+#else
+void IrqAes(UINT nCH)
+{
+	_Rprintf("AES IRQ Get! AES is inactive.\n");
+	ENX_ASSERT(0);
+}
+#endif

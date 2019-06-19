@@ -2,42 +2,12 @@
 
 #if USE_UART0 | USE_UART1 | USE_UART2 | USE_UART3 | USE_UART4 | USE_UART5 | USE_UART6 | USE_UART7 | USE_UART8
 
-static _UART_REG0 * const arrUART[UART_CNT]		= {(_UART_REG0 *)(REG_BASE_UART0+(0<<3)), (_UART_REG0 *)(REG_BASE_UART1+(0<<3)), (_UART_REG0 *)(REG_BASE_UART2+(0<<3)), (_UART_REG0 *)(REG_BASE_UART3+(0<<3)), (_UART_REG0 *)(REG_BASE_UART4+(0<<3)), (_UART_REG0 *)(REG_BASE_UART5+(0<<3)), (_UART_REG0 *)(REG_BASE_UART6+(0<<3)), (_UART_REG0 *)(REG_BASE_UART7+(0<<3)), (_UART_REG0 *)(REG_BASE_UART8+(0<<3))};
-static _UART_REG1 * const arrUARTRX[UART_CNT]	= {(_UART_REG1 *)(REG_BASE_UART0+(1<<3)), (_UART_REG1 *)(REG_BASE_UART1+(1<<3)), (_UART_REG1 *)(REG_BASE_UART2+(1<<3)), (_UART_REG1 *)(REG_BASE_UART3+(1<<3)), (_UART_REG1 *)(REG_BASE_UART4+(1<<3)), (_UART_REG1 *)(REG_BASE_UART5+(1<<3)), (_UART_REG1 *)(REG_BASE_UART6+(1<<3)), (_UART_REG1 *)(REG_BASE_UART7+(1<<3)), (_UART_REG1 *)(REG_BASE_UART8+(1<<3))};
-static _UART_REG2 * const arrUARTTX[UART_CNT]	= {(_UART_REG2 *)(REG_BASE_UART0+(2<<3)), (_UART_REG2 *)(REG_BASE_UART1+(2<<3)), (_UART_REG2 *)(REG_BASE_UART2+(2<<3)), (_UART_REG2 *)(REG_BASE_UART3+(2<<3)), (_UART_REG2 *)(REG_BASE_UART4+(2<<3)), (_UART_REG2 *)(REG_BASE_UART5+(2<<3)), (_UART_REG2 *)(REG_BASE_UART6+(2<<3)), (_UART_REG2 *)(REG_BASE_UART7+(2<<3)), (_UART_REG2 *)(REG_BASE_UART8+(2<<3))};
-static _UART_REG3 * const arrUARTRXLMT[UART_CNT]= {(_UART_REG3 *)(REG_BASE_UART0+(3<<3)), (_UART_REG3 *)(REG_BASE_UART1+(3<<3)), (_UART_REG3 *)(REG_BASE_UART2+(3<<3)), (_UART_REG3 *)(REG_BASE_UART3+(3<<3)), (_UART_REG3 *)(REG_BASE_UART4+(3<<3)), (_UART_REG3 *)(REG_BASE_UART5+(3<<3)), (_UART_REG3 *)(REG_BASE_UART6+(3<<3)), (_UART_REG3 *)(REG_BASE_UART7+(3<<3)), (_UART_REG3 *)(REG_BASE_UART8+(3<<3))};
-static tIhnd arrUARTRXIrq[UART_CNT];
-static tIhnd arrUARTTXIrq[UART_CNT];
-
-void UartRegAddrErrPrint(char * str)
-{
-	char *__str = str;
-	while (*__str) {
-		while (UART7_TX_FULL);
-		UART7_TX_DAT = *__str;
-		__str++;
-	}
-}
-
-void UartRegAddrErrCheck(void)
-{
-	if ((ULONG)arrUART[7] != (REG_BASE_UART7 + (0 << 3))) {
-		UartRegAddrErrPrint("UART7 REG ADDR0 Error!");
-		while(1);
-	}
-	if ((ULONG)arrUARTRX[7] != (REG_BASE_UART7 + (1 << 3))) {
-		UartRegAddrErrPrint("UART7 REG ADDR1 Error!");
-		while(1);
-	}
-	if ((ULONG)arrUARTTX[7] != (REG_BASE_UART7 + (2 << 3))) {
-		UartRegAddrErrPrint("UART7 REG ADDR2 Error!");
-		while(1);
-	}
-	if ((ULONG)arrUARTRXLMT[7] != (REG_BASE_UART7 + (3 << 3))) {
-		UartRegAddrErrPrint("UART7 REG ADDR3 Error!");
-		while(1);
-	}
-}
+static volatile _UART_REG0 * const arrUART[UART_CNT]      = {(_UART_REG0 *)(REG_BASE_UART0+(0<<3)), (_UART_REG0 *)(REG_BASE_UART1+(0<<3)), (_UART_REG0 *)(REG_BASE_UART2+(0<<3)), (_UART_REG0 *)(REG_BASE_UART3+(0<<3)), (_UART_REG0 *)(REG_BASE_UART4+(0<<3)), (_UART_REG0 *)(REG_BASE_UART5+(0<<3)), (_UART_REG0 *)(REG_BASE_UART6+(0<<3)), (_UART_REG0 *)(REG_BASE_UART7+(0<<3)), (_UART_REG0 *)(REG_BASE_UART8+(0<<3))};
+static volatile _UART_REG1 * const arrUARTRX[UART_CNT]    = {(_UART_REG1 *)(REG_BASE_UART0+(1<<3)), (_UART_REG1 *)(REG_BASE_UART1+(1<<3)), (_UART_REG1 *)(REG_BASE_UART2+(1<<3)), (_UART_REG1 *)(REG_BASE_UART3+(1<<3)), (_UART_REG1 *)(REG_BASE_UART4+(1<<3)), (_UART_REG1 *)(REG_BASE_UART5+(1<<3)), (_UART_REG1 *)(REG_BASE_UART6+(1<<3)), (_UART_REG1 *)(REG_BASE_UART7+(1<<3)), (_UART_REG1 *)(REG_BASE_UART8+(1<<3))};
+static volatile _UART_REG2 * const arrUARTTX[UART_CNT]    = {(_UART_REG2 *)(REG_BASE_UART0+(2<<3)), (_UART_REG2 *)(REG_BASE_UART1+(2<<3)), (_UART_REG2 *)(REG_BASE_UART2+(2<<3)), (_UART_REG2 *)(REG_BASE_UART3+(2<<3)), (_UART_REG2 *)(REG_BASE_UART4+(2<<3)), (_UART_REG2 *)(REG_BASE_UART5+(2<<3)), (_UART_REG2 *)(REG_BASE_UART6+(2<<3)), (_UART_REG2 *)(REG_BASE_UART7+(2<<3)), (_UART_REG2 *)(REG_BASE_UART8+(2<<3))};
+static volatile _UART_REG3 * const arrUARTRXLMT[UART_CNT] = {(_UART_REG3 *)(REG_BASE_UART0+(3<<3)), (_UART_REG3 *)(REG_BASE_UART1+(3<<3)), (_UART_REG3 *)(REG_BASE_UART2+(3<<3)), (_UART_REG3 *)(REG_BASE_UART3+(3<<3)), (_UART_REG3 *)(REG_BASE_UART4+(3<<3)), (_UART_REG3 *)(REG_BASE_UART5+(3<<3)), (_UART_REG3 *)(REG_BASE_UART6+(3<<3)), (_UART_REG3 *)(REG_BASE_UART7+(3<<3)), (_UART_REG3 *)(REG_BASE_UART8+(3<<3))};
+ISRD static tIhnd arrUARTRXIrq[UART_CNT];
+ISRD static tIhnd arrUARTTXIrq[UART_CNT];
 
 void UartInit(UINT nCH, UINT Speed_Hz)
 {
@@ -67,7 +37,7 @@ void UartInit(UINT nCH, UINT Speed_Hz)
 		case 8:	UART8_PIN_INIT;	break;
 	}
 
-	printf("UART%u Init - %uHz\n", nCH, MCK_FREQ / ((arrUART[nCH]->CLK_DIV + 1) * 16));
+	//printf("UART%u Init - %uHz(%u)\n", nCH, MCK_FREQ / ((arrUART[nCH]->CLK_DIV + 1) * 16), arrUART[nCH]->CLK_DIV);
 }
 
 void UartDeinit(UINT nCH)
@@ -101,8 +71,12 @@ void UartDeinit(UINT nCH)
 
 void UartTx(UINT nCH, char data)
 {
-	UartRegAddrErrCheck();
-	while (arrUART[nCH]->TX_FULL);
+	while (arrUART[nCH]->TX_FULL || arrUART[nCH]->TX_IRQ_EN);
+	arrUARTTX[nCH]->TX_DAT = data;
+}
+
+void UartTxSetByte(UINT nCH, char data)
+{
 	arrUARTTX[nCH]->TX_DAT = data;
 }
 
@@ -122,14 +96,14 @@ void UartTxIrqCallback(UINT nCH, irq_fn irqfn, void *arg)
 	arrUARTTXIrq[nCH].arg = arg;
 }
 
-void UartTxIrqOn(UINT nCH)
-{	// Direction : Uart interrupt enable
-	arrUART[nCH]->TX_IRQ_EN = 1;
+void UartTxSetIrqEn(UINT nCH, ENX_SWITCH sw)
+{	// Direction : Uart interrupt enable/disable
+	arrUART[nCH]->TX_IRQ_EN = sw;
 }
 
-void UartTxIrqOff(UINT nCH)
-{	// Direction : Uart interrupt disable
-	arrUART[nCH]->TX_IRQ_EN = 0;
+ENX_SWITCH UartTxGetIrqEn(UINT nCH)
+{
+	return arrUART[nCH]->TX_IRQ_EN;
 }
 
 void UartTxIrqClear(UINT nCH)
@@ -150,13 +124,11 @@ UINT UartRx(UINT nCH)
 
 UINT UartRxGetByte(UINT nCH)
 {
-	UartRegAddrErrCheck();
 	return arrUARTRX[nCH]->RX_DAT;
 }
 
 UINT UartRxIsEmpty(UINT nCH)
 {
-	UartRegAddrErrCheck();
 	return arrUART[nCH]->RX_EMPTY;
 }
 
@@ -171,14 +143,14 @@ void UartRxIrqCallback(UINT nCH, irq_fn irqfn, void *arg)
 	arrUARTRXIrq[nCH].arg = arg;
 }
 
-void UartRxIrqOn(UINT nCH)
-{	// Direction : Uart interrupt enable
-	arrUART[nCH]->RX_IRQ_EN = 1;
+void UartRxSetIrqEn(UINT nCH, ENX_SWITCH sw)
+{	// Direction : Uart interrupt enable/disable
+	arrUART[nCH]->RX_IRQ_EN = sw;
 }
 
-void UartRxIrqOff(UINT nCH)
-{	// Direction : Uart interrupt disable
-	arrUART[nCH]->RX_IRQ_EN = 0;
+ENX_SWITCH UartRxGetIrqEn(UINT nCH)
+{
+	return arrUART[nCH]->RX_IRQ_EN;
 }
 
 void UartRxIrqClear(UINT nCH)
@@ -193,26 +165,29 @@ UINT UartRxIsIrq(UINT nCH)
 
 void IrqUart(UINT nCH)
 {
-	if (UartRxIsIrq(nCH)) {
+	while (UartRxIsIrq(nCH)) {
+		UartRxIrqClear(nCH);
 		while (UartRxIsEmpty(nCH) == 0) {
 			if (arrUARTRXIrq[nCH].irqfn) {
 				arrUARTRXIrq[nCH].irqfn(arrUARTRXIrq[nCH].arg);
+			} else {
+				printf("UART%u-RX IRQ Get: [%c]\n", UartRxGetByte(nCH)); // rx drop
 			}
 		}
-		UartRxIrqClear(nCH);
 	}
 
-	if (UartTxIsIrq(nCH)) {
-		_printf("UART%d-TX IRQ Get\n", nCH);
+	while (UartTxIsIrq(nCH)) {
+//		UartTxIrqClear(nCH);
+//		_printf("UART%d-TX IRQ Get\n", nCH);
 		if (arrUARTTXIrq[nCH].irqfn) {
 			arrUARTTXIrq[nCH].irqfn(arrUARTTXIrq[nCH].arg);
 		}
-		UartTxIrqClear(nCH);
 	}
 }
 #else
 void IrqUart(UINT nCH)
 {
-	printf("UART%u IRQ Get! UART%u is inactive.\n", nCH, nCH);
+	_Rprintf("UART%u IRQ Get! UART%u is inactive.\n", nCH, nCH);
+	ENX_ASSERT(0);
 }
 #endif

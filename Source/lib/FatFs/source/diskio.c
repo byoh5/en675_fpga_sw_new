@@ -8,6 +8,8 @@
 /*-----------------------------------------------------------------------*/
 
 #include "dev.h"
+#include "sdcard.h"
+
 #include "ff.h"			/* Obtains integer types */
 #include "diskio.h"		/* Declarations of disk functions */
 
@@ -115,8 +117,8 @@ DRESULT disk_read (
 	case DEV_SD :
 #if defined(__USE_SDIOCD__)
 		res = RES_OK;
-		flprintf("CNT(%2u) buff(0x%08X) addr(0x%08X)\n", count, buff, sector);
-		if (SdioCdRead((BYTE *)buff, (UINT)sector, (UINT)count) == DEF_FAIL) {
+//		flprintf("CNT(%2u) buff(0x%08X) addr(0x%08X)\n", count, buff, sector);
+		if (SdioCdRead((BYTE *)buff, (UINT)sector, (UINT)count) == ENX_FAIL) {
 			res = RES_ERROR;
 		}
 #endif
@@ -150,7 +152,7 @@ DRESULT disk_write (
 )
 {
 	DRESULT res = RES_PARERR;
-	int result;
+//	int result;
 
 	switch (pdrv) {
 #if (LOAD_FS_FLS==1)
@@ -159,6 +161,11 @@ DRESULT disk_write (
 #endif
 #if (LOAD_FS_SDCARD==1)
 	case DEV_SD :
+		res = RES_OK;
+//		flprintf("CNT(%2u) buff(0x%08X) addr(0x%08X)\n", count, buff, sector);
+		if (SdioCdWrite((BYTE *)buff, (UINT)sector, (UINT)count) == ENX_FAIL) {
+			res = RES_ERROR;
+		}
 		return res;
 #endif
 #if (LOAD_FS_USB==1)
@@ -260,7 +267,7 @@ DRESULT disk_ioctl (
 DWORD get_fattime(void)
 {
 	struct tm tmout;
-	enx_get_tmtime(gptMsgShare.TIME, &tmout, DEF_YES);
+	enx_get_tmtime(gptMsgShare.TIME, &tmout, ENX_YES);
 	return    ((DWORD)(tmout.tm_year - 80)	<< 25)		// (tTime->tm_year + 1900 - 1980)
 			| ((DWORD)(tmout.tm_mon + 1)	<< 21)
 			| ((DWORD)(tmout.tm_mday)		<< 16)

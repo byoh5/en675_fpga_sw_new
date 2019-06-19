@@ -13,10 +13,11 @@
 // -----------------------------------------------------------------------------
 #ifndef _RV_UTILS_H_
 #define	_RV_UTILS_H_
-#include "dev.h"
 
 extern void flush_dcache_line(unsigned int);
+extern void hwflush_dcache_range_all(void);
 extern void hwflush_dcache_range(ulong sadr, ulong size);
+extern void hwflush_dcache_range_rtos(ulong sadr, ulong size);
 
 // direct memory access using software flush/invalidation
 extern void dmwrite8(ulong adr, uchar wdat);

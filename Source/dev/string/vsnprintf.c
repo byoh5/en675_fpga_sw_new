@@ -1,8 +1,6 @@
 #include "dev.h"
 #include <string.h>
 
-#include "vsnprintf.h"
-
 #define ZEROPAD			1	// Pad with zero
 #define SIGN			2	// Unsigned/signed long
 #define PLUS			4	// Show plus
@@ -120,11 +118,21 @@ int vsnprintf_(char *buf, size_t size, const char *fmt, va_list args)
 	int field_width;
 	int precision;
 	int qualifier;
-
+#if 1
+	char buff[PRINTFBUF_SIZE>>2] = {0};
+#endif
 
 	size--;
+
+#ifdef __ECM_STRING__
+	char NoR = 1;
+	for (str = buf; *fmt && size; NoR = (*fmt != '\r'), ++fmt) {
+		if (*fmt != '%') {
+			if(NoR && *fmt == '\n' && size >= 2) { *str++ = '\r'; size--; }
+#else
 	for (str = buf; *fmt && size; ++fmt) {
 		if (*fmt != '%') {
+#endif
 			*str++ = *fmt;
 			size--;
 			continue;
@@ -274,6 +282,51 @@ repeat:
 			base = 16;
 			break;
 
+#if 1
+		case 'P':	// special format for IPaddress(%IP)
+			if(qualifier == 'I')
+			{
+				num = va_arg(args, unsigned int);
+				precision = min(size, 15);
+				len = IPtoStr(num, buff, precision, flags);
+				if(!(flags & LEFT))
+				{
+					while(len < field_width-- && size)
+					{
+						*str++ = ' ';
+						size--;
+					}
+				}
+				for(i = 0; i < len && size; ++i)
+				{
+					*str++ = buff[i];
+					size--;
+				}
+				while(len < field_width-- && size)
+				{
+					*str++ = ' ';
+					size--;
+				}
+			}
+			else
+			{
+				if (size)
+				{
+					*str++ = '%';
+					size--;
+				}
+				if (*fmt && size)
+				{
+					*str++ = *fmt;
+					size--;
+				}
+				else
+				{
+					--fmt;
+				}
+			}
+			continue;
+#endif
 
 		default:
 			if (*fmt != '%' && size)
@@ -334,9 +387,114 @@ repeat:
 	return str - buf;
 }
 
-static char buf[PRINTFBUF_SIZE];
+#ifdef __ECM_STRING__
+/*_NOINS static*/ int __ecm_uprintf(char* buf, int len)
+{
+#define PC_STX 0x02
+#define PC_CMD_STR 0xB0
+#define PC_ETX 0x03
+
+	/*if (len > 255) {
+		Uart0_Tx(PC_STX);
+		Uart0_Tx(PC_CMD_STR);
+		Uart0_Tx(20+8);
+		Uart0_Str("printf overflow!(");
+		Uart7_Hex(len);
+		Uart0_Tx(')');
+		Uart0_Tx('\r');
+		Uart0_Tx('\n');
+		Uart0_Tx(PC_ETX);
+		len = 255;
+	}*/
+
+#if 1
+	UartTx(DEBUG_UART_NUM, PC_STX);
+	UartTx(DEBUG_UART_NUM, PC_CMD_STR);
+	UartTx(DEBUG_UART_NUM, len);
+	while (*buf) {
+		UartTx(DEBUG_UART_NUM, *buf++);
+	}
+	UartTx(DEBUG_UART_NUM, PC_ETX);
+#else
+	UartTxIrq(PC_STX);
+	UartTxIrq(PC_CMD_STR);
+	UartTxIrq(len);
+	while (*buf) {
+		UartTxIrq(*buf++);
+	}
+	UartTxIrq(PC_ETX);
+#endif
+
+	return len;
+}
+#endif
+
+//static char buf[PRINTFBUF_SIZE];
 int _printf(const char *format, ...)
 {
+	char buf[PRINTFBUF_SIZE];
+	char *pbuf;
+	va_list args;
+	va_start(args, format);
+	int len = vsnprintf_(buf, PRINTFBUF_SIZE, format, args);
+	va_end(args);
+
+#ifdef __ECM_STRING__
+	__ecm_uprintf(buf, len);
+#else
+	pbuf = buf;
+	while (*pbuf) {
+		if (*pbuf == '\n') UartTx(DEBUG_UART_NUM, '\r');
+		UartTx(DEBUG_UART_NUM, *pbuf++);
+	}
+#endif
+
+	return len;
+}
+
+int color_printf(char *color, const char *format, ...)
+{
+	char buf[PRINTFBUF_SIZE];
+	char *pbuf;
+	va_list args;
+	va_start(args, format);
+	int len = vsnprintf_(buf, PRINTFBUF_SIZE, format, args);
+	va_end(args);
+
+	while (*color) {
+		UartTx(DEBUG_UART_NUM, *color++);
+	}
+
+	pbuf = buf;
+	while (*pbuf) {
+		if (*pbuf == '\n') UartTx(DEBUG_UART_NUM, '\r');
+		UartTx(DEBUG_UART_NUM, *pbuf++);
+	}
+
+	char *color_rst = TTY_COLOR_RESET;
+	while (*color_rst) {
+		UartTx(DEBUG_UART_NUM, *color_rst++);
+	}
+
+	return len;
+}
+
+int _sprintf(char *buf, const char *format, ...)
+{
+	va_list args;
+	va_start(args, format);
+	int len = vsnprintf_(buf, PRINTFBUF_SIZE, format, args);
+	va_end(args);
+
+	return len;
+}
+
+// Same as "printf/sprintf/snprintf" function.
+// This function was created for a special format. ('%IP', '%b', etc...)
+// With this function, the compiler does not warn you when using special format.
+int es_printf(const char *format, ...)
+{
+	char buf[PRINTFBUF_SIZE];
 	char *pbuf;
 	va_list args;
 	va_start(args, format);
@@ -348,14 +506,25 @@ int _printf(const char *format, ...)
 		if (*pbuf == '\n') UartTx(DEBUG_UART_NUM, '\r');
 		UartTx(DEBUG_UART_NUM, *pbuf++);
 	}
+
 	return len;
 }
 
-int _sprintf(char *buf, const char *format, ...)
+int es_sprintf(char *buf, const char *format, ...)
 {
 	va_list args;
 	va_start(args, format);
 	int len = vsnprintf_(buf, PRINTFBUF_SIZE, format, args);
+	va_end(args);
+
+	return len;
+}
+
+int es_snprintf(char *buf, size_t size, const char *format, ...)
+{
+	va_list args;
+	va_start(args, format);
+	int len = vsnprintf_(buf, size, format, args);
 	va_end(args);
 
 	return len;

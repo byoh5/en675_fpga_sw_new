@@ -53,7 +53,7 @@
  * NTP timestamps instead.
  */
 #if !defined SNTP_SET_SYSTEM_TIME || defined __DOXYGEN__
-#define SNTP_SET_SYSTEM_TIME(sec)   LWIP_UNUSED_ARG(sec)
+#define SNTP_SET_SYSTEM_TIME(sec)   sntp_settime(sec)
 #endif
 
 /** The maximum number of SNTP servers that can be set */
@@ -72,8 +72,9 @@
  * \#define SNTP_SERVER_ADDRESS "pool.ntp.org"
  */
 #if !defined SNTP_SERVER_DNS || defined __DOXYGEN__
-#define SNTP_SERVER_DNS            0
+#define SNTP_SERVER_DNS            1
 #endif
+#define SNTP_SERVER_ADDRESS        gtNetwork.strSntpSvr
 
 /**
  * SNTP_DEBUG: Enable debugging for SNTP.
@@ -102,7 +103,7 @@
  *        server whose synchronization source has expired for a very long time.
  */
 #if !defined SNTP_CHECK_RESPONSE || defined __DOXYGEN__
-#define SNTP_CHECK_RESPONSE         0
+#define SNTP_CHECK_RESPONSE         2 // 0
 #endif
 
 /** Enable round-trip delay compensation.
@@ -137,7 +138,7 @@
  */
 #if !defined SNTP_STARTUP_DELAY || defined __DOXYGEN__
 #ifdef LWIP_RAND
-#define SNTP_STARTUP_DELAY          1
+#define SNTP_STARTUP_DELAY          0 // 1
 #else
 #define SNTP_STARTUP_DELAY          0
 #endif
@@ -155,14 +156,14 @@
  * Default is 15 seconds. Must not be beolw 15 seconds by specification (i.e. 15000)
  */
 #if !defined SNTP_RECV_TIMEOUT || defined __DOXYGEN__
-#define SNTP_RECV_TIMEOUT           15000
+#define SNTP_RECV_TIMEOUT           3000 // 15000
 #endif
 
 /** SNTP update delay - in milliseconds
  * Default is 1 hour. Must not be beolw 60 seconds by specification (i.e. 60000)
  */
 #if !defined SNTP_UPDATE_DELAY || defined __DOXYGEN__
-#define SNTP_UPDATE_DELAY           3600000
+#define SNTP_UPDATE_DELAY           (gtNetwork.u32SntpPeriodic*1000) // 3600000
 #endif
 
 /** SNTP macro to get system time, used with SNTP_CHECK_RESPONSE >= 2
@@ -192,7 +193,7 @@
  * Default is on to conform to RFC.
  */
 #if !defined SNTP_RETRY_TIMEOUT_EXP || defined __DOXYGEN__
-#define SNTP_RETRY_TIMEOUT_EXP      1
+#define SNTP_RETRY_TIMEOUT_EXP      0 // 1
 #endif
 
 /** Keep a reachability shift register per server

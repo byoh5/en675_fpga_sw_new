@@ -46,7 +46,7 @@
 #define U32_F "u"
 #define S32_F "d"
 #define X32_F "x"
-#define SZT_F "z"
+#define SZT_F "lu"
 
 #ifndef BYTE_ORDER
 		#define BYTE_ORDER	LITTLE_ENDIAN

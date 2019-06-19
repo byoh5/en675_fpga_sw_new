@@ -33,7 +33,9 @@
 #include <string.h>
 #include "dev.h"
 
+#undef ISRT
 #define ISRT
+#undef ISRD
 #define ISRD
 
 /* lwIP includes. */
@@ -677,28 +679,43 @@ lwip_standard_chksum(const void *dataptr, int len)
 }
 #endif
 
+ATTR_MALIGN64 BYTE chksumData[1536];
+
 WORD my_chksum(const void *dataptr, WORD len)
 {
-#if 0
-	u16_t accdma, accdma2, accdma3;
-	DmaDChkSum_ip((BYTE *)dataptr, (UINT)len, &accdma);
-#if 1
-	DmaDChkSum_ip((BYTE *)dataptr, (UINT)len, &accdma2);
-	if(accdma != accdma2)
-	{
-//		DmaDChkSum_ip((BYTE *)dataptr, (UINT)len, &accdma3);
-#ifdef CONFIG_DCACHE_ENABLE
-		invalidate_dcache_range((uint)dataptr, (uint)dataptr+len);
-#endif
-		accdma3 = lwip_standard_chksum(dataptr, len);
-		printf("[P:0x%08X] DCK1(0x%04X) DCK2(0x%04X) DCK3(0x%04X) len(%4d)\r\n", (UINT)dataptr, accdma, accdma2, accdma3, len);
-		return accdma3;
+//	if (((ULONG)dataptr) % 64 == 0) {
+//		_Yprintf("chksum:aligned:OK\n");
+//	}
+
+//	ULONG stime = BenchTimeStart();
+
+	WORD hw_chksum1 = 0;
+	hwflush_dcache_range_rtos((ULONG)dataptr, len);
+	if (((ULONG)dataptr) % 64 == 0) {
+		hw_chksum1 = Checksum16((BYTE *)dataptr, len);
+	} else {
+		BDmaMemCpy_isr(0, chksumData, (BYTE *)dataptr, len);
+		hw_chksum1 = Checksum16((BYTE *)chksumData, len);
 	}
-#endif
-	return accdma2;
-#else
-	return lwip_standard_chksum(dataptr, len);
-#endif
+
+//	ULONG a_out = BenchTimeStop(stime);
+//	stime = BenchTimeStart();
+
+	WORD sw_chksum = lwip_standard_chksum(dataptr, len);
+
+//	ULONG b_out = BenchTimeStop(stime);
+
+	static uint64_t oking = 0;
+	if (sw_chksum != hw_chksum1) {
+		_Rprintf("[CHKSUM:0x%08X] SW(0x%04X) HW(0x%04X) len(%4u) ing(%u)\n", (intptr_t)dataptr, sw_chksum, hw_chksum1, len, oking);
+		//hexDump("Checksum", dataptr, len);
+		oking = 0;
+	} else {
+		oking++;
+		//printf("[CHKSUM:0x%08X] SW(0x%04X) HW(0x%04X) len(%4u) ok(%u)\n", (UINT)dataptr, sw_chksum, hw_chksum1, len, oking);
+	}
+//	printf("%4u|H:%4luus|S:%4luus|\n", len, a_out, b_out);
+	return sw_chksum;
 }
 
 void my_copy(void* dst, void* src, unsigned long len)
@@ -709,6 +726,9 @@ void my_copy(void* dst, void* src, unsigned long len)
 	invalidate_dcache_range((uint)dst, ((uint)dst)+len);  /* Maybe, we thick cache flush may bes not used. cache is write through */
 #endif
 #else
+//	printf("DST(0x%08X SRC(0x%08X) LEN(%8u)\n", dst, src, len);
+	//hwflush_dcache_range_rtos(dst, len);
     memcpy(dst, src, len);
+    //hwflush_dcache_range_rtos(dst, len);
 #endif
 }

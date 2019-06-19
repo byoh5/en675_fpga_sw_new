@@ -22,6 +22,11 @@
 #ifndef FF_DEFINED
 #define FF_DEFINED	86604	/* Revision ID */
 
+#define FATFS_VERSION_MAJOR		0
+#define FATFS_VERSION_MINOR		13
+#define FATFS_VERSION_REVISION	'c'
+#define FATFS_VERSION_RC		4
+
 #ifdef __cplusplus
 extern "C" {
 #endif

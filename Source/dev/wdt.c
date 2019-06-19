@@ -1,6 +1,6 @@
 #include "dev.h"
 
-void WdtInit(uint64_t milsec)
+void WdtInit(ULONG milsec)
 {
 	SYS_WDT_LMT = (milsec * OSC_FREQ / 1000);
 	SYS_WDT_EN = 1;

@@ -4,8 +4,8 @@
 #ifdef __RTC_S35390A__
 
 /* I2C bus slave code */
-#define S35390A_I2C_READ            0x61
-#define S35390A_I2C_WRITE           0x60
+#define S35390A_I2C_WRITE           (RTC_S35390A_I2C_CA)
+#define S35390A_I2C_READ            (S35390A_I2C_WRITE | 1)
 
 /* Command */
 #define S35390A_CMD_STATUS1         0x00
@@ -47,7 +47,7 @@ typedef struct {
     int twentyfourhour;
 } s35390a_t;
 
-int s35390a_init(void);
+ENX_OKFAIL s35390a_init(void);
 
 #endif
 #endif

@@ -11,8 +11,8 @@
 //	--- ----		------		-------
 //	0.1	190215		ygkim		first designed
 // -----------------------------------------------------------------------------
-#include "rv_utils.h"
 #include "dev.h"
+#include "enx_freertos.h"
 
 extern void hwflush_dcache_line(uint);
 
@@ -30,14 +30,61 @@ extern void hwflush_dcache_line(uint);
 
 //------------------------------------------------------------------------------
 //
+inline void hwflush_dcache_range_all(void)
+{
+	asm volatile ("fence rw,rw");
+	// def CFLUSH_D_L1 = BitPat("b 1111 1100 0000 ???? ?000 0000 0111 0011") @ Instructions.scala
+	asm volatile (".word 0xfc000073");
+}
+
 void hwflush_dcache_range(ulong sadr, ulong size)
 {
+	if (size >= DC_SIZE) {
+		hwflush_dcache_range_all();
+		return;
+	}
+
 	ulong eadr = sadr + size;
+#if 1
+#if 1
+	register ulong new_sadr asm("a0") = ((sadr >> DC_BBITS) << DC_BBITS);
+	asm volatile ("fence rw,rw");
+#if 1
+	do {
+		// def CFLUSH_D_L1 = BitPat("b 1111 1100 0000 ???? ?000 0000 0111 0011") @ Instructions.scala
+		asm volatile (".word (0xfc000073 | 10<<15)");
+		new_sadr += DC_BSIZE;
+	} while (new_sadr < eadr);
+#else
+	while (new_sadr < eadr) {
+		// def CFLUSH_D_L1 = BitPat("b 1111 1100 0000 ???? ?000 0000 0111 0011") @ Instructions.scala
+		asm volatile (".word (0xfc000073 | 10<<15)");
+		new_sadr += DC_BSIZE;
+	}
+#endif
+#else
+	sadr = ((sadr >> DC_BBITS) << DC_BBITS);
+	while (sadr < eadr) {
+		asm volatile ("fence rw,rw");
+		// def CFLUSH_D_L1 = BitPat("b 1111 1100 0000 ???? ?000 0000 0111 0011") @ Instructions.scala
+		asm volatile (".word (0xfc000073 | 15<<15)");
+		sadr += DC_BSIZE;
+	}
+#endif
+#else
 	sadr = ((sadr >> DC_BBITS) << DC_BBITS);
 	while (sadr < eadr) {
 		hwflush_dcache_line(sadr);
 		sadr += DC_BSIZE;
 	}
+#endif
+}
+
+void hwflush_dcache_range_rtos(ulong sadr, ulong size)
+{
+	portENTER_CRITICAL();
+	hwflush_dcache_range(sadr, size);
+	portEXIT_CRITICAL();
 }
 
 //------------------------------------------------------------------------------
@@ -151,7 +198,7 @@ void rv_util_test()
 
 	dmwrite64(BASE_ADDR+0x300  , 0x0123456789abcdef);
 
-	uchar rdat8;
+	uchar rdat8 = 0;
 	rdat8 = dmread8(BASE_ADDR	);
 	rdat8 = dmread8(BASE_ADDR+1);
 	rdat8 = dmread8(BASE_ADDR+2);

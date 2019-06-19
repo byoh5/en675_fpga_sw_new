@@ -4,6 +4,7 @@
 #include "dev.h"
 #include "msg.h"
 
+
 void my_copy(void* dst, void* src, unsigned long len);
 //#define LWIP_PROVIDE_ERRNO
 
@@ -128,7 +129,7 @@ void sys_unlock_tcpip_core(void);
  *    4 byte alignment -> \#define MEM_ALIGNMENT 4
  *    2 byte alignment -> \#define MEM_ALIGNMENT 2
  */
-#define MEM_ALIGNMENT                   4
+#define MEM_ALIGNMENT                   16 // bus-align(16) cache-align(64)
 
 /**
  * MEM_SIZE: the size of the heap memory. If the application will send
@@ -162,7 +163,7 @@ void sys_unlock_tcpip_core(void);
  *    MEM_OVERFLOW_CHECK >= 2 checks all heap elements every time
  *      mem_malloc() or mem_free() is called (useful but slow!)
  */
-#define MEM_OVERFLOW_CHECK              0
+#define MEM_OVERFLOW_CHECK              1
 
 /**
  * MEM_SANITY_CHECK==1: run a sanity check after each mem_free() to make
@@ -223,7 +224,7 @@ void sys_unlock_tcpip_core(void);
  * If the application sends a lot of data out of ROM (or other static memory),
  * this should be set high.
  */
-#define MEMP_NUM_PBUF                   64
+#define MEMP_NUM_PBUF                   128
 
 /**
  * MEMP_NUM_RAW_PCB: Number of raw connection PCBs
@@ -254,7 +255,7 @@ void sys_unlock_tcpip_core(void);
  * MEMP_NUM_TCP_SEG: the number of simultaneously queued TCP segments.
  * (requires the LWIP_TCP option)
  */
-#define MEMP_NUM_TCP_SEG                180
+#define MEMP_NUM_TCP_SEG                320 // 180
 
 /**
  * MEMP_NUM_ALTCP_PCB: the number of simultaneously active altcp layer pcbs.
@@ -299,7 +300,7 @@ void sys_unlock_tcpip_core(void);
  * The number of sys timeouts used by the core stack (not apps)
  * The default number of timeouts is calculated here for all enabled modules.
  */
-#define LWIP_NUM_SYS_TIMEOUT_INTERNAL   (2 * (LWIP_TCP + IP_REASSEMBLY + LWIP_ARP + (2*LWIP_DHCP) + LWIP_AUTOIP + LWIP_IGMP + LWIP_DNS + PPP_NUM_TIMEOUTS + (LWIP_IPV6 * (1 + LWIP_IPV6_REASS + LWIP_IPV6_MLD))))
+//#define LWIP_NUM_SYS_TIMEOUT_INTERNAL   (2 * (LWIP_TCP + IP_REASSEMBLY + LWIP_ARP + (2*LWIP_DHCP) + LWIP_AUTOIP + LWIP_IGMP + LWIP_DNS + PPP_NUM_TIMEOUTS + (LWIP_IPV6 * (1 + LWIP_IPV6_REASS + LWIP_IPV6_MLD))))
 
 /**
  * MEMP_NUM_SYS_TIMEOUT: the number of simultaneously active timeouts.
@@ -332,7 +333,7 @@ void sys_unlock_tcpip_core(void);
  * for callback/timeout API communication.
  * (only needed if you use tcpip.c)
  */
-#define MEMP_NUM_TCPIP_MSG_API          8
+#define MEMP_NUM_TCPIP_MSG_API          16
 
 /**
  * MEMP_NUM_TCPIP_MSG_INPKT: the number of struct tcpip_msg, which are used
@@ -505,7 +506,7 @@ void sys_unlock_tcpip_core(void);
  * PBUF_POOL_SIZE > IP_REASS_MAX_PBUFS so that the stack is still able to receive
  * packets even if the maximum amount of fragments is enqueued for reassembly!
  */
-#define IP_REASS_MAX_PBUFS              10
+#define IP_REASS_MAX_PBUFS              50
 
 /**
  * IP_DEFAULT_TTL: Default value for Time-To-Live used by transport layers.
@@ -1154,7 +1155,7 @@ void sys_unlock_tcpip_core(void);
  * The queue size value itself is platform-dependent, but is passed to
  * sys_mbox_new() when tcpip_init is called.
  */
-#define TCPIP_MBOX_SIZE                 32
+#define TCPIP_MBOX_SIZE                 64
 
 /**
  * Define this to something that triggers a watchdog. This is called from
@@ -1598,7 +1599,7 @@ void sys_unlock_tcpip_core(void);
    ---------- Debugging options ----------
    ---------------------------------------
 */
-#define LWIP_DEBUG						LWIP_DBG_ON
+#define LWIP_DEBUG						LWIP_DBG_OFF
 
 /**
  * LWIP_DBG_MIN_LEVEL: After masking, the value of the debug is
@@ -1613,7 +1614,7 @@ void sys_unlock_tcpip_core(void);
  * debug messages of certain types.
  * @see debugging_levels
  */
-#define LWIP_DBG_TYPES_ON               LWIP_DBG_ON
+#define LWIP_DBG_TYPES_ON               LWIP_DBG_OFF
 
 /**
  * ETHARP_DEBUG: Enable debugging in etharp.c.

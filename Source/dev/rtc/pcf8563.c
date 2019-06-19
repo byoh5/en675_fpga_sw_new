@@ -4,7 +4,6 @@
 #ifdef __RTC_PCF8563__
 #include <string.h>
 #include <time.h>
-#include "rtc.h"
 #include "pcf8563.h"
 
 #define I2C_LOCK	//while (CS_I2C2)
@@ -30,97 +29,97 @@ static UINT pcf8563_check(void)
 
 /**
     @return 
-        DEF_OK is ok else DEF_FAIL.
+        ENX_OK is ok else ENX_FAIL.
 */
-static BYTE pcf8563_write_reg(BYTE reg, BYTE data)
+static ENX_OKFAIL pcf8563_write_reg(BYTE reg, BYTE data)
 {
 	I2C_LOCK;
 	while (I2C_WRITE(PCF8563_I2C_WRITE, 0, 0));
 	if (I2C_WRITE(reg, 0, 0)) {
 		I2C_UNLOCK;
-		return DEF_FAIL;
+		return ENX_FAIL;
 	}
 	if (I2C_WRITE(data, 1, 0)) {
 		I2C_UNLOCK;
-		return DEF_FAIL;
+		return ENX_FAIL;
 	}
 	I2C_UNLOCK;
-	return DEF_OK;
+	return ENX_OK;
 }
 
 /**
     @return 
-        DEF_OK is ok else DEF_FAIL.
+        ENX_OK is ok else ENX_FAIL.
 */
-static BYTE pcf8563_write_tm(struct tm *_tm)
+static ENX_OKFAIL pcf8563_write_tm(struct tm *_tm)
 {
 	I2C_LOCK;
 	while (I2C_WRITE(PCF8563_I2C_WRITE, 0, 0));
 	if (I2C_WRITE(PCF8563_SECONDS, 0, 0)) {
 		I2C_UNLOCK;
-		return DEF_FAIL;
+		return ENX_FAIL;
 	}
 	if (I2C_WRITE(_tm->tm_sec, 0, 0)) {
 		I2C_UNLOCK;
-		return DEF_FAIL;
+		return ENX_FAIL;
 	}
 	if (I2C_WRITE(_tm->tm_min, 0, 0)) {
 		I2C_UNLOCK;
-		return DEF_FAIL;
+		return ENX_FAIL;
 	}
 	if (I2C_WRITE(_tm->tm_hour, 0, 0)) {
 		I2C_UNLOCK;
-		return DEF_FAIL;
+		return ENX_FAIL;
 	}
 	if (I2C_WRITE(_tm->tm_mday, 0, 0)) {
 		I2C_UNLOCK;
-		return DEF_FAIL;
+		return ENX_FAIL;
 	}
 	if (I2C_WRITE(_tm->tm_wday, 0, 0)) {
 		I2C_UNLOCK;
-		return DEF_FAIL;
+		return ENX_FAIL;
 	}
 	if (I2C_WRITE(_tm->tm_mon, 0, 0)) {
 		I2C_UNLOCK;
-		return DEF_FAIL;
+		return ENX_FAIL;
 	}
 	if (I2C_WRITE(_tm->tm_year, 1, 0)) {
 		I2C_UNLOCK;
-		return DEF_FAIL;
+		return ENX_FAIL;
 	}
 	I2C_UNLOCK;
-	return DEF_OK;
+	return ENX_OK;
 }
 
 /**
     @return 
-        DEF_OK is ok else DEF_FAIL.
+        ENX_OK is ok else ENX_FAIL.
 */
-static BYTE pcf8563_read_reg(BYTE reg, BYTE *data)
+static ENX_OKFAIL pcf8563_read_reg(BYTE reg, BYTE *data)
 {
 	I2C_LOCK;
 	while (I2C_WRITE(PCF8563_I2C_WRITE, 0, 0));
 	if (I2C_WRITE(reg, 1, 1)) {
 		I2C_UNLOCK;
-		return DEF_FAIL;
+		return ENX_FAIL;
 	}
 	while (I2C_WRITE(PCF8563_I2C_READ, 0, 0));
 	*data = I2C_READ(1, 1);
 	I2C_UNLOCK;
-	return DEF_OK;
+	return ENX_OK;
 }
 
 /**
     @return 
-        DEF_OK is ok else DEF_FAIL.
+        ENX_OK is ok else ENX_FAIL.
 */
-static BYTE pcf8563_read_tm(struct tm *_tm)
+static ENX_OKFAIL pcf8563_read_tm(struct tm *_tm)
 {
 	I2C_LOCK;
 	while (I2C_WRITE(PCF8563_I2C_WRITE, 0, 0));
 	if (I2C_WRITE(PCF8563_SECONDS, 1, 1)) {
 		I2C_UNLOCK;
-		return DEF_FAIL;
+		return ENX_FAIL;
 	}
 	while (I2C_WRITE(PCF8563_I2C_READ, 0, 0));
 	_tm->tm_sec = I2C_READ(0, 0);
@@ -131,13 +130,13 @@ static BYTE pcf8563_read_tm(struct tm *_tm)
 	_tm->tm_mon = I2C_READ(0, 0);
 	_tm->tm_year = I2C_READ(1, 1);
 	I2C_UNLOCK;
-	return DEF_OK;
+	return ENX_OK;
 }
 
-static int pcf8563_get_datetime(struct tm *_tm)
+static ENX_OKFAIL pcf8563_get_datetime(struct tm *_tm)
 {
-	if(pcf8563_read_tm(_tm) == DEF_FAIL)
-		return DEF_FAIL;
+	if(pcf8563_read_tm(_tm) == ENX_FAIL)
+		return ENX_FAIL;
 
 	_tm->tm_year  = bcd2bin(_tm->tm_year) + ((_tm->tm_mon & 0x80) ? 100 : 0);
 	_tm->tm_sec = bcd2bin(_tm->tm_sec & 0x7F);
@@ -151,15 +150,15 @@ static int pcf8563_get_datetime(struct tm *_tm)
 	return rtc_valid_tm(_tm);
 }
 
-static int pcf8563_set_datetime(struct tm *_tm)
+static ENX_OKFAIL pcf8563_set_datetime(struct tm *_tm)
 {
     int leap;
     int year;
     int century;    
 //	_printf("%s(%d) : sec(%d) min(%d) hour(%d) wday(%d) mday(%d) mon(%d) year(%d)\r\n", __func__, __LINE__, _tm->tm_sec, _tm->tm_min, _tm->tm_hour, _tm->tm_wday, _tm->tm_mday, _tm->tm_mon, _tm->tm_year);
 
-	if(rtc_valid_tm(_tm) == DEF_FAIL)
-		return DEF_FAIL;
+	if(rtc_valid_tm(_tm) == ENX_FAIL)
+		return ENX_FAIL;
 
     /* Convert from struct tm to struct rtc_time. */
     _tm->tm_year += 1900;
@@ -182,7 +181,7 @@ static int pcf8563_set_datetime(struct tm *_tm)
 	    (_tm->tm_hour >= 24) ||
 	    (_tm->tm_min >= 60) ||
 	    (_tm->tm_sec >= 60))
-		return DEF_FAIL;
+		return ENX_FAIL;
 
 	century = (_tm->tm_year >= 2000) ? 0x80 : 0;
 	_tm->tm_year = _tm->tm_year % 100;
@@ -206,75 +205,75 @@ static int pcf8563_set_datetime(struct tm *_tm)
 		0 : OK
 		1 : FAIL
 */
-int pcf8563_init(void)
+ENX_OKFAIL pcf8563_init(void)
 {
 	BYTE u8Data;
 
-	if(pcf8563_check() == DEF_FAIL) 
+	if(pcf8563_check() == ENX_FAIL) 
 	{
-		_printf("  >>PCF8563 Not Connected...\n");
+		_Rprintf("  >>PCF8563 Not Connected...\n");
 		goto err;
 	}
 
-	_printf("  >>PCF8563 Connected...\n");
+	_Gprintf("  >>PCF8563 Connected...\n");
 
 	/*
 	* First of all we need to reset the chip. This is done by
 	* clearing control1, control2 and clk freq and resetting
 	* all alarms.
 	*/
-	if(pcf8563_write_reg(PCF8563_CONTROL1, 0x00) == DEF_FAIL)
+	if(pcf8563_write_reg(PCF8563_CONTROL1, 0x00) == ENX_FAIL)
 	{
-		_printf("%s(%d) : RTC error RTC_CONTROL1\n", __func__, __LINE__);
+		_Rprintf("%s(%d) : RTC error RTC_CONTROL1\n", __func__, __LINE__);
 		goto err;
 	}
 
-	if(pcf8563_write_reg(PCF8563_CONTROL2, 0x00) == DEF_FAIL)
+	if(pcf8563_write_reg(PCF8563_CONTROL2, 0x00) == ENX_FAIL)
 	{
-		_printf("%s(%d) : RTC error RTC_CONTROL2\n", __func__, __LINE__);
+		_Rprintf("%s(%d) : RTC error RTC_CONTROL2\n", __func__, __LINE__);
 		goto err;
 	}
 
-	if(pcf8563_write_reg(PCF8563_CLOCKOUT_FREQ, 0x00) == DEF_FAIL)
+	if(pcf8563_write_reg(PCF8563_CLOCKOUT_FREQ, 0x00) == ENX_FAIL)
 	{
-		_printf("%s(%d) : RTC error RTC_CLOCKOUT_FREQ\n", __func__, __LINE__);
+		_Rprintf("%s(%d) : RTC error RTC_CLOCKOUT_FREQ\n", __func__, __LINE__);
 		goto err;
 	}
 
-	if(pcf8563_write_reg(PCF8563_TIMER_CONTROL, 0x03) == DEF_FAIL)
+	if(pcf8563_write_reg(PCF8563_TIMER_CONTROL, 0x03) == ENX_FAIL)
 	{
-		_printf("%s(%d) : RTC error RTC_TIMER_CONTROL\n", __func__, __LINE__);
+		_Rprintf("%s(%d) : RTC error RTC_TIMER_CONTROL\n", __func__, __LINE__);
 		goto err;
 	}
 
 	/* Reset the alarms. */
-	if(pcf8563_write_reg(PCF8563_MINUTE_ALARM, 0x80) == DEF_FAIL)
+	if(pcf8563_write_reg(PCF8563_MINUTE_ALARM, 0x80) == ENX_FAIL)
 	{
-		_printf("%s(%d) : RTC error RTC_MINUTE_ALARM\n", __func__, __LINE__);
+		_Rprintf("%s(%d) : RTC error RTC_MINUTE_ALARM\n", __func__, __LINE__);
 		goto err;
 	}
 
-	if(pcf8563_write_reg(PCF8563_HOUR_ALARM, 0x80) == DEF_FAIL)
+	if(pcf8563_write_reg(PCF8563_HOUR_ALARM, 0x80) == ENX_FAIL)
 	{
-		_printf("%s(%d) : RTC error RTC_HOUR_ALARM\n", __func__, __LINE__);
+		_Rprintf("%s(%d) : RTC error RTC_HOUR_ALARM\n", __func__, __LINE__);
 		goto err;
 	}
 
-	if(pcf8563_write_reg(PCF8563_DAY_ALARM, 0x80) == DEF_FAIL)
+	if(pcf8563_write_reg(PCF8563_DAY_ALARM, 0x80) == ENX_FAIL)
 	{
-		_printf("%s(%d) : RTC error RTC_DAY_ALARM\n", __func__, __LINE__);
+		_Rprintf("%s(%d) : RTC error RTC_DAY_ALARM\n", __func__, __LINE__);
 		goto err;
 	}
 
-	if(pcf8563_write_reg(PCF8563_WEEKDAY_ALARM, 0x80) == DEF_FAIL)
+	if(pcf8563_write_reg(PCF8563_WEEKDAY_ALARM, 0x80) == ENX_FAIL)
 	{
-		_printf("%s(%d) : RTC error RTC_WEEKDAY_ALARM\n", __func__, __LINE__);
+		_Rprintf("%s(%d) : RTC error RTC_WEEKDAY_ALARM\n", __func__, __LINE__);
 		goto err;
 	}
 
-	if(pcf8563_read_reg(PCF8563_SECONDS, &u8Data) == DEF_FAIL)
+	if(pcf8563_read_reg(PCF8563_SECONDS, &u8Data) == ENX_FAIL)
 	{
-		_printf("%s(%d) : RTC error PCF8563_SECONDS\n", __func__, __LINE__);
+		_Rprintf("%s(%d) : RTC error PCF8563_SECONDS\n", __func__, __LINE__);
 		goto err;
 	}
 	else
@@ -283,7 +282,7 @@ int pcf8563_init(void)
 		if(u8Data & 0x80)
 		{
 			voltage_low = 1;
-			_printf("RTC Voltage Low - reliable date/time information\n");
+			_Rprintf("RTC Voltage Low - reliable date/time information\n");
 		}
 	}
 
@@ -291,10 +290,10 @@ int pcf8563_init(void)
 	rtc_device.set_time  = pcf8563_set_datetime;
 	strcpy(rtc_device.name, "PCF8563");
 
-	return DEF_OK;
+	return ENX_OK;
 err:
-    _printf("rtc init is error\n");
-    return DEF_FAIL;	 
+    _Rprintf("rtc init is error\n");
+    return ENX_FAIL;	 
 }
 #endif
 #endif

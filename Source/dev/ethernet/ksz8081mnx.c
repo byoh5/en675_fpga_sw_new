@@ -7,6 +7,8 @@
 #include "ethphy.h"
 #include "ksz8081mnx.h"
 
+#include "networkif.h"
+
 #if DBG_ETHPHY_LOG
 void EthphyRegView(UINT Type, WORD Data)
 {
@@ -66,7 +68,7 @@ void EthphyRegView(UINT Type, WORD Data)
 				printf("%26s: %s100Mbps half-duplex capable\n", "100Base-TX Half-Duplex", Data & ETHPHY_ANAR_100HALF ? "" : "No ");
 				printf("%26s: %s10Mbps full-duplex capable\n", "10Base-T Full-Duplex", Data & ETHPHY_ANAR_10FULL ? "" : "No ");
 				printf("%26s: %s10Mbps half-duplex capable\n", "10Base-T Half-Duplex", Data & ETHPHY_ANAR_10HALF ? "" : "No ");
-				printf("%26s: %05b\n", "Selector Field", Data & ETHPHY_ANAR_SELECTOR_FIELD);
+				es_printf("%26s: %05b\n", "Selector Field", Data & ETHPHY_ANAR_SELECTOR_FIELD);
 				break;
 			case ETHPHY_ANLPAR_ADR:
 				printf("%26s: %sNext page capable\n", "Next Page", Data & ETHPHY_ANLPAR_NEXT_PAGE ? "" : "No ");
@@ -78,7 +80,7 @@ void EthphyRegView(UINT Type, WORD Data)
 				printf("%26s: %s100Mbps half-duplex capable\n", "100Base-TX Half-Duplex", Data & ETHPHY_ANLPAR_100HALF ? "" : "No ");
 				printf("%26s: %s10Mbps full-duplex capable\n", "10Base-T Full-Duplex", Data & ETHPHY_ANLPAR_10FULL ? "" : "No ");
 				printf("%26s: %s10Mbps half-duplex capable\n", "10Base-T Half-Duplex", Data & ETHPHY_ANLPAR_10HALF ? "" : "No ");
-				printf("%26s: %05b\n", "Selector Field", Data & ETHPHY_ANLPAR_SELECTOR_FIELD);
+				es_printf("%26s: %05b\n", "Selector Field", Data & ETHPHY_ANLPAR_SELECTOR_FIELD);
 				break;
 			case ETHPHY_ANER_ADR:
 				break;
@@ -249,7 +251,7 @@ void EthphyOriRegView(UINT Type, WORD Data)
 				printf("%26s: %s100Mbps half-duplex capable\n", "100Base-TX Half-Duplex", Data & ETHPHY_ANAR_100HALF ? "" : "No ");
 				printf("%26s: %s10Mbps full-duplex capable\n", "10Base-T Full-Duplex", Data & ETHPHY_ANAR_10FULL ? "" : "No ");
 				printf("%26s: %s10Mbps half-duplex capable\n", "10Base-T Half-Duplex", Data & ETHPHY_ANAR_10HALF ? "" : "No ");
-				printf("%26s: %05b\n", "Selector Field", Data & ETHPHY_ANAR_SELECTOR_FIELD);
+				es_printf("%26s: %05b\n", "Selector Field", Data & ETHPHY_ANAR_SELECTOR_FIELD);
 				break;
 			case ETHPHY_ANLPAR_ADR:
 				printf("%26s: %sNext page capable\n", "Next Page", Data & ETHPHY_ANLPAR_NEXT_PAGE ? "" : "No ");
@@ -261,7 +263,7 @@ void EthphyOriRegView(UINT Type, WORD Data)
 				printf("%26s: %s100Mbps half-duplex capable\n", "100Base-TX Half-Duplex", Data & ETHPHY_ANLPAR_100HALF ? "" : "No ");
 				printf("%26s: %s10Mbps full-duplex capable\n", "10Base-T Full-Duplex", Data & ETHPHY_ANLPAR_10FULL ? "" : "No ");
 				printf("%26s: %s10Mbps half-duplex capable\n", "10Base-T Half-Duplex", Data & ETHPHY_ANLPAR_10HALF ? "" : "No ");
-				printf("%26s: %05b\n", "Selector Field", Data & ETHPHY_ANLPAR_SELECTOR_FIELD);
+				es_printf("%26s: %05b\n", "Selector Field", Data & ETHPHY_ANLPAR_SELECTOR_FIELD);
 				break;
 			case ETHPHY_ANER_ADR:
 				break;
@@ -350,13 +352,22 @@ void EthphyOriRegView(UINT Type, WORD Data)
 }
 #endif
 
-void EthphyAutoNeg(int onoff)
+void EthphyAutoNeg(ENX_OKFAIL onoff)
 {
 	WORD wANAR = 0, wBCR = 0;
 
-	if (onoff == DEF_OK) {
+	if (onoff == ENX_OK) {
 #if 1 // (ETH_MAC_PAUSE)
 		MdioRead(ethphy_info.addr, ETHPHY_ANAR_ADR, &wANAR);	// Auto-Negotiation Advertisement: Read
+		//////////////////////////////////////////////////////////////////////////////////////////
+		//////////////////////////////////////////////////////////////////////////////////////////
+		//////////////////////////////////////////////////////////////////////////////////////////
+		//////////////////////////////////////////////////////////////////////////////////////////
+		//wANAR = wANAR >> 1;
+		//////////////////////////////////////////////////////////////////////////////////////////
+		//////////////////////////////////////////////////////////////////////////////////////////
+		//////////////////////////////////////////////////////////////////////////////////////////
+		//////////////////////////////////////////////////////////////////////////////////////////
 		wANAR |= ETHPHY_ANAR_SY_PAUSE;							// Auto-Negotiation Advertisement: Enable symmetric pause
 		wANAR &= ~ETHPHY_ANAR_ASY_PAUSE;						// Auto-Negotiation Advertisement: Disable asymmetric pause
 		EthphyRegView(ETHPHY_ANAR_ADR, wANAR);
@@ -375,30 +386,29 @@ void EthphyAutoNeg(int onoff)
 	MdioWrite(ethphy_info.addr, ETHPHY_BCR_ADR, wBCR);			// Basic Control: Write
 }
 
-UINT EthphySetting(void)
+ENX_OKFAIL EthphySetting(void)
 {
 	// Interrupt Control(Enable link-down, link-up interrupt)
 	MdioWrite(ethphy_info.addr, ETHPHY_ICSR_ADR, ETHPHY_ICSR_LUIE | ETHPHY_ICSR_LDIE);
 
-#if 1 // PHY_AUTONEG
-	EthphyAutoNeg(DEF_ON);
-#endif
+	EthphyAutoNeg(ETHPHY_AUTONEG);
 
-	return DEF_OK;
+	return ENX_OK;
 }
 
-UINT EthphyLinkInfo(void)
+ENX_OKFAIL EthphyLinkInfo(void)
 {
 	WORD wPHYC1R = 0;
-
 	MdioRead(ethphy_info.addr, ETHPHY_PHYC1R_ADR, &wPHYC1R); // Read the PHY Control 1 Register.
 	EthphyRegView(ETHPHY_PHYC1R_ADR, wPHYC1R);
+
+	ethphy_info.type = ETHPHY_TYPE_MII;
 
 	if (!(wPHYC1R & ETHPHY_PC1R_LINK_STATUS)) {
 		ENX_DEBUGF(DBG_ETHPHY_ERR, "Not linked.\n");
 		ethphy_info.speed = ETHPHY_SPD_0;
 		ethphy_info.duplex = ETHPHY_DUPLEX_UNKNOWN;
-		return DEF_FAIL;
+		return ENX_FAIL;
 	}
 
 	switch (wPHYC1R & ETHPHY_PC1R_OPERATION_MI) {
@@ -406,7 +416,7 @@ UINT EthphyLinkInfo(void)
 		ENX_DEBUGF(DBG_ETHPHY_ERR, "Still in auto-negotiation\n");
 		ethphy_info.speed = ETHPHY_SPD_0;
 		ethphy_info.duplex = ETHPHY_DUPLEX_UNKNOWN;
-		return DEF_FAIL;
+		return ENX_FAIL;
 	case 0x1:
 		ethphy_info.speed = ETHPHY_SPD_10;
 		ethphy_info.duplex = ETHPHY_DUPLEX_HALF;
@@ -427,37 +437,68 @@ UINT EthphyLinkInfo(void)
 		ENX_DEBUGF(DBG_ETHPHY_ERR, "Reserved(%u)\n", wPHYC1R & ETHPHY_PC1R_OPERATION_MI);
 		ethphy_info.speed = ETHPHY_SPD_0;
 		ethphy_info.duplex = ETHPHY_DUPLEX_UNKNOWN;
-		return DEF_FAIL;
+		return ENX_FAIL;
 	}
 
-	return DEF_OK;
+	return ENX_OK;
 }
 
-void EthphyIrq(void *ctx)
+UINT EthphyLinkCheck(void)
 {
 	WORD getData;
 	MdioRead(ethphy_info.addr, ETHPHY_ICSR_ADR, &getData);
+	//////////////////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////////////////////////
+	//getData = getData >> 1;
+	//////////////////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////////////////////////
 	EthphyRegView(ETHPHY_ICSR_ADR, getData);
 	ENX_DEBUGF(DBG_ETHPHY_LOG, "Get Data (0x%04X)\n", getData);
 
 	if (getData & ETHPHY_ICSR_LUI) { // Link-Up
 		ENX_DEBUGF(DBG_ETHPHY_LOG, "Link-Up\n");
-		if (EthphyLinkInfo() == DEF_OK) {
+		if (EthphyLinkInfo() == ENX_OK) {
 			ENX_DEBUGF(DBG_ETHPHY_MSG, "NetNIC Link Up Detect Link Speed(%uMbps) %s Duplex\n", ethphy_info.speed, ethphy_info.duplex == ETHPHY_DUPLEX_FULL ? "Full" : "Half");
-//			EthDuplexChange(ethphy_info.duplex);
+			EthRxTxInit(ethphy_info.type, ethphy_info.speed, ethphy_info.duplex);
+			return ETHPHY_LINKSTATUS_UP;
 		} else {
-			ENX_DEBUGF(DBG_ETHPHY_ERR, "Unknown Speed & Duplex - System reboot\n");
-			while (1);
-//			WdtSysReboot();
+			ENX_DEBUGF(DBG_ETHPHY_ERR, "Unknown Speed & Duplex\n");
+			return ETHPHY_LINKSTATUS_ERROR;
 		}
-//		EthRxTxinit(ethphy_info.type, phy_info.speed, phy_info.duplex);
-//		netifapi_netif_set_link_up(&gnif_eth);
 	} else if (getData & ETHPHY_ICSR_LDI) { // Link-Down
 		ENX_DEBUGF(DBG_ETHPHY_LOG, "Link-Down\n");
-//		netifapi_netif_set_link_down(&gnif_eth);
+		return ETHPHY_LINKSTATUS_DOWN;
 	} else {
 		ENX_DEBUGF(DBG_ETHPHY_ERR, "Get Data (0x%04X)\n", getData);
+		return ETHPHY_LINKSTATUS_ERROR;
 	}
 }
+
+#if (ETHPHY_LOOPBACK_TEST==1)
+void EthphyLoopbackMode(void)
+{
+	printf("Ethernet PHY Loopback Mode\n");
+
+	// Set ethernet PHY : disable interrupt
+	MdioWrite(ethphy_info.addr, ETHPHY_ICSR_ADR, 0);
+
+	// Set ethernet PHY : loopback mode, Speed(100Mbps), Full-duplex
+	MdioWrite(ethphy_info.addr, ETHPHY_BCR_ADR, ETHPHY_BCR_LOOPBACK | ETHPHY_BCR_SPEED | ETHPHY_BCR_FULLDPLX);
+	ethphy_info.type = ETHPHY_TYPE_MII;
+	ethphy_info.speed = ETHPHY_SPD_100;
+	ethphy_info.duplex = ETHPHY_DUPLEX_FULL;
+
+	printf("  Type(%d), Speed(%d), Duplex(%d)\n", ethphy_info.type, ethphy_info.speed, ethphy_info.duplex);
+
+	EthRxTxInit(ethphy_info.type, ethphy_info.speed, ethphy_info.duplex);
+
+	// Disable filter
+	EthRxFilterOff();
+}
+#endif
 #endif // __ETHPHY_KSZ8081MNX__
 #endif // __ETHERNET__

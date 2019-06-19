@@ -10,59 +10,164 @@ CONFIGURE_FILE ( dev_device.h.cmake.in ${CMAKE_CURRENT_SOURCE_DIR}/dev_device.h)
 
 # 소스 코드
 SET ( DEV_HDRS
+	cfg_filesystem.h
+	cfg_media.h
+	cfg_network.h
 	dev.h
+	dev_model.h
 	dev_debug.h
 	dev_device.h
 	dev_types.h
 	dev_reg.h
-	dev_regs.h
+	dev_reg_ex.h
+	dev_functions.h
 	dev_peri.h
+	dev_verify.h
+	audio/audio.h
+	audio/tlv320aic3206.h
 	cpu/asm.h
 	cpu/bits.h
 	cpu/encoding.h
 	cpu/mtrap.h
 	cpu/syscall.h
 	cpu/rv_utils.h
+	sfls/sfls_model.h
+	sfls/eon_en25qh128a.h
+	sfls/eon_en25qh256.h
+	sfls/winbond_w25q64.h
+	sfls/gigadevice_gd25q128c.h
+	sfls/micron_n25q128a.h
 	ethernet/ethphy.h
 	ethernet/ksz8081mnx.h
+	ethernet/ksz9031rnx.h
+	eeprom/eeprom.h
+	key/key.h
 	rtc/rtc.h
 	rtc/pcf8563.h
 	rtc/s35390a.h
 	sdio/sdio_cd.h
 	string/vsnprintf.h
+	string/enx_string.h
+	string/uart_string.h
+	minilib/md5.h
+	minilib/net_ascii.h
+	minilib/sha1.h
+	minilib/Base64.h
+	minilib/enx_time.h
+	HDMI/AV_Config.h
+	HDMI/Constants.h
+	HDMI/defs.h
+	HDMI/EDID.h
+	HDMI/eHDMI.h
+	HDMI/Externals.h
+	HDMI/HDCP.h
+	HDMI/hdmi.h
+	HDMI/i2c_master_sw.h
+	HDMI/Macros.h
+	HDMI/SerialPort.h
+	HDMI/si_apiCDC.h
+	HDMI/si_apiCEC.h
+	HDMI/si_apiConfigure.h
+	HDMI/si_apiCpi.h
+	HDMI/si_cdc_enums.h
+	HDMI/si_cdc_heac.h
+	HDMI/si_cec_enums.h
+	HDMI/si_cpCDC.h
+	HDMI/si_cpCEC.h
+	HDMI/si_cpi_regs.h
+	HDMI/si_datatypes.h
+	HDMI/TPI.h
+	HDMI/TPI_Access.h
+	HDMI/TPI_Regs.h
+	HDMI/TypeDefs.h
+	HDMI/VideoModeTable.h
+	isp/isp_reg.h
+	isp/isp_digital_interface.h
+	isp/isp_font.h
+	isp/isp_font_tbl.h
+	isp/isp_clk.h
+	isp/isp_cvbs_tbl.h
+	isp/isp_functions.h
+	isp/isp_interface.h
+	isp/isp_sensor_tbl.h
+	isp/isp_vlc_tbl.h
+	isp/isp_menu.h
+	isp/isp_menu_str.h
+	isp/isp_par_tbl.h
 )
 
 SET ( DEV_SRCS
 	adc.c
 	aes.c
+	bus.c
 	checksum.c
 	ddr.c
 	dma.c
 	eth.c
+	eeprom/eeprom.c
 	gpio.c
 	i2c.c
 	i2s.c
 	irq.c
+	key/key.c
 	sdio.c
 	sdio/sdio_cd.c
 	sdio/sdio_wf.c
 	sfls.c
 	sha.c
 	spi.c
-	time.c
 	timer.c
 	uart.c
 	wdt.c
+	audio/audio.c
+	audio/tlv320aic3206.c
 	cpu/syscall.c
 	cpu/rv_utils.c
 	cpu/rv_cache.S
+	sfls/sfls_model.c
+	sfls/eon_en25qh128a.c
+	sfls/eon_en25qh256.c
+	sfls/winbond_w25q64.c
+	sfls/gigadevice_gd25q128c.c
+	sfls/micron_n25q128a.c
 	string/vsnprintf.c
+	string/enx_string.c
+	string/uart_string.c
 	ethernet/ethphy.c
 	ethernet/ksz8081mnx.c
+	ethernet/ksz9031rnx.c
 	rtc/rtc.c
 	rtc/rtc-lib.c
 	rtc/pcf8563.c
 	rtc/s35390a.c
+	minilib/md5.c
+	minilib/net_ascii.c
+	minilib/sha1.c
+	minilib/Base64.c
+	minilib/enx_time.c
+	HDMI/AV_Config.c
+	HDMI/EDID.c
+	HDMI/eHDMI.c
+	HDMI/Globals.c
+	HDMI/HDCP.c
+	HDMI/hdmi.c
+	HDMI/i2c_master_sw.c
+	HDMI/si_apiCDC.c
+	HDMI/si_apiCEC.c
+	HDMI/si_apiCpi.c
+	HDMI/si_cdc_heac.c
+	HDMI/si_cpCDC.c
+	HDMI/si_cpCEC.c
+	HDMI/TPI.c
+	HDMI/TPI_Access.c
+	HDMI/VideoModeTable.c
+	isp/isp_digital_interface.c
+	isp/isp_font.c
+	isp/isp_interface.c
+	isp/isp_tbl.c
+	isp/isp_par.c
+	isp/isp_menu.c
+	isp/isp_main.c
 )
 
 # 라이브러리 생성
