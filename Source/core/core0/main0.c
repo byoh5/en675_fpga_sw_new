@@ -10,6 +10,7 @@ char g_key = 0xFF;
 #include "ledblink.h"
 #include "sdcard.h"
 #include "iperf.h"
+#include "pmp.h"
 extern void trap_freertos(void); // mentry.S
 
 void TestTask(void* pvParameters)
@@ -839,6 +840,31 @@ void main_0(int cpu_id)
 	g_key = 0xA; // CPU0 Ready!
 
 	printf("Init Device\n");
+
+// PMP test
+#if 1
+	clear_pmp();
+
+	pmp_entry_set(0, PMP_R|PMP_W|PMP_X|PMP_L, 0x80000000ul, 0x20000000ul);	// DDR area
+	pmp_entry_set(1, PMP_R|PMP_W|PMP_X|PMP_L, 0xa0000000ul, SRAM_SIZE);		// SRAM area
+	pmp_entry_set(3, PMP_R|PMP_W|PMP_X|PMP_L, 0xc0000000ul, SFLS_SIZE);		// Flash area
+	pmp_entry_set(5, PMP_R|PMP_W|PMP_X|PMP_L, 0x00000000ul, 0x80000000ul);	// etc area
+
+	/* switch to user mode enclave */
+	mode_set_and_continue(PRV_S);
+
+	printf("after PMP setting\n");
+#endif
+
+#if 1
+	volatile UINT *ptest;
+//	ptest = (UINT *)0x70000000;
+	ptest = (UINT *)0xb0000000;
+	*ptest = 0xdeadc0de;
+#endif
+
+	while(1);
+
 
 #if 0
 	enx_externalirq_init();
