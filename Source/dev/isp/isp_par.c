@@ -24,6 +24,7 @@
 //-------------------------------------------------------------------------------------------------
 const char *gsBuildDate = "FW Date : "__DATE__" "__TIME__;
 WORD gDataID = 0;
+BYTE gbUsrParChgOn = 0;	// 0:실행안함, 1:부팅&변경, 2:변경
 
 // User Parameter --------------------------------------------------
 BYTE gbUsrParSaveChk=0;
@@ -40,13 +41,20 @@ __attribute__((__aligned__(4))) BYTE gbUsrDataTbl[USR_DATA_EA];
 //*************************************************************************************************
 // Functions
 //-------------------------------------------------------------------------------------------------
-void InitDataID(void)
+void InitDataSet(void)
 {
 	const UINT gsBuildDateLen = strlen(gsBuildDate);
 	gDataID  = (*(gsBuildDate + gsBuildDateLen-1) - '0');
 	gDataID += (*(gsBuildDate + gsBuildDateLen-2) - '0')<<4;
 	gDataID += (*(gsBuildDate + gsBuildDateLen-4) - '0')<<8;
 	gDataID += (*(gsBuildDate + gsBuildDateLen-5) - '0')<<12;
+
+	UP_LIB_LIST
+
+	void SensorSetting(BYTE, BYTE, BYTE); SensorSetting(model_Sens_Ctrl, model_Sens_Intf, model_Sens_Fps);
+
+	gbUsrParReadChk = 1;
+	gbUsrDataReadChk = 1;
 }
 
 void UsrDataReset(void)
@@ -72,8 +80,6 @@ void UsrParChg(const UINT anStrIdx)
 	switch(anStrIdx) {
 		#undef _UP_
 		#define _UP_(S,N,D,...)		case UPi(N): { __VA_ARGS__ /*printf("UsrParChg("#N"):%d\n", anIdx);*/ } break;
-		#undef _UPa_
-		#define _UPa_	_UP_
 		#include "isp_par_tbl.h"
 		USR_PAR_LIST
 	}
@@ -84,8 +90,6 @@ void UsrParChgEndIdx(const UINT anEndIdx)
 	switch(anEndIdx) {
 		#undef _UP_
 		#define _UP_(S,N,D,...)		case UPinv(N): UsrParChg(UPi(N)); break;
-		#undef _UPa_
-		#define _UPa_	_UP_
 		#include "isp_par_tbl.h"
 		USR_PAR_LIST
 	}
@@ -97,8 +101,6 @@ BYTE UsrParSiz(const UINT anIdx)
 	switch(anIdx) {
 		#undef _UP_
 		#define _UP_(S,N,D,...)		case UPi(N): return S;
-		#undef _UPa_
-		#define _UPa_	_UP_
 		#include "isp_par_tbl.h"
 		USR_PAR_LIST
 	}
@@ -107,12 +109,19 @@ BYTE UsrParSiz(const UINT anIdx)
 
 void UsrParChgAll(void)
 {
+#if 0
 	#undef _UP_
 	#define _UP_(S,N,D,...)		UsrParChg(UPi(N));
-	#undef _UPa_
-	#define _UPa_	_UP_
 	#include "isp_par_tbl.h"
 	USR_PAR_LIST
+#else
+	if(gbUsrParChgOn == 0) return;
+	for(UINT i=1; i<USR_PAR_EA; i++) {
+		if(UPi(UpLvdsPNSel) <= i && i <= UPi(UpOutVSyncOfs)) { if(gbUsrParChgOn==2) UsrParChg(i); }
+		else if(UPi(UpCamTitleOn) <= i && i <= UPi(UpCamTitle7)) { if(gbUsrParChgOn==2) UsrParChg(i); }
+		else { UsrParChg(i); }
+	}
+#endif
 }
 
 void UsrParReset(void)
@@ -120,9 +129,7 @@ void UsrParReset(void)
 	UsrParValid(1);
 
 	#undef _UP_
-	#define _UP_(S,N,D,...)		UPw(N,D);
-	#undef _UPa_
-	#define _UPa_	_UP_
+	#define _UP_(S,N,D,...)		UP(N) = (D);//UPw(N,D);
 	#include "isp_par_tbl.h"
 	USR_PAR_LIST
 
@@ -142,8 +149,8 @@ void UsrParStyle(const BYTE abStyle)
 			gbUsrParTbl[UPi(N)]   = gbUsrParTblSaved[UPi(N)];\
 			gbUsrParTbl[UPi(N)+1] = gbUsrParTblSaved[UPi(N)+1];\
 		}\
-		else if((UINT)(abStyle-1) < ARRAY_SIZE(wStyle##N)) UPw(N, wStyle##N[abStyle-1]); }
-
+		else if((UINT)(abStyle-1) < ARRAY_SIZE(wStyle##N)) UP(N) = wStyle##N[abStyle-1];/*UPw(N, wStyle##N[abStyle-1]);*/ }
+#if 0
 	#define _UPSTYLE_3(N, ...) {\
 		const UINT nStyle##N[] = { __VA_ARGS__ };\
 		if(abStyle==0) {\
@@ -152,7 +159,7 @@ void UsrParStyle(const BYTE abStyle)
 			gbUsrParTbl[UPi(N)+2] = gbUsrParTblSaved[UPi(N)+2];\
 		}\
 		else if((UINT)(abStyle-1) < ARRAY_SIZE(nStyle##N)) UPw(N, nStyle##N[abStyle-1]); }
-
+#endif
 	#define _UPSTYLE_4(N, ...) {\
 		const UINT nStyle##N[] = { __VA_ARGS__ };\
 		if(abStyle==0) {\
@@ -161,7 +168,7 @@ void UsrParStyle(const BYTE abStyle)
 			gbUsrParTbl[UPi(N)+2] = gbUsrParTblSaved[UPi(N)+2];\
 			gbUsrParTbl[UPi(N)+3] = gbUsrParTblSaved[UPi(N)+3];\
 		}\
-		else if((UINT)(abStyle-1) < ARRAY_SIZE(nStyle##N)) UPw(N, nStyle##N[abStyle-1]); }
+		else if((UINT)(abStyle-1) < ARRAY_SIZE(nStyle##N)) UP(N) = nStyle##N[abStyle-1];/*UPw(N, nStyle##N[abStyle-1]);*/ }
 
 	#define _UPSTYLE_(S,N, ...)		_UPSTYLE_##S(N, __VA_ARGS__)
 
@@ -198,7 +205,7 @@ void SetByte(BYTE *apAddr, const BYTE abLen, UINT anData)
 
 #if USE_UP_CHG==1
 SetByteEnd:
-	if(gbUsrParTbl <= pAddr0 && (pAddr0+bLen) <= (gbUsrParTbl+USR_PAR_EA)) UsrParChg(pAddr0-gbUsrParTbl);
+	if(gbUsrParTbl < pAddr0 && (pAddr0+bLen) < (gbUsrParTbl+USR_PAR_EA)) UsrParChg(pAddr0-gbUsrParTbl);
 #endif
 }
 
@@ -370,10 +377,41 @@ void AppLoadPar(void)
 	}
 }
 
-#if 1
+#if 0		// TODO ◆ KSH ParFncTest()
+typedef struct {
+	BYTE bA;
+	WORD wB;
+	BYTE bC;
+	BYTE bE;
+	BYTE bF;
+	UINT nD;
+} stt;
+
 void ParFncTest(void)
 {
+	BYTE bArray[12];
+	((stt*)bArray)->bA = 0x7;
+	((stt*)bArray)->wB = 0x1234;
+	((stt*)bArray)->bC = 0x27;
+	((stt*)bArray)->bE = 0x28;
+	((stt*)bArray)->bF = 0x29;
+	((stt*)bArray)->nD = 0x12345678;
+
+	for(int i=0; i<ARRAY_SIZE(bArray); i++)
+	{
+		printf("[%d] : %x\n", i, bArray[i]);
+	}
+
+	printf("size : %d\n", sizeof(((stt*)bArray)->nD) );
+	printf("size : %d\n", sizeof(((stt*)bArray)->wB) );
+
+
+#if 1
 	#define UP_IDX_PRINTF(N)	printf("UPi("#N"):%d\n", UPi(N));
+	UP_IDX_PRINTF(UpBrightness);
+	UP_IDX_PRINTF(UpBrightnessMin);
+	UP_IDX_PRINTF(UpAwb);
+	UP_IDX_PRINTF(UpAwbStyle);
 	UP_IDX_PRINTF(UpColorBar);
 	UP_IDX_PRINTF(UpFlip);
 	UP_IDX_PRINTF(UpPAR00);
@@ -381,7 +419,11 @@ void ParFncTest(void)
 	UP_IDX_PRINTF(UpPAR10);
 	UP_IDX_PRINTF(UpPAR1F);
 
-	#define UP_PRINTF(N)	printf("UPr("#N"): %d\n", UPr(N))
+	#define UP_PRINTF(N)	printf("UP("#N"): %d\n", UP(N))
+	UP_PRINTF(UpBrightness);
+	UP_PRINTF(UpBrightnessMin);
+	UP_PRINTF(UpAwb);
+	UP_PRINTF(UpAwbStyle);
 	UP_PRINTF(UpColorBar);
 	UP_PRINTF(UpFlip);
 	UP_PRINTF(UpPAR00);
@@ -399,7 +441,7 @@ void ParFncTest(void)
 	PAR_PRINTF(10);
 	PAR_PRINTF(11);
 	PAR_PRINTF(1F);
-
+#endif
 
 #if 0
 	BYTE bTest[8] = {0x12,0x34,0x56,0x78,0x9a,0xbc,0xde,0xf0};

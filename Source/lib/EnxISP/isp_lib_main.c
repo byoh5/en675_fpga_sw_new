@@ -6,16 +6,12 @@
  Copyright ¨Ï Eyenix Co., Ltd. All Rights Reserved.
 *************************************************************************** */
 
-#define __ISP_LIB__
-#include "dev_types.h"				// EN675
-#include "dev_reg_ex.h"				// EN675 - dev_reg.h
+#define UP_LIB_LINK
+#include "isp_lib_main.h"
 
-#include "isp_reg.h"				// EN675 - ISP
-#include "isp_functions.h"			// EN675 - ISP
-
-#include "key.h"					// dev/key - Key control (ADC,UART,UTC,etc.)
-
-//#include "isp_lib_main.h"
+BYTE gbSensCtrl = 0;
+BYTE gbSensIntf = 0;
+BYTE gbSensFps = 0;
 
 //-------------------------------------------------------------------------------------------------
 int ISRT0 LibUtlInterp1D(int aiXCur, int aiXPos1, int aiXPos2, int aiYPos1, int aiYPos2)
@@ -70,3 +66,38 @@ BYTE ISRT0 LibUtlKeyPass(const BYTE* abpPassKeys, BYTE abKeySize, BYTE* abpPassC
 //			default : 	gbMnPassCnt2 = 0; break;
 //		}
 }
+
+//-------------------------------------------------------------------------------------------------
+#if 0
+void LibUpTest(void)
+{
+	#define DISP_TIME_Y		10
+	#define DISP_TIME_X		0
+
+	UP(UpBrightness)++;
+	PAR1F++;
+
+	FontStrEx(DISP_TIME_Y, DISP_TIME_X, NO_ALPHA, MN_GREEN, "UpBrt", 5);
+	FontHex(DISP_TIME_Y, DISP_TIME_X+6, UP(UpBrightness), sizeof(UP(UpBrightness))<<1);
+	FontStrEx(DISP_TIME_Y+1, DISP_TIME_X, NO_ALPHA, MN_GREEN, "UpCBa", 5);
+	FontHex(DISP_TIME_Y+1, DISP_TIME_X+6, UP(UpColorBar), sizeof(UP(UpColorBar))<<1);
+	FontStrEx(DISP_TIME_Y+2, DISP_TIME_X, NO_ALPHA, MN_GREEN, "UpP1F", 5);
+	FontHex(DISP_TIME_Y+2, DISP_TIME_X+6, PAR1F, sizeof(PAR1F)<<1);
+}
+#endif
+
+void SensorSetting(BYTE abSensCtrl, BYTE abSensIntf, BYTE abSensFps)
+{
+	gbSensCtrl = abSensCtrl;
+	gbSensIntf = abSensIntf;
+	gbSensFps = abSensFps;
+}
+
+void printf_SensorSetting(void)
+{
+	_printf("Sensor Ctrl : %s\r\n", (gbSensCtrl==1) ? "TWI" : "SPI");
+	_printf("Sensor Intf : %s\r\n", (gbSensIntf==2) ? "MIPI" : (gbSensIntf==1) ? "LVDS" : "Parallel");
+	_printf("Sensor Fps  : %d\r\n", gbSensFps);
+}
+
+

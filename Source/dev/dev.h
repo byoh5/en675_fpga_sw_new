@@ -158,6 +158,9 @@
 
 
 ////////////////////////////////////////////////////////////////////////////////
+#include "isp_clk.h"				// EN675 - ISP define
+#include "isp_digital_interface.h"	// EN675 - ISP define
+#include "isp_interface.h"			// EN675 - ISP define
 
 #include "dev_types.h"				// EN675
 #include "dev_reg_ex.h"				// EN675 - dev_reg.h
@@ -167,9 +170,6 @@
 #include "isp_reg.h"				// EN675 - ISP
 #include "isp_functions.h"			// EN675 - ISP
 #include "isp_font.h"				// EN675 - ISP
-#include "isp_clk.h"				// EN675 - ISP
-#include "isp_digital_interface.h"	// EN675 - ISP
-#include "isp_interface.h"			// EN675 - ISP
 #include "hdmi.h"					// EN675 - ISP
 
 #include "cfg_network.h"			// EN675 - Network

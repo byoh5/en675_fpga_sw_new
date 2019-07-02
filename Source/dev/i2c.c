@@ -63,7 +63,6 @@ UINT I2cWrite(UINT nCH, BYTE dat, BYTE last, BYTE repeat)
 	arrI2CCONT[nCH]->TX_DAT = dat;
 	arrI2CMST[nCH]->a = ((repeat<<3) | ((repeat | last)<<2) | 3);
 	while (arrI2CMST[nCH]->MST_GO);
-	printf("[%u]", arrI2CMST[nCH]->MST_ACK);
 	return arrI2CMST[nCH]->MST_ACK;
 }
 

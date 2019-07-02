@@ -347,6 +347,8 @@ static void SflsWriteTestTask(void *ctx)
 	// Test code
 
 	printf("Write Test: 0x%08lX ~ 0x%08lX\n", (intptr_t)p8Base, (intptr_t)(p8Base + (sflsitem.u32TestCount * SFLSDATA_PP_SIZE) - 1));
+	ULONG total_time = 0, total_size = 0, time1000 = 0, size1000 = 0;
+	char buf[64] = {0};
 	for (UINT i = 0; i < sflsitem.u32TestCount; i++) {
 		UINT *arr32Src = (UINT *)sflsitem.arrSrc;
 		for (UINT j = 0; j < (SFLSDATA_PP_SIZE/4); j += 4) {
@@ -361,15 +363,25 @@ static void SflsWriteTestTask(void *ctx)
 		if (((ULONG)p8Pos) % 4096 == 0 && sflsitem.u32Flag == 0) {
 			SflsSectErase(p8Pos - (BYTE *)SFLS_BASE, ENX_YES);
 		}
+		ULONG a = BenchTimeStart();
 		BDmaMemCpy_rtos(0, p8Pos, sflsitem.arrSrc, SFLSDATA_PP_SIZE);
+		total_time += BenchTimeStop(a);
+		time1000 += BenchTimeStop(a);
+		total_size += SFLSDATA_PP_SIZE;
+		size1000 += SFLSDATA_PP_SIZE;
 
 		if (i % 1000 == 0) {
-			printf("%8u/%8u ing... %u%%\n", i, sflsitem.u32TestCount, (i * 100) / sflsitem.u32TestCount);
+			snprintf(buf, 64, "%.2f", (size1000 / 1024.0) / (time1000 / 1000.0 / 1000.0));
+			printf("%8u/%8u ing... %u%%, ", i, sflsitem.u32TestCount, (i * 100) / sflsitem.u32TestCount);
+			_Gprintf("%sKbyte/s\n", buf);
+			size1000 = time1000 = 0;
 		}
 
 		p8Pos += SFLSDATA_PP_SIZE;
 	}
-	printf("Write Done\n");
+	printf("Write Done: total avg ");
+	snprintf(buf, 64, "%.2f", (total_size / 1024.0) / (total_time / 1000.0 / 1000.0));
+	_Gprintf("%sKbyte/s\n", buf);
 
 	vPortFree(alloc);
 	sflsitem.arrSrc = NULL;

@@ -97,33 +97,34 @@ void enx_exirq_source1(void)
 {
 	if (IRQ_ISP) {
 		IRQ_ISP_PRINTF("IRQ_ISP:");
-		if (IRQ_ISP0){}
-		if (IRQ_ISP1){}
+		if (IRQ_ISP0){CLI_VLOCKIw(1);}
+		if (IRQ_ISP1){CLI_VLOCKWw(1);}
 		if (IRQ_ISP2){CLI_VLOCKOw(1); gnVoIrqCnt++;
-			//if(!(gnVoIrqCnt%(FPS_VDO*5))) _printf("VLOCKO_IRQ %d!!!\n", gnVoIrqCnt/FPS_VDO); else if(!(gnVoIrqCnt%FPS_VDO)) _printf_irq("VLOCKO_IRQ %d\n", gnVoIrqCnt/FPS_VDO);
+			//if(!(gnVoIrqCnt%(FPS_VDO*5))) _printf("VLOCKO_IRQ %d!!!\n", gnVoIrqCnt/FPS_VDO);	// TODO ¡ß KSH VLOCKO IRQ test
+			//else if(!(gnVoIrqCnt%FPS_VDO)) _printf_irq("VLOCKO_IRQ %d\n", gnVoIrqCnt/FPS_VDO);
 			IRQ_ISP_PRINTF("VLOCKO_IRQ\n");
 		}
-		if (IRQ_ISP3){}
-		if (IRQ_ISP4){}
-		if (IRQ_ISP5){}
-		if (IRQ_ISP6){}
-		if (IRQ_ISP7){}
+		if (IRQ_ISP3){CLI_JPGw(1);}
+		if (IRQ_ISP4){CLI_UIRQ0w(1);}
+		if (IRQ_ISP5){CLI_UIRQ1w(1);}
+		if (IRQ_ISP6){CLI_VLOCKW2w(1);}
+		if (IRQ_ISP7){IP_CLIUIRQw(1);}
 		if (IRQ_ISP8){}
-		if (IRQ_ISP9){}
-		if (IRQ_ISP10){}
-		if (IRQ_ISP11){}
-		if (IRQ_ISP12){}
-		if (IRQ_ISP13){}
-		if (IRQ_ISP14){}
-		if (IRQ_ISP15){}
-		if (IRQ_ISP16){}
-		if (IRQ_ISP17){}
-		if (IRQ_ISP18){}
-		if (IRQ_ISP19){}
-		if (IRQ_ISP20){}
-		if (IRQ_ISP21){}
-		if (IRQ_ISP22){}
-		if (IRQ_ISP23){}
+		if (IRQ_ISP9){CLI_VLOCKI0w(1);}
+		if (IRQ_ISP10){CLI_VLOCKI1w(1);}
+		if (IRQ_ISP11){CLI_VLOCKI2w(1);}
+		if (IRQ_ISP12){CLI_IMW0w(1);}
+		if (IRQ_ISP13){CLI_IMW1w(1);}
+		if (IRQ_ISP14){CLI_IMW2w(1);}
+		if (IRQ_ISP15){CLI_IMW3w(1);}
+		if (IRQ_ISP16){CLI_IMW4w(1);}
+		if (IRQ_ISP17){CLI_IMW0_DSw(1);}
+		if (IRQ_ISP18){CLI_IMW1_DSw(1);}
+		if (IRQ_ISP19){CLI_IMW2_DSw(1);}
+		if (IRQ_ISP20){CLI_IMW3_DSw(1);}
+		if (IRQ_ISP21){CLI_VLOCKO_IT1w(1);}
+		if (IRQ_ISP22){CLI_VLOCKO_IT2w(2);}
+		if (IRQ_ISP23){CLI_VLOCKO_IT2w(3);}
 		if (IRQ_ISP24){}
 		if (IRQ_ISP25){}
 		if (IRQ_ISP26){}

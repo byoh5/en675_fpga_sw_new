@@ -1,0 +1,103 @@
+include $(CPU1DIR)/config.mk
+
+#CFLAGS += -DDEBUG_LEVEL1 -DDEBUG_LEVEL2
+CFLAGS += -I$(WLDIR)
+CFLAGS += -I$(WLDIR)/ewl_mlan
+CFLAGS += -I$(WLDIR)/ewl_os
+CFLAGS += -I$(WLDIR)/ewl_sdio
+CFLAGS += -I$(WLDIR)/wpa_supplicant
+
+CFLAGS += -DSTA_SUPPORT
+CFLAGS += -DBIG_ENDIAN_SUPPORT
+CFLAGS += -DSDIO_MULTI_PORT_TX_AGGR
+CFLAGS += -DSDIO_MULTI_PORT_RX_AGGR
+CFLAGS += -DCONFIG_CTRL_IFACE
+CFLAGS += -DUAP_SUPPORT
+CFLAGS += -DDEBUG_MLAN
+CFLAGS += -DEXT_WPA_SUPPLICANT
+
+LIBEWL  = lib$(EWL_LIB).a
+
+#########################################################################
+
+MLIBS  = ./ewl_sdio/sdio.o
+MLIBS += ./ewl_os/moal_main.o
+MLIBS += ./ewl_os/ewl_os.o
+MLIBS += ./ewl_os/moal_sdio_mmc.o
+MLIBS += ./ewl_os/moal_shim.o
+MLIBS += ./ewl_os/moal_priv.o
+MLIBS += ./ewl_os/moal_ioctl.o
+MLIBS += ./ewl_os/moal_wext.o
+MLIBS += ./ewl_os/moal_uap.o
+MLIBS += ./ewl_os/moal_uap_priv.o
+MLIBS += ./ewl_os/ewl.o
+MLIBS += ./ewl_os/ewlap.o
+MLIBS += ./ewl_os/ewl_wext.o
+MLIBS += ./ewl_os/ewl_passphrase.o
+MLIBS += ./ewl_os/uapcmd.o
+MLIBS += ./ewl_os/moal_uap_wext.o
+MLIBS += ./ewl_mlan/mlan_11d.o
+MLIBS += ./ewl_mlan/mlan_11h.o
+MLIBS += ./ewl_mlan/mlan_11n.o
+MLIBS += ./ewl_mlan/mlan_11n_aggr.o
+MLIBS += ./ewl_mlan/mlan_11n_rxreorder.o
+MLIBS += ./ewl_mlan/mlan_cfp.o
+MLIBS += ./ewl_mlan/mlan_cmdevt.o
+MLIBS += ./ewl_mlan/mlan_init.o
+MLIBS += ./ewl_mlan/mlan_join.o
+MLIBS += ./ewl_mlan/mlan_meas.o
+MLIBS += ./ewl_mlan/mlan_misc.o
+MLIBS += ./ewl_mlan/mlan_scan.o
+MLIBS += ./ewl_mlan/mlan_sdio.o
+MLIBS += ./ewl_mlan/mlan_shim.o
+MLIBS += ./ewl_mlan/mlan_sta_cmd.o
+MLIBS += ./ewl_mlan/mlan_sta_cmdresp.o
+MLIBS += ./ewl_mlan/mlan_sta_event.o
+MLIBS += ./ewl_mlan/mlan_sta_ioctl.o
+MLIBS += ./ewl_mlan/mlan_sta_rx.o
+MLIBS += ./ewl_mlan/mlan_sta_tx.o
+MLIBS += ./ewl_mlan/mlan_txrx.o
+MLIBS += ./ewl_mlan/mlan_wmm.o
+MLIBS += ./ewl_mlan/mlan_uap_cmdevent.o
+MLIBS += ./ewl_mlan/mlan_uap_ioctl.o
+MLIBS += ./ewl_mlan/mlan_uap_txrx.o
+MLIBS += ./wpa_supplicant/driver_wext.o
+MLIBS += ./wpa_supplicant/common.o
+MLIBS += ./wpa_supplicant/drivers.o
+MLIBS += ./wpa_supplicant/config.o
+MLIBS += ./wpa_supplicant/eloop.o
+MLIBS += ./wpa_supplicant/wpa_supplicant.o
+MLIBS += ./wpa_supplicant/os_none.o
+MLIBS += ./wpa_supplicant/events.o
+MLIBS += ./wpa_supplicant/ewl_supplicant.o
+MLIBS += ./wpa_supplicant/wpa.o
+
+#########################################################################
+
+all: ewl
+
+ewl: $(MLIBS)
+	@$(AR) rscv $(LIBEWL) $(MLIBS)
+	@echo " "
+	@echo "Generate $(LIBEWL): `cat $(LIBEWL) | wc -c` bytes"
+	@mv $(LIBEWL) $(SRCLIBDIR)/.
+
+clean_all:
+	@rm -rf $(MLIBS) .depend
+	@rm -rf $(SRCLIBDIR)/$(LIBEWL)
+
+clean:
+	@rm -rf $(MLIBS) .depend
+
+#########################################################################
+
+.depend: $(OBJS:.o=.c)
+	@$(CC) -M $(CFLAGS) $(OBJS:.o=.c) > $@
+
+%.o: %.S
+	@$(CC) $(CFLAGS) -c -o $@ $<
+
+%.o: %.c
+	@$(CC) $(CFLAGS) -c -o $@ $<
+
+#########################################################################

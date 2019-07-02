@@ -36,12 +36,42 @@ static EthTestBuffer Eth_data;
 
 #if (ETH_SHELL_TEST==1)
 int eth_test_task_sw;
+int eth_test_task_txtck;
 int eth_test_size = 1514;
+//ISRD BYTE u8SBuf[2048];
 //BYTE u8Buffer2[4096] = {1,2,3,4,5};
+static UINT eth_tx_test(BYTE *u8BufferAlign, ULONG *count)
+{
+#if 0
+	clear_csr(mie, MIP_MTIP);
+	clear_csr(mie, MIP_MEIP);
+#endif
+	*count = 0;
+	ULONG a = BenchTimeStart();
+	while (eth_test_task_sw) {
+		//hwflush_dcache_range(u8BufferAlign, 1514);
+		//BDmaMemCpy_rtos(1, u8SendBufferAlign, u8BufferAlign, 1514);
+		if (ETH_TX_PAUSE) {
+			printf("1");
+		}
+		EthTxPacket(u8BufferAlign, eth_test_size);
+		if (ETH_TX_PAUSE) {
+			printf("2");
+		}
+		*count++;
+	}
+#if 0
+	set_csr(mie, MIP_MTIP);
+	set_csr(mie, MIP_MEIP);
+#endif
+	return BenchTimeStop(a);
+}
+
 void cmd_eth_test_task(void *ctx)
 {
 	eth_test_task_sw = 1;
 	printf("%s(%d) : Start\n", __func__, __LINE__);
+	//BYTE *u8Buffer = u8SBuf;//pvPortMalloc(1024*6);
 	BYTE *u8Buffer = pvPortMalloc(1024*6);
 	//BYTE u8Buffer2[4096] = {1};//pvPortMalloc(1024*3);
 	if (u8Buffer) {
@@ -78,6 +108,23 @@ void cmd_eth_test_task(void *ctx)
 		write_csr(mstatus, 0);
 #endif
 		hwflush_dcache_range((ulong)u8BufferAlign, 1514);
+
+		if (eth_test_task_txtck == 1) {
+			for (int i = 0; i < 16; i++) {
+
+			}
+		} else {
+			end = eth_tx_test(u8BufferAlign, &count);
+			char buf[64] = {0};
+			snprintf(buf, 64, "%.2f", ((1514 * count) / 1024.0 / (1024.0 / 8)) / (end / 1000.0 / 1000.0));
+			printf("Send(%lu) TotalTime(%uus) AvgTime(%luus) Speed(%sMbps/s)\n", count, end, end / count, buf);
+		}
+
+#if 0
+#if 0
+		clear_csr(mie, MIP_MTIP);
+		clear_csr(mie, MIP_MEIP);
+#endif
 		a = BenchTimeStart();
 		while (eth_test_task_sw) {
 			//hwflush_dcache_range(u8BufferAlign, 1514);
@@ -91,12 +138,16 @@ void cmd_eth_test_task(void *ctx)
 			}
 			count++;
 		}
+#if 0
+		set_csr(mie, MIP_MTIP);
+		set_csr(mie, MIP_MEIP);
+#endif
 		end = BenchTimeStop(a);
 
 		char buf[64] = {0};
 		snprintf(buf, 64, "%.2f", ((1514 * count) / 1024.0 / (1024.0 / 8)) / (end / 1000.0 / 1000.0));
 		printf("Send(%lu) TotalTime(%uus) AvgTime(%luus) Speed(%sMbps/s)\n", count, end, end / count, buf);
-
+#endif
 	} else {
 		printf("Malloc Fail\n");
 	}
@@ -130,6 +181,12 @@ void eth_rx_state(void)
 	printf("ETH_RX_ADR      (rx adr) : 0x%08X\n", ETH_RX_ADR);
 	printf("ETH_RX_QOS      (rx qos) : %u\n", ETH_RX_QOS);
 	printf("ETH_RX_LMT      (rx lmt) : %u\n", ETH_RX_LMT);
+
+	UINT *pRX_LEN_INFO = (UINT *)(REG_BASE_ETH + 0x80000);
+	BYTE gRxPktHead = ((pRX_LEN_INFO[0]&0xff000000)>>24);
+	UINT u32PktSize = (pRX_LEN_INFO[gRxPktHead] & 0x7ff) - 4;
+	printf("ETH_RX_IDX               : %u\n", gRxPktHead);
+	printf("ETH_RX_SIZE              : %u\n", u32PktSize);
 	printf("== RX Filter ================\n");
 	printf("ETH_DSTMAC_BYP  (if mps) : %u\n", ETH_DSTMAC_BYP);
 	es_printf("ETH_DSTMAC_EN   (if men) : %032bb\n", ETH_DSTMAC_EN);
@@ -244,12 +301,12 @@ int cmd_test_eth(int argc, char *argv[])
 				else if (strcmp(argv[2], "adr") == 0) {		eth_getset(ETH_RX_ADR);		}
 				else if (strcmp(argv[2], "qos") == 0) {		eth_getset(ETH_RX_QOS);		}
 				else if (strcmp(argv[2], "lmt") == 0) {		eth_getset(ETH_RX_LMT);		}
-#if 0
 				else if (strcmp(argv[2], "on") == 0) {
 					gptMsgDebug.ETH_RX_CHECK = 1;
 				} else if (strcmp(argv[2], "off") == 0) {
 					gptMsgDebug.ETH_RX_CHECK = 0;
 				}
+#if 0
 				else if(strcmp(argv[2], "auto") == 0)
 				{
 					int i, j;
@@ -366,6 +423,11 @@ int cmd_test_eth(int argc, char *argv[])
 				else
 #endif
 				else if (strcmp(argv[2], "start") == 0) {
+					if (argc == 4) {
+						eth_test_task_txtck = 1;
+					} else {
+						eth_test_task_txtck = 0;
+					}
 					vTaskCreate("eth_tx", cmd_eth_test_task, NULL, LV2_STACK_SIZE, LV5_TASK_PRIO);
 				} else if (strcmp(argv[2], "stop") == 0) {
 					eth_test_task_sw = 0;

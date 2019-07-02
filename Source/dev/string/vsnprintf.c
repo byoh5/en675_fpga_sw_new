@@ -387,48 +387,6 @@ repeat:
 	return str - buf;
 }
 
-#ifdef __ECM_STRING__
-/*_NOINS static*/ int __ecm_uprintf(char* buf, int len)
-{
-#define PC_STX 0x02
-#define PC_CMD_STR 0xB0
-#define PC_ETX 0x03
-
-	/*if (len > 255) {
-		Uart0_Tx(PC_STX);
-		Uart0_Tx(PC_CMD_STR);
-		Uart0_Tx(20+8);
-		Uart0_Str("printf overflow!(");
-		Uart7_Hex(len);
-		Uart0_Tx(')');
-		Uart0_Tx('\r');
-		Uart0_Tx('\n');
-		Uart0_Tx(PC_ETX);
-		len = 255;
-	}*/
-
-#if 1
-	UartTx(DEBUG_UART_NUM, PC_STX);
-	UartTx(DEBUG_UART_NUM, PC_CMD_STR);
-	UartTx(DEBUG_UART_NUM, len);
-	while (*buf) {
-		UartTx(DEBUG_UART_NUM, *buf++);
-	}
-	UartTx(DEBUG_UART_NUM, PC_ETX);
-#else
-	UartTxIrq(PC_STX);
-	UartTxIrq(PC_CMD_STR);
-	UartTxIrq(len);
-	while (*buf) {
-		UartTxIrq(*buf++);
-	}
-	UartTxIrq(PC_ETX);
-#endif
-
-	return len;
-}
-#endif
-
 //static char buf[PRINTFBUF_SIZE];
 int _printf(const char *format, ...)
 {
@@ -440,12 +398,34 @@ int _printf(const char *format, ...)
 	va_end(args);
 
 #ifdef __ECM_STRING__
-	__ecm_uprintf(buf, len);
+	UartTxStrEx(DEBUG_UART_NUM, buf, 0, len, 0);
 #else
 	pbuf = buf;
 	while (*pbuf) {
 		if (*pbuf == '\n') UartTx(DEBUG_UART_NUM, '\r');
 		UartTx(DEBUG_UART_NUM, *pbuf++);
+	}
+#endif
+
+	return len;
+}
+
+int _printf_irq(const char *format, ...)
+{
+	char buf[PRINTFBUF_SIZE];
+	char *pbuf;
+	va_list args;
+	va_start(args, format);
+	int len = vsnprintf_(buf, PRINTFBUF_SIZE, format, args);
+	va_end(args);
+
+#ifdef __ECM_STRING__
+	UartTxStrEx(INVALID_UART_NUM, buf, 0, len, 0);
+#else
+	pbuf = buf;
+	while (*pbuf) {
+		if (*pbuf == '\n') UartTxIrq('\r');
+		UartTxIrq(*pbuf++);
 	}
 #endif
 

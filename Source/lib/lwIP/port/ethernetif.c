@@ -118,14 +118,15 @@ static err_t low_level_ethif_output(struct netif *netif, struct pbuf *p)
 static UINT *pRX_LEN_INFO = (UINT *)(REG_BASE_ETH + 0x80000);
 static BYTE gRxPktTail = 0;
 
-#if 1
 static void network_ethif_pkt_input_irq(void *ctx)
 {
 //	struct netif *netif = netif_state[enlETHERNET]._netif;
 	BYTE gRxPktHead = ((pRX_LEN_INFO[gRxPktTail]&0xff000000)>>24);
 	while (gRxPktTail != gRxPktHead) {
 		UINT u32PktSize = (pRX_LEN_INFO[gRxPktTail] & 0x7ff) - 4;
-		//printf("EthRX Idx[%s%3u%s/%s%3u%s] - %u\n", TTY_COLOR_YELLOW, gRxPktHead, TTY_COLOR_RESET, TTY_COLOR_GREEN, gRxPktTail, TTY_COLOR_RESET, u32PktSize);
+		if (gptMsgDebug.ETH_RX_CHECK) {
+			printf("EthRX Idx[%s%3u%s/%s%3u%s] - %u\n", TTY_COLOR_YELLOW, gRxPktHead, TTY_COLOR_RESET, TTY_COLOR_GREEN, gRxPktTail, TTY_COLOR_RESET, u32PktSize);
+		}
 		pkt_info *pkinfo;
 		if (u32PktSize <= 1514) {
 			pkinfo = &(qEthernetRX.info[qEthernetRX.tail]);
@@ -226,137 +227,6 @@ static void network_ethif_pkt_input_irq(void *ctx)
 	}
 #endif
 }
-#else
-static ULONG RX_path_LOOP = 0;
-static void network_ethif_pkt_input_irq(void *ctx)
-{
-	pkt_info *pkinfo;
-	struct netif *netif = netif_state[enlETHERNET]._netif;
-	//BYTE gRxPktHead = ((*pRX_LEN_INFO&0xff000000)>>24);
-	BYTE gRxPktHead = ((pRX_LEN_INFO[gRxPktTail]&0xff000000)>>24);
-	while (gRxPktTail != gRxPktHead) {
-		//UINT u32PktSize = (*pRX_LEN_INFO & 0x7ff) - 4;
-		UINT u32PktSize = (pRX_LEN_INFO[gRxPktTail] & 0x7ff) - 4;
-		if (u32PktSize != 0) {
-			//printf("i");
-			//printf("RX: 0x%08X(%u)\n", qEthernetRX.pkt_data[gRxPktTail].buffer, u32PktSize);
-			//printf("SP[0x%08X] RX%3u: 0x%08X(%u)\n", sp, gRxPktTail, qEthernetRX.pkt_data[gRxPktTail].buffer, u32PktSize);
-			//printf("%s, Tail(%3u) Head(%3u/%3u) Size(%4u) 0x%08X Addr(0x%08X)\n", "input", gRxPktTail, gRxPktHead, ETH_RX_LMT, u32PktSize, *pRX_LEN_INFO, qEthernetRX.pkt_data[gRxPktTail].buffer);
-#if 0
-			hwflush_dcache_range((ULONG)qEthernetRX.pkt_data[gRxPktTail].buffer, u32PktSize);
-			if (		qEthernetRX.pkt_data[gRxPktTail].buffer[0] == 0xff &&
-						qEthernetRX.pkt_data[gRxPktTail].buffer[1] == 0xff &&
-						qEthernetRX.pkt_data[gRxPktTail].buffer[2] == 0xff &&
-						qEthernetRX.pkt_data[gRxPktTail].buffer[3] == 0xff &&
-						qEthernetRX.pkt_data[gRxPktTail].buffer[4] == 0xff &&
-						qEthernetRX.pkt_data[gRxPktTail].buffer[5] == 0xff) {
-				;
-			} else if (	qEthernetRX.pkt_data[gRxPktTail].buffer[0] == netif->hwaddr[0] &&
-						qEthernetRX.pkt_data[gRxPktTail].buffer[1] == netif->hwaddr[1] &&
-						qEthernetRX.pkt_data[gRxPktTail].buffer[2] == netif->hwaddr[2] &&
-						qEthernetRX.pkt_data[gRxPktTail].buffer[3] == netif->hwaddr[3] &&
-						qEthernetRX.pkt_data[gRxPktTail].buffer[4] == netif->hwaddr[4] &&
-						qEthernetRX.pkt_data[gRxPktTail].buffer[5] == netif->hwaddr[5]) {
-				;
-			} else {
-				//ETH_RX_EN = 0;
-				printf("LOOP(%u) IDX(%u), 0x%08X, %ubyte\n", RX_path_LOOP, gRxPktTail, qEthernetRX.pkt_data[gRxPktTail].buffer, u32PktSize);
-				hexDump("RX1", qEthernetRX.pkt_data[gRxPktTail].buffer, 16);
-			}
-
-			if (qEthernetRX.pkt_data[gRxPktTail].buffer[12] == 0x08) {
-				if (qEthernetRX.pkt_data[gRxPktTail].buffer[13] == 0x00) {
-					;
-				} else if (qEthernetRX.pkt_data[gRxPktTail].buffer[13] == 0x06) {
-					;
-				} else {
-					//ETH_RX_EN = 0;
-					printf("LOOP(%u) IDX(%u), 0x%08X, %ubyte\n", RX_path_LOOP, gRxPktTail, qEthernetRX.pkt_data[gRxPktTail].buffer, u32PktSize);
-					hexDump("RX2", qEthernetRX.pkt_data[gRxPktTail].buffer, 16);
-				}
-			} else if (qEthernetRX.pkt_data[gRxPktTail].buffer[12] == 0x86) {
-				if (qEthernetRX.pkt_data[gRxPktTail].buffer[13] == 0xDD) {
-					;
-				} else {
-					//ETH_RX_EN = 0;
-					printf("LOOP(%u) IDX(%u), 0x%08X, %ubyte\n", RX_path_LOOP, gRxPktTail, qEthernetRX.pkt_data[gRxPktTail].buffer, u32PktSize);
-					hexDump("RX3", qEthernetRX.pkt_data[gRxPktTail].buffer, 16);
-				}
-			} else if (qEthernetRX.pkt_data[gRxPktTail].buffer[12] == 0x88) {
-				if (qEthernetRX.pkt_data[gRxPktTail].buffer[13] == 0x99) {
-					;
-				} else {
-					//ETH_RX_EN = 0;
-					printf("LOOP(%u) IDX(%u), 0x%08X, %ubyte\n", RX_path_LOOP, gRxPktTail, qEthernetRX.pkt_data[gRxPktTail].buffer, u32PktSize);
-					hexDump("RX4", qEthernetRX.pkt_data[gRxPktTail].buffer, 16);
-				}
-			} else {
-				//ETH_RX_EN = 0;
-				printf("LOOP(%u) IDX(%u), 0x%08X, %ubyte\n", RX_path_LOOP, gRxPktTail, qEthernetRX.pkt_data[gRxPktTail].buffer, u32PktSize);
-				hexDump("RX5", qEthernetRX.pkt_data[gRxPktTail].buffer, 16);
-			}
-			//hexDump("RX", qEthernetRX.pkt_data[gRxPktTail].buffer, u32PktSize);
-#endif
-			//if (u32PktSize == 74) {
-				;
-			//} else {
-				pkinfo = &(qEthernetRX.info[qEthernetRX.tail]);
-				pkinfo->data = qEthernetRX.pkt_data[gRxPktTail].buffer;
-				pkinfo->lenth = u32PktSize;
-				pkinfo->type = enlETHERNET;
-				pkinfo->flag = 0;
-				num_loop(qEthernetRX.tail, NETRX_BUF_COUNT);	// next head
-			//}
-#if 0 // Zero RX - IRQ ver
-				struct pbuf *p = pbuf_alloc(PBUF_RAW, u32PktSize + ETH_PAD_SIZE, PBUF_REF);
-				if (p == NULL) {
-					printf("pbuf_alloc fail H(%04d) T(%04d) Size(%04d)\n", qEthernetRX.head, qEthernetRX.tail, u32PktSize);
-				} else {
-#if ETH_PAD_SIZE
-					pbuf_header(p, -ETH_PAD_SIZE); // Drop the padding word
-#endif
-					hwflush_dcache_range((ULONG)pkinfo->data, u32PktSize);
-					p->payload = pkinfo->data;
-					//printf("p->len(%u) wLen(%u)\n", p->len, wLen);
-
-#if ETH_PAD_SIZE
-					pbuf_header(p, ETH_PAD_SIZE); // Reclaim the padding word
-#endif
-
-					if ((netif->input(p, netif)) != ERR_OK) {
-						LWIP_DEBUGF(NETIF_DEBUG, ("if_input: IP input error\n"));
-						pbuf_free(p);
-						p = NULL;
-					}
-				}
-#endif
-		} else {
-			printf("EthRX Zero(%u/%u)\n", gRxPktHead, gRxPktTail);
-		}
-
-		//pRX_LEN_INFO++;
-		gRxPktTail++;
-		//if (gRxPktTail == 0) {
-		//	RX_path_LOOP++;
-		//}
-		//if (gRxPktTail == 0) {
-		//	pRX_LEN_INFO = REG_BASE_ETH + 0x80000;
-		//	printf("Ethernet Loop!\n");
-		//}
-		//gRxPktHead = ((*pRX_LEN_INFO&0xff000000)>>24);
-		gRxPktHead = ((pRX_LEN_INFO[gRxPktTail]&0xff000000)>>24);
-	}
-#if 1
-	if (netif_state[enlETHERNET].xrx_notity) {
-		portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
-		vTaskNotifyGiveFromISR(netif_state[enlETHERNET].xrx_notity, &xHigherPriorityTaskWoken);
-		if (xHigherPriorityTaskWoken) {
-			gbXsrTaskSwitchNeeded = 1;
-		}
-	}
-#endif
-}
-#endif
 
 #if (ETHPHY_LOOPBACK_TEST==1)
 void network_ethif_pkt_input_loopback_irq(void *ctx)
@@ -416,7 +286,7 @@ static struct pbuf *low_level_input(struct netif *netif)
 
 //		printf("RX: 0x%08X(%u)\n", pkt, wLen);
 #if 1
-#if 1
+#if 0
 		p = pbuf_alloc(PBUF_RAW, wLen + ETH_PAD_SIZE, PBUF_REF);
 		if (p == NULL) {
 			printf("pbuf_alloc fail H(%04d) T(%04d) Size(%04d)\n", qEthernetRX.head, qEthernetRX.tail, wLen);
@@ -573,7 +443,7 @@ static void network_ethif_pkt_input(void *ctx)
 							p = NULL;
 						}
 						TTb = *mtime;
-						if((TTb - TTa) > 10000) {
+						if((TTb - TTa) > 15000) {
 							printf("b-a:%lu\n", TTb-TTa);
 						}
 						break;
@@ -636,7 +506,8 @@ static void network_ethif_pkt_input(void *ctx)
 						break;
 					default:
 						printf("payload(0x%08lX) len(%u)\n", (intptr_t)p->payload, p->len);
-						hexDump("IP input error", p->payload, p->len);
+						hwflush_dcache_range((ULONG)p->payload, (UINT)p->len+64);
+						hexDump("IP input error + 64byte", p->payload, p->len+64);
 #if 0
 						hwflush_dcache_range((ULONG)p->payload, (UINT)p->len);
 						portMEMORY_BARRIER();

@@ -28,16 +28,16 @@
 #define	USE_AUTOSYNC 	1
 
 //	LVDS & MIPI------------------------------------------------------------------------
-#define	LVDS_10BIT		0
-#define	LVDS_12BIT		1
-#define	LVDS_16BIT		2
+#define	LVDS_10BIT		10
+#define	LVDS_12BIT		12
+//#define	LVDS_16BIT		16
 
 #define	LVDS_2LANE		0
 #define	LVDS_4LANE		1
 
 
-#define	MIPI_10BIT		0
-#define	MIPI_12BIT		1
+#define	MIPI_10BIT		10
+#define	MIPI_12BIT		12
 
 #define	MIPI_1LANE		0
 #define	MIPI_2LANE		1

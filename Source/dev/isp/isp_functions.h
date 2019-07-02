@@ -1,13 +1,15 @@
 
 //	isp_tbl.c
-extern void OV4689_Init(void);
-extern void IMX335_Init(void);
-extern void OS08A10_Init(void);
+extern void SetSens(WORD awAddr, BYTE abData);
+extern BYTE GetSens(WORD awAddr);
 
-extern void OV2718_Init(void);
-extern void IMX291_Init(void);
-extern void IMX274_Init(void);
-extern void IMX225_Init(void);
+//extern void OV4689_Init(void);
+//extern void IMX335_Init(void);
+//extern void OS08A10_Init(void);
+//extern void OV2718_Init(void);
+//extern void IMX291_Init(void);
+//extern void IMX274_Init(void);
+//extern void IMX225_Init(void);
 
 extern void Isp_VLOCKO_init(void);
 extern void Wait_VLOCKO(void);
@@ -23,15 +25,16 @@ extern void Isp_Ddr_Cong(void);
 
 
 //	isp_interface.c
+extern void Isp_SYNC_CODE(WORD awC0, WORD awC1, WORD awC2, WORD awC3_0, WORD awC3_1, WORD awC3_2, WORD awS0C3_0, WORD awS0C3_1, WORD awS0C3_2, WORD awS1C3_0, WORD awS1C3_1, WORD awS1C3_2);
 extern void Isp_SDesPowerOn(BOOL OnOff, BOOL IsMipi, BYTE MipiClkPhase);
 extern void Isp_SDesDelay(BYTE Lck, BYTE Ldi0, BYTE Ldi1, BYTE Ldi2, BYTE Ldi3);
 extern void Isp_SDesPosition(UINT LvdsHRpos, UINT LvdsVRpos, UINT LvdsHw, UINT LvdsVw);
-extern void Isp_Lvds_Config(BYTE LvdsBit, BYTE LvdsLane, BOOL IsLsbFirst, BOOL PNSel);
-extern void Isp_Mipi_Config(BYTE MipiBit, BYTE MipiLane, BOOL IsLsbFirst, BOOL PNSel, BOOL UseEcc, BOOL UseWcl, BOOL UseWcf, BOOL UseWcfe, BYTE MipiImgPhase);
-extern void Isp_SensorPowerOn(BOOL OnOff, BYTE ClkSel);
-extern void Isp_Parallel_Config(BOOL OnOff, BOOL IsSlave, BOOL IsUseExtClk, BOOL IsClkDdr, BYTE ClkDly, BOOL HSyncPol, BOOL VSyncPol, BOOL SyncMode, BOOL IsUseAsync);
+extern void Isp_Lvds_Config(BYTE LvdsBit, BYTE LvdsLane, BOOL IsLsbFirst, BOOL PNSel, BOOL SofNo);
+extern void Isp_Mipi_Config(BYTE MipiBit, BYTE MipiLane, BOOL IsLsbFirst, BOOL PNSel, WORD MipiHsyncOfs, BOOL UseEcc, BOOL UseWcl, BOOL UseWcf, BOOL UseWcfe, BYTE MipiImgPhase);
+extern void Isp_SensorPowerOn(BOOL OnOff, UINT Clk);
+extern void Isp_Parallel_Config(BOOL OnOff/*, BOOL IsSlave*/, BOOL IsUseExtClk, BOOL IsClkDdr, BYTE ClkDly/*, BOOL HSyncPol, BOOL VSyncPol, BOOL SyncMode, BOOL IsUseAsync*/);
 extern void Isp_PreClk_Config(BYTE Clk);
-extern void Isp_PreSync_Config(BOOL IsSlave, UINT Htw, UINT Vtw, UINT HsyncOfs, UINT VsyncOfs, UINT Hsp, UINT Vsp, UINT Hw, UINT Vw, BOOL IsASync, BOOL IsNSync);
+extern void Isp_PreSync_Config(BOOL IsSlave, UINT Htw, UINT Vtw, UINT HsyncOfs, UINT VsyncOfs, UINT Hsp, UINT Vsp, UINT Hw, UINT Vw, BOOL IsASync, BOOL IsNSync, BOOL HSyncPol, BOOL VSyncPol);
 extern void Isp_PostSync_Config(BOOL OSyncMode, BOOL ExSyncSel, UINT Htw, UINT Vtw, UINT HsyncOfs, UINT VsyncOfs, UINT Hsp, UINT Vsp, UINT Hw, UINT Vw, BYTE OCSel);
 extern void Isp_PostClk_Config(BYTE Clk);
 extern void Isp_Gamma_Config(BOOL Y_OnOff, BOOL C_OnOff);
@@ -108,12 +111,13 @@ extern void Isp_Vlc_Config(BYTE VlcMode);
 
 
 // ISP Library
+extern void InitSensRun(void);
 extern int LibUtlInterp1D(int aiXCur, int aiXPos1, int aiXPos2, int aiYPos1, int aiYPos2);
 extern BYTE LibUtlKeyPass(const BYTE* abpPassKeys, BYTE abKeySize, BYTE* abpPassCnt);
 
 
 // User Parameter
-extern void InitDataID(void);
+extern void InitDataSet(void);
 extern void UsrDataReset(void);
 extern void SetByte(BYTE *apAddr, const BYTE abLen, UINT anData);
 extern UINT GetByte(BYTE *apAddr, const BYTE abLen);
@@ -140,7 +144,6 @@ extern void Isp_irq_init(void);
 extern void Isp_Sensor_init(void);
 extern void Isp_Output_init(void);
 extern void Isp_Function_init(void);
-extern void Isp_Function_cstm(void);
 extern void Isp_DDR_init(void);
 extern void Isp_Digital_input_init(void);
 extern void Isp_init(void);

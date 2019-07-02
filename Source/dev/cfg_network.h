@@ -52,6 +52,45 @@
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////
+// Wi-Fi
+////////////////////////////////////////////////////////////////////////////////
+#ifdef __WIFI__
+// Wi-Fi Configuration
+#define WIFI_DEFAULT					1			//*0 : flash memory load data(gtWificfg)
+													// 1 : default load data(board.h setting)
+
+// AP(Access Point) mode
+#define WIFI_AP_SSID_MAC				1			// 0 : user Wi-Fi AP SSID => EN673_WIFI_TEST
+													//*1 : AP SSID + MAC Address(LSB 24bit) => EN673_xxxxxx
+
+#if WIFI_AP_SSID_MAC
+#define WIFI_AP_SSID					"EN673_"	// broadcast to SSID
+#else
+#define WIFI_AP_SSID					"EN673_WIFI_TEST"	// broadcast to SSID
+#endif
+#define WIFI_AP_SWITCH					DEF_ON		// on(DEF_ON)? off(DEF_OFF)?
+#define WIFI_AP_AUTH					wifi_WPA2_PSK	// (wifi_OPEN) or (wifi_WPA2_PSK)
+#define WIFI_AP_KEY						"1234567890"	// KEY
+#define WIFI_AP_CH						5			// default channel
+#define WIFI_AP_MAXUSER					5			// default max user
+
+//#define custom_MAC_UAP
+#ifdef custom_MAC_UAP
+#define WIFI_UAP_MACADDRESS				{0x00,0x11,0x22,0x33,0x55,0x35}
+#endif
+
+// Station mode
+#define WIFI_STA_SWITCH					DEF_OFF		// on(DEF_ON)? off(DEF_OFF)?
+#define WIFI_STA_SSID					"eyenix_1005"	// connect to SSID
+#define WIFI_STA_AUTH					wifi_WPA2_PSK	// (wifi_OPEN) or (wifi_WPA2_PSK)
+#define WIFI_STA_KEY					"eyenix12"	// KEY
+//#define custom_MAC_STA
+#ifdef custom_MAC_STA
+#define WIFI_STA_MACADDRESS				{0x00,0x11,0x22,0x33,0x55,0x34}
+#endif
+#endif
+
+////////////////////////////////////////////////////////////////////////////////
 // Service
 ////////////////////////////////////////////////////////////////////////////////
 

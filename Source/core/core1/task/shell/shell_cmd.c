@@ -584,6 +584,9 @@ int UsrCmd_i(int argc, char *argv[])
 	netifapi_netif_set_link_up(netif_state[0]._netif);
 	printf("netifapi_netif_set_link_up end\n");
 #endif
+
+	hwflush_dcache_range_all();
+
 	return 0;
 	UNUSED(argc);
 	UNUSED(argv);
@@ -591,6 +594,9 @@ int UsrCmd_i(int argc, char *argv[])
 
 int UsrCmd_j(int argc, char *argv[])
 {
+	//set_csr(mie, MIP_MTIP|MIP_MEIP);
+	//clear_csr(mie, MIP_MTIP|MIP_MEIP);
+
 #if 0
 	printf("netifapi_netif_set_link_down start\n");
 	netifapi_netif_set_link_down(netif_state[0]._netif);

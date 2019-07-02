@@ -150,20 +150,20 @@ void OsdCamTitle(void)
 {
 #if 0	// for Test
 	FontStrEx(0, gnFontXw-8, NO_ALPHA, MN_GREEN, (const char*)&gbCamTitle(0), 0x8);
-	FontStrEx(gnFontYw-2, 0, NO_ALPHA, MN_GREEN, (const char*)&gbCamTitle(0), 0x8);	// TODO KSH gnFontYw-1 이상부터 출력 안됨
+	FontStrEx(gnFontYw-1, 0, NO_ALPHA, MN_GREEN, (const char*)&gbCamTitle(0), 0x8);
 #else
 //	DispClr(0, ISP_FONT_EAX-9, 0x8);	SetFontAttrs(0, ISP_FONT_EAX-9, 0x8, MN_WHITE);
 //	DispClr(19, 0, 0x8);				SetFontAttrs(19, 0, 0x8, MN_WHITE);
 //	DispClr(17, 0, 0x8);				SetFontAttrs(17, 0, 0x8, MN_WHITE);
 
-	UINT nUpCamTitleOn = UPr(UpCamTitleOn);
+	UINT nUpCamTitleOn = UP(UpCamTitleOn);
 	if(gbMnDebugFnc && nUpCamTitleOn == MN_CT_RIGHT_UP) nUpCamTitleOn = MN_CT_LEFT_DOWN;
 
 	//if(gbMnDebugFnc == 0) {
 		switch(nUpCamTitleOn) {
 			case MN_CT_RIGHT_UP  :	//DispStr((const char*)&gbCamTitle(0), 0, ISP_FONT_EAX-9, 0x8);
 									//SetFontAttrs(0, ISP_FONT_EAX-9, 0x8, MN_BLACK);
-									FontClr(gnFontYw-2, 0, 0x8);
+									FontClr(gnFontYw-1, 0, 0x8);
 									FontStrEx(0, gnFontXw-8, NO_ALPHA, MN_GREEN, (const char*)&gbCamTitle(0), 0x8);
 									break;
 
@@ -183,11 +183,11 @@ void OsdCamTitle(void)
 //
 //			  #endif
 				FontClr(0, gnFontXw-8, 0x8);
-				FontStrEx(gnFontYw-2, 0, NO_ALPHA, MN_GREEN, (const char*)&gbCamTitle(0), 0x8);
+				FontStrEx(gnFontYw-1, 0, NO_ALPHA, MN_GREEN, (const char*)&gbCamTitle(0), 0x8);
 				break;
 
 			default :
-				FontClr(gnFontYw-2, 0, 0x8);
+				FontClr(gnFontYw-1, 0, 0x8);
 				FontClr(0, gnFontXw-8, 0x8);
 				break;
 		}
@@ -204,7 +204,7 @@ void ChangeMenuSize(void)
 		MN_MXSP = MN_MXSP_DEF;
 		if(MENU_TITLE_IS(OFF))	{
 			nFontSize = SMALL_FONT;
-			nFontWidx = (UPr(UpCamTitleOn) == MN_CT_RIGHT_UP) ? SMALL_FONT_AREA_W : SMALL_FONT_AREA_H;
+			nFontWidx = (UP(UpCamTitleOn) == MN_CT_RIGHT_UP) ? SMALL_FONT_AREA_W : SMALL_FONT_AREA_H;
 		}
 		else {
 			nFontSize = BIG_FONT;
@@ -430,7 +430,7 @@ DISPLAY_STR:
 
 	if(nOri != nVal) {
 		SetByte(Val,abValSize,nVal);
-		if(gbUsrParTbl <= Val && (Val+abValSize) <= (gbUsrParTbl+USR_PAR_EA)) UsrParChg(Val-gbUsrParTbl);
+		if(gbUsrParTbl < Val && (Val+abValSize) < (gbUsrParTbl+USR_PAR_EA)) UsrParChg(Val-gbUsrParTbl);
 	}
 }
 
@@ -476,7 +476,7 @@ UINT menu_val(void *Val, const BYTE abValSize, UINT anMin, UINT anMax, UINT anRo
 
 	if(nOri != nVal) {
 		SetByte(Val,abValSize,nVal);
-		if(gbUsrParTbl <= (BYTE*)Val && ((BYTE*)Val+abValSize) <= (gbUsrParTbl+USR_PAR_EA)) return 1;//UsrParChg((BYTE*)Val-gbUsrParTbl);
+		if(gbUsrParTbl < (BYTE*)Val && ((BYTE*)Val+abValSize) < (gbUsrParTbl+USR_PAR_EA)) return 1;//UsrParChg((BYTE*)Val-gbUsrParTbl);
 	}
 
 	return 0;
@@ -606,13 +606,6 @@ void menu_pos(const PEXCH* Title, int MenuNum, const PEXCH** Str)
 //*************************************************************************************************
 // Initial
 //-------------------------------------------------------------------------------------------------
-void InitMenuSet(void)
-{
-#if 0
-	MENU_LIB_LIST	// TODO KSH MENU를 Lib에서도 쓸 수 있도록 설정 필요
-#endif
-}
-
 void InitMenu(void)
 {	// Initiate Menu
 	UartTxStrNoIRQ("Menu Init... ");
@@ -620,10 +613,8 @@ void InitMenu(void)
 	UINT i;
 	UINT nResetKey = 0;
 
-	InitMenuSet();
-
 	#if (model_Key==0)		// AD Key
-		nResetKey = (ADC_KEYr<(((UINT)UPr(UpADC_LEVEL_U)+(UINT)UPr(UpADC_LEVEL_D))>>1));           // 141031 LH
+		nResetKey = (ADC_KEYr<(((UINT)UP(UpADC_LEVEL_U)+(UINT)UP(UpADC_LEVEL_D))>>1));           // 141031 LH
 
 	#elif (model_Key==1)	// GPIO Key
 		nResetKey = !GpioGetPin(GPIO_KEY_U);									// if up key is pressed
@@ -647,8 +638,6 @@ void InitMenu(void)
 		UsrParSave(1);	// gbUsrParTblSaved[] 업데이트 & ROM 저장 실행
 		UartTxStrNoIRQ("MENU PAR reset ");
     }
-
-	ChangeMenuSize();
 }
 
 //*************************************************************************************************
@@ -698,7 +687,7 @@ void Menu(void)
 			COLORm,			MENU_ONEi(MN_ON, e, MN_ON, COLORm, ),
 			IMAGE,			MENU_ONEi(MN_ON, e, MN_ON, IMAGE, ),
 			SYSTEM, 		MENU_ONEi(MN_ON, e, !iSetMnOn, SYSTEM, /*MENU_OFF_GRAY_ONLY();*/ ),		// if not Setup menu
-			EXIT,			MENU_STRo(MN_ON, MN_ON, UsrParSave(gbMnExit==0); gbMnExit = 0;, , UPx(gbMnExit), 2, SAVEe, CANCELe))
+			EXIT,			MENU_STRo(MN_ON, MN_ON, UsrParSave(gbMnExit==0); gbMnExit = 0;, , gbMnExit, 2, SAVEe, CANCELe))
 
 
 // MENU - EXPOSURE ----------------------------------------------------------------------------------------------------
@@ -706,18 +695,18 @@ void Menu(void)
 			BRIGHTNESS, 	if(gbMnSetupOn==1){
 								MENU_ONEi(MN_ON, e, MN_ON, BRIGHTNESS, )
 							}else{
-								MENU_BARn(MN_ON, , UPo(UpBrightness), 0, 20, 1)
+								MENU_BARn(MN_ON, , UP(UpBrightness), 0, 20, 1)
 							},
 			RETURN,			MENU_ONEo(MN_ON, e, MN_ON, ))
 
 	// MENU - EXPOSURE - BRIGHTNESS
 	MENU_SET( 3, BRIGHTNESS, MN_ON,
-			DAY,			MENU_BARn(MN_ON, , UPo(UpBrightness), 0, 20, 1),
+			DAY,			MENU_BARn(MN_ON, , UP(UpBrightness), 0, 20, 1),
 							/*({ menu_bar(MN_ON, &MP(MpBrightness), 0, 20, 1, _S());
 							   SETFONTID(DRAW_Y, MN_SXSP+3, ':');
 							   DispClrDec(TgtMaxGet(0,0), DRAW_Y, MN_SXSP+5, 3);
 							   MENU_CODE(if_KEY_LR(MENU_REDRAW())) }),*/
-			NIGHT,			MENU_BARn(MN_ON, , UPo(UpBrightnessMin), 0, 20, 1),
+			NIGHT,			MENU_BARn(MN_ON, , UP(UpBrightnessMin), 0, 20, 1),
 							/*({ menu_bar(MN_ON, &MP(MpBrightnessMin), 0, 20, 1, _S());
 							   SETFONTID(DRAW_Y, MN_SXSP+3, ':');
 							   DispClrDec(TgtMinGet(TgtMaxGet(0,0), MP(MpBrightnessMin)), DRAW_Y, MN_SXSP+5, 3);
@@ -728,32 +717,32 @@ void Menu(void)
 	MENU_SET( 6, COLORm, MN_ON/*(gbMnSetupOn==0)*/,
 			AWB,			MENU_STRi(MN_ON, MENU_VAL_IS(MANUALe), AWB, ,
 										MENU_VAL_PUSH(PRESETp, PUSHING, PUSH_DELAY_NOR, gbMpAwbPrst = MN_OFF, gbMpAwbPrst = MN_ON),
-										UPo(UpAwb), 4, AUTO, AUTOext, PRESETp, MANUALe),
-			STYLE,			MENU_STRn(MN_ON, /*if_KEY_LR(Hue_Chroma_Menu_Set(0))*/, UPo(UpAwbStyle), 6, A_TYPE, B_TYPE, C_TYPE, D_TYPE, E_TYPE, F_TYPE),
-			R_GAIN,			MENU_BARn(MN_ON, , UPo(UpSaturationR), 0, 40, 1 ),	// 2017419 - WHL : CBB TEST
-			G_GAIN,			MENU_BARn(MN_ON, , UPo(UpSaturation), 0, 40, 1 ),
-			B_GAIN,			MENU_BARn(MN_ON, , UPo(UpSaturationB), 0, 40, 1 ),
+										UP(UpAwb), 4, AUTO, AUTOext, PRESETp, MANUALe),
+			STYLE,			MENU_STRn(MN_ON, /*if_KEY_LR(Hue_Chroma_Menu_Set(0))*/, UP(UpAwbStyle), 6, A_TYPE, B_TYPE, C_TYPE, D_TYPE, E_TYPE, F_TYPE),
+			R_GAIN,			MENU_BARn(MN_ON, , UP(UpSaturationR), 0, 40, 1 ),	// 2017419 - WHL : CBB TEST
+			G_GAIN,			MENU_BARn(MN_ON, , UP(UpSaturation), 0, 40, 1 ),
+			B_GAIN,			MENU_BARn(MN_ON, , UP(UpSaturationB), 0, 40, 1 ),
 			RETURN,			MENU_ONEo(MN_ON, e, MN_ON, ))
 
 	// MENU - AWB:MANUAL
-	MENU_SET( 4, AWB, UPr(UpAwb) == MN_AWB_MNL,
-			C_TEMP,			MENU_STRn(MN_ON, , UPo(UpAwbMnl), 3, TEMP1, TEMP2, TEMP3),
-			RGAIN,			MENU_BARn(MN_ON, , UPo(UpRgain), 0, 20, 1),
-			BGAIN,			MENU_BARn(MN_ON, , UPo(UpBgain), 0, 20, 1),
+	MENU_SET( 4, AWB, UP(UpAwb) == MN_AWB_MNL,
+			C_TEMP,			MENU_STRn(MN_ON, , UP(UpAwbMnl), 3, TEMP1, TEMP2, TEMP3),
+			RGAIN,			MENU_BARn(MN_ON, , UP(UpRgain), 0, 20, 1),
+			BGAIN,			MENU_BARn(MN_ON, , UP(UpBgain), 0, 20, 1),
 			RETURN,			MENU_ONEo(MN_ON, e, MN_ON, ))
 
 
 // MENU - IMAGE ----------------------------------------------------------------------------------------------------
 	MENU_SET( 2, IMAGE, MN_ON,
-			FLIP,			MENU_STRn(MN_ON, , UPo(UpFlip), 2, OFF, ON),
+			FLIP,			MENU_STRn(MN_ON, , UP(UpFlip), 2, OFF, ON),
 			RETURN,			MENU_ONEo(MN_ON, e, MN_ON, ))
 
 
 // MENU - SYSTEM ----------------------------------------------------------------------------------------------------
 	MENU_SET( 5, SYSTEM, MN_ON,
-			CAM_TITLE,		MENU_STRi(MN_ON, UPr(UpCamTitleOn)!=MN_CT_OFF, CAM_TITLE, , , UPo(UpCamTitleOn), 3, OFF, RIGHT_UPe, LEFT_DOWNe),
-			LANGUAGE,		MENU_STRn(MN_ON, if_KEY_LR(MENU_CHANGE()), UPo(UpLanguageSel), 5, ENG, CHN, CHNs, JPN, KOR),
-			COLOR_BAR,		MENU_STRn(MN_ON, , UPo(UpColorBar), 2, OFF, ON),
+			CAM_TITLE,		MENU_STRi(MN_ON, UP(UpCamTitleOn)!=MN_CT_OFF, CAM_TITLE, , , UP(UpCamTitleOn), 3, OFF, RIGHT_UPe, LEFT_DOWNe),
+			LANGUAGE,		MENU_STRn(MN_ON, if_KEY_LR(MENU_CHANGE()), UP(UpLanguageSel), 5, ENG, CHN, CHNs, JPN, KOR),
+			COLOR_BAR,		MENU_STRn(MN_ON, , UP(UpColorBar), 2, OFF, ON),
 			RESET,			MENU_PUSH(MN_ON, gbMpReset, ONp, PUSHING, PUSH_DELAY_NOR, UsrParReset(); MENU_CHANGE(); ),
 			RETURN,			MENU_ONEo(MN_ON, e, MN_ON, ))
 
@@ -785,8 +774,8 @@ void Menu(void)
 
 // Setup MENU ----------------------------------------------------------------------------------------------------
 	MENU_SET(4, SETUP, MN_ON,
-			DEVELOPER,		MENU_STRn(MN_ON, , UPx(gbMnSetupOn), 2, OFF, ON),
-			STYLE,			MENU_STRn(MN_ON, if_KEY_LR(UsrParStyle(gbMenuStyle); MENU_CHANGE()), UPx(gbMenuStyle), 8, PREVIOUS, IPC_INDOOR, IPC_OUTDOOR, CAR_REC, ACTION_REC, WDR, LOW_BIT, CUSTOM),
+			DEVELOPER,		MENU_STRn(MN_ON, , gbMnSetupOn, 2, OFF, ON),
+			STYLE,			MENU_STRn(MN_ON, if_KEY_LR(UsrParStyle(gbMenuStyle); MENU_CHANGE()), gbMenuStyle, 8, PREVIOUS, IPC_INDOOR, IPC_OUTDOOR, CAR_REC, ACTION_REC, WDR, LOW_BIT, CUSTOM),
 #if 0
   			SHADINGDET,		MENU_ONEo(MN_ON, ONp, MN_ON,
 											MP(MpShdDet) = 1;
@@ -812,15 +801,15 @@ void Menu(void)
 
 // Debug MENU ----------------------------------------------------------------------------------------------------
 	MENU_SET(7, nDEBUG, MN_ON,
-			FUNCTION,		MENU_STRn(MN_ON, if_KEY_LR(ChangeMenuSize(); MENU_CHANGE()) , UPx(gbMnDebugFnc), 9, OFF, AE, AF, AWB, DBG_4, DBG_5, IMD_DBG, TDN_DBG, STATUS),
-			BYPASS,			MENU_STRn(MN_ON, , UPx(gbMnDebugBypass), 2, OFF, ON),
-			PAR_NUM,		MENU_DECn(MN_ON, if_KEY_LR(MENU_REDRAW()), UPx(gbMnParNum), 0, 31, 1, ),
+			FUNCTION,		MENU_STRn(MN_ON, if_KEY_LR(ChangeMenuSize(); MENU_CHANGE()) , gbMnDebugFnc, 9, OFF, AE, AF, AWB, DBG_4, DBG_5, IMD_DBG, TDN_DBG, STATUS),
+			BYPASS,			MENU_STRn(MN_ON, , gbMnDebugBypass, 2, OFF, ON),
+			PAR_NUM,		MENU_DECn(MN_ON, if_KEY_LR(MENU_REDRAW()), gbMnParNum, 0, 31, 1, ),
 
 			PAR_VAL,		menu_bar(MN_ON, (gbUsrParTbl+UPi(UpPAR00)+(gbMnParNum<<2)), 4, 0, 0xFFFFFFFF, 1, _S(), gbMnParType);  MENU_DISABLE(MN_ON)  MENU_CODE( ),
 
-			PAR_TYPE,		MENU_STRn(MN_ON, if_KEY_LR(MENU_REDRAW()), UPx(gbMnParType), 2, DEC, HEX),
+			PAR_TYPE,		MENU_STRn(MN_ON, if_KEY_LR(MENU_REDRAW()), gbMnParType, 2, DEC, HEX),
 			FONT_TEST,		menu_bar(MN_ON, &gwFontTest, sizeof(gwFontTest), 0, ISP_FONT_CHAR_EA-1, 1, _S(), 0); SETFONTID(DRAW_Y, MN_SXSP+4, ':'); SETFONTID(DRAW_Y, MN_SXSP+6, '\''); SETFONTID(DRAW_Y, MN_SXSP+7, gwFontTest); SETFONTID(DRAW_Y, MN_SXSP+8, '\''); ,	// TODO KSH Font Test Menu
-			nEXIT,			MENU_STRo(MN_ON, MN_ON, UsrParSave(gbMnExit==0); gbMnExit = 0;, , UPx(gbMnExit), 2, SAVEe, CANCELe))
+			nEXIT,			MENU_STRo(MN_ON, MN_ON, UsrParSave(gbMnExit==0); gbMnExit = 0;, , gbMnExit, 2, SAVEe, CANCELe))
 
 
 	MENU_DISPLAY_END()

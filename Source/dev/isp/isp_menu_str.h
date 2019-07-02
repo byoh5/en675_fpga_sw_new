@@ -457,7 +457,7 @@ STRING1(F_TYPE,				_B,"F-TYPE");
 
 #define __ISP_MENU_STR__
 #include "isp_par_tbl.h"
-
+#undef __ISP_MENU_STR__
 
 
 #endif /* __ISP_MENU_STR_H__ */

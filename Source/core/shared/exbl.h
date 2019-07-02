@@ -12,6 +12,7 @@ extern BYTE hex2ascii(BYTE hex);
 extern void hexDump(char *desc, void *addr, int len);
 extern void hexCmpDump(char *desc, void *addr1, void*addr2, int len);
 
-extern void sleep_(int cnt);
+//extern void sleep_(int cnt);
+//#define sleep_(CNT)		WaitXus((CNT*15) / 81/*(CPU_FREQ/(1000*1000))*/)
 
 #endif

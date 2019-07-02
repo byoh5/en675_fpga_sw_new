@@ -201,14 +201,14 @@ void enx_peri_init(void)
 	//printf("ETH_MDIO_REG0_T: 0x%08X\n", ETH_MDIO_REG0_T);
 	///ETH_MDIO_REG0_T = 0xffffffff;
 	//printf("ETH_MDIO_REG0_T: 0x%08X\n", ETH_MDIO_REG0_T);
-
-	//SFLS_IO_RXEDGE = 1;
-	//SFLS_IO_TXEDGE = 0;
+#if 1
+//	SFLS_IO_RXEDGE = 0;
+//	SFLS_IO_TXEDGE = 0;
 	SflsGetinfo();
 	SflsInit();
 	printf("set SFLS_IO_RXEDGE(%u) SFLS_IO_TXEDGE(%u)\n", SFLS_IO_RXEDGE, SFLS_IO_TXEDGE);
 	SflsGetinfo();
-
+#endif
 
 #if USE_I2C0
 	I2cInit(0, I2C0_SPEED);
@@ -493,7 +493,7 @@ void enx_device_init(void)
 #ifdef __AUDIO__
 	GpioSetDir(AUDIO_GPIO_RST, GPIO_DIR_OUT);
 	GpioSetDir(AUDIO_GPIO_IRQ, GPIO_DIR_IN);
-	//audio_init();
+	audio_init();
 #endif
 
 #ifdef __USE_SDIOCD__
@@ -502,8 +502,9 @@ void enx_device_init(void)
 	SdioCdInit(SD_SDIO_CH);
 #endif
 
-#ifdef __USE_WF__
+#ifdef __WIFI__
 	GpioSetDir(WF_GPIO_RST, GPIO_DIR_OUT);
+	SdioWfInit(WF_SDIO_CH);
 #endif
 
 #ifdef __EEPROM__
@@ -856,11 +857,7 @@ void main_0(int cpu_id)
 
 	while (1)
 	{
-	#ifdef	ISP_VLOCKO
 		Wait_VLOCKO();
-	#else
-		Wait_VLOCKO1();
-	#endif
 
 		isp_main();
 

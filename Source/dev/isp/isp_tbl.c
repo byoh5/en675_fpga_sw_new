@@ -2,7 +2,16 @@
 
 #ifdef __SENSOR__
 
-#include "isp_sensor_tbl.h"
+
+#define	SENSOR_SONY_I2C_CA		0x34
+//#define	SENSOR_SONY_I2C_CA		0x20
+
+#if model_Sens==SENS_OV4689
+	#define SENSOR_OMNI_I2C_CA		0x42
+#else
+	#define SENSOR_OMNI_I2C_CA		0x6C		//	GPIO1 is LOW
+	//#define SENSOR_OMNI_I2C_CA		0x20		//	GPIO1 is High
+#endif
 
 
 void Isp_VLOCKO_init(void)
@@ -11,24 +20,16 @@ void Isp_VLOCKO_init(void)
 	CLI_VLOCKO_Tw(1);
 }
 
-
 void Wait_VLOCKO(void)
 {
 	while(!(ISP_RIRQ_VOr&0x1));
-
 	CLI_VLOCKO_Tw(1);
-
 	return;
 }
 
 void Wait_VLOCKO_M(UINT Cnt)
 {
-	UINT i;
-
-	for(i=0;i<Cnt;i++)
-	{
-		Wait_VLOCKO();
-	}
+	for(UINT i=0;i<Cnt;i++) Wait_VLOCKO();
 }
 
 void Isp_VLOCKO1_init(void)
@@ -40,533 +41,288 @@ void Isp_VLOCKO1_init(void)
 void Wait_VLOCKO1(void)
 {
 	while(!(ISP_RIRQr&0x200000));
-
 	CLI_VLOCKO_IT1w(1);
-
 	return;
 }
 
-void SetSens_IMX291(BYTE DEV, BYTE ADDR, BYTE DAT)
-{
-	while(I2cWrite(SENSOR_I2C_CH,SENS_SONY_DEV,0,0));
+void ISRT0 SetSensTwi(BYTE abDevaddr, WORD awAddr, BYTE abData)
+{	// Write to Sensor
+#if (USE_I2C0==3) && (USE_SPI0==0)
+	//if(gbSensorOff) return;
 
-	I2cWrite(SENSOR_I2C_CH,DEV,0,0);
-	I2cWrite(SENSOR_I2C_CH,ADDR,0,0);
-	I2cWrite(SENSOR_I2C_CH,DAT,1,0);
+	SI2C_STA
+
+	SI2C_WAIT(SENS_WRITE_NODEV1, I2cWrite(SENSOR_I2C_CH,abDevaddr,0,0))
+	SI2C_CODE(SENS_WRITE_NOACK2, I2cWrite(SENSOR_I2C_CH,(awAddr>>8)&0xff, 0,0))
+	SI2C_CODE(SENS_WRITE_NOACK2, I2cWrite(SENSOR_I2C_CH,(awAddr>>0)&0xff, 0,0))
+	SI2C_CODE(SENS_WRITE_NOACK3, I2cWrite(SENSOR_I2C_CH,abData, 1,0))
+
+	return;
+
+	SI2C_END
+
+#elif (model_Sens_Ctrl==1)
+	#error if use TWI for sensor control, Please set "USE_SPI0 0, USE_I2C0 3, I2C0_SPEED 400000" in "peripheral.cmake"
+#endif
 }
 
-void SONY_SetSens(BYTE DEV_ID, UINT Adr, BYTE Dat)
-{
+BYTE ISRT0 GetSensTwi(BYTE abDevaddr, WORD awAddr)
+{	// Read from Sensor
+	//if(gbSensorOff) return SENS_READ_NODEV1;
 
-	while(I2cWrite(SENSOR_I2C_CH,DEV_ID,0,0));
+	BYTE bData = 0;
 
-	I2cWrite(SENSOR_I2C_CH,((Adr&0xFF00)>>8), 0,0);
-	I2cWrite(SENSOR_I2C_CH,((Adr&0x00FF)>>0), 0,0);
-	I2cWrite(SENSOR_I2C_CH,Dat, 1,0);
+	SI2C_STA
+
+	SI2C_WAIT(SENS_READ_NODEV1, I2cWrite(SENSOR_I2C_CH,abDevaddr,0,0))
+	SI2C_CODE(SENS_READ_NOACK1, I2cWrite(SENSOR_I2C_CH,(awAddr>>8)&0xff, 0,0))
+	SI2C_CODE(SENS_READ_NOACK2, I2cWrite(SENSOR_I2C_CH,(awAddr>>0)&0xff, 0,1))
+
+	SI2C_CODE(SENS_READ_NOACK3, I2cWrite(SENSOR_I2C_CH,abDevaddr|0x1,0,0))
+	bData = I2cRead(SENSOR_I2C_CH,1,0);
+
+	return bData;
+
+	SI2C_END
 }
 
-void SetSens_OVSense(WORD ADDR, BYTE DAT)
+#if model_Omni
+void ISRT0 SetSens(WORD awAddr, BYTE abData)
 {
-	while(I2cWrite(SENSOR_I2C_CH,SENS_OV_DEV,0,0));
-
-//	while(I2cWrite(SENSOR_I2C_CH,SENS_OV_DEV,0,0))
-//	{
-//			sleep_(1);
-//	}
-//	Wait_VLOCKO();
-
-//	I2cWrite(SENSOR_I2C_CH,SENS_OV_DEV,0,0);
-
-
-	I2cWrite(SENSOR_I2C_CH,(ADDR>>8),0,0);
-	I2cWrite(SENSOR_I2C_CH,(ADDR),0,0);
-	I2cWrite(SENSOR_I2C_CH,DAT,1,0);
+  #if (model_Sens_Ctrl==1)
+	SetSensTwi(SENSOR_OMNI_I2C_CA,awAddr,abData);
+  #else
+	#error Omni sensor "model_Sens_Ctrl is 1(TWI)" only
+  #endif
 }
 
-#ifdef		OV2718_LVDS_4CH
-void OV2718_Init(void)
+BYTE ISRT0 GetSens(WORD awAddr)
 {
-
-	UINT i;
-
-	Isp_PreClk_Config(ISP_CLK_74M);			//	Isp Pre Module Clock
-	Isp_PostClk_Config(ISP_CLK_74M);		//	Isp Post Module Clock
-	Isp_PreSync_Config(1, 2200, 1125, 0xe, 0, 0x13, 0x8, 1928, 1088,0,1);
-	Isp_PostSync_Config(1, 0, 2200, 1125, 0x3a, 0x2, 0x6, 0x4, 1928, 1088, 3);
-
-	Isp_SDesPowerOn(FN_ON,LVDS_INTERFACE,0);
-	Isp_SensorPowerOn(FN_ON,SENS_13M);
-//	Isp_SensorPowerOn(FN_ON,SENS_27M);
-	Isp_Lvds_Config(LVDS_12BIT, LVDS_4LANE, 0, 0);
-//	Isp_Lvds_Config(LVDS_12BIT, LVDS_4LANE, 0, 1);
-	Isp_SDesDelay(7, 0, 0, 0, 0);
-//	Isp_SDesDelay(5, 0, 0, 0, 0);
-	Isp_SDesPosition(0x1f, 0x1, 1988, 1100);
-	SLVw(3);
-	SYNC_COD0w(0xfff);
-	SYNC_COD1w(0x000);
-	SYNC_COD2w(0x000);
-	SYNC_COD3_0w(0x000);
-	SYNC_COD3_1w(0x800);
-	SYNC_COD3_2w(0x0ab0);
-	SOF_NOw(1);
-
-	ASYNC_ONw(1);
-	ASYNC_DSYNCw(1);
-
-	SetSens_OVSense(0x3013, 0x01);
-	sleep_(100000);
-
-	for(i=0;i<ARRAY_SIZE(gwOV2718Tbl); i++)
-	{
-		SetSens_OVSense(gwOV2718Tbl[i][0],gwOV2718Tbl[i][1]);
-//		sleep_(100);
-	}
-
-	sleep_(10000);
-	SetSens_OVSense(0x315a, 0x01);
-	SetSens_OVSense(0x30b6, 0x03);
-
-
+  #if (model_Sens_Ctrl==1)
+	return GetSensTwi(SENSOR_OMNI_I2C_CA,awAddr);
+  #else
+	return 0;
+  #endif
 }
 #endif
 
-#ifdef		IMX291
-void IMX291_Init(void)
+#if model_Sony
+void ISRT0 SetSensSpi_Sony(BYTE ID, BYTE Adr, BYTE Dat)
 {
-	UINT i=0;
-
-	Isp_PreClk_Config(ISP_CLK_74M);			//	Isp Pre Module Clock
-	Isp_PostClk_Config(ISP_CLK_74M);		//	Isp Post Module Clock
-	Isp_PreSync_Config(1, 2200, 1125, 0xa, 0xc, 0x15, 6, 1928, 1088,0,0);
-	Isp_PostSync_Config(1, 0, 2200, 1125, 0x3a, 0x2, 0x6, 0x4, 1928, 1088, 1);
-
-	Isp_SensorPowerOn(1,SENS_37M);			//	Sensor Clock
-	Isp_SDesPowerOn(FN_ON, LVDS_INTERFACE, 0);
-	Isp_Lvds_Config(LVDS_12BIT, LVDS_4LANE, 0, 1);
-//	Isp_SDesDelay(4,4,4,4,4);
-	Isp_SDesDelay(2,0,0,0,0);
-//	Isp_SDesDelay(6,0,1,4,1);			//	2019.05.02 Crazy
-	Isp_SDesPosition(0x1f, 0x12, 1988, 1100);
-	SLVw(0);
-
-	SYNC_COD0w(0xfff);
-	SYNC_COD1w(0x000);
-	SYNC_COD2w(0x000);
-	SYNC_COD3_0w(0x000);
-	SYNC_COD3_1w(0x800);
-	SYNC_COD3_2w(0x0ab0);
-	SOF_NOw(1);
-	RDES_PNSELw(1);
-	OMOD_BITw(0);
-
-	POL_HSIw(0);
-	POL_VSIw(0);
-
-
-	#ifdef		IMX291_I2C
-
-		SetSens_IMX291(SENS_SONY_ID2_TWI,0x00,0x1);		 sleep_(10000);
-		SetSens_IMX291(SENS_SONY_ID2_TWI,0x02,0x1);		 sleep_(10000);
-
-		for(i=0;i<ARRAY_SIZE(gwTblIMX291); i++)
-		{
-
-			if (i<28)			SetSens_IMX291(SENS_SONY_ID2_TWI, gwTblIMX291[i][0], gwTblIMX291[i][1]);
-			else if (i<40)		SetSens_IMX291(SENS_SONY_ID3_TWI, gwTblIMX291[i][0], gwTblIMX291[i][1]);
-			else if	(i<48)		SetSens_IMX291(SENS_SONY_ID4_TWI, gwTblIMX291[i][0], gwTblIMX291[i][1]);
-			else if	(i<60)		SetSens_IMX291(SENS_SONY_ID5_TWI, gwTblIMX291[i][0], gwTblIMX291[i][1]);
-			else if (i<61)		SetSens_IMX291(SENS_SONY_ID6_TWI, gwTblIMX291[i][0], gwTblIMX291[i][1]);
-			sleep_(1000);
-		}
-
-		SetSens_IMX291(SENS_SONY_ID2_TWI, 0x9c, 0x22);					// Clamp sensitivity adjust	// 150317 LH
-
-		SetSens_IMX291(SENS_SONY_ID2_TWI, 0x0, 0x0);	sleep_(3000);	// standby cancel
-		SetSens_IMX291(SENS_SONY_ID2_TWI, 0x2, 0x0);	sleep_(2000);	// xmaster
-
-	// SensClk
-		#ifdef		IMX291_30FPS
-		SetSens_IMX291(SENS_SONY_ID2_TWI, 0x09, 0x02);	//FRSEL
-		SetSens_IMX291(SENS_SONY_ID2_TWI, 0x1c, 0x30);	//HMAX
-		SetSens_IMX291(SENS_SONY_ID2_TWI, 0x1d, 0x11);	//HMAX
-		#elif		IMX291_60FPS
-		SetSens_IMX291(SENS_SONY_ID2_TWI, 0x09, 0x01);	//FRSEL
-		SetSens_IMX291(SENS_SONY_ID2_TWI, 0x1c, 0x98);	//HMAX
-		SetSens_IMX291(SENS_SONY_ID2_TWI, 0x1d, 0x08);	//HMAX
-		#endif
-	#elif		IMX291_SPI
-
-
-	#endif
-
-	//Sensor V Reverse
-	SetSens_IMX291(SENS_SONY_ID2_TWI, 0x07, 0x41);
-}
-#endif
-
-#if defined(OV4689_MIPI_15FPS) || defined(OV4689_MIPI_30FPS)
-void OV4689_Init(void)
-{
-	UINT i=0;
-
-	Isp_SDesPowerOn(FN_ON,MIPI_INTERFACE,2);					//	OnOff, IsMipi, MipiClkPhase
-
-	#ifdef		OV4689_MIPI_15FPS
-	Isp_SensorPowerOn(FN_ON, SENS_13M);				//	13.5MHz
-	#else
-	Isp_SensorPowerOn(FN_ON, SENS_27M);				//	27MHz
-	#endif
-
-	Isp_Mipi_Config(MIPI_10BIT, MIPI_4LANE, 0, 1, USE_ECC_CHECK, USE_WCL_CHECK, NO_USE_CHECK, NO_USE_CHECK, 3);
-	Isp_SDesPosition(0xb5, 0xc, 2584, 1458);			//	4M + Margin
-//	Isp_SDesDelay(2, 0, 0, 0, 0);
-	Isp_SDesDelay(4, 0, 0, 0, 0);	//	20190503 : main_asic_crazy_ISP_R5_HDMI_DDR_Auto_Align
-
-
-	SYNC_COD0w(0);
-	SYNC_COD1w(1);
-	SYNC_COD2w(0x2);				//	Short Packet Line Start
-	SYNC_COD3_0w(0x3);				//	Short Packet Line End
-	SYNC_COD3_1w(0xb8);
-	SYNC_COD3_2w(0xd20);
-	SYNC_S0COD3_0w(0);
-	SYNC_S0COD3_1w(0x2000);
-	SYNC_S0COD3_2w(0x2b);			//	Long Packet Line Start
-	SYNC_S1COD3_0w(0x3);			//	Long Packet Line End
-	SYNC_S1COD3_1w(0);
-//	SYNC_S1COD3_2w(3);
-	SYNC_S1COD3_2w(0xd20);
-
-	MIPI_HLOCK_POSw(8);				//	Very Important!!! For Image Phase
-	MIPI_LAT_AENw(0);
-
-
-//	VLOCKO_IT_POS0w(0x44e);
-//	ASYNC_ONw(1);
-//	VSYN_NAONw(1);
-	POL_VSIw(1);
-
-	#ifdef		OV4689_MIPI_15FPS
-	for(i=0;i<ARRAY_SIZE(gTblMIPI4689_15FPS); i++)
-	{
-		while(I2cWrite(SENSOR_I2C_CH,0x42,0,0));
-		I2cWrite(SENSOR_I2C_CH,((gTblMIPI4689_15FPS[i][0]&0xFF00)>>8), 0,0);
-		I2cWrite(SENSOR_I2C_CH,((gTblMIPI4689_15FPS[i][0]&0x00FF)>>0), 0,0);
-		I2cWrite(SENSOR_I2C_CH,gTblMIPI4689_15FPS[i][1], 1,0);
-		sleep_(500);
-	}
-	#elif		OV4689_MIPI_30FPS
-	for(i=0;i<ARRAY_SIZE(gTblMIPI4689_30FPS); i++)
-	{
-		while(I2cWrite(SENSOR_I2C_CH,0x42,0,0));
-		I2cWrite(SENSOR_I2C_CH,((gTblMIPI4689_30FPS[i][0]&0xFF00)>>8), 0,0);
-		I2cWrite(SENSOR_I2C_CH,((gTblMIPI4689_30FPS[i][0]&0x00FF)>>0), 0,0);
-		I2cWrite(SENSOR_I2C_CH,gTblMIPI4689_30FPS[i][1], 1,0);
-		sleep_(500);
-	}
-	#endif
-
-	Isp_PreClk_Config(ISP_CLK_74M);			//	Isp Pre Module Clock
-	Isp_PostClk_Config(ISP_CLK_74M);		//	Isp Post Module Clock
-	Isp_PreSync_Config(1, 3300, 1500, 0xb0, 0xc, 0x8, 4, 2568, 1448,1,1);
-	Isp_PostSync_Config(1, 0, 3300, 1500, 0x3a, 0x2, 0x6, 0x4, 2568, 1448, 1);
-
-	//	For Test
-//	TPAT_SELw(8);
-
-//	sleep_(1000);
-
-}
-#endif
-
-#ifdef		IMX335_MIPI_4LANE
-
-void IMX335_Init(void)
-{
-	UINT i=0;
-
-//	Isp_SensorPowerOn(1,4);					//	Sensor Clock
-	Isp_SensorPowerOn(1,SENS_13M);					//	Sensor Clock
-	Isp_SDesPowerOn(FN_ON,MIPI_INTERFACE,2);
-	Isp_Mipi_Config(MIPI_12BIT, MIPI_4LANE, 0, 1, USE_ECC_CHECK, NO_USE_CHECK, NO_USE_CHECK, NO_USE_CHECK, 3);
-	Isp_SDesPosition(0xb5, 0xc, 2584, 1458);
-	Isp_SDesDelay(2, 0, 0, 0, 0);			//	20190503 : main_asic_61_ISP_R5.bit
-	SLVw(0);
-
-	MIPI_HLOCK_POSw(7);				//	Very Important!!!
-
-	SYNC_COD0w(0);
-	SYNC_COD1w(1);
-	SYNC_COD2w(0x2);				//	Short Packet Line Start
-	SYNC_COD3_0w(0x3);				//	Short Packet Line End
-	SYNC_COD3_1w(0xb8);
-	SYNC_COD3_2w(0xf30);
-	SYNC_S0COD3_0w(0);
-	SYNC_S0COD3_1w(0x2000);
-	SYNC_S0COD3_2w(0x2c);			//	Long Packet Line Start - Raw 12Bit
-	SYNC_S1COD3_0w(0x3);			//	Long Packet Line End
-	SYNC_S1COD3_1w(0);
-	SYNC_S1COD3_2w(3);
-	RDES_RPOSw(0xb5);
-
-
-	MIPI_LAT_AENw(0);
-//	ASYNC_ONw(1);
-//	VSYN_NAONw(1);
-	POL_VSIw(1);
-
-	SONY_SetSens(SENS_SONY_DEV, 0x3000, 0x1);	sleep_(1000000);		// standby
-	SONY_SetSens(SENS_SONY_DEV, 0x3002, 0x1);	sleep_(1000000);		// xmaster stop
-	SONY_SetSens(SENS_SONY_DEV, 0x3001, 0x01);					// REG Hold
-	SONY_SetSens(SENS_SONY_DEV, 0x3003, 0x01);					// SW rese
-
-	for(i=0;i<ARRAY_SIZE(gTblMIPI_IMX335); i++)
-	{
-
-		SONY_SetSens(SENS_SONY_DEV,gTblMIPI_IMX335[i][0],gTblMIPI_IMX335[i][1]);
-
-		sleep_(1000);
-	}
-
-	SONY_SetSens(SENS_SONY_DEV, 0x3003, 0x00);						// SW reset OFF
-	SONY_SetSens(SENS_SONY_DEV, 0x3001, 0x00);						// REG Hold OFF
-	SONY_SetSens(SENS_SONY_DEV, 0x3000, 0x0);	sleep_(3000000);		// standby cancel
-	SONY_SetSens(SENS_SONY_DEV, 0x3002, 0x0);	sleep_(2000000);		// xmaster
-
-
-	Isp_PreClk_Config(ISP_CLK_74M);			//	Isp Pre Module Clock
-	Isp_PostClk_Config(ISP_CLK_74M);		//	Isp Post Module Clock
-	Isp_PreSync_Config(1, 2200, 1125, 0xb0, 0xc, 0x8, 4, 2568, 1448,1,1);
-	Isp_PostSync_Config(1, 0, 3300, 1500, 0x3a, 0x2, 0x6, 0x4, 2568, 1448, 2);
-
-}
-
-#endif
-
-#ifdef		IMX225_MIPI_4LANE_60FPS
-void IMX225_Init(void)
-{
-	UINT i=0;
-
-	Isp_PreClk_Config(ISP_CLK_74M);			//	Isp Pre Module Clock
-	Isp_PostClk_Config(ISP_CLK_74M);		//	Isp Post Module Clock
-	Isp_PreSync_Config(1, 1650, 750, 0xa, 0xc, 0x15, 6, 1288, 728,0,1);
-	Isp_PostSync_Config(1, 0, 1650, 750, 0x3a, 0x2, 0x6, 0x4, 1288, 728, 1);
-
-	Isp_SensorPowerOn(FN_ON,SENS_27M);					//	Sensor Clock
-	Isp_SDesPowerOn(FN_ON, MIPI_INTERFACE, 2);
-	Isp_Mipi_Config(MIPI_10BIT, MIPI_4LANE, 0, 1, USE_ECC_CHECK, NO_USE_CHECK, NO_USE_CHECK, NO_USE_CHECK, 3);
-
-	Isp_SDesPosition(0xb5, 0xc, 1308, 736);
-	Isp_SDesDelay(2, 0, 0, 0, 0);			//	20190503 : main_asic_61_ISP_R5.bit
-	SLVw(0);
-
-	MIPI_HLOCK_POSw(7);				//	Very Important!!!
-
-	SYNC_COD0w(0);
-	SYNC_COD1w(1);
-	SYNC_COD2w(0x2);				//	Short Packet Line Start
-	SYNC_COD3_0w(0x3);				//	Short Packet Line End
-	SYNC_COD3_1w(0xb8);
-	SYNC_COD3_2w(0xf30);
-	SYNC_S0COD3_0w(0);
-	SYNC_S0COD3_1w(0x2000);
-	SYNC_S0COD3_2w(0x2b);			//	Long Packet Line Start - Raw 10Bit
-	SYNC_S1COD3_0w(0x3);			//	Long Packet Line End
-	SYNC_S1COD3_1w(0);
-	SYNC_S1COD3_2w(3);
-	RDES_RPOSw(0xb5);
-
-
-	MIPI_LAT_AENw(0);
-//	VSYN_NAONw(1);
-	POL_VSIw(1);
-
-	SONY_SetSens(SENS_SONY_DEV, 0x3000, 0x1);	sleep_(1000000);		// standby
-	SONY_SetSens(SENS_SONY_DEV, 0x3002, 0x1);	sleep_(1000000);		// xmaster stop
-	SONY_SetSens(SENS_SONY_DEV, 0x3001, 0x01);					// REG Hold
-	SONY_SetSens(SENS_SONY_DEV, 0x3003, 0x01);					// SW rese
-
-	for(i=0;i<ARRAY_SIZE(gwTblIMX225); i++)
-	{
-
-		SONY_SetSens(SENS_SONY_DEV,gwTblIMX225[i][0],gwTblIMX225[i][1]);
-
-		sleep_(1000);
-	}
-
-	SONY_SetSens(SENS_SONY_DEV, 0x3000, 0x0);	sleep_(3000000);		// standby cancel
-	SONY_SetSens(SENS_SONY_DEV, 0x3002, 0x0);	sleep_(2000000);		// xmaster
-
-
-	Isp_PreClk_Config(ISP_CLK_74M);			//	Isp Pre Module Clock
-	Isp_PostClk_Config(ISP_CLK_74M);		//	Isp Post Module Clock
-	Isp_PreSync_Config(1, 1650, 750, 0xb0, 0xc, 0x8, 4, 1288, 728,0,1);
-	Isp_PostSync_Config(1, 0, 1650, 750, 0x3a, 0x2, 0x6, 0x4, 1288, 728, 2);
-
-}
-
-#endif
-
-#ifdef		IMX225_PARALLEL
-
-void SONY_SetSensSpi(BYTE ID, BYTE Adr, BYTE Dat)
-{
-	BYTE SpiDat[3] = {0,0,0};
+  #if (USE_SPI0==2) && (SPI0_BIT==24) && (USE_I2C0==0)
+	BYTE SpiDat[] = {0,0,0,0};
 
 	SpiDat[2] = ID;
 	SpiDat[1] = Adr;
 	SpiDat[0] = Dat;
-	SpiCsLo(SENSOR_SPI_CH);
+	SpiSetCs(SENSOR_SPI_CH,0);
 	SpiWrite(SENSOR_SPI_CH,SpiDat);
-	SpiCsHi(SENSOR_SPI_CH);
+	SpiSetCs(SENSOR_SPI_CH,1);
 
+  #elif (model_Sens_Ctrl==0)
+	#error if use SPI for sensor control, Please set "USE_I2C0 0, USE_SPI0 2, SPI0_SPEED 1500000, SPI0_BIT 24, SPI0_LSB 1" in "peripheral.cmake"
+  #endif
 }
 
-void IMX225_Init(void)
+void ISRT0 SetSens(WORD awAddr, BYTE abData)
 {
+	// for SPI
+	#define SENS_SONY_ID2		0x2
+	#define SENS_SONY_ID3		0x3
+	#define SENS_SONY_ID4		0x4
+	#define SENS_SONY_ID5		0x5
+	#define SENS_SONY_ID6		0x6
 
-	UINT i=0;
+	// for TWI
+	#define SENS_SONY_ID2_TWI	0x30
+	#define SENS_SONY_ID3_TWI	0x31
+	#define SENS_SONY_ID4_TWI	0x32
+	#define SENS_SONY_ID5_TWI	0x33
+	#define SENS_SONY_ID6_TWI	0x34
 
-	Isp_SDesPowerOn(FN_OFF,0,0);			//	LVDS/MIPI Off
-	Isp_SensorPowerOn(FN_ON,SENS_27M);		//	Sensor Clock
+#if model_Sens_Ctrl == 1
+	SetSensTwi(SENSOR_SONY_I2C_CA,awAddr,abData);
+#else
+	const BYTE bSpiIDt = (awAddr>>8)&0xff;
+	const BYTE bSpiID = (SENS_SONY_ID2_TWI <= bSpiIDt && bSpiIDt <= SENS_SONY_ID6_TWI) ? (bSpiIDt - SENS_SONY_ID2_TWI) + SENS_SONY_ID2 : bSpiIDt;
+	SetSensSpi_Sony(bSpiID, awAddr&0xff, abData);
+#endif
+}
 
-	Isp_PreClk_Config(ISP_CLK_74M);			//	Isp Pre Module Clock
-	Isp_PostClk_Config(ISP_CLK_74M);		//	Isp Post Module Clock
-	Isp_PreSync_Config(1, 1650, 750, 0xa, 0xc, 0x15, 6, 1288, 728,0,1);
-	Isp_PostSync_Config(1, 0, 1650, 750, 0x3a, 0x2, 0x6, 0x4, 1288, 728, 1);
-
-//	Isp_Parallel_Config(FN_ON, ISP_SLAVE, PARA_EXTER_CLK, PARA_CLK_SDR, 0, SYNC_RISE, SYNC_RISE, DIFF_EDGE, NO_USE_AUTOSYNC);
-	Isp_Parallel_Config(FN_ON, ISP_SLAVE, PARA_EXTER_CLK, PARA_CLK_SDR, 0, SYNC_FALL, SYNC_RISE, DIFF_EDGE, NO_USE_AUTOSYNC);
-
-	SLVw(3);								//	Parallel Slave Mode
-	IDDR_ONw(1);
-	ISDR_OPw(1);
-
-	SONY_SetSensSpi(0x02, 0x00, 0x01);
-	SONY_SetSensSpi(0x02, 0x02, 0x01);
-	SONY_SetSensSpi(0x02, 0x01, 0x01);
-	SONY_SetSensSpi(0x02, 0x03, 0x01);
-
-	sleep_(1000000);
-
-	for(i=1;i<30;i++)	{	SONY_SetSensSpi(0x02, gwTblIMX225_0[i][0], gwTblIMX225_0[i][1]);	}		//	ID2
-	for(i=0;i<9;i++)	{	SONY_SetSensSpi(0x03, gwTblIMX225_1[i][0], gwTblIMX225_1[i][1]);	}		//	ID3
-	for(i=0;i<12;i++)	{	SONY_SetSensSpi(0x04, gwTblIMX225_2[i][0], gwTblIMX225_2[i][1]);	}		//	ID4
-
-	sleep_(1000000);
-
-	SONY_SetSensSpi(0x02, 0x00, 0x00);
-	SONY_SetSensSpi(0x02, 0x02, 0x00);
-
+BYTE ISRT0 GetSens(WORD awAddr)
+{
+#if model_Sens_Ctrl == 1
+	return GetSensTwi(SENSOR_SONY_I2C_CA,awAddr);
+#else
+	return 0;
+#endif
 }
 #endif
 
-#ifdef		OV08A10_LVDS_15P
+#if 0
+#if model_Sens==SENS_OV2718
+void OV2718_Init(void)
+{
+	IspSDesPowerOn();
+	IspSensorPowerOn(SENS_13M);
+
+	IspSDesConfig(0, 1);
+	Isp_SDesDelay(7, 0, 0, 0, 0);
+	IspSDesPosition();
+
+	Isp_SYNC_CODE(0xfff, 0x000, 0x000, 0x000, 0x800, 0xab0, 0,0,0,0,0,0);
+
+	InitSensRun();
+
+	Isp_PreClk_Config(ISP_CLK_74M);			//	Isp Pre Module Clock
+	Isp_PostClk_Config(ISP_CLK_74M);		//	Isp Post Module Clock
+	IspPreSyncConfig(1, 0xe, 0, 0x13, 0x8, 1, 1, 0, 0);
+	IspPostSyncConfig(3);
+
+	ASYNC_DSYNCw(1);
+}
+#endif
+
+#if model_Sens==SENS_IMX291
+void IMX291_Init(void)
+{
+	IspSDesPowerOn();
+#if	(model_Sens_Fps==60)
+	IspSensorPowerOn(SENS_74M);			//	Sensor Clock
+#else
+	IspSensorPowerOn(SENS_37M);			//	Sensor Clock
+#endif
+
+	IspSDesConfig(1, 1);
+	Isp_SDesDelay(2,0,0,0,0);
+	IspSDesPosition();
+
+	Isp_SYNC_CODE(0xfff, 0x000, 0x000, 0x000, 0x800, 0xab0, 0,0,0,0,0,0);
+
+	InitSensRun();
+
+#if	(model_Sens_Fps==60)
+	Isp_PreClk_Config(ISP_CLK_148M);		//	Isp Pre Module Clock
+#else
+	Isp_PreClk_Config(ISP_CLK_74M);			//	Isp Pre Module Clock
+#endif
+	Isp_PostClk_Config(ISP_CLK_74M);		//	Isp Post Module Clock
+	IspPreSyncConfig(0, 0xa, 0xc, 0x15, 6, 0, 0, 0, 0);
+	IspPostSyncConfig(1);
+}
+#endif
+
+#if model_Sens==SENS_OS08A10
 void OS08A10_Init(void)
 {
-	UINT i;
+	IspSDesPowerOn();
+	IspSensorPowerOn(SENS_27M);				//	27MHz
 
-	Isp_SDesPowerOn(FN_ON,LVDS_INTERFACE,0);					//	OnOff, IsMipi, MipiClkPhase
-	Isp_SensorPowerOn(FN_ON, SENS_27M);				//	27MHz
-
-	Isp_Lvds_Config(LVDS_10BIT, LVDS_4LANE, 0, 1);
-	Isp_SDesPosition(0xb5, 0xc, 3856, 2176);
+	IspSDesConfig(1, 0);
 	Isp_SDesDelay(2, 0, 0, 0, 0);
-	SLVw(0);
-	SYNC_COD0w(0xfff);
-	SYNC_COD1w(0x000);
-	SYNC_COD2w(0x000);
-	SYNC_COD3_0w(0x000);
-//	SYNC_COD3_1w(0x800);
-//	SYNC_COD3_2w(0x0ab0);
-	SYNC_COD3_1w(0x200);
-	SYNC_COD3_2w(0x280);
+	IspSDesPosition();
 
+	Isp_SYNC_CODE(0xfff, 0x000, 0x000, 0x000, 0x200, 0x280, 0,0,0,0,0,0);
 
-	ASYNC_ONw(1);
-//	VSYN_NAONw(1);
-	POL_VSIw(1);
-
-	for(i=0;i<ARRAY_SIZE(gTblMIPIOS08A10_15FPS); i++)
-	{
-		SetSens_OVSense(gTblMIPIOS08A10_15FPS[i][0],gTblMIPIOS08A10_15FPS[i][1]);
-//		sleep_(100);
-	}
-
+	InitSensRun();
 
 	Isp_PreClk_Config(ISP_CLK_74M);			//	Isp Pre Module Clock
 	Isp_PostClk_Config(ISP_CLK_74M);		//	Isp Post Module Clock
-	Isp_PreSync_Config(1, 4400, 2250, 0xa, 0xc, 0x15, 6, 3840, 2168,0,0);
-	Isp_PostSync_Config(1, 0, 4400, 2250, 0x3a, 0x2, 0x6, 0x4, 3840, 2168, 1);
+	IspPreSyncConfig(1, 0xa, 0xc, 0x15, 6, 0, 0, 0, 1);
+	IspPostSyncConfig(1);
 }
 #endif
 
-#ifdef		IMX274_4K_MIPI_15P
+#if model_Sens==SENS_IMX225
+void IMX225_Init(void)
+{
+	IspSDesPowerOn(2);						// MipiClkPhase
+	IspSensorPowerOn(SENS_27M);					//	Sensor Clock
+
+	IspSDesConfig(MIPI_10BIT, 7, NO_USE_CHECK);
+	Isp_SDesDelay(2, 0, 0, 0, 0);			//	20190503 : main_asic_61_ISP_R5.bit
+	IspSDesPosition();
+
+	Isp_SYNC_CODE(0, 1, 0x2, 0x3, 0xb8, 0xf30, 0, 0x2000, 0x2b, 0x3, 0, 3);	// 0x2b : Long Packet Line Start - Raw 10Bit
+
+	InitSensRun();
+
+	Isp_PreClk_Config(ISP_CLK_74M);			//	Isp Pre Module Clock
+	Isp_PostClk_Config(ISP_CLK_74M);		//	Isp Post Module Clock
+	IspPreSyncConfig(1, 0xb0, 0xc, 0x8, 4, 0, 1, 0, 1);
+	IspPostSyncConfig(2);
+}
+#endif
+
+#if	model_Sens==SENS_IMX335
+
+void IMX335_Init(void)
+{
+	IspSDesPowerOn(2);						// MipiClkPhase
+	IspSensorPowerOn(SENS_13M);					//	Sensor Clock
+
+	IspSDesConfig(MIPI_12BIT, 7, NO_USE_CHECK);
+	Isp_SDesDelay(2, 0, 0, 0, 0);			//	20190503 : main_asic_61_ISP_R5.bit
+	IspSDesPosition();
+
+	Isp_SYNC_CODE(0, 1, 0x2, 0x3, 0xb8, 0xf30, 0, 0x2000, 0x2c, 0x3, 0, 3);	// 0x2c : Long Packet Line Start - Raw 12Bit
+
+	InitSensRun();
+
+	Isp_PreClk_Config(ISP_CLK_74M);			//	Isp Pre Module Clock
+	Isp_PostClk_Config(ISP_CLK_74M);		//	Isp Post Module Clock
+	IspPreSyncConfig(1, 0xb0, 0xc, 0x8, 4, 1, 1, 0, 1);
+	IspPostSyncConfig(2);
+}
+
+#endif
+
+#if model_Sens==SENS_IMX274
 void IMX274_Init()
 {
-	UINT i=0;
+	IspSDesPowerOn(0);						// MipiClkPhase
+	IspSensorPowerOn(SENS_13M);					//	Sensor Clock	-	15p
 
-//	Isp_SensorPowerOn(1,SENS_27M);					//	Sensor Clock	-	15p
-	Isp_SensorPowerOn(1,SENS_13M);					//	Sensor Clock	-	15p
-//	Isp_SensorPowerOn(FN_ON,SENS_6M);					//	Sensor Clock	-	7.5p
-	Isp_SDesPowerOn(FN_ON,MIPI_INTERFACE,0);
-	Isp_Mipi_Config(MIPI_12BIT, MIPI_4LANE, 0, 1, USE_ECC_CHECK, NO_USE_CHECK, NO_USE_CHECK, NO_USE_CHECK, 3);
-//	Isp_Mipi_Config(MIPI_10BIT, MIPI_4LANE, 0, 1, USE_ECC_CHECK, NO_USE_CHECK, NO_USE_CHECK, NO_USE_CHECK, 3);
-	Isp_SDesPosition(0xb5, 0xc, 3860, 2180);
-//	Isp_SDesDelay(2, 0, 0, 0, 0);			//	20190503 : main_asic_61_ISP_R5.bit
-	Isp_SDesDelay(6, 0, 0, 0, 0);			//	20190503 : main_asic_61_ISP_R5.bit
-	SLVw(0);
+	IspSDesConfig(MIPI_12BIT, 7, NO_USE_CHECK);
+	Isp_SDesDelay(6, 0, 0, 0, 0);
+	IspSDesPosition();
 
-	MIPI_HLOCK_POSw(7);				//	Very Important!!!
+	Isp_SYNC_CODE(0, 1, 0x2, 0x3, 0xb8, 0xf30, 0, 0x2000, 0x2c, 0x3, 0, 3);	// 0x2c : Long Packet Line Start - Raw 12Bit
 
-	SYNC_COD0w(0);
-	SYNC_COD1w(1);
-	SYNC_COD2w(0x2);				//	Short Packet Line Start
-	SYNC_COD3_0w(0x3);				//	Short Packet Line End
-	SYNC_COD3_1w(0xb8);
-	SYNC_COD3_2w(0xf30);
-	SYNC_S0COD3_0w(0);
-	SYNC_S0COD3_1w(0x2000);
-	SYNC_S0COD3_2w(0x2c);			//	Long Packet Line Start - Raw 12Bit
-	SYNC_S1COD3_0w(0x3);			//	Long Packet Line End
-	SYNC_S1COD3_1w(0);
-	SYNC_S1COD3_2w(3);
-	RDES_RPOSw(0xb5);
-	MIPI_LAT_AENw(1);				//	Why???????
-	POL_VSIw(1);
-
-	SONY_SetSens(SENS_SONY_DEV, 0x3000, 0x12);
-
-	for(i=0;i<ARRAY_SIZE(gwTblIMX274); i++)
-	{
-
-		SONY_SetSens(SENS_SONY_DEV,gwTblIMX274[i][0],gwTblIMX274[i][1]);
-
-		sleep_(1000);
-	}
-
-	sleep_(700000);				//	wait 10ms
-
-	SONY_SetSens(SENS_SONY_DEV, 0x3000, 0x00);
-	SONY_SetSens(SENS_SONY_DEV, 0x303E, 0x02);
-
-	sleep_(500000);				//	wait 7ms
-
-	//Setting 3
-	SONY_SetSens(SENS_SONY_DEV, 0x30F4, 0x00);
-	SONY_SetSens(SENS_SONY_DEV, 0x3018, 0xA2);
+	InitSensRun();
 
 	Isp_PreClk_Config(ISP_CLK_74M);			//	Isp Pre Module Clock
 	Isp_PostClk_Config(ISP_CLK_74M);		//	Isp Post Module Clock
-	Isp_PreSync_Config(1, 4400, 2250, 0xa, 0xc, 0x15, 6, 3840, 2168,0,0);
-	Isp_PostSync_Config(1, 0, 4400, 2250, 0x3a, 0x2, 0x6, 0x4, 3840, 2168, 1);
-
+	IspPreSyncConfig(1, 0xa, 0xc, 0x15, 6, 0, 0, 0, 1);
+	IspPostSyncConfig(1);
 }
-
 #endif
 
+#if model_Sens==SENS_OV4689
+void OV4689_Init(void)
+{
+	IspSDesPowerOn(2);						// MipiClkPhase
+#if	(model_Sens_Fps==15)
+	IspSensorPowerOn(SENS_13M);		// 13.5MHz
+#elif (model_Sens_Fps==30)
+	IspSensorPowerOn(SENS_27M);		// 27MHz
+#endif
+
+	IspSDesConfig(MIPI_10BIT, 8, USE_WCL_CHECK);
+	Isp_SDesDelay(4, 0, 0, 0, 0);	//	20190503 : main_asic_crazy_ISP_R5_HDMI_DDR_Auto_Align
+	IspSDesPosition();
+
+	Isp_SYNC_CODE(0, 1, 0x2, 0x3, 0xb8, 0xd20, 0, 0x2000, 0x2b, 0x3, 0, 0xd20);
+
+	InitSensRun();
+
+	Isp_PreClk_Config(ISP_CLK_74M);			//	Isp Pre Module Clock
+	Isp_PostClk_Config(ISP_CLK_74M);		//	Isp Post Module Clock
+	IspPreSyncConfig(1, 0xb0, 0xc, 0x8, 4, 1, 1, 0, 1);
+	IspPostSyncConfig(1);
+}
+#endif
+#endif
 
 //	LCD Function
 
@@ -580,7 +336,7 @@ void LCD_INSDAT_Write(UINT INSDAT0, UINT INSDAT1,UINT INSDAT2,UINT INSDAT3, UINT
 
 	SetIsp(0x034a, 0x80000000);					//	Write LCD Command
 
-	sleep_(2000);
+	WaitXus(400);
 
 }
 
@@ -593,17 +349,17 @@ void LCD_FR_TFT035_6_Init(void)
 //	GpioFuncPin(7,0);				//	GPIO Function
 //	GpioSetDir(7,0);
 //	GpioSetOut(7,1);
-//	sleep_(50);
+//	WaitXus(10);
 //	GpioSetOut(7,0);
-//	sleep_(50);
+//	WaitXus(10);
 //	GpioSetOut(7,1);
 
 	SYS_GPIO7_MUX	=	0;
 	GPIO_PIN7_OEN	=	0;
 	GPIO_PIN7_OUT	=	1;
-	sleep_(5000);
+	WaitXus(1000);
 	GPIO_PIN7_OUT	=	0;
-	sleep_(5000);
+	WaitXus(1000);
 	GPIO_PIN7_OUT	=	1;
 
 
@@ -817,7 +573,7 @@ void LCD_FR_TFT035_6_Init(void)
 	LCD_CK_SELw(11);				//	PCK_DIV2
 	LCD_CK_PDw(1);
 
-	sleep_(100);						//	LCD Fifo Clear Delay
+	WaitXus(20);						//	LCD Fifo Clear Delay
 
 	LCDO_CK_PDw(0);
 	LCDO_CK_SELw(12);				//	PCK_DIV3
@@ -857,9 +613,9 @@ void LCD_FR_TFT035_6_Init(void)
 //	LCD_INSDAT_Write(0xE9000000,0,0,0,2);
 //	LCD_INSDAT_Write(0xF7A9512C,0x82000000,0,0,5);
 //	LCD_INSDAT_Write(0x11000000,0,0,0,1);
-//	sleep_(120);
+//	WaitXus(24);
 //	LCD_INSDAT_Write(0x29000000,0,0,0,1);
-//	sleep_(20);
+//	WaitXus(4);
 //	LCD0_INSTPARA0w(0x2c);
 
 	LCD0FF_RSw(1);								//	Fifo Reset
@@ -898,9 +654,9 @@ void LCD_FR_TFT035_6_Init(void)
 	LCD_INSDAT_Write(0xE9000000,0,0,0,2);
 	LCD_INSDAT_Write(0xF7A9512C,0x82000000,0,0,5);
 	LCD_INSDAT_Write(0x11000000,0,0,0,1);
-	sleep_(12000);
+	WaitXus(2400);
 	LCD_INSDAT_Write(0x29000000,0,0,0,1);
-	sleep_(2000);
+	WaitXus(400);
 	LCD0_INSTPARA0w(0x2c);
 
 	#endif
@@ -930,14 +686,14 @@ void LCD_FR_TFT035_6_Init(void)
 	LCD_INSDAT_Write(0xE9000000,0,0,0,2);
 	LCD_INSDAT_Write(0xF7A9512C,0x82000000,0,0,5);
 	LCD_INSDAT_Write(0x11000000,0,0,0,1);
-	sleep_(12000);
+	WaitXus(2400);
 	LCD_INSDAT_Write(0x29000000,0,0,0,1);
-	sleep_(2000);
+	WaitXus(400);
 	LCD0_INSTPARA0w(0x2c);
 
 	#endif
 
-	sleep_(5000);
+	WaitXus(1000);
 	LCD0_ICw(0);								//	Instrunction Mode On
 	LCD0_WIMGw(1);											//	Image Pumping Mode On
 
@@ -1124,16 +880,34 @@ void JPG_Decoding(UINT jpg_adr)
 
 void Isp_Ddr_Cong(void)
 {
-	WDR_ADR_LEw(DDR_BASE_ISP+0x000000);
-	FRC_ADR0w(DDR_BASE_ISP+0x028000);
-	FRC_ADR1w(DDR_BASE_ISP+0x050000);
-	FRC_ADR2w(DDR_BASE_ISP+0x078000);
-	FRC_ADR3w(DDR_BASE_ISP+0x0a0000);
-	FRC_ADR4w(DDR_BASE_ISP+0x0c8000);
-	ENC_ADR0w(DDR_BASE_ISP+0x0f0000);
-	ENC_ADR1w(DDR_BASE_ISP+0x101000);
-	ENC_ADR2w(DDR_BASE_ISP+0x112000);
-	ENC_ADR3w(DDR_BASE_ISP+0x123000);
+	#define ISP_DDR_10BIT_SIZE	(((PO_HW*PO_VW)*10)>>(3+4))
+	#define ISP_DDR_ENC_SIZE	(((720/*960*/*576)<<4)>>(3+4))	// 960도 지원되나 외부 Clk 필요
+
+	#define DDR_BASE_ISP_WDR	(DDR_BASE_ISP+0x000000)
+	#define DDR_BASE_ISP_FRC0	(DDR_BASE_ISP_WDR +ISP_DDR_10BIT_SIZE)
+	#define DDR_BASE_ISP_FRC1	(DDR_BASE_ISP_FRC0+ISP_DDR_10BIT_SIZE)
+	#define DDR_BASE_ISP_FRC2	(DDR_BASE_ISP_FRC1+ISP_DDR_10BIT_SIZE)
+	#define DDR_BASE_ISP_FRC3	(DDR_BASE_ISP_FRC2+ISP_DDR_10BIT_SIZE)
+	#define DDR_BASE_ISP_FRC4	(DDR_BASE_ISP_FRC3+ISP_DDR_10BIT_SIZE)
+
+	#define DDR_BASE_ISP_ENC0	(DDR_BASE_ISP_FRC4+ISP_DDR_10BIT_SIZE)
+	#define DDR_BASE_ISP_ENC1	(DDR_BASE_ISP_ENC0+ISP_DDR_ENC_SIZE)
+	#define DDR_BASE_ISP_ENC2	(DDR_BASE_ISP_ENC1+ISP_DDR_ENC_SIZE)
+	#define DDR_BASE_ISP_ENC3	(DDR_BASE_ISP_ENC2+ISP_DDR_ENC_SIZE)
+
+	WDR_ADR_LEw(DDR_BASE_ISP_WDR);
+	FRC_ADR0w(DDR_BASE_ISP_FRC0);
+	FRC_ADR1w(DDR_BASE_ISP_FRC1);
+	FRC_ADR2w(DDR_BASE_ISP_FRC2);
+	FRC_ADR3w(DDR_BASE_ISP_FRC3);
+	FRC_ADR4w(DDR_BASE_ISP_FRC4);
+
+	ENC_ADR0w(DDR_BASE_ISP_ENC0);
+	ENC_ADR1w(DDR_BASE_ISP_ENC1);
+	ENC_ADR2w(DDR_BASE_ISP_ENC2);
+	ENC_ADR3w(DDR_BASE_ISP_ENC3);
+
+#if 1
 	IM_YADR0w(DDR_BASE_ISP+0x134000);
 	IM_CADR0w(DDR_BASE_ISP+0x174000);
 	IM_YADR1_P0w(DDR_BASE_ISP+0x194000);
@@ -1165,6 +939,7 @@ void Isp_Ddr_Cong(void)
 	IM_CADR0_DSw(DDR_BASE_ISP+0x000000);
 	IM_YADR1_DSw(DDR_BASE_ISP+0x000000);
 	IM_CADR1_DSw(DDR_BASE_ISP+0x000000);
+#endif
 }
 
 #endif

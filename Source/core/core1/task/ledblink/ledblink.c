@@ -6,6 +6,9 @@
 
 #include "ledblink.h"
 
+#include <stdio.h>	// for snprintf
+#include <math.h>	// for M_PI
+
 #if 0
 int setTimeZone(void)
 {
@@ -127,6 +130,10 @@ void LedblinkTask(void *pvParameters)
 	printf("keepcost : %u\r\n", (unsigned int) minfo.keepcost);		// This is the size of the top-most releasable chunk that normally borders the end of the heap.
 	printf("*********************************************************\r\n");
 #endif
+
+	char buf[64] = {0};
+	snprintf(buf, 64, "PI:%.6f / test float printf\n", M_PI);
+	flprintf("%s", buf);
 
 	//int res = setTimeZone();
 	//printf("res : %d\n", res);

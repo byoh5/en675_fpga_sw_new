@@ -150,13 +150,15 @@ void EthTxPacket(BYTE *addr, UINT Len)
 	ETH_TX_ADR = (intptr_t)addr;
 	ETH_TX_LEN = Len;
 	while (ETH_TX_FULL) {
+#if 0
 		if (ETH_TX_PAUSE) {
 			printf("p");
 		}
+#endif
 #if 0
-#if 0
-#if 0
-#if 0
+#if 1
+#if 1
+#if 1
 		asm volatile("NOP");
 		asm volatile("NOP");
 		asm volatile("NOP");
@@ -245,11 +247,43 @@ void EthRxTxInit(UINT type, UINT speed, UINT duplex)
 		}
 
 		// eth lbm
-		// eth lbc 1000
+		// eth lbt 1000
+#if 1 // 190701
 		ETH_TX_CLKEDGE = 1;
-		ETH_TX_TCKDLY = 2;
+		ETH_TX_TCKDLY = 0x9;
+		ETH_RX_RCKEDGE = 0;
+		ETH_RX_RCKDLY = 0x9;
+#elif 0 // 190626
+		ETH_TX_CLKEDGE = 1;
+		ETH_TX_TCKDLY = 0x7;
+		ETH_RX_RCKEDGE = 1;
+		ETH_RX_RCKDLY = 0x2;
+#elif 0 // 190624
+		ETH_TX_CLKEDGE = 0;
+		ETH_TX_TCKDLY = 0xC;
+		ETH_RX_RCKEDGE = 1;
+		ETH_RX_RCKDLY = 0x2;
+#elif 0 // 190621
+		ETH_TX_CLKEDGE = 1;
+		ETH_TX_TCKDLY = 0x5;
+		ETH_RX_RCKEDGE = 1;
+		ETH_RX_RCKDLY = 0x2;
+#elif 0 // 190620
+		ETH_TX_CLKEDGE = 1;
+		ETH_TX_TCKDLY = 0x1;
 		ETH_RX_RCKEDGE = 1;
 		ETH_RX_RCKDLY = 0xE;
+#elif 0 // 19.06.03 오전
+		ETH_TX_CLKEDGE = 1;
+		ETH_TX_TCKDLY = 0x7;
+		ETH_RX_RCKEDGE = 0;
+		ETH_RX_RCKDLY = 0x7;
+#elif 1 // 19.06.03 오후
+		ETH_TX_CLKEDGE = 1;
+		ETH_TX_TCKDLY = 0x5;
+		ETH_RX_RCKEDGE = 1;
+		ETH_RX_RCKDLY = 0xB;
+#endif
 
 		ETH_TX_TXENDLY	= 0;
 		ETH_TX_TXD0DLY	= 0;

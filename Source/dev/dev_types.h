@@ -470,13 +470,30 @@ typedef enum {
 	SDIO_DIO_SINGLE_READ = 0,
 	SDIO_DIO_SINGLE_WRITE = 1,
 	SDIO_DIO_MULTI_READ = 2,
-	SDIO_DIO_MULTI_WRITE = 3
+	SDIO_DIO_MULTI_WRITE = 3,
+	SDIO_DIO_IO_READ = 4,
+	SDIO_DIO_IO_WRITE = 5,
 } eSDIO_DIO_TYPE;
 
 typedef enum {
 	SDIO_1BIT_MODE = 0,
 	SDIO_4BIT_MODE = 1
 } eSDIO_BIT_MODE;
+
+typedef enum {
+	SDIO_CD_MODE = 0,
+	SDIO_IO_MODE = 1
+} eSDIO_IO_MODE;
+
+typedef enum {
+	SDIO_BM_BYTE= 0,
+	SDIO_BM_BLOCK = 1
+} eSDIO_CMD53_BM;
+
+typedef enum {
+	SDIO_OP_FIXED = 0,
+	SDIO_OP_INCREMENT = 1
+} eSDIO_CMD53_OP;
 
 typedef void (*user_delay_fn)(uint64 ms);
 
@@ -573,7 +590,7 @@ typedef enum {
 //******************************************************************************
 // Key define
 //------------------------------------------------------------------------------
-#define FPS_VDO			30		// TODO KSH set FPS_VDO
+#define FPS_VDO		model_Sens_Fps
 
 #define	UART_HOLD_CNT	(2<<(FPS_VDO>30))					// Holding time
 #define	UART_KEY_RPTF	(FPS_VDO>>2)						// First Repeat time
@@ -645,14 +662,17 @@ typedef	union{
 //------------------------------------------------------------------------------
 #ifndef __ISP_LIB__
 
+#define UpList				((UP_LIST*)gbUsrParTbl)
+#define UP(N)				UpList->N
+
 #define UPi(N)				N##_IDX									// Index of User Parameter
 #define UPs(N)				N##_SIZ									// Size of User Parameter
 
-#define UPw(N,D)			SetByte(gbUsrParTbl+UPi(N), UPs(N), D)	// Write User Parameter
-#define UPr(N)				GetByte(gbUsrParTbl+UPi(N), UPs(N))		// Read User Parameter
+//#define UPw(N,D)			UP(N) = (D)//SetByte(gbUsrParTbl+UPi(N), UPs(N), D)	// Write User Parameter
+//#define UPr(N)				UP(N)//GetByte(gbUsrParTbl+UPi(N), UPs(N))		// Read User Parameter
 
-#define UPo(N)				gbUsrParTbl[UPi(N)], UPs(N)				// Use User Parameter in MENU
-#define UPx(N)				N, sizeof(N)							// Use Default Type in MENU
+//#define UPo(N)				UP(N)//, sizeof(UP(N))//gbUsrParTbl[UPi(N)], UPs(N)				// Use User Parameter in MENU
+//#define UPx(N)				N//, sizeof(N)							// Use Default Type in MENU
 
 
 #define gbCamTitle(INDEX)	gbUsrParTbl[UPi(UpCamTitle0)+((INDEX))]
@@ -661,13 +681,16 @@ typedef	union{
 
 
 //------------------------------------------------------------------------------
-#define PAR_LIST1(N,...)	UPi(N),
-#define PAR_LIST2(N,...)	PAR_LIST1(N,__VA_ARGS__) N##_1_IDX,
-#define PAR_LIST3(N,...)	PAR_LIST2(N,__VA_ARGS__) N##_2_IDX,
-#define PAR_LIST4(N,...)	PAR_LIST3(N,__VA_ARGS__) N##_3_IDX,
+#define PAR_IDX1(N,...)		UPi(N),
+#define PAR_IDX2(N,...)		PAR_IDX1(N,__VA_ARGS__) N##_1_IDX,
+#define PAR_IDX3(N,...)		PAR_IDX2(N,__VA_ARGS__) N##_2_IDX,
+#define PAR_IDX4(N,...)		PAR_IDX3(N,__VA_ARGS__) N##_3_IDX,
 
-#define _UP_(S,N,...)		PAR_LIST##S(N,__VA_ARGS__)
-#define _UPa_(S,N,...)		N##_UP_END }; enum { N##_UP_START=((N##_UP_END+3)&~3)-1, PAR_LIST##S(N,__VA_ARGS__)
+#define _UP_IDX_1(N,...)	                                                         PAR_IDX1(N,__VA_ARGS__)
+#define _UP_IDX_2(N,...)	N##_UP_END }; enum { N##_UP_START=((N##_UP_END+1)&~1)-1, PAR_IDX2(N,__VA_ARGS__)
+#define _UP_IDX_4(N,...)	N##_UP_END }; enum { N##_UP_START=((N##_UP_END+3)&~3)-1, PAR_IDX4(N,__VA_ARGS__)
+
+#define _UP_(S,N,...)		_UP_IDX_##S(N,...)
 #include "isp_par_tbl.h"
 enum {
 	UP_START=0,
@@ -675,20 +698,61 @@ enum {
 	UP_END
 };
 
+
+#define _UP_TYPE_1(N,...)	BYTE N;
+#define _UP_TYPE_2(N,...)	WORD N;
+#define _UP_TYPE_4(N,...)	UINT N;
+
+#undef _UP_
+#define _UP_(S,N,...)		_UP_TYPE_##S(N,...)
+#include "isp_par_tbl.h"
+typedef struct {
+	BYTE UpStart;
+	USR_PAR_LIST
+	BYTE UpEnd;
+} UP_LIST;
+
+
 #undef _UP_
 #define _UP_(S,N,...)		enum { UPs(N) = S };
-#undef _UPa_
-#define _UPa_	_UP_
 #include "isp_par_tbl.h"
 USR_PAR_LIST
 
+
 #define USR_PAR_EA			(UP_END+1)
 
+extern BYTE gbUsrParChgOn;
 extern BYTE gbUsrParSaveChk;
 extern BYTE gbUsrParReadChk;
 extern BYTE gbUsrParTbl[USR_PAR_EA];
 extern BYTE gbUsrParTblSaved[USR_PAR_EA];
 
+#define PAR_BASE	((UINT*)(gbUsrParTbl+UPi(UpPAR00)))
+
+#define UP_LIB1(N) { extern BYTE *gLib##N; gLib##N = &UP(N); }
+#define UP_LIB2(N) { extern WORD *gLib##N; gLib##N = &UP(N); }
+#define UP_LIB4(N) { extern UINT *gLib##N; gLib##N = &UP(N); }
+#define UP_LIB(S,N)	UP_LIB##S(N)
+
+#else
+	#define UP(N)		(*gLib##N)
+
+	#define PAR_BASE	(gLib##UpPAR00)
+
+	#ifdef UP_LIB_LINK
+		#define UP_LIB1(N)	BYTE *gLib##N = 0;
+		#define UP_LIB2(N)	WORD *gLib##N = 0;
+		#define UP_LIB4(N)	UINT *gLib##N = 0;
+		#define UP_LIB(S,N)	UP_LIB##S(N)
+	#else
+		#define UP_LIB1(N)	extern BYTE *gLib##N;
+		#define UP_LIB2(N)	extern WORD *gLib##N;
+		#define UP_LIB4(N)	extern UINT *gLib##N;
+		#define UP_LIB(S,N)	UP_LIB##S(N)
+	#endif
+
+	#include "isp_par_tbl.h"
+	UP_LIB_LIST
 #endif
 //******************************************************************************
 // User Data define
@@ -760,43 +824,326 @@ extern union uFLOAT gnTxGrp[GRP_NUMBER];
 #define	GRP7F			(gnTxGrp[7].m_float)
 
 
-#define	PAR00			(*(((UINT*)(gbUsrParTbl+UPi(UpPAR00)))+ 0))
-#define	PAR01			(*(((UINT*)(gbUsrParTbl+UPi(UpPAR00)))+ 1))
-#define	PAR02			(*(((UINT*)(gbUsrParTbl+UPi(UpPAR00)))+ 2))
-#define	PAR03			(*(((UINT*)(gbUsrParTbl+UPi(UpPAR00)))+ 3))
-#define	PAR04			(*(((UINT*)(gbUsrParTbl+UPi(UpPAR00)))+ 4))
-#define	PAR05			(*(((UINT*)(gbUsrParTbl+UPi(UpPAR00)))+ 5))
-#define	PAR06			(*(((UINT*)(gbUsrParTbl+UPi(UpPAR00)))+ 6))
-#define	PAR07			(*(((UINT*)(gbUsrParTbl+UPi(UpPAR00)))+ 7))
-#define	PAR08			(*(((UINT*)(gbUsrParTbl+UPi(UpPAR00)))+ 8))
-#define	PAR09			(*(((UINT*)(gbUsrParTbl+UPi(UpPAR00)))+ 9))
-#define	PAR0A			(*(((UINT*)(gbUsrParTbl+UPi(UpPAR00)))+10))
-#define	PAR0B			(*(((UINT*)(gbUsrParTbl+UPi(UpPAR00)))+11))
-#define	PAR0C			(*(((UINT*)(gbUsrParTbl+UPi(UpPAR00)))+12))
-#define	PAR0D			(*(((UINT*)(gbUsrParTbl+UPi(UpPAR00)))+13))
-#define	PAR0E			(*(((UINT*)(gbUsrParTbl+UPi(UpPAR00)))+14))
-#define	PAR0F			(*(((UINT*)(gbUsrParTbl+UPi(UpPAR00)))+15))
-#define	PAR10			(*(((UINT*)(gbUsrParTbl+UPi(UpPAR00)))+16))
-#define	PAR11			(*(((UINT*)(gbUsrParTbl+UPi(UpPAR00)))+17))
-#define	PAR12			(*(((UINT*)(gbUsrParTbl+UPi(UpPAR00)))+18))
-#define	PAR13			(*(((UINT*)(gbUsrParTbl+UPi(UpPAR00)))+19))
-#define	PAR14			(*(((UINT*)(gbUsrParTbl+UPi(UpPAR00)))+20))
-#define	PAR15			(*(((UINT*)(gbUsrParTbl+UPi(UpPAR00)))+21))
-#define	PAR16			(*(((UINT*)(gbUsrParTbl+UPi(UpPAR00)))+22))
-#define	PAR17			(*(((UINT*)(gbUsrParTbl+UPi(UpPAR00)))+23))
-#define	PAR18			(*(((UINT*)(gbUsrParTbl+UPi(UpPAR00)))+24))
-#define	PAR19			(*(((UINT*)(gbUsrParTbl+UPi(UpPAR00)))+25))
-#define	PAR1A			(*(((UINT*)(gbUsrParTbl+UPi(UpPAR00)))+26))
-#define	PAR1B			(*(((UINT*)(gbUsrParTbl+UPi(UpPAR00)))+27))
-#define	PAR1C			(*(((UINT*)(gbUsrParTbl+UPi(UpPAR00)))+28))
-#define	PAR1D			(*(((UINT*)(gbUsrParTbl+UPi(UpPAR00)))+29))
-#define	PAR1E			(*(((UINT*)(gbUsrParTbl+UPi(UpPAR00)))+30))
-#define	PAR1F			(*(((UINT*)(gbUsrParTbl+UPi(UpPAR00)))+31))
+#define	PAR00			(*(PAR_BASE+ 0))
+#define	PAR01			(*(PAR_BASE+ 1))
+#define	PAR02			(*(PAR_BASE+ 2))
+#define	PAR03			(*(PAR_BASE+ 3))
+#define	PAR04			(*(PAR_BASE+ 4))
+#define	PAR05			(*(PAR_BASE+ 5))
+#define	PAR06			(*(PAR_BASE+ 6))
+#define	PAR07			(*(PAR_BASE+ 7))
+#define	PAR08			(*(PAR_BASE+ 8))
+#define	PAR09			(*(PAR_BASE+ 9))
+#define	PAR0A			(*(PAR_BASE+10))
+#define	PAR0B			(*(PAR_BASE+11))
+#define	PAR0C			(*(PAR_BASE+12))
+#define	PAR0D			(*(PAR_BASE+13))
+#define	PAR0E			(*(PAR_BASE+14))
+#define	PAR0F			(*(PAR_BASE+15))
+#define	PAR10			(*(PAR_BASE+16))
+#define	PAR11			(*(PAR_BASE+17))
+#define	PAR12			(*(PAR_BASE+18))
+#define	PAR13			(*(PAR_BASE+19))
+#define	PAR14			(*(PAR_BASE+20))
+#define	PAR15			(*(PAR_BASE+21))
+#define	PAR16			(*(PAR_BASE+22))
+#define	PAR17			(*(PAR_BASE+23))
+#define	PAR18			(*(PAR_BASE+24))
+#define	PAR19			(*(PAR_BASE+25))
+#define	PAR1A			(*(PAR_BASE+26))
+#define	PAR1B			(*(PAR_BASE+27))
+#define	PAR1C			(*(PAR_BASE+28))
+#define	PAR1D			(*(PAR_BASE+29))
+#define	PAR1E			(*(PAR_BASE+30))
+#define	PAR1F			(*(PAR_BASE+31))
+
+
+//******************************************************************************
+// I2C Debug
+//------------------------------------------------------------------------------
+#define ENABLE_I2C_WAIT		0
+#define ENABLE_SI2C_WAIT	0
+
+#if ENABLE_I2C_ERR == 1
+	#define I2C_STA				BYTE bErr = 0;
+	#define I2C_END				I2c_Err: UartTxStrHexNoIRQ("I2C ERR :", bErr, 2);  I2c_mode(0); return bErr;
+	#define I2C_CODE(ERR,CODE)	if(CODE) { bErr = ERR; goto I2c_Err; }
+#else
+	#define I2C_STA
+	#define I2C_END
+	#define I2C_CODE(ERR,CODE)	CODE;
+#endif
+
+#if ENABLE_SI2C_ERR == 1
+	#define SI2C_STA			BYTE bErr = 0;
+	#define SI2C_END			I2c_Err: TxStrNoIRQ("SI2C ERR :", bErr, 2);  return bErr;
+	#define SI2C_CODE(ERR,CODE)	if(CODE) { bErr = ERR; goto I2c_Err; }
+#else
+	#define SI2C_STA
+	#define SI2C_END
+	#define SI2C_CODE(ERR,CODE)	CODE;
+#endif
+
+#if ENABLE_I2C_WAIT == 1
+	#define I2C_WAIT(ERR,CODE)	while(CODE);
+#else
+	#define I2C_WAIT(ERR,CODE)	I2C_CODE(ERR,CODE)
+#endif
+
+#if ENABLE_SI2C_WAIT == 1
+	#define SI2C_WAIT(ERR,CODE)	while(CODE);
+#else
+	#define SI2C_WAIT(ERR,CODE)	SI2C_CODE(ERR,CODE)
+#endif
+
+
+enum {
+	EEP_NO_ERROR,
+
+	EEP_WRITE_NODEV,
+	EEP_WRITE_MASTER,
+	EEP_WRITE_NOACK1,
+	EEP_WRITE_NOACK2,
+	EEP_WRITE_NOACK3,
+	EEP_WRITE_NOACK4,
+
+	EEP_READ_NODEV,
+	EEP_READ_MASTER,
+	EEP_READ_NOACK1,
+	EEP_READ_NOACK2,
+	EEP_READ_NOACK3,
+};
+
+enum {
+	SENS_WRITE_NODEV1 = 80,
+	SENS_WRITE_NOACK1,
+	SENS_WRITE_NOACK2,
+	SENS_WRITE_NOACK3,
+	SENS_WRITE_NOACK4,
+
+	SENS_READ_NODEV1 = 90,
+	SENS_READ_NOACK1,
+	SENS_READ_NOACK2,
+	SENS_READ_NOACK3,
+	SENS_READ_NOACK4,
+};
+
+
+//******************************************************************************
+// Sensor define
+//------------------------------------------------------------------------------
+#ifndef __ISP_LIB__
+	#define SENS_DEF(N,V,S)	enum { N##___SENS_##S = V };
+
+	#define SENS_SEL(N,V1,V2,V3,V4,V5,V6,V7,V8,V9,V10,V11,V12,V13,V14,V15,V16,V17,V18,V19,V20,S1,S2,S3,S4,S5,S6,S7,S8,S9,S10,S11,S12,S13,S14,S15,S16,S17,S18,S19,S20)	\
+		SENS_DEF(N,V1,S1)	SENS_DEF(N,V2,S2)	SENS_DEF(N,V3,S3)	SENS_DEF(N,V4,S4)	SENS_DEF(N,V5,S5)	SENS_DEF(N,V6,S6)	SENS_DEF(N,V7,S7)	SENS_DEF(N,V8,S8)	\
+		SENS_DEF(N,V9,S9)	SENS_DEF(N,V10,S10)	SENS_DEF(N,V11,S11)	SENS_DEF(N,V12,S12)	SENS_DEF(N,V13,S13)	SENS_DEF(N,V14,S14)	SENS_DEF(N,V15,S15)	SENS_DEF(N,V16,S16)	\
+		SENS_DEF(N,V17,S17)	SENS_DEF(N,V18,S18)	SENS_DEF(N,V19,S19)	SENS_DEF(N,V20,S20)
+#else
+	#define SENS_SEL(...)
+#endif
+//------------------------------------------------------------------------------
+// Frame info
+#if model_1M
+	#define FR_HW		1280			// Digital Output formatter horizontal active width
+	#define FR_VW		720				// Digital Output formatter vertical active width
+	#define PO_HW		1288            // HWI(pre module active image horizontal width) & HWO(Post module horizontal image active width)
+	#define PO_VW		728             // VWI(pre module active image vertical width) & VWO(Post module vertical image active width)
+	#define LV_HW		1308			// Lvds/Mipi internal buffer에서 image를 read하는 horizontal width를 설정한다. 이 값은 margin을 포함하여 실제 horizontal active pixel보다 크게 설정한다.
+	#define LV_VW		736				// Lvds/Mipi internal buffer에서 image를 read하는 vertical width를 설정한다. 이 값은 margin을 포함하여 실제 vertical active pixel보다 크게 설정한다.
+	#define FR_HTW60	1650			// Total  H width
+	#define FR_VTW60	750				// Total  V width
+	#define FR_HTW50	1980			// Total  H width
+	#define FR_VTW50	750				// Total  V width
+#elif model_2M || model_2M30p
+	#define FR_HW		1920			// Digital Output formatter horizontal active width
+	#define FR_VW		1080			// Digital Output formatter vertical active width
+	#define PO_HW		1928            // HWI(pre module active image horizontal width) & HWO(Post module horizontal image active width)
+	#define PO_VW		1088            // VWI(pre module active image vertical width) & VWO(Post module vertical image active width)
+	#define LV_HW		1988			// Lvds/Mipi internal buffer에서 image를 read하는 horizontal width를 설정한다. 이 값은 margin을 포함하여 실제 horizontal active pixel보다 크게 설정한다.
+	#define LV_VW		1100			// Lvds/Mipi internal buffer에서 image를 read하는 vertical width를 설정한다. 이 값은 margin을 포함하여 실제 vertical active pixel보다 크게 설정한다.
+	#define FR_HTW60	2200			// Total  H width
+	#define FR_VTW60	1125			// Total  V width
+	#define FR_HTW50	2640			// Total  H width
+	#define FR_VTW50	1125			// Total  V width
+#elif model_4M
+	#define FR_HW		2560			// Digital Output formatter horizontal active width
+	#define FR_VW		1440			// Digital Output formatter vertical active width
+	#define PO_HW		2568            // HWI(pre module active image horizontal width) & HWO(Post module horizontal image active width)
+	#define PO_VW		1448            // VWI(pre module active image vertical width) & VWO(Post module vertical image active width)
+	#define LV_HW		2584			// Lvds/Mipi internal buffer에서 image를 read하는 horizontal width를 설정한다. 이 값은 margin을 포함하여 실제 horizontal active pixel보다 크게 설정한다.
+	#define LV_VW		1458			// Lvds/Mipi internal buffer에서 image를 read하는 vertical width를 설정한다. 이 값은 margin을 포함하여 실제 vertical active pixel보다 크게 설정한다.
+	#define FR_HTW60	3300			// Total  H width
+	#define FR_VTW60	1500			// Total  V width
+	#define FR_HTW50	3960			// Total  H width
+	#define FR_VTW50	1500			// Total  V width
+#elif model_8M
+	#define FR_HW		3840			// Digital Output formatter horizontal active width
+	#define FR_VW		2160			// Digital Output formatter vertical active width
+	#define PO_HW		3848            // HWI(pre module active image horizontal width) & HWO(Post module horizontal image active width)
+	#define PO_VW		2168            // VWI(pre module active image vertical width) & VWO(Post module vertical image active width)
+	#define LV_HW		3860			// Lvds/Mipi internal buffer에서 image를 read하는 horizontal width를 설정한다. 이 값은 margin을 포함하여 실제 horizontal active pixel보다 크게 설정한다.
+	#define LV_VW		2180			// Lvds/Mipi internal buffer에서 image를 read하는 vertical width를 설정한다. 이 값은 margin을 포함하여 실제 vertical active pixel보다 크게 설정한다.
+	#define FR_HTW60	4400			// Total  H width
+	#define FR_VTW60	2250			// Total  V width
+	#define FR_HTW50	5280			// Total  H width
+	#define FR_VTW50	2250			// Total  V width
+#endif
+
+//------------------------------------------------------------------------------
+// Link
+#if model_Sens ==			SENS_IMX291
+	#define Sens(a) a##___##SENS_IMX291
+#elif model_Sens ==			SENS_IMX327
+	#define Sens(a) a##___##SENS_IMX327
+#elif model_Sens ==			SENS_SPC1
+	#define Sens(a) a##___##SENS_SPC1
+#elif model_Sens ==			SENS_IMX335
+	#define Sens(a) a##___##SENS_IMX335
+#elif model_Sens ==			SENS_OS05A10
+	#define Sens(a) a##___##SENS_OS05A10
+#elif model_Sens ==			SENS_IMX334
+	#define Sens(a) a##___##SENS_IMX334
+#elif model_Sens ==			SENS_IMX274
+	#define Sens(a) a##___##SENS_IMX274
+#elif model_Sens ==			SENS_IMX415
+	#define Sens(a) a##___##SENS_IMX415
+#elif model_Sens ==			SENS_OS08A10
+	#define Sens(a) a##___##SENS_OS08A10
+#elif model_Sens ==			SENS_IMX225
+	#define Sens(a) a##___##SENS_IMX225
+#elif model_Sens ==			SENS_OV2718
+	#define Sens(a) a##___##SENS_OV2718
+#elif model_Sens ==			SENS_OV4689
+	#define Sens(a) a##___##SENS_OV4689
+
+#else
+	//#define Sens(a) a##___##NOSENS
+	#define Sens(a) a
+#endif
+
+//------------------------------------------------------------------------------
+// Sensor Setting
+#define _SV_(NAME,V1,V2,V3,V4,V5,V6,V7,V8,V9,V10,V11,V12,V13,V14,V15,V16,V17,V18,V19,V20) SENS_SEL(NAME,V1,V2,V3,V4,V5,V6,V7,V8,V9,V10,V11,V12,V13,V14,V15,V16,V17,V18,V19,V20,\
+\
+					OV2718, IMX291,OS08A10, IMX225, IMX335, IMX274, OV4689, IMX415, none09, none10, none11, none12, none13, none14, none15, none16, none17, none18, none19, none20)
+_SV_(LvdsPNSel,		     0,      1,      1,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 0 : Negative Start, 1 : Positive Start,  입력 data의 latch start point를 설정
+_SV_(LvdsSofNo,		     1,      1,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 0 : usually Panasonic sensor, 1 : others		TODO KSH OS08A10의 SOF_NO 설정 확인 필요
+
+_SV_(LckDly,		     7,      2,      2,      2,      2,      6,      4,      4,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 0 ~ 7,  Lvds/Mipi input clock delay adjust
+_SV_(LdiDly0,		     0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 0 ~ 7,  LVDS channel 0 delay adjust
+_SV_(LdiDly1,		     0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 0 ~ 7,  LVDS channel 1 delay adjust
+_SV_(LdiDly2,		     0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 0 ~ 7,  LVDS channel 2 delay adjust
+_SV_(LdiDly3,		     0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 0 ~ 7,  LVDS channel 3 delay adjust
+
+_SV_(MipiClkPhase,	     0,      0,      0,      2,      2,      0,      2,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// Select Mipi 1/4 Clock Phase 0, 1, 2, 3, image align에 영향을 주어 영상을 보면서 이 값을 조절해야 함
+_SV_(MipiBit,		     0,      0,      0,     10,     12,     12,     10,     12,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)
+_SV_(MipiHSyncOfs,	     0,      0,      0,      7,      7,      7,      8,      7,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// Very Important!!! For Image Phase
+_SV_(MipiUseWcl,	     0,      0,      0,      0,      0,      0,      1,      1,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// use long packet word counter check function
+
+_SV_(IsSlave,		     1,      0,      1,      1,      1,      1,      1,      1,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 0 : Master Mode, 1 : Slave Mode,  Isp master/slave mode를 설정
+_SV_(IsASync,		     1,      0,      0,      0,      1,      0,      1,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// Auto sync generation, omni sensor와 같이 Active 이외의 구간에서 sync가 나오지 않는 sensor에서 1로 설정
+_SV_(IsNSync,		     1,      0,      0,      1,      1,      0,      1,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 입력 sync의 H/V 위상이 일치하지 않는 상황에서 1로 설정
+_SV_(PreHSyncOfs,	   0xe,    0xa,    0xa,   0xb0,   0xb0,    0xa,   0xb0,   0xa0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// Pre module Horizontal Sync Offset, Hsp 인자로 Image 위치가 맞지 않을때 Sync의 위치를 이동하여 image 위치를 맞추는데 사용
+_SV_(PreVSyncOfs,	     0,    0xc,    0xc,    0xc,    0xc,    0xc,    0xc,    0xc,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// Pre module Vertical Sync Offset, Vsp 인자로 Image 위치가 맞지 않을때 Sync의 위치를 이동하여 image 위치를 맞추는데 사용
+_SV_(PreHsp,		  0x13,   0x15,   0x15,    0x8,    0x8,   0x15,    0x8,   0x15,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// Pre module Horizontal image start position
+_SV_(PreVsp,		   0x8,    0x6,    0x6,    0x4,    0x4,    0x6,    0x4,    0x2,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// Pre module Vertical image start position
+_SV_(PreHSyncPol,	     0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 0 : Falling position, 1 : Rising position, Pre module Horizontal sync input polarity
+_SV_(PreVSyncPol,	     0,      0,      1,      1,      1,      1,      1,      1,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 0 : Falling position, 1 : Rising position, Pre module Vertical sync input polarity
+
+_SV_(OCSel,			     3,      1,      1,      2,      2,      1,      1,      3,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 0 ~ 3,  Post module color phase selection, RGB interpolator의 위상을 조절, 출력단 VLOCKO_IT_POS0w(OutVSyncOfs) & HLOCKO_IT_POS0w(OutHSyncOfs) 설정에 따라 OCSel값을 잘못 설정할 수 있으니 주의!!!
+
+_SV_(SyncCode0,		 0xfff,  0xfff,  0xfff,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)
+_SV_(SyncCode1,		     0,      0,      0,      1,      1,      1,      1,      1,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)
+_SV_(SyncCode2,		     0,      0,      0,      2,      2,      2,      2,      2,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)
+_SV_(SyncCode3_0,	     0,      0,      0,      3,      3,      3,      3,      3,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)
+_SV_(SyncCode3_1,	 0x800,  0x800,  0x200,   0xb8,   0xb8,   0xb8,   0xb8,   0xb8,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)
+_SV_(SyncCode3_2,	 0xab0,  0xab0,  0x280,  0xf30,  0xf30,  0xf30,  0xd20, 0x16a4,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)
+_SV_(SyncS0Code3_0,	     0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)
+_SV_(SyncS0Code3_1,	     0,      0,      0, 0x2000, 0x2000, 0x2000, 0x2000, 0x2000,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)
+_SV_(SyncS0Code3_2,	     0,      0,      0,   0x2b,   0x2c,   0x2c,   0x2b,   0x2c,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)
+_SV_(SyncS1Code3_0,	     0,      0,      0,      3,      3,      3,      3,      3,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)
+_SV_(SyncS1Code3_1,	     0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)
+_SV_(SyncS1Code3_2,	     0,      0,      0,      3,      3,      3,  0xd20,      3,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)
+
+#if	(model_Sens_Fps==60)
+_SV_(SensorClk,		     0,     74,      0,     27,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 148, 74, 37, 18, 27, 13, 6 MHz
+_SV_(PreClk,		     0, C_148M,      0,  C_74M,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// C_PLL, C_148M, C_74M, C_PCK, C_PCKD2, C_PLLD0
+#elif (model_Sens_Fps==30)
+_SV_(SensorClk,		    13,     37,      0,      0,     13,      0,     27,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 148, 74, 37, 18, 27, 13, 6 MHz
+_SV_(PreClk,		 C_74M,  C_74M,      0,      0,  C_74M,      0,  C_74M,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// C_PLL, C_148M, C_74M, C_PCK, C_PCKD2, C_PLLD0
+#elif (model_Sens_Fps==20)
+_SV_(SensorClk,		     0,      0,      0,      0,     13,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 148, 74, 37, 18, 27, 13, 6 MHz
+_SV_(PreClk,		     0,      0,      0,      0,  C_74M,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// C_PLL, C_148M, C_74M, C_PCK, C_PCKD2, C_PLLD0
+#elif (model_Sens_Fps==15)
+_SV_(SensorClk,		     0,      0,     27,      0,      0,     13,     13,     13,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 148, 74, 37, 18, 27, 13, 6 MHz
+_SV_(PreClk,		     0,      0,  C_74M,      0,      0,  C_74M,  C_74M,  C_74M,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// C_PLL, C_148M, C_74M, C_PCK, C_PCKD2, C_PLLD0
+#elif (model_Sens_Fps==12)
+_SV_(SensorClk,		     0,      0,      0,      0,     13,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 148, 74, 37, 18, 27, 13, 6 MHz
+_SV_(PreClk,		     0,      0,      0,      0,  C_74M,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// C_PLL, C_148M, C_74M, C_PCK, C_PCKD2, C_PLLD0
+#endif
+
+_SV_(PostClk,		 C_74M,  C_74M,  C_74M,  C_74M,  C_74M,  C_74M,  C_74M,  C_74M,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// C_PLL, C_148M, C_74M, C_PCK, C_PCKD2, C_PLLD0
+
+#if	model_1M
+	#define OutHSyncOfs		0x5c
+	#define OutVSyncOfs		0x0
+#elif model_2M || model_2M30p
+	#define OutHSyncOfs		0x5a
+	#define OutVSyncOfs		0x446
+#elif model_4M
+	#define OutHSyncOfs		0x5c
+	#define OutVSyncOfs		0x5ba
+#elif model_8M
+	#define OutHSyncOfs		0x5a
+	#define OutVSyncOfs		0x0
+#endif
+
+
+//------------------------------------------------------------------------------
+// ISP Function define
+#define IspSensorPowerOn()		Isp_SensorPowerOn(FN_ON,Sens(SensorClk))
+
+#if (model_Sens_Intf==0)	// Parallel
+	#define IspSDesPowerOn()	Isp_SDesPowerOn(FN_OFF,0,0)		// LVDS/MIPI Off
+	#define IspSDesConfig()		Isp_Parallel_Config(FN_ON/*, ISP_SLAVE*/, PARA_EXTER_CLK, PARA_CLK_SDR, 0/*, SYNC_FALL, SYNC_RISE, DIFF_EDGE, NO_USE_AUTOSYNC*/)
+#elif (model_Sens_Intf==1)	// LVDS
+	#define IspSDesPowerOn()	Isp_SDesPowerOn(FN_ON, LVDS_INTERFACE, 0)
+	#define IspSDesConfig()		Isp_Lvds_Config(LVDS_12BIT, LVDS_4LANE, 0, UP(UpLvdsPNSel), Sens(LvdsSofNo))
+#elif (model_Sens_Intf==2)	// MIPI
+	#define IspSDesPowerOn()	Isp_SDesPowerOn(FN_ON, MIPI_INTERFACE, UP(UpMipiClkPhase))
+	#define IspSDesConfig()		Isp_Mipi_Config(Sens(MipiBit), MIPI_4LANE, 0, 1, UP(UpMipiHSyncOfs), USE_ECC_CHECK, Sens(MipiUseWcl), NO_USE_CHECK, NO_USE_CHECK, 3)
+#endif
+
+#define IspSDesDelay()			Isp_SDesDelay(UP(UpLckDly), UP(UpLdiDly0), UP(UpLdiDly1), UP(UpLdiDly2), UP(UpLdiDly3))
+
+#if model_2M || model_2M30p
+	#define IspSDesPosition()	Isp_SDesPosition(0x1f, 0x1, LV_HW, LV_VW)
+#else
+	#define IspSDesPosition()	Isp_SDesPosition(0xb5, 0xc, LV_HW, LV_VW)
+#endif
+
+#define IspSYNC_CODE()			Isp_SYNC_CODE(Sens(SyncCode0), Sens(SyncCode1), Sens(SyncCode2), Sens(SyncCode3_0), Sens(SyncCode3_1), Sens(SyncCode3_2),\
+											  Sens(SyncS0Code3_0), Sens(SyncS0Code3_1), Sens(SyncS0Code3_2), Sens(SyncS1Code3_0), Sens(SyncS1Code3_1), Sens(SyncS1Code3_2))
+
+#define IspPreClkConfig()		Isp_PreClk_Config(Sens(PreClk))
+#define IspPostClkConfig()		Isp_PostClk_Config(Sens(PostClk))
+
+#define IspPreSyncConfig()		Isp_PreSync_Config(Sens(IsSlave), FR_HTW60, FR_VTW60, UP(UpPreHSyncOfs), UP(UpPreVSyncOfs), UP(UpPreHsp), UP(UpPreVsp), PO_HW, PO_VW, Sens(IsASync), Sens(IsNSync), UP(UpPreHSyncPol), UP(UpPreVSyncPol))
+
+#define IspPostSyncConfig()		Isp_PostSync_Config(1, 0, FR_HTW60, FR_VTW60, 0x3a, 0x2, 0x6, 0x4, PO_HW, PO_VW, UP(UpOCSel))
+
+#define IspDout0SyncConfig()	Isp_Dout0_Sync_Config(FR_HTW60, UP(UpOutHSyncOfs), UP(UpOutVSyncOfs), 0, 0x2a, FR_HW, FR_VW)
+#define IspDout1SyncConfig()	Isp_Dout1_Sync_Config(FR_HTW60, UP(UpOutHSyncOfs), UP(UpOutVSyncOfs), 0, 0x2a, FR_HW, FR_VW)
+
+//------------------------------------------------------------------------------
+#define InitSensRun			Sens(InitSensRun)
 
 
 //******************************************************************************
 //
 //------------------------------------------------------------------------------
+
 
 
 

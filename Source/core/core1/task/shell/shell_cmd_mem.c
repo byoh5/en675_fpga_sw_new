@@ -51,8 +51,7 @@ typedef struct {
 } DmaTestStr;
 
 DmaTestStr dmaitem;
-#define DMA_TEST_MALLOC_SIZE 16*1024
-#define DMA_TEST_CH 3
+#define DMA_TEST_MALLOC_SIZE 1024*1024
 
 static void DmaTestIrq(void *ctx)
 {
@@ -126,12 +125,12 @@ static void DmaTestTask(void *ctx)
 	for (UINT i = 0; i < dmaitem.u32Move; i++) {
 		parrDst = dmaitem.arrDst;
 		if (dmaitem.u32TestSize == -1) {
-			u32RelTestSize = rand() % 8192 + 1;
+			u32RelTestSize = rand() % 65536 + 1;
 		} else {
 			u32RelTestSize = dmaitem.u32TestSize;
 		}
 
-		printf("%3u%% %4u/%4u TEST Dst(0x%08X~0x%08X) Src(0x%08X) - Size(%4u) - ", ((i+1) * 100) / dmaitem.u32Move, i+1, dmaitem.u32Move, (UINT)(intptr_t)parrDst, (UINT)(intptr_t)(parrDst+dmaitem.u32Move), (UINT)(intptr_t)parrSrc, u32RelTestSize);
+		printf("%3u%% %4u/%4u TEST Dst(0x%08X~0x%08X) Src(0x%08X) - Size(%6u) -     ", ((i+1) * 100) / dmaitem.u32Move, i+1, dmaitem.u32Move, (UINT)(intptr_t)parrDst, (UINT)(intptr_t)(parrDst+dmaitem.u32Move), (UINT)(intptr_t)parrSrc, u32RelTestSize);
 
 
 		ULONG total_time = 0;
@@ -150,14 +149,14 @@ static void DmaTestTask(void *ctx)
 				//hwflush_dcache_range_rtos((ULONG)parrDst, u32RelTestSize);
 
 				tstart = BenchTimeStart();
-				BDmaMemCpy_isr_async(dmaitem.u32CH, parrDst, parrSrc, u32RelTestSize);
+				BDmaMemCpy_rtos_async(dmaitem.u32CH, parrDst, parrSrc, u32RelTestSize);
 				//portMEMORY_BARRIER();
 //				hwflush_dcache_range_rtos((ULONG)parrDst, u32RelTestSize);
 
 			} else if (dmaitem.cMode == 'C') {
 				// dma copy
 				tstart = BenchTimeStart();
-				CDmaMemCpy_isr_async(dmaitem.u32CH, parrDst, parrSrc, u32RelTestSize);
+				CDmaMemCpy_rtos_async(dmaitem.u32CH, parrDst, parrSrc, u32RelTestSize);
 			}
 
 			if (ulTaskNotifyTake(pdTRUE, 300)) { // Timeout 3sec
@@ -167,7 +166,7 @@ static void DmaTestTask(void *ctx)
 
 				if (dmaitem.cMode == 'B') {
 					//portMEMORY_BARRIER();
-					//hwflush_dcache_range((ULONG)parrDst, u32RelTestSize);
+					hwflush_dcache_range((ULONG)parrDst, u32RelTestSize);
 					//asm volatile ("fence rw,rw");
 					//asm volatile ("fence w,r");
 				}
@@ -184,17 +183,32 @@ static void DmaTestTask(void *ctx)
 
 				if (flag == 0) {
 					pass++;
+					static UINT processrate = 0;
+					if (processrate != (j * 100 / dmaitem.u32Move)) {
+						processrate = j * 100 / dmaitem.u32Move;
+						char buf[64] = {0};
+						snprintf(buf, 64, "%3u%%", processrate);
+						printf("\b\b\b\b");
+						printf("%s", buf);
+					}
 					//printf("OK\n");
 					//printf(".");
 				} else {
+					printf("\b\b\b\b");
 					_Rprintf("Fail\nError(%u/%u) Move(%u) Dst(0x%08X)\n", k, u32RelTestSize, j, parrDst);
-					hexCmpDump("Dma Test", parrSrc + k - 64, parrDst + k - 64, u32RelTestSize - k + 64);
+					//int l = 0;
+					//if (k < 64) {
+					//	l = 64 - k;
+					//}
+					//hexCmpDump("Dma Test", parrSrc + k - 64, parrDst + k - 64, u32RelTestSize - k + 64);
+					hexCmpDump("Dma Test", parrSrc, parrDst, u32RelTestSize);
 					i = j = -0xf;
 					fail++;
 					break;
 				}
 			} else {
 				flag = 1;
+				printf("\b\b\b\b");
 				_Rprintf("\nTimeout! 0x%08X <- 0x%08X, Len:%ubyte\n", parrDst, parrSrc, u32RelTestSize);
 				if (dmaitem.cMode == 'C') {
 					extern void CDmaRegshow(UINT nCH);
@@ -212,8 +226,10 @@ static void DmaTestTask(void *ctx)
 		if (flag == 0) {
 			char buf[64] = {0};
 			snprintf(buf, 64, "%.2f", (total_size / 1024.0 / 1024.0) / (total_time / 1000.0 / 1000.0));
+			printf("\b\b\b\b");
 			_Gprintf("OK, %sMbyte/s\n", buf);
 		} else {
+			printf("\b\b\b\b");
 			_Rprintf("Fail\n");
 		}
 
@@ -237,7 +253,7 @@ static void DmaTestTask(void *ctx)
 int cmd_test_dma(int argc, char *argv[])
 {
 	char cMode = 'B';
-	static UINT nCH = 0;
+	static UINT nCH = 2;
 	static int nTestsize = -1; // random
 
 	if (strcmp(argv[0], "bdma") == 0) {
@@ -328,8 +344,8 @@ int cmd_test_dma(int argc, char *argv[])
 				}
 
 				UINT nLoop = atoi(argv[2]);
-				if (nLoop > 8192) {
-					printf("Max Test Count => 8192\n");
+				if (nLoop > 131072) {
+					printf("Max Test Count => 131072\n");
 					return 0;
 				}
 
@@ -340,7 +356,7 @@ int cmd_test_dma(int argc, char *argv[])
 				dmaitem.u32Move = nLoop;
 				dmaitem.cMode = cMode;
 				dmaitem.u32CH = nCH;
-				dmaitem.taskHandle = vTaskCreate("DmaT", DmaTestTask, NULL, LV3_STACK_SIZE, LV4_TASK_PRIO);
+				dmaitem.taskHandle = vTaskCreate("DmaT", DmaTestTask, NULL, LV3_STACK_SIZE, LV5_TASK_PRIO);
 			} else {
 				Shell_Unknown();
 			}
@@ -701,7 +717,7 @@ int cmd_test_checksum(int argc, char *argv[])
 	} else if (strcmp(argv[1], "start") == 0) {
 		chksumitem.u32BufSize = 2048;
 		chksumitem.u32TestLoop = 1000;
-		vTaskCreate("ChksumT", ChksumTestTask, NULL, LV3_STACK_SIZE, LV4_TASK_PRIO);
+		vTaskCreate("ChksumT", ChksumTestTask, NULL, LV3_STACK_SIZE, LV5_TASK_PRIO);
 	}
 #else
 #if 1

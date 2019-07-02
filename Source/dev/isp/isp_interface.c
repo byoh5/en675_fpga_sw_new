@@ -1,5 +1,25 @@
 #include "dev.h"
 
+void Isp_SYNC_CODE(WORD awC0, WORD awC1, WORD awC2, WORD awC3_0, WORD awC3_1, WORD awC3_2, WORD awS0C3_0, WORD awS0C3_1, WORD awS0C3_2, WORD awS1C3_0, WORD awS1C3_1, WORD awS1C3_2)
+{
+#if (model_Sens_Intf==1) || (model_Sens_Intf==2)	// LVDS or MIPI
+	SYNC_COD0w(awC0);
+	SYNC_COD1w(awC1);
+	SYNC_COD2w(awC2);				//	Short Packet Line Start
+	SYNC_COD3_0w(awC3_0);			//	Short Packet Line End
+	SYNC_COD3_1w(awC3_1);
+	SYNC_COD3_2w(awC3_2);
+#endif
+
+#if (model_Sens_Intf==2)	// MIPI
+	SYNC_S0COD3_0w(awS0C3_0);
+	SYNC_S0COD3_1w(awS0C3_1);
+	SYNC_S0COD3_2w(awS0C3_2);			//	Long Packet Line Start - Raw 10Bit or
+	SYNC_S1COD3_0w(awS1C3_0);			//	Long Packet Line End
+	SYNC_S1COD3_1w(awS1C3_1);
+	SYNC_S1COD3_2w(awS1C3_2);
+#endif
+}
 
 //	OnOff			->	0 : Off, 1 : On
 //	IsMipi			->	0 : LVDS, 1 : Mipi
@@ -30,7 +50,9 @@ void Isp_SDesPowerOn(BOOL OnOff, BOOL IsMipi, BYTE MipiClkPhase)
 
 void Isp_SDesDelay(BYTE Lck, BYTE Ldi0, BYTE Ldi1, BYTE Ldi2, BYTE Ldi3)
 {
+#if (model_Sens_Intf==1) || (model_Sens_Intf==2)	// LVDS or MIPI
 	LCK_DLYw(Lck);	LDIDLY0w(Ldi0);		LDIDLY1w(Ldi1);		LDIDLY2w(Ldi2);		LDIDLY3w(Ldi3);
+#endif
 }
 
 //void Isp_SdesTimingAlign(BYTE Res)
@@ -65,15 +87,16 @@ void Isp_SDesDelay(BYTE Lck, BYTE Ldi0, BYTE Ldi1, BYTE Ldi2, BYTE Ldi3)
 
 void Isp_SDesPosition(UINT LvdsHRpos, UINT LvdsVRpos, UINT LvdsHw, UINT LvdsVw)
 {
+#if (model_Sens_Intf==1) || (model_Sens_Intf==2)	// LVDS or MIPI
 	RDES_RPOSw(LvdsHRpos);		// Lvds/Mipi internal buffer에서 image를 read하는 horizontal position을 설정한다.
 	RDES_RVPOSw(LvdsVRpos);		// Lvds/Mipi internal buffer에서 image를 read하는 vertical position을 설정한다.
 	RDES_VWw(LvdsVw);			// Lvds/Mipi internal buffer에서 image를 read하는 vertical width를 설정한다. 이 값은 margin을 포함하여 실제 vertical active pixel보다 크게 설정한다.
 	MERGE_HWw(LvdsHw>>2);		// Lvds/Mipi internal buffer에서 image를 read하는 horizontal width를 설정한다. 이 값은 margin을 포함하여 실제 horizontal active pixel보다 크게 설정한다. '>>2'적용하여 설정
+#endif
 }
 
-//	LvdsBit		->	LVDS_10BIT		0
-//             	 	LVDS_12BIT		1
-//              	LVDS_16BIT		2
+//	LvdsBit		->	LVDS_10BIT		10
+//             	 	LVDS_12BIT		12
 //
 //	LvdsLane	->	LVDS_2LANE		0
 //					LVDS_4LANE      1
@@ -81,25 +104,29 @@ void Isp_SDesPosition(UINT LvdsHRpos, UINT LvdsVRpos, UINT LvdsHw, UINT LvdsVw)
 //	IsLsbFirst	->	0 : Msb First, 1 : Lsb First
 //
 //	PNSel		->	0 : Negative Start, 1 : Positive Start
-void Isp_Lvds_Config(BYTE LvdsBit, BYTE LvdsLane, BOOL IsLsbFirst, BOOL PNSel)
+//
+//	SofNo		->	0 : usually Panasonic sensor, 1 : others
+void Isp_Lvds_Config(BYTE LvdsBit, BYTE LvdsLane, BOOL IsLsbFirst, BOOL PNSel, BOOL SofNo)
 {
-	RDES_BITw(LvdsBit);
+	if(LvdsBit==12)		{	OMOD_BITw(0);	RDES_BITw(1); }			//	12 Bit
+	else				{	OMOD_BITw(1);	RDES_BITw(0); }			//	10 Bit
+
 	RDES_CH_MODw(LvdsLane);
 	LVDS_LSBw(IsLsbFirst);
 	RDES_PNSELw(PNSel);
+	SOF_NOw(SofNo);
 }
 
-//	MipiBit		->	MIPI_10BIT		0
-//             	 	MIPI_12BIT		1
+//	MipiBit		->	MIPI_10BIT		10
+//             	 	MIPI_12BIT		12
 //	MipiLane	->	MIPI_1LANE		0
 //					MIPI_2LANE      1
 //					MIPI_4LANE      2
-void Isp_Mipi_Config(BYTE MipiBit, BYTE MipiLane, BOOL IsLsbFirst, BOOL PNSel, BOOL UseEcc, BOOL UseWcl, BOOL UseWcf, BOOL UseWcfe, BYTE MipiImgPhase)
+void Isp_Mipi_Config(BYTE MipiBit, BYTE MipiLane, BOOL IsLsbFirst, BOOL PNSel, WORD MipiHsyncOfs, BOOL UseEcc, BOOL UseWcl, BOOL UseWcf, BOOL UseWcfe, BYTE MipiImgPhase)
 {
-	if(MipiBit==1)		{	OMOD_BITw(0);	}			//	12 Bit
-	else				{	OMOD_BITw(1);	}			//	10 Bit
+	if(MipiBit==12)		{	OMOD_BITw(0);	RDES_BITw(1); }			//	12 Bit
+	else				{	OMOD_BITw(1);	RDES_BITw(0); }			//	10 Bit
 
-	RDES_BITw(MipiBit);
 	RDES_CH_MODw(MipiLane);
 	LVDS_LSBw(IsLsbFirst);
 	RDES_PNSELw(PNSel);
@@ -109,6 +136,10 @@ void Isp_Mipi_Config(BYTE MipiBit, BYTE MipiLane, BOOL IsLsbFirst, BOOL PNSel, B
 	MIPI_WCCHK_FEONw(UseWcfe);
 	MIPI_IMG_MCNTw(MipiImgPhase);
 //	LSYNCM_SELw(MipiClkPhase);
+
+	MIPI_HLOCK_POSw(MipiHsyncOfs);				//	Very Important!!! For Image Phase
+
+	MIPI_LAT_AENw(1);
 }
 
 
@@ -119,8 +150,16 @@ void Isp_Mipi_Config(BYTE MipiBit, BYTE MipiLane, BOOL IsLsbFirst, BOOL PNSel, B
 //	SENS_18M	3 : 18.5625 MHz
 //	SENS_27M	4 : 27 MHz	(CLK Input Clock)
 //	SENS_13M	5 : 13.5 MHz (CLK Input Clock / 2)
-void Isp_SensorPowerOn(BOOL OnOff, BYTE ClkSel)
+void Isp_SensorPowerOn(BOOL OnOff, UINT Clk)
 {
+	const BYTE ClkSel = (Clk==148) ? SENS_148M :
+						(Clk==74) ? SENS_74M :
+						(Clk==37) ? SENS_37M :
+						(Clk==18) ? SENS_18M :
+						(Clk==27) ? SENS_27M :
+						(Clk==13) ? SENS_13M :
+						/*(Clk==6) ?*/ SENS_6M ;
+
 	PCKO_CK_PDw(0);
 	PCKO_PDw(0);
 	PCKO_SELw(ClkSel);
@@ -145,7 +184,7 @@ void Isp_SensorPowerOn(BOOL OnOff, BYTE ClkSel)
 //							DIFF_EDGE (1)
 //	BOOL IsUseAsync		->	NO_USE_AUTOSYNC (0)
 //						->	USE_AUTOSYNC 	(1)
-void Isp_Parallel_Config(BOOL OnOff, BOOL IsSlave, BOOL IsUseExtClk, BOOL IsClkDdr, BYTE ClkDly, BOOL HSyncPol, BOOL VSyncPol, BOOL SyncMode, BOOL IsUseAsync)
+void Isp_Parallel_Config(BOOL OnOff/*, BOOL IsSlave*/, BOOL IsUseExtClk, BOOL IsClkDdr, BYTE ClkDly/*, BOOL HSyncPol, BOOL VSyncPol, BOOL SyncMode, BOOL IsUseAsync*/)
 {
 
 	PCLK_PDw(OnOff);
@@ -153,8 +192,8 @@ void Isp_Parallel_Config(BOOL OnOff, BOOL IsSlave, BOOL IsUseExtClk, BOOL IsClkD
 	if(OnOff)	{	CH_DSELw(1);	CH_HSSELw(1);	CH_VSSELw(1);								}
 	else		{	CH_DSELw(0);	CH_HSSELw(0);	CH_VSSELw(0);	IBT_PCK_PDw(0);	BT_PCK_PDw(0);	IDDR_ONw(0);	ISDR_OPw(0);	return;	}
 
-	if(IsSlave)		SLVw(3);
-	else			SLVw(0);
+//	if(IsSlave)		SLVw(3);
+//	else			SLVw(0);
 
 	IBT_PCK_SET(0);
 
@@ -164,11 +203,11 @@ void Isp_Parallel_Config(BOOL OnOff, BOOL IsSlave, BOOL IsUseExtClk, BOOL IsClkD
 	if(IsClkDdr==PARA_CLK_SDR)		{	IDDR_ONw(1);	ISDR_OPw(1);	}
 	else							{	IDDR_ONw(1);	ISDR_OPw(0);	}
 
-	POL_HSIw(HSyncPol);
-	POL_VSIw(VSyncPol);
+//	POL_HSIw(HSyncPol);
+//	POL_VSIw(VSyncPol);
 
-	VSYN_NAONw(SyncMode);
-	ASYNC_ONw(IsUseAsync);
+//	VSYN_NAONw(SyncMode);
+//	ASYNC_ONw(IsUseAsync);
 
 	PCLK_DLYw(ClkDly);
 }
@@ -204,9 +243,10 @@ void Isp_PreClk_Config(BYTE Clk)
 //	Vw			->	Vertical Active Width
 //	IsASync+	->	omni sensor와 같이 Active 이외의 구간에서 sync가 나오지 않는 sensor에서 1로 설정
 //	IsNSync+	->	입력 sync의 H/V 위상이 일치하지 않는 상황에서 1로 설정
-void Isp_PreSync_Config(BOOL IsSlave, UINT Htw, UINT Vtw, UINT HsyncOfs, UINT VsyncOfs, UINT Hsp, UINT Vsp, UINT Hw, UINT Vw, BOOL IsASync, BOOL IsNSync)
+//	HSyncPol	->	SYNC_FALL (0), SYNC_RISE (1)
+//	VSyncPol	->	SYNC_FALL (0), SYNC_RISE (1)
+void Isp_PreSync_Config(BOOL IsSlave, UINT Htw, UINT Vtw, UINT HsyncOfs, UINT VsyncOfs, UINT Hsp, UINT Vsp, UINT Hw, UINT Vw, BOOL IsASync, BOOL IsNSync, BOOL HSyncPol, BOOL VSyncPol)
 {
-
 	PRS_HZw(1);
 
 	HSPIw(Hsp);		VSPIw(Vsp);		HWIw(Hw);		VWIw(Vw);
@@ -221,11 +261,13 @@ void Isp_PreSync_Config(BOOL IsSlave, UINT Htw, UINT Vtw, UINT HsyncOfs, UINT Vs
 	ASYNC_ONw(IsASync);
 	VSYN_NAONw(IsNSync);
 	PRS_HZw(0);
+
+	POL_HSIw(HSyncPol);
+	POL_VSIw(VSyncPol);
 }
 
 void Isp_AutoSync_Config()
 {
-
 
 }
 

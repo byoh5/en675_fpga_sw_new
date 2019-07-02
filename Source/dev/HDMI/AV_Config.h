@@ -29,8 +29,7 @@ enum AV_ConfigErrorCodes
 
 // Time Constants Used in AV_Config.c only
 //========================================
-//#define T_RES_CHANGE_DELAY      128         // delay between turning TMDS bus off and changing output resolution
-#define T_RES_CHANGE_DELAY      12800         // delay between turning TMDS bus off and changing output resolution
+#define T_RES_CHANGE_DELAY      128         // delay between turning TMDS bus off and changing output resolution
 
 // Deep Color Constants
 //=====================

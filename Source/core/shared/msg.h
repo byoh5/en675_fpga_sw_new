@@ -18,6 +18,7 @@ typedef struct {
 	UINT ETH_TX_CHECK;
 
 	UINT MAKEVID_COUNT;
+	UINT WIFI_INTER_LOG;
 } debug_msg_t;
 
 extern share_msg_t gptMsgShare;

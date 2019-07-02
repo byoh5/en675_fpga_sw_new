@@ -1,51 +1,81 @@
+//*************************************************************************************************
+// Software version info & fixed define
+//-------------------------------------------------------------------------------------------------
 
-//	Font
-#define			USE_FONT			1
-#define			USE_LOG				1
+	#define 	model_ver			0x6500		// Eyenix base code version (Fixed)
 
+//	#define 	SENS_MN34210			1		// Pana 1.3M 60P(also MN34219), LVDS Mode - TBD
+	#define 	SENS_IMX225				4		// Sony	1.3M 60P(also IMX224 ), LVDS Mode - TBD
+
+//	#define 	SENS_MN34229			11		// Pana 2M 60p, LVDS Mode
+//	#define 	SENS_MN34420			12		// Pana 2M 60p, LVDS Mode
+//	#define 	SENS_IMX307				13		// Sony	2M 60p, LVDS Mode
+//	#define 	SENS_IMX327				14		// Sony	2M 60p, LVDS Mode
+	#define 	SENS_IMX291				15		// Sony	2M 60p, LVDS Mode
+//	#define 	SENS_AR0237CSH 			18 		// Aptina 2M 60p, HiSpi Mode (PLCC Type)
+
+//	#define 	SENS_MN34227			21		// Pana	2M 30p(also MN34220), LVDS Mode
+	#define 	SENS_OV2718				22		// Omni	2M 30p, Parallel Mode
+//	#define 	SENS_IMX122 			23		// Sony 2M 30p(also IMX222/IMX322), Parallel Mode - TBD
+//	#define 	SENS_IMX323				24		// Sony	2M 30p, Parallel Mode
+//	#define 	SENS_AR0237CSP			25		// Aptina 2M 30p, Parallel Mode(PLCC Type) - TBD
+
+	#define		SENS_IMX335				40		// Sony 4M 30p
+//	#define		SENS_OS05A10			45		// Omni 4M 30p
+	#define		SENS_OV4689				46		// Omni 4M 30p
+
+//	#define		SENS_IMX334				80		// Sony 8M 30p
+	#define		SENS_IMX274				81		// Sony 8M 30p
+	#define		SENS_IMX415				82		// Sony 8M 30p
+	#define		SENS_OS08A10			85		// Omni 8M 30p
+
+
+#ifndef __SENS_LIST__
+
+//	Sensor Setting--------------------------------------------------------------
+#define model_Sens		SENS_IMX291	// Sensor selection
+
+
+#define model_Sens_Ctrl		1		// 0 : SPI, supported Sony Sensor Only
+									// 1 : TWI, supported All Sensor
+
+#define model_Sens_Intf		1		// 0 : Parallel, supported IMX225
+									// 1 : LVDS, supported OS08A10, IMX291, OV2718,
+									// 2 : MIPI, supported OV4689, IMX335, IMX274, IMX225, IMX415
+
+#define model_Sens_Fps		30		// 60 fps : supported IMX225
+									// 30 fps : supported IMX335, OV4689, OV2718, IMX291
+									// 20 fps : supported IMX335
+									// 15 fps : supported IMX274, OV4689, OS08A10, IMX415
+									// 12 fps : =12.5fps, supported IMX335
+
+//-------------------------------------------------------------------------------------------------
+#define model_Sony			((model_Sens==SENS_IMX415)||(model_Sens==SENS_IMX274)||(model_Sens==SENS_IMX334)||(model_Sens==SENS_IMX335)||(model_Sens==SENS_IMX225)||(model_Sens==SENS_IMX291)||(model_Sens==SENS_IMX327)||(model_Sens==SENS_IMX307)||(model_Sens==SENS_IMX323))
+#define model_Omni			((model_Sens==SENS_OS08A10)||(model_Sens==SENS_OV4689)||(model_Sens==SENS_OV2718))
+#define model_Aptn			((model_Sens==SENS_AR0237CSH))
+#define model_Pana			((model_Sens==SENS_MN34210)||(model_Sens==SENS_MN34229)||(model_Sens==SENS_MN34227)||(model_Sens==SENS_MN34420))
+
+#define model_Mipi			((model_Sens==SENS_IMX415)||(model_Sens==SENS_OV4689)||(model_Sens==SENS_IMX335)||(model_Sens==SENS_IMX274)||(model_Sens==SENS_IMX225))
+#define model_Lvds			((model_Sens==SENS_OS08A10)||(model_Sens==SENS_IMX291)||(model_Sens==SENS_OV2718))
+#define model_Parallel		((model_Sens==SENS_IMX225))
+
+#define model_60fps			((model_Sens==SENS_IMX225))
+#define model_30fps			((model_Sens==SENS_IMX335)||(model_Sens==SENS_OV4689)||(model_Sens==SENS_OV2718)||(model_Sens==SENS_IMX291))
+#define model_20fps			((model_Sens==SENS_IMX335))
+#define model_15fps			((model_Sens==SENS_IMX415)||(model_Sens==SENS_IMX274)||(model_Sens==SENS_OV4689)||(model_Sens==SENS_OS08A10))
+#define model_12fps			((model_Sens==SENS_IMX335))
+
+//-------------------------------------------------------------------------------------------------
 //	Display
 // HDMI는 device.cmake 에서 설정함
+// HDMI 제어 시 I2C 설정은 peripheral.cmake 에서 USE_I2C7 3, I2C7_SPEED 400000 로 설정
 
 //	DDR
 #define			USE_FRC				1
-	#define			DDR_TIMING		1
-#define			DDR_ORIGINAL		1
-//#define			DDR_CONTROL			1
 
-//	Sync
-#define			ISP_VLOCKO			1
-
-//	Sensor Setting Interface	-----------------------------------------------
-//#define			SENSOR_SPI				1
-#define			SENSOR_I2C				1
-
-//	1.3M	-------------------------------------------------------------------
-//#define			IMX225_MIPI_4LANE_60FPS		1
-//#define			IMX225_PARALLEL				1
-
-
-//	2M	-----------------------------------------------------------------------
-#define			IMX291			1
-	#define		IMX291_30FPS	1
-//	#define		IMX291_60FPS	1
-	#define		IMX291_I2C		1
-//	#define		IMX291_SPI		1
-
-//#define		OV2718_LVDS_4CH			1
-
-//	4M	-----------------------------------------------------------------------
-//#define			OV4689_MIPI_30FPS		1
-//#define			OV4689_MIPI_15FPS		1
-
-//#define			IMX335_MIPI_4LANE			1
-////		#define		IMX335_4M_30P			1
-////		#define		IMX335_5M_20P			1
-//		#define		IMX335_5M_12_5P			1
-
-//	4K	-----------------------------------------------------------------------
-//#define			IMX274_4K_MIPI_15P		1
-//#define			OV08A10_LVDS_15P		1
-
+//	Sensor Control Setting------------------------------------------------------
+// Sensor 제어 시 I2C 설정은 peripheral.cmake 에서 USE_I2C0 3, I2C0_SPEED 400000 로 설정
+// Sensor 제어 시 SPI 설정은 peripheral.cmake 에서 USE_SPI0 2, SPI0_SPEED 1500000, SPI0_BIT 24, SPI0_LSB 1 로 설정
 
 
 //	External Digital Input------------------------------------------------------
@@ -56,7 +86,6 @@
 
 //	ISP Function----------------------------------------------------------------
 //#define				USE_DNR3D			1
-
 
 //	Jpeg Test-------------------------------------------------------------------
 //#define			JPG_ENCODING			1
@@ -77,42 +106,7 @@
 //	#define				FR_TFT035_SPI_4LANE_18BIT_MODE		1
 
 
-//	I2C Address-----------------------------------------------------------------
-#define	SENS_SONY_DEV		0x34
-//#define	SENS_SONY_DEV		0x20
-#define SENS_OV_DEV			0x6C			//	GPIO1 is LOW
-//#define SENS_OV2718_DEV		0x20			//	GPIO1 is High
-
-// for SPI
-#define SENS_SONY_ID2		0x2
-#define SENS_SONY_ID3		0x3
-#define SENS_SONY_ID4		0x4
-#define SENS_SONY_ID5		0x5
-#define SENS_SONY_ID6		0x6
-
-// for TWI
-#define SENS_SONY_ID2_TWI	0x30
-#define SENS_SONY_ID3_TWI	0x31
-#define SENS_SONY_ID4_TWI	0x32
-#define SENS_SONY_ID5_TWI	0x33
-#define SENS_SONY_ID6_TWI	0x34
-
-//	HDMI
-#define HDMI_ADDR 			0x7A
-
-
-//*************************************************************************************************
-// Software version info & fixed define
-//-------------------------------------------------------------------------------------------------
-
-	#define 	model_ver			0x6500		// Eyenix base code version (Fixed)
-
-	#define 	SENS_IMX291				24		// Sony	2M 60p, LVDS Mode
-
-
 // Board Evaluation Setting for ISP --------------------------------------------------------------
-#define model_Sens		SENS_IMX291	// Sensor selection
-
 
 #define model_Save			0		// 0 : save Parameter value to External EEPROM by I2C(TWI)
 									//*1 : save Parameter value to internal Flash (default)
@@ -162,11 +156,9 @@
 									// 1 : use (+MENU)
 
 
-
 // --------------------------------------------------------------
 #define model_Iris_DC		(/*(model_Iris==0)||*/(model_Iris==1)||(model_Iris==2))
 #define model_Iris_P		((model_Iris==3)||(model_Iris==4))
-
 
 #define model_1M			((model_Sens>= 0)&&(model_Sens<10))
 #define model_2M			((model_Sens>=10)&&(model_Sens<20))	// EN781 no used
@@ -175,6 +167,30 @@
 #define model_8M			((model_Sens>=80)&&(model_Sens<90))
 
 
+// --------------------------------------------------------------
+#if (model_Sens_Intf!=0)&&(model_Sens_Intf!=1)&&(model_Sens_Intf!=2)
+	#error "model_Sens_Intf" incorrect setting
+#elif (model_Sens_Intf==0) && (model_Parallel==0)
+	#error "model_Sens_Intf 0" is not supported.
+#elif (model_Sens_Intf==1) && (model_Lvds==0)
+	#error "model_Sens_Intf 1" is not supported.
+#elif (model_Sens_Intf==2) && (model_Mipi==0)
+	#error "model_Sens_Intf 2" is not supported.
+#endif
+
+#if (model_Sens_Fps!=60)&&(model_Sens_Fps!=30)&&(model_Sens_Fps!=20)&&(model_Sens_Fps!=15)&&(model_Sens_Fps!=12)
+	#error "model_Sens_Fps" incorrect setting
+#elif (model_Sens_Fps==60) && (model_60fps==0)
+	#error "model_Sens_Fps 60" is not supported.
+#elif (model_Sens_Fps==30) && (model_30fps==0)
+	#error "model_Sens_Fps 30" is not supported.
+#elif (model_Sens_Fps==20) && (model_20fps==0)
+	#error "model_Sens_Fps 20" is not supported.
+#elif (model_Sens_Fps==15) && (model_15fps==0)
+	#error "model_Sens_Fps 15" is not supported.
+#elif (model_Sens_Fps==12) && (model_12fps==0)
+	#error "model_Sens_Fps 12" is not supported.
+#endif
 
 
-
+#endif

@@ -5,7 +5,7 @@
 코드 구성
 ---------
 
-FPGA ver 19.06.05 입니다.
+FPGA ver 19.07.01 입니다.
 이 코드는 Flash이 없는 환경에서 테스트 되었습니다. Source Code는 SRAM에서 작동중입니다.
 CPU0, 1, 2, 3은 source/core폴더에서 core0, core1, core2, core3의 main_.c 파일을 root로 합니다.
 CPU0에서 임시로 freeRTOS가 작동중입니다. DDR BSS영역 뒤의 4MByte 영역을 RTOS Heap 영역으로 사용합니다.

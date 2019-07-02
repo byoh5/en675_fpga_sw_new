@@ -3,7 +3,13 @@
 #include "enx_lwip.h"
 #include "networkif.h"
 
+#if defined(__ETHERNET__)
 static struct netif gnif_eth; // Ethernet
+#endif
+#if defined(__WIFI__)
+struct netif *gtwlif_sta = NULL;// Wi-Fi STA mode
+struct netif *gtwlif_uap = NULL;// Wi-Fi UAP mode
+#endif
 
 SemaphoreHandle_t xtxwl_sem = NULL;
 SemaphoreHandle_t xrxwl_sem = NULL;

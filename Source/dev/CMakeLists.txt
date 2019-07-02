@@ -37,6 +37,7 @@ SET ( DEV_HDRS
 	sfls/winbond_w25q64.h
 	sfls/gigadevice_gd25q128c.h
 	sfls/micron_n25q128a.h
+	sfls/issi_is25lp128.h
 	ethernet/ethphy.h
 	ethernet/ksz8081mnx.h
 	ethernet/ksz9031rnx.h
@@ -46,6 +47,7 @@ SET ( DEV_HDRS
 	rtc/pcf8563.h
 	rtc/s35390a.h
 	sdio/sdio_cd.h
+	sdio/sdio_wf.h
 	string/vsnprintf.h
 	string/enx_string.h
 	string/uart_string.h
@@ -89,11 +91,12 @@ SET ( DEV_HDRS
 	isp/isp_cvbs_tbl.h
 	isp/isp_functions.h
 	isp/isp_interface.h
-	isp/isp_sensor_tbl.h
 	isp/isp_vlc_tbl.h
 	isp/isp_menu.h
 	isp/isp_menu_str.h
 	isp/isp_par_tbl.h
+	wifi/wifi_cfg.h
+	wifi/wlif_tools.h
 )
 
 SET ( DEV_SRCS
@@ -130,6 +133,7 @@ SET ( DEV_SRCS
 	sfls/winbond_w25q64.c
 	sfls/gigadevice_gd25q128c.c
 	sfls/micron_n25q128a.c
+	sfls/issi_is25lp128.c
 	string/vsnprintf.c
 	string/enx_string.c
 	string/uart_string.c
@@ -168,6 +172,7 @@ SET ( DEV_SRCS
 	isp/isp_par.c
 	isp/isp_menu.c
 	isp/isp_main.c
+	wifi/wlif_tools.c
 )
 
 # 라이브러리 생성

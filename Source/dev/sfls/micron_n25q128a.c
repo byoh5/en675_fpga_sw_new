@@ -47,6 +47,7 @@ static SFLScontrol sfls_n25q128a = {
 void SflsN25q128a_Init(void)
 {
 #if (N25Q128A_IOMODE==SFLS_DUAL)
+#if 0
 	SFLS_USR_CMD_MODE	= 0;
 	SFLS_USR_ADR_MODE	= 0;
 	SFLS_USR_DAT_MODE	= 0;
@@ -55,7 +56,7 @@ void SflsN25q128a_Init(void)
 	SFLS_USR_RD_EN		= 1;
 	SFLS_USR_WR_EN		= 0;
 	SFLS_USR_GAP		= 0;
-	SFLS_USR_LEN		= 0;
+	SFLS_USR_LEN		= 3;
 	SFLS_USR_ADR_EXT	= 0;
 	SFLS_USR_BUSY_EN	= 0;
 //	SFLS_USR_BUSY_KEEP	= 0;
@@ -84,7 +85,7 @@ void SflsN25q128a_Init(void)
 	SFLS_USR_RD_EN		= 0;
 	SFLS_USR_WR_EN		= 1;
 	SFLS_USR_GAP		= 0;
-	SFLS_USR_LEN		= 1;
+	SFLS_USR_LEN		= 0;
 	SFLS_USR_ADR_EXT	= 0;
 	SFLS_USR_BUSY_EN	= 0;
 //	SFLS_USR_BUSY_KEEP	= 0;
@@ -117,7 +118,7 @@ void SflsN25q128a_Init(void)
 
 	getData = SFLS_USR_RDDAT;
 	printf("SFLS(0x65) => [0x%02X]\n", getData);
-
+#endif
 
 #elif (N25Q128A_IOMODE==SFLS_QUAD)
 
