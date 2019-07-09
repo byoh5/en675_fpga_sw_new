@@ -6,17 +6,18 @@ inline static int ispow2(ULONG val)
     return val && !(val & (val-1));
 }
 
-void clear_pmp(void)
+void setup_pmp(void)
 {
-	write_csr(pmpcfg0, 0x0UL);
-	write_csr(pmpaddr0, 0x0UL);
-	write_csr(pmpaddr1, 0x0UL);
-	write_csr(pmpaddr2, 0x0UL);
-	write_csr(pmpaddr3, 0x0UL);
-	write_csr(pmpaddr4, 0x0UL);
-	write_csr(pmpaddr5, 0x0UL);
-	write_csr(pmpaddr6, 0x0UL);
-	write_csr(pmpaddr7, 0x0UL);
+	  // Set up a PMP to permit access to all of memory.
+	  // Ignore the illegal-instruction trap if PMPs aren't supported.
+	ULONG pmpc = PMP_NAPOT | PMP_R | PMP_W | PMP_X;
+	  asm volatile ("la t0, 1f\n\t"
+	                "csrrw t0, mtvec, t0\n\t"
+	                "csrw pmpaddr0, %1\n\t"
+	                "csrw pmpcfg0, %0\n\t"
+	                ".align 2\n\t"
+	                "1: csrw mtvec, t0"
+	                : : "r" (pmpc), "r" (-1UL) : "t0");
 }
 
 static int pmp_entry_set_pow2(unsigned n, BYTE prot, ULONG addr, ULONG len)
@@ -35,11 +36,7 @@ static int pmp_entry_set_pow2(unsigned n, BYTE prot, ULONG addr, ULONG len)
 	ULONG pmpmask = (len>>PMP_SHIFT)-1;
     ULONG pmpaddr = ((addr >> PMP_SHIFT) & ~pmpmask) | (pmpmask >> 1);
 
-    printf("pmp_entry_set_pow2 : n=%d, addr=0x%lx, len=%d, pmpcfg_shift=%d, cfgmask=0x%016lx, pmpcfg=0x%016lx, pmpmask=0x%016lx, pmpaddr=0x%016lx\n", n, addr, len, pmpcfg_shift, cfgmask, pmpcfg, pmpmask, pmpaddr);
-
     /* write csrs */
-    printf("pmpcfg0=0x%016lx, pmpaddr0=0x%016lx, pmpaddr1=0x%016lx, pmpaddr2=0x%016lx, pmpaddr3=0x%016lx\n", read_csr(pmpcfg0), read_csr(pmpaddr0), read_csr(pmpaddr1), read_csr(pmpaddr2), read_csr(pmpaddr3));
-
     pmpcfg |= (read_csr(pmpcfg0) & cfgmask) | pmpcfg;		// only for pmp entry 0~7
 
     switch(n) {
@@ -55,8 +52,6 @@ static int pmp_entry_set_pow2(unsigned n, BYTE prot, ULONG addr, ULONG len)
     }
     write_csr(pmpcfg0, pmpcfg);
 
-    printf("pmpcfg0=0x%016lx, pmpaddr0=0x%016lx, pmpaddr1=0x%016lx, pmpaddr2=0x%016lx, pmpaddr3=0x%016lx\n", read_csr(pmpcfg0), read_csr(pmpaddr0), read_csr(pmpaddr1), read_csr(pmpaddr2), read_csr(pmpaddr3));
-
     return 0;
 }
 
@@ -69,27 +64,4 @@ int pmp_entry_set(unsigned n, BYTE prot, ULONG addr, ULONG len)
     }
 
     return pmp_entry_set_pow2(n, prot, addr, len);
-}
-
-inline ULONG set_field(ULONG reg, ULONG mask, ULONG val)
-{
-    return ((reg & ~mask) | ((val * (mask & ~(mask << 1))) & mask));
-}
-
-/*
- * mode_set_and_continue
- *
- * Set mstatus.mpp, sets mepc to instruction after mret and then issues mret
- * Note: the hart will continue running on the same stack
- */
-void mode_set_and_continue(unsigned mode)
-{
-    write_csr(mstatus, set_field(read_csr(mstatus), MSTATUS_MPP, mode));
-    asm volatile (
-        "lla t0, 1f\n"
-        "csrw mepc, t0\n"
-        "mret\n"
-        "1:"
-        ::: "t0"
-    );
 }

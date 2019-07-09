@@ -843,27 +843,21 @@ void main_0(int cpu_id)
 
 // PMP test
 #if 1
-	clear_pmp();
+	setup_pmp();
+	pmp_entry_set(0, PMP_R|PMP_W|PMP_X|PMP_L, 0xa0000000ul, SRAM_SIZE); // SRAM enabled area
+	pmp_entry_set(1, PMP_L, 0xa0000000ul, 0x20000000ul);				// SRAM disabled area
+	pmp_entry_set(2, PMP_R|PMP_W|PMP_X|PMP_L, 0xc0000000ul, SFLS_SIZE); // FLASH enabled area
+	pmp_entry_set(3, PMP_L, 0xc0000000ul, 0x20000000ul);				// FLASH disabled area
 
-	pmp_entry_set(0, PMP_R|PMP_W|PMP_X|PMP_L, 0x80000000ul, 0x20000000ul);	// DDR area
-	pmp_entry_set(1, PMP_R|PMP_W|PMP_X|PMP_L, 0xa0000000ul, SRAM_SIZE);		// SRAM area
-	pmp_entry_set(3, PMP_R|PMP_W|PMP_X|PMP_L, 0xc0000000ul, SFLS_SIZE);		// Flash area
-	pmp_entry_set(5, PMP_R|PMP_W|PMP_X|PMP_L, 0x00000000ul, 0x80000000ul);	// etc area
-
-	/* switch to user mode enclave */
-	mode_set_and_continue(PRV_S);
-
-	printf("after PMP setting\n");
+	printf("PMP setting\n");
 #endif
 
 #if 1
 	volatile UINT *ptest;
 //	ptest = (UINT *)0x70000000;
-	ptest = (UINT *)0xb0000000;
+	ptest = (UINT *)0xb0200000;
 	*ptest = 0xdeadc0de;
 #endif
-
-	while(1);
 
 
 #if 0
