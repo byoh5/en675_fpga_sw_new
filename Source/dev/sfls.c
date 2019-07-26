@@ -143,7 +143,8 @@ UINT SflsGetinfo(void)
 		printf("SFLS No connection.\n");
 		break;
 	default:
-		ENX_ASSERT(0);
+		printf("SFLS Error.\n");
+		//ENX_ASSERT(0);
 		break;
 	}
 
@@ -152,7 +153,9 @@ UINT SflsGetinfo(void)
 
 void SflsWriteEnable(void)
 {
-	sfls_master->func_write_enable();
+	if (sfls_master->func_write_enable) {
+		sfls_master->func_write_enable();
+	}
 }
 
 void SflsSectErase(UINT addr, ENX_YN sync)

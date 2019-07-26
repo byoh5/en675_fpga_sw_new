@@ -18,6 +18,7 @@
 #include "shell_cmd_sfls.h"
 #include "shell_cmd_eth.h"
 #include "shell_cmd_net.h"
+#include "shell_cmd_media.h"
 #include "shell_cmd_mem.h"
 #include "string.h"
 
@@ -132,8 +133,8 @@ tMonCmd gCmdList[] =
 
 //Network
 #if defined(__NETWORK__)
-	{"ifconfig",		cmd_ifconfig,		sIfconfigCmd		},
-	{"netstat",			cmd_netstat,		sNetstatCmd			},
+	{"ifconfig",	cmd_ifconfig,		sIfconfigCmd	},
+	{"netstat",		cmd_netstat,		sNetstatCmd		},
 #endif
 
 //TEST
@@ -158,6 +159,7 @@ tMonCmd gCmdList[] =
 #if (ETHPHY_SHELL_TEST==1)
 	{"mdio",		cmd_test_ethphyreg, sEthphyRegTest	},
 #endif
+	{"video",		cmd_test_video,		sTestVideoCmd	},
 	{0,				0,					0				}
 };
 
@@ -584,6 +586,9 @@ int UsrCmd_i(int argc, char *argv[])
 	netifapi_netif_set_link_up(netif_state[0]._netif);
 	printf("netifapi_netif_set_link_up end\n");
 #endif
+
+	hwflush_dcache_range_all();
+
 	return 0;
 	UNUSED(argc);
 	UNUSED(argv);
@@ -591,6 +596,9 @@ int UsrCmd_i(int argc, char *argv[])
 
 int UsrCmd_j(int argc, char *argv[])
 {
+	//set_csr(mie, MIP_MTIP|MIP_MEIP);
+	//clear_csr(mie, MIP_MTIP|MIP_MEIP);
+
 #if 0
 	printf("netifapi_netif_set_link_down start\n");
 	netifapi_netif_set_link_down(netif_state[0]._netif);
@@ -801,6 +809,8 @@ typedef struct {
 	int reg_div;
 	int reg_lmt;
 	int reg_trig;
+
+	ULONG stime;
 } TimerTestStr;
 
 TimerTestStr ttsTest = {
@@ -816,7 +826,9 @@ TimerTestStr ttsTest = {
 void testTimer_irq(void *ctx)
 {
 	TimerTestStr *tts = (TimerTestStr *)ctx;
-	printf("IRQ is called.\n");
+	UINT etime = BenchTimeStop(ttsTest.stime);
+	ttsTest.stime = BenchTimeStart();
+	printf("IRQ is called.(%u us)\n", etime);
 	if (tts->automode == ENX_YES) {
 		tts->count++;
 		if (tts->count > 10) {
@@ -858,6 +870,7 @@ int cmd_perl_timer(int argc, char *argv[])
 		TimerSetFreq(ttsTest.index, ttsTest.reg_div, ttsTest.reg_lmt, ttsTest.reg_trig);
 		TimerIrqCallback(ttsTest.index, testTimer_irq, &ttsTest);
 		TimerSetIrqEn(ttsTest.index, ENX_ON);
+		ttsTest.stime = BenchTimeStart();
 		TimerStart(ttsTest.index);
 	} else if (strcmp(argv[1], "off") == 0) {
 		if (ttsTest.index > 38 && ttsTest.index < 0) {

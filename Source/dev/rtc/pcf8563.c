@@ -208,13 +208,13 @@ static ENX_OKFAIL pcf8563_set_datetime(struct tm *_tm)
 ENX_OKFAIL pcf8563_init(void)
 {
 	BYTE u8Data;
-
+#if 0
 	if(pcf8563_check() == ENX_FAIL) 
 	{
 		_Rprintf("  >>PCF8563 Not Connected...\n");
 		goto err;
 	}
-
+#endif
 	_Gprintf("  >>PCF8563 Connected...\n");
 
 	/*

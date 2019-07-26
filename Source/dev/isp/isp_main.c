@@ -11,68 +11,62 @@ void Isp_irq_init(void)
 	Isp_VLOCKO_init();						//	Post Sync
 }
 
-void Isp_Sensor_init(void)
+void Isp_SensorRst(void)
 {
-	//----------------------------------------------------------------------------------------
 	Wait_VLOCKO();
 	Wait_VLOCKO();
-//	sleep_(1000);
 
 	//	Sensor Init
-#ifdef	OV2718_LVDS_4CH
+#if model_Sens==SENS_OV2718
 	PCKO_SELw(3);		//	18.5 MHz
 	Wait_VLOCKO();
 	Wait_VLOCKO();
 	Wait_VLOCKO();
-
-	GPIO_PIN1_OUT	=	0;
-	Wait_VLOCKO();
-	Wait_VLOCKO();
-	Wait_VLOCKO();
-	Wait_VLOCKO();
-	Wait_VLOCKO();
-	GPIO_PIN1_OUT	=	1;
+	GpioSetOut(SENSOR_RESET_GPIO_CH,0);
 	Wait_VLOCKO();
 #else
-	GPIO_PIN1_OUT	=	0;
-	Wait_VLOCKO();
-	Wait_VLOCKO();
-	Wait_VLOCKO();
-	Wait_VLOCKO();
-//	sleep_(1000);
-	GPIO_PIN1_OUT	=	1;
-	Wait_VLOCKO();
-//	sleep_(1000);
+	GpioSetOut(SENSOR_RESET_GPIO_CH,0);
 #endif
 
+	Wait_VLOCKO();
+	Wait_VLOCKO();
+	Wait_VLOCKO();
+	Wait_VLOCKO();
+	GpioSetOut(SENSOR_RESET_GPIO_CH,1);
+	Wait_VLOCKO();
+}
 
-#ifdef	OV4689_MIPI_30FPS
-	OV4689_Init();
-#elif	OV4689_MIPI_15FPS
-	OV4689_Init();
-#elif	IMX335_MIPI_4LANE
-	IMX335_Init();
-#elif	IMX225_MIPI_4LANE_60FPS
-	IMX225_Init();
-#elif	IMX291
-	IMX291_Init();
+void Isp_Sensor_init(void)
+{
+	//----------------------------------------------------------------------------------------
+	Isp_SensorRst();
+
+	IspSDesPowerOn();
+	IspSensorPowerOn();
+
+	IspSDesConfig();
+	IspSDesDelay();
+	IspSDesPosition();
+
+	IspSYNC_CODE();
+
+	void printf_SensorSetting(void); printf_SensorSetting();
+	InitSensRun();
+
+	IspPreClkConfig();
+	IspPostClkConfig();
+	IspPreSyncConfig();
+	IspPostSyncConfig();
+
+#if (model_Sens==SENS_OV2718)
+	ASYNC_DSYNCw(1);
+#endif
+
+#if (model_Sens==SENS_IMX291) || (model_Sens==SENS_OV2718)
 	Wait_VLOCKO();
 	Wait_VLOCKO();
 	Wait_VLOCKO();
-//	sleep_(1000);
 	SYNC_UPw(1);
-#elif	IMX274_4K_MIPI_15P
-	IMX274_Init();
-#elif	IMX225_PARALLEL
-	IMX225_Init();
-#elif	OV2718_LVDS_4CH
-	OV2718_Init();
-	Wait_VLOCKO();
-	Wait_VLOCKO();
-	Wait_VLOCKO();
-	SYNC_UPw(1);
-#elif	OV08A10_LVDS_15P
-	OS08A10_Init();
 #endif
 
 	_printf("ISP Clk/Sync & Sensor configuration...\r\n");
@@ -81,25 +75,8 @@ void Isp_Sensor_init(void)
 void Isp_Output_init(void)
 {
 	//	Digital Output Configuration----------------------------------------------------------
-#if		IMX225_MIPI_4LANE_60FPS||IMX225_PARALLEL
-	Isp_Dout0_Sync_Config(1650, 0x5c, 0x0, 0, 0x2a, 1280, 720);
-	Isp_Dout1_Sync_Config(1650, 0x5c, 0x0, 0, 0x2a, 1280, 720);
-#elif	IMX291
-	Isp_Dout0_Sync_Config(2200, 0x5c, 0x447, 0, 0x2a, 1920, 1080);
-	Isp_Dout1_Sync_Config(2200, 0x5c, 0x447, 0, 0x2a, 1920, 1080);
-#elif	OV2718_LVDS_4CH
-	Isp_Dout0_Sync_Config(2200, 0x5a, 0x446, 0, 0x2a, 1920, 1080);
-	Isp_Dout1_Sync_Config(2200, 0x5a, 0x446, 0, 0x2a, 1920, 1080);
-#elif	OV4689_MIPI_15FPS||OV4689_MIPI_30FPS||IMX335_4M_30P||IMX335_5M_20P||IMX335_5M_12_5P
-	Isp_Dout0_Sync_Config(3300, 0x5c, 0x5ba, 0, 0x2a, 2560, 1440);
-	Isp_Dout1_Sync_Config(3300, 0x5c, 0x5ba, 0, 0x2a, 2560, 1440);
-	Isp_Frc_Adr_Config(0x050000, 0x0a0000, 0x0f0000, 0x000000, 0x000000);			//	4 M
-#elif	IMX274_4K_MIPI_15P||OV08A10_LVDS_15P
-	Isp_Dout0_Sync_Config(4400, 0x5a, 0x0, 0, 0x2a, 3840, 2160);
-	Isp_Dout1_Sync_Config(4400, 0x5a, 0x0, 0, 0x2a, 3840, 2160);
-	Isp_Frc_Adr_Config(0x000000, 0x0a0000, 0x0f0000, 0x000000, 0x000000);			//	4 K
-#endif
-
+	IspDout0SyncConfig();
+	IspDout1SyncConfig();
 
 	//	Digital Output Configuration
 	Isp_DigOut_Config(IFO_OPIN_0TO15, IFO_BT1120_16BIT, IFO_ISP_SYNC, IFO_1080_30P, IFO_ISP_PATH, 0, 0);		//	For HDMI (PinList, Dout Mode, Read Sync, Resolution, Output Source Path, Vsp, Hsp)
@@ -132,21 +109,20 @@ void Isp_Function_init(void)
 	CES_ONw(1);
 
 
-#ifdef	USE_FONT
 	// Font position setting by Sensor resolution.
-  #if	OV4689_MIPI_15FPS||OV4689_MIPI_30FPS||IMX335_4M_30P||IMX335_5M_20P||IMX335_5M_12_5P									//	2560 X 1440
+  #if	model_4M									//	2560 X 1440
 	FontInit(0x2f, 0xf, 1, 2560);
-	FontSetArea(78, 30, 154, 58);
-  #elif	IMX225_MIPI_4LANE_60FPS||IMX225_PARALLEL																			//	1280 X 720
+	FontSetArea(78, 29, 154, 58);
+  #elif	model_1M									//	1280 X 720
 	FontInit(0x2f, 0x36, 1, 1280);
-	FontSetArea(39, 15, 77, 29);
-  #elif	IMX274_4K_MIPI_15P||OV08A10_LVDS_15P
+	FontSetArea(39, 14, 77, 29);
+  #elif	model_8M
 	FontInit(0x2f, 0x30, 1, 3840);
 //	FontSetArea(120, 46);
 	FontSetArea(118, 34, 232, 88);
-  #else																														//	1920 X 1080
+  #elif model_2M || model_2M30p						//	1920 X 1080
 	FontInit(0x2f, 0xf, 1, 1920);
-	FontSetArea(59, 23, 116, 44);
+	FontSetArea(59, 22, 116, 44);
 	//FontSetArea(115, 35);
   #endif
 
@@ -155,7 +131,7 @@ void Isp_Function_init(void)
 
 	//FontCharInit(gnFontChar0, ARRAY_SIZE(gnFontChar0));		//	Write Font Data
 	//FontClrAll(NO_ALPHA,MN_WHITE);
-#endif
+
 
 	FORCE_ABT_SOFFw(1);
 
@@ -170,11 +146,6 @@ void Isp_Function_init(void)
 	_printf("ISP Function configuration...\r\n");
 }
 
-void Isp_Function_cstm(void)
-{
-
-}
-
 void Isp_DDR_init(void)
 {
 	//	DDR Init---------------------------------------
@@ -185,10 +156,10 @@ void Isp_DDR_init(void)
 #ifdef	USE_FRC
 	DDR_RDNR_LTCw(0x3a0);
 	DDR_RWDR_LTCw(0x500);
-  #if	OV4689_MIPI_15FPS||OV4689_MIPI_30FPS||IMX335_4M_30P||IMX335_5M_20P||IMX335_5M_12_5P
+  #if	model_4M
 	DDR_RFRC_LTCw(0x620);
-  #elif	IMX274_4K_MIPI_15P||OV08A10_LVDS_15P
-	DDR_RFRC_LTCw(0xe00);
+  #elif	model_8M
+	DDR_RFRC_LTCw(0xf80/*0xe00*/);
   #else
 	DDR_RFRC_LTCw(0x200);
   #endif
@@ -271,32 +242,31 @@ void Isp_Digital_input_init(void)
 }
 
 void Isp_init(void)
-{
-	InitDataID();
+{	// The execution order of the functions is important !!!
 
-	Isp_irq_init();			// Enable External Interrupts & Wait_VLOCKO() 사용을 위한 임시 설정
+	InitDataSet();				// Data setting for initialization
+	AppLoadPar();				// load parameter from memory
+	InitMenu();					// If hold down a specific key, reset the user parameters.
 
-	Isp_Sensor_init();		// ISP Pre & Post의 Clk과 Sync 설정 및 Sensor Initial
+	Isp_irq_init();				// Enable External Interrupts & Wait_VLOCKO() 사용을 위한 임시 설정
 
-	Isp_Output_init();
+	Isp_Sensor_init();			// ISP Pre & Post의 Clk과 Sync 설정 및 Sensor Initial
 
-	Isp_Function_init();
+	Isp_Output_init();			// Output 설정
 
-	Isp_Function_cstm();
+	Isp_Function_init();		// OSD Font 및 ISP 기능 설정
 
-	Isp_DDR_init();
+	Isp_DDR_init();				// ISP 에서 사용하는 DDR 설정
 
-	Isp_Digital_input_init();
+	Isp_Digital_input_init();	// Digital Input configuration
 
-	gbUsrParReadChk = 1;
-	gbUsrDataReadChk = 1;
-
-	AppLoadPar();												// load parameter from memory
-
-	InitMenu();
+	gbUsrParChgOn = 1;
+	UsrParChgAll();
+	gbUsrParChgOn = 2;
+	ChangeMenuSize();
 
 
-	//extern void ParFncTest(void); ParFncTest();
+	//extern void ParFncTest(void); ParFncTest();		// TODO ◆ KSH ParFncTest()
 
 	VIRQO_ENw(1);		// VLOCKO IRQ Routine Test, enx_exirq_source1() 함수에서 CLI_VLOCKOw(1) 실행됨
 }
@@ -314,8 +284,8 @@ void Hdmi_Check(void)
 
 void IF_Funcs(void)
 {
-	FontStr(4,0,"ADC1",4);
-	FontDec(4,5,AdcGet(1), 5, 1);
+//	FontStr(4,0,"ADC1",4);
+//	FontDec(4,5,AdcGet(1), 5, 1);
 
 //	extern UINT gnNO_IRQ_UART_SPI_I2C;
 //	FontStr(5,0,"NO IRQ",6);
@@ -391,7 +361,7 @@ void isp_DispTime(void)
 	FontStr(DISP_TIME_Y+2, DISP_TIME_X+13, "ms",2);
 
 	FontStrEx(DISP_TIME_Y+3, DISP_TIME_X,    NO_ALPHA, MN_GREEN,  "VLO",3);
-	FontDecEx(DISP_TIME_Y+3, DISP_TIME_X+3,  NO_ALPHA, MN_YELLOW, (VO_CNT*1000)/30, 10, 1);
+	FontDecEx(DISP_TIME_Y+3, DISP_TIME_X+3,  NO_ALPHA, MN_YELLOW, (VO_CNT*1000)/FPS_VDO, 10, 1);
 	FontStr(DISP_TIME_Y+3, DISP_TIME_X+13, "ms",2);
 }
 
@@ -448,7 +418,7 @@ void isp_main(void)
 
 	isp_LedCtrl();
 
-	//isp_AeTest();
+	//isp_AeTest(); // TODO ◆ KSH AE test
 }
 
 #endif

@@ -82,7 +82,7 @@
 #define PACK_STRUCT_BEGIN
 #define PACK_STRUCT_END
 
-#define SSIZE_MAX sizeof(ssize_t)
+#define SSIZE_MAX INT_MAX
 
 //-------------------------------------------------------------------------------------------------
 // H/W assist functions

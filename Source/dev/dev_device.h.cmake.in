@@ -163,11 +163,14 @@
 #endif // __USE_SDIOCD__
 
 #if ${USE_WF}
-#define __USE_WF__
+#define __WIFI__
 #define WF_GPIO_RST	${USE_WF_RST}
 #define WF_GPIO_IRQ	${USE_WF_IRQ}
 #define WF_SDIO_CH	${WF_SDIO_CH}
-#endif // __USE_WF__
+#if ${USE_WF_SD8782}
+#define __WIFI_SD8782__
+#endif
+#endif // __WIFI__
 
 #if ${USE_FIESYSTEM}
 #define __FILESYSTEM__

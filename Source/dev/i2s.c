@@ -261,13 +261,13 @@ void I2sTxIrq(void)
 }
 #endif
 #else
-void IrqTxI2s(void)
+void IrqI2sTx(void)
 {
 	_Rprintf("I2S TX IRQ Get! I2S is inactive.\n");
 	ENX_ASSERT(0);
 }
 
-void IrqRxI2s(void)
+void IrqI2sRx(void)
 {
 	_Rprintf("I2S RX IRQ Get! I2S is inactive.\n");
 	ENX_ASSERT(0);

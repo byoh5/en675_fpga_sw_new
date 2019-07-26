@@ -10,7 +10,10 @@ char g_key = 0xFF;
 #include "ledblink.h"
 #include "sdcard.h"
 #include "iperf.h"
+
 #include "pmp.h"
+#include "rtspd.h"
+
 extern void trap_freertos(void); // mentry.S
 
 void TestTask(void* pvParameters)
@@ -39,12 +42,15 @@ void startNetProtocol(void *arg)
 		sntpc_start();
 	}
 #endif
+#if (ENX_RTSP_use==1)
+	vTaskCreate("rtspd", rtspd_socket_server, NULL, LV3_STACK_SIZE, LV5_TASK_PRIO);
+#endif
 
 	vTaskDelete(NULL);
 	UNUSED(arg);
 }
 #endif
-
+extern void wifiTask(void *pvParameters);
 void test_freertos(void)
 {
 	vMemoryHeapInit();
@@ -61,6 +67,10 @@ void test_freertos(void)
 #ifdef __NETWORK__
 	vTaskCreate("netProt", startNetProtocol, NULL, LV2_STACK_SIZE, LV5_TASK_PRIO);
 #endif
+#if defined(__WIFI__)
+	vTaskCreate("Wifi", wifiTask, NULL, LV6_STACK_SIZE, LV7_TASK_PRIO);
+#endif
+
 	vTaskStartScheduler();
 }
 
@@ -128,11 +138,11 @@ void enx_peri_init(void)
 	UartInit(6, UART6_SPEED);
 #endif
 #if USE_UART7
-	//UartInit(7, UART7_SPEED);
+	UartInit(7, UART7_SPEED);
 	//UartInit(7, 230400);
 	//UartInit(7, 460800);
 	//UartInit(7, 921600);
-	UartInit(7, 625000);
+	//UartInit(7, 625000);
 #endif
 #if USE_UART8
 	UartInit(8, UART8_SPEED);
@@ -153,46 +163,36 @@ void enx_peri_init(void)
 	//DdrInit(2);
 	//DDR_PWR_REQ = 1;
 	//DdrInit(2);
-#if 1
-	DdrInit(0,2);
-
 #if 0
-	UINT *test1 = 0x80000000;
-	UINT *test2 = 0x80010000;
-
-#if 1
-	for (UINT i=0;i<4;i++) {
-		BDmaMemCpy_isr(0, test1+(i*512), test2+(i*512), 512);
-	}
-#else
-	BDmaMemCpy_isr(0, test1+(0*512), test2+(0*512), 512);
-	BDmaMemCpy_isr(0, test1+(1*512), test2+(1*512), 512);
-	BDmaMemCpy_isr(0, test1+(2*512), test2+(2*512), 512);
-	BDmaMemCpy_isr(0, test1+(3*512), test2+(3*512), 512);
-#endif
-	printf("Done\n");
-#endif
+	DdrInit(0,2);
 	hwflush_dcache_range(DDR0_BASE, 16*1024);
 	BDmaMemSet_isr(0, (BYTE *)DDR0_BASE, 0x00, DDR0_SIZE);
 	//memset((BYTE *)DDR0_BASE, 0x00, DDR0_SIZE);
 	hwflush_dcache_range(DDR0_BASE, 16*1024);
+
+#if 1
+	DdrInit(1,2);
+	hwflush_dcache_range(DDR1_BASE, 16*1024);
+	BDmaMemSet_isr(0, (BYTE *)DDR1_BASE, 0x00, DDR1_SIZE);
+	//memset((BYTE *)DDR1_BASE, 0x00, DDR1_SIZE);
+	hwflush_dcache_range(DDR1_BASE, 16*1024);
+#endif
+
+#else
+#if 1
+	register ULONG hs, he;
+	asm volatile("la %0, __bss_s" : "=r"(hs));
+	asm volatile("la %0, __bss_e" : "=r"(he));
 #else
 	register long t0 asm("t0") = 0;
 	register long t1 asm("t1") = 0;
 	asm("la t0, __bss_s");
 	asm("la t1, __bss_e");
-
-	hwflush_dcache_range(t0, 16*1024);
-	memset(t0, 0, t1 - t0);
-	hwflush_dcache_range(t0, 16*1024);
 #endif
-
-	DdrInit(1,2);
-
-	hwflush_dcache_range(DDR1_BASE, 16*1024);
-	BDmaMemSet_isr(0, (BYTE *)DDR1_BASE, 0x00, DDR1_SIZE);
-	//memset((BYTE *)DDR1_BASE, 0x00, DDR1_SIZE);
-	hwflush_dcache_range(DDR1_BASE, 16*1024);
+	hwflush_dcache_range(hs, 16*1024);
+	memset(hs, 0, he - hs);
+	hwflush_dcache_range(hs, 16*1024);
+#endif
 
 	// DDR
 	printf("%s", TTY_COLOR_RESET);
@@ -202,14 +202,14 @@ void enx_peri_init(void)
 	//printf("ETH_MDIO_REG0_T: 0x%08X\n", ETH_MDIO_REG0_T);
 	///ETH_MDIO_REG0_T = 0xffffffff;
 	//printf("ETH_MDIO_REG0_T: 0x%08X\n", ETH_MDIO_REG0_T);
-
-	//SFLS_IO_RXEDGE = 1;
-	//SFLS_IO_TXEDGE = 0;
+#if 1
+//	SFLS_IO_RXEDGE = 0;
+//	SFLS_IO_TXEDGE = 0;
 	SflsGetinfo();
 	SflsInit();
 	printf("set SFLS_IO_RXEDGE(%u) SFLS_IO_TXEDGE(%u)\n", SFLS_IO_RXEDGE, SFLS_IO_TXEDGE);
 	SflsGetinfo();
-
+#endif
 
 #if USE_I2C0
 	I2cInit(0, I2C0_SPEED);
@@ -494,7 +494,7 @@ void enx_device_init(void)
 #ifdef __AUDIO__
 	GpioSetDir(AUDIO_GPIO_RST, GPIO_DIR_OUT);
 	GpioSetDir(AUDIO_GPIO_IRQ, GPIO_DIR_IN);
-	//audio_init();
+	audio_init();
 #endif
 
 #ifdef __USE_SDIOCD__
@@ -503,8 +503,9 @@ void enx_device_init(void)
 	SdioCdInit(SD_SDIO_CH);
 #endif
 
-#ifdef __USE_WF__
+#ifdef __WIFI__
 	GpioSetDir(WF_GPIO_RST, GPIO_DIR_OUT);
+	SdioWfInit(WF_SDIO_CH);
 #endif
 
 #ifdef __EEPROM__
@@ -546,7 +547,14 @@ void enx_default_userinfo(void)
 	gtNetwork.u32SntpRetrySec = NET_SNTP_RETRY_SEC;
 	gtNetwork.u32SntpRetryMaxcnt = NET_SNTP_RETRY_CNT;
 #endif
+
+#if defined(__WIFI__)
+	WifiCFG_Default_UAP((tWifiUAPcfg *)&gtNetwork.UAPcfg);
+	WifiCFG_Default_STA((tWifiSTAcfg *)&gtNetwork.STAcfg);
 #endif
+#endif
+
+	gtNetwork.portnumRTSP = RTSP_portnum;
 }
 
 extern int cmd_test_sysreg(int argc, char *argv[]);
@@ -822,6 +830,7 @@ void dmatest(UINT nCH, char cMode, UINT nLoop)
     }
 }
 #endif
+
 void main_0(int cpu_id)
 {
 	*mtime = 0; // timer init
@@ -837,12 +846,12 @@ void main_0(int cpu_id)
 	enx_device_init();
 	enx_default_userinfo();
 
-	g_key = 0xA; // CPU0 Ready!
+	SYS_REG0 = 0xA; // CPU0 Ready!
 
 	printf("Init Device\n");
 
 // PMP test
-#if 1
+#if 0
 	setup_pmp();
 	pmp_entry_set(0, PMP_R|PMP_W|PMP_X|PMP_L, 0xa0000000ul, SRAM_SIZE); // SRAM enabled area
 	pmp_entry_set(1, PMP_L, 0xa0000000ul, 0x20000000ul);				// SRAM disabled area
@@ -852,7 +861,7 @@ void main_0(int cpu_id)
 	printf("PMP setting\n");
 #endif
 
-#if 1
+#if 0
 	volatile UINT *ptest;
 //	ptest = (UINT *)0x70000000;
 	ptest = (UINT *)0xb0200000;
@@ -876,11 +885,7 @@ void main_0(int cpu_id)
 
 	while (1)
 	{
-	#ifdef	ISP_VLOCKO
 		Wait_VLOCKO();
-	#else
-		Wait_VLOCKO1();
-	#endif
 
 		isp_main();
 

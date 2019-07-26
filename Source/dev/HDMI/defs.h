@@ -8,6 +8,8 @@
 #ifndef _DEFS_H_
 #define _DEFS_H_
 
+#define DelayMS(MS)		__asm("C.NOP")//WaitXms(MS)		// TODO KSH HDMI에서 Delay없어도 동작함
+
 void TXHAL_InitMicroGpios (void);
 void TXHAL_InitPreReset (void);
 void TXHAL_InitPostReset (void);
@@ -49,10 +51,8 @@ typedef enum TimerId
 #define R_INIT_PERIOD			10
 #define R_MONITORING_PERIOD		/*600*/200
 
-//#define TX_HW_RESET_PERIOD      200
-//#define RX_HW_RESET_PERIOD		600
-#define TX_HW_RESET_PERIOD      20000
-#define RX_HW_RESET_PERIOD		60000
+#define TX_HW_RESET_PERIOD      200
+#define RX_HW_RESET_PERIOD		600
 
 #define INT_CONTROL 			0x00 // Interrupt pin is push-pull and active high (this is normally 0x06)
 #define SiI_DEVICE_ID           0xB4

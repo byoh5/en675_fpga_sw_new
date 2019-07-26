@@ -223,14 +223,28 @@ set(lwipport_HDRS
 	port/lwipopts.h
 	port/networkif.h
 	port/ethernetif.h
+	port/wifiif.h
 	port/include/arch/cc.h
 	port/include/arch/perf.h
 	port/include/arch/sys_arch.h
+	port/dhcpd/debug.h
+	port/dhcpd/dhcpd.h
+	port/dhcpd/files.h
+	port/dhcpd/leases.h
+	port/dhcpd/options.h
+	port/dhcpd/packet.h
+	port/dhcpd/serverpacket.h
 )
 set(lwipport_SRCS
 	port/sys_arch.c
 	port/networkif.c
 	port/ethernetif.c
+	port/wifiif.c
+	port/dhcpd/dhcpd.c
+	port/dhcpd/files.c
+	port/dhcpd/leases.c
+	port/dhcpd/options.c
+	port/dhcpd/serverpacket.c
 )
 
 # Apps

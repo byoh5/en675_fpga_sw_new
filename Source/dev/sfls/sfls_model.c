@@ -61,6 +61,21 @@ void SflsModelEON(BYTE u8Type, BYTE u8Capa)
 void SflsModelISSI(BYTE u8Type, BYTE u8Capa)
 {
 #ifdef __SFLS_ISSI__
+	switch (u8Type) {
+	case 0x60:	//	QUAD
+		switch (u8Capa) {
+		case 0x17:	// IS25LP064
+			printf("IS25LP064-noTEST\n");
+			break;
+		case 0x18:	// IS25LP128
+			printf("IS25LP128-noTEST\n");
+			break;
+		default:
+			printf("ISSI Etc...\n");
+			break;
+		}
+		break;
+	}
 #else
 	ENX_ASSERT(0);
 #endif

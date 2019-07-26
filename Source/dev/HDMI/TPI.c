@@ -86,9 +86,7 @@ extern void CpCbusHandler(void);
 
 
 #define T_EN_TPI       	10
-//#define T_HPD_DELAY    	10
-
-#define T_HPD_DELAY    	10000
+#define T_HPD_DELAY    	10
 
 byte txPowerState;		// Can be referenced externally by chip-specific TX HAL file, so cannot be static.
 
@@ -174,7 +172,7 @@ static void ForceUsbIdSwitchOpen (void)
 
 static void ReleaseUsbIdSwitchOpen (void)
 {
-	sleep_(250000);
+	DelayMS(25);
 	ReadModifyWriteIndexedRegister(INDEXED_PAGE_0, 0x95, BIT_6, 0x00);
 	ReadModifyWriteIndexedRegister(INDEXED_PAGE_0, 0x90, BIT_0, BIT_0);				// Enable discovery
 }
@@ -192,7 +190,7 @@ static void InitForceUsbIdSwitchOpen (void)
 
 static void InitReleaseUsbIdSwitchOpen (void)
 {
-	sleep_(250000);
+	DelayMS(25);
 	ReadModifyWriteTPI(0x95, BIT_6, 0x00);				// Release USB ID switch
 	ReadModifyWriteTPI(0x90, BIT_0, BIT_0);				// Enable CBUS discovery
 }
@@ -312,9 +310,9 @@ void HotPlugService (void)
 
 static void TxHW_Reset(void)
 {
-	_printf((">>TxHW_Reset()\r\n"),0,0);
+	_printf(">>TxHW_Reset()\r\n");
 
-	sleep_(TX_HW_RESET_PERIOD);
+	DelayMS(TX_HW_RESET_PERIOD);
 
 	// Does this need to be done for every chip? Should it be moved into TXHAL_InitPostReset() for each applicable device?
 	I2C_WriteByte(0x72, 0x7C, 0x14);					// HW debounce to 64ms (0x14)
@@ -350,7 +348,7 @@ static BYTE StartTPI(void)
  	_printf((">>StartTPI()\r\n"),0,0);
 
 	WriteByteTPI(TPI_ENABLE, 0x00);           			 // Write "0" to 72:C7 to start HW TPI mode 1-1
-    sleep_(100000);
+    DelayMS(100);
 
     devID = ReadIndexedRegister(INDEXED_PAGE_0, 0x03);
     wID = devID;
@@ -440,7 +438,7 @@ static BYTE CBUS_Discovery (void)
     for (i = 0; i < 20; i++)
     {
         WriteByteTPI (TPI_DEVICE_POWER_STATE_CTRL_REG, CTRL_PIN_DRIVEN_TX_BRIDGE | TX_POWER_STATE_D0);                  // Start CBUS self-discovery
-        sleep_ (T_CBUSDISCOVERY_DELAY);
+        DelayMS (T_CBUSDISCOVERY_DELAY);
 
         if (ReadByteCBUS(0x0A) & 0x01)
         {
@@ -449,7 +447,7 @@ static BYTE CBUS_Discovery (void)
         }
 
         WriteByteTPI (TPI_DEVICE_POWER_STATE_CTRL_REG, CTRL_PIN_TRISTATE | TX_POWER_STATE_D0);
-        sleep_ (T_CBUSDISCOVERY_DELAY);
+        DelayMS (T_CBUSDISCOVERY_DELAY);
     }
 
     TPI_DEBUG_PRINT (("CBUS downstream device not detected.\r\n0xC8:0x0A = %02X\r\n", (int)ReadByteCBUS(0x0A)));
@@ -522,7 +520,7 @@ static void TxPowerStateD2 (void)
 
 #ifdef F_9136
 		ReadModifyWriteTPI(TPI_DEEP_COLOR_GCP, BIT_0, ENABLE);
-		sleep_(10000);
+		DelayMS(10);
 		ReadModifyWriteTPI(TPI_DEEP_COLOR_GCP, BIT_0, DISABLE);
 
 		ReadModifyWriteTPI(TPI_DEVICE_POWER_STATE_CTRL_REG, TX_POWER_STATE_MASK, TX_POWER_STATE_D2);
@@ -615,7 +613,7 @@ void TPI_Poll (void)
 			do
 			{
 				WriteByteTPI(TPI_INTERRUPT_STATUS_REG, HOT_PLUG_EVENT);
-				sleep_(T_HPD_DELAY); // Delay for metastability protection and to help filter out connection bouncing
+				DelayMS(T_HPD_DELAY); // Delay for metastability protection and to help filter out connection bouncing
 				InterruptStatusImage = ReadByteTPI(TPI_INTERRUPT_STATUS_REG); 		// Read Interrupt status register
 			} while (InterruptStatusImage & HOT_PLUG_EVENT); 						// loop as long as HP interrupts recur
 

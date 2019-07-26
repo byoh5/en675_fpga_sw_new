@@ -40,7 +40,7 @@
 #define __SFLS_MACRONIX__
 #define __SFLS_16MB__
 #endif
-#if 1
+#if 0
 #define __SFLS_N25Q128A__
 #define __SFLS_MICRON__
 #define __SFLS_16MB__
@@ -55,7 +55,7 @@
 #define __SFLS_ISSI__
 #define __SFLS_8MB__
 #endif
-#if 0
+#if 1
 #define __SFLS_IS25LP128__
 #define __SFLS_ISSI__
 #define __SFLS_16MB__
@@ -82,7 +82,7 @@
 #define HDMI_I2C_CH	7
 #endif // __HDMI__
 
-#if 0
+#if 1
 #define __RTC_LOAD__
 #define RTC_I2C_CH	7
 #if 1
@@ -95,7 +95,7 @@
 #endif // __RTC_S35390A__
 #endif // __RTC_LOAD__
 
-#if 0
+#if 1
 #define __EEPROM__
 #define EEPROM_I2C_CA	0xa0
 #define EEPROM_I2C_CH	7
@@ -129,7 +129,7 @@
 #endif // __ETHERNET__
 #endif // __NETWORK__
 
-#if 1
+#if 0
 #define __AUDIO__
 #define AUDIO_GPIO_RST	20
 #define AUDIO_GPIO_IRQ	21
@@ -163,11 +163,14 @@
 #endif // __USE_SDIOCD__
 
 #if 0
-#define __USE_WF__
+#define __WIFI__
 #define WF_GPIO_RST	35
 #define WF_GPIO_IRQ	34
 #define WF_SDIO_CH	1
-#endif // __USE_WF__
+#if 0
+#define __WIFI_SD8782__
+#endif
+#endif // __WIFI__
 
 #if 1
 #define __FILESYSTEM__

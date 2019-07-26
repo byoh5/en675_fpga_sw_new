@@ -20,33 +20,6 @@
 	#define I2C_MASTER_OFF()
 #endif
 
-#if ENABLE_I2C_ERR == 1
-	#define I2C_STA				BYTE bErr = 0;
-	#define I2C_END				I2c_Err: UartTxStrHexNoIRQ("I2C ERR :", bErr, 2);  I2c_mode(0); return bErr;
-	#define I2C_CODE(ERR,CODE)	if(CODE) { bErr = ERR; goto I2c_Err; }
-#else
-	#define I2C_STA
-	#define I2C_END
-	#define I2C_CODE(ERR,CODE)	CODE;
-#endif
-
-enum {
-	EEP_NO_ERROR,
-
-	EEP_WRITE_NODEV,
-	EEP_WRITE_MASTER,
-	EEP_WRITE_NOACK1,
-	EEP_WRITE_NOACK2,
-	EEP_WRITE_NOACK3,
-	EEP_WRITE_NOACK4,
-
-	EEP_READ_NODEV,
-	EEP_READ_MASTER,
-	EEP_READ_NOACK1,
-	EEP_READ_NOACK2,
-	EEP_READ_NOACK3,
-};
-
 #define i2c_write(DAT,LAST,REPEAT)	I2cWrite(EEPROM_I2C_CH,DAT,LAST,REPEAT)
 #define i2c_read(LAST,REPEAT)		I2cRead(EEPROM_I2C_CH,LAST,REPEAT)
 

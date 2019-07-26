@@ -23,6 +23,7 @@ extern TaskHandle_t vTaskCreate(const char *name, TaskFunction_t thread, void *a
 #define LV1_TASK_PRIO			(tskIDLE_PRIORITY + 1)
 
 // Task stack size
+#define LV6_STACK_SIZE		(128*1024)
 #define LV5_STACK_SIZE		(64*1024)
 #define LV4_STACK_SIZE		(48*1024)
 #define LV3_STACK_SIZE		(32*1024)

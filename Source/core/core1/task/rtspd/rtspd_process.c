@@ -43,8 +43,8 @@
 #include "rtspd_authorization.h"
 
 #if 0
-#define ENTER() printf(" IN %04d:%s\r\n", __LINE__, __func__)
-#define LEAVE() printf("OUT %04d:%s\r\n", __LINE__, __func__)
+#define ENTER() printf(" IN %04d:%s\n", __LINE__, __func__)
+#define LEAVE() printf("OUT %04d:%s\n", __LINE__, __func__)
 #else
 #define ENTER()
 #define LEAVE()
@@ -61,11 +61,11 @@ int rtspd_client_rtsp_header_parse(rtsp_client *prcInfo, char *buf, UINT buf_len
 	if (strncmp(ENX_RTSP_HEADER_strCSEQ, buf, sizeof(ENX_RTSP_HEADER_strCSEQ) - 1) == 0) {
 		strData = buf + sizeof(ENX_RTSP_HEADER_strCSEQ);
 		prcInfo->nCSeq = atoi(strData);
-//		flprintf("Common : [%s, %d]\r\n", ENX_RTSP_HEADER_strCSEQ, prcInfo->nCSeq);
+//		flprintf("Common : [%s, %d]\n", ENX_RTSP_HEADER_strCSEQ, prcInfo->nCSeq);
 	} else if (strncmp(ENX_RTSP_HEADER_strSESSION, buf, sizeof(ENX_RTSP_HEADER_strSESSION) - 1) == 0) {
 		strData = buf + sizeof(ENX_RTSP_HEADER_strSESSION);
 		prcInfo->nSession = atoi(strData);
-//		flprintf("Common : [%s, %d]\r\n", ENX_RTSP_HEADER_strSESSION, prcInfo->nSession);
+//		flprintf("Common : [%s, %d]\n", ENX_RTSP_HEADER_strSESSION, prcInfo->nSession);
 #if (RTSPD_AUTH_MODE!=RTSPD_AUTH_NONE)
 	} else if (strncmp(ENX_RTSP_HEADER_strAUTHORIZATION, buf, sizeof(ENX_RTSP_HEADER_strAUTHORIZATION) - 1) == 0) {
 		prcInfo->login = rtspd_client_rtsp_authorization(buf, prcInfo->method);
@@ -77,7 +77,7 @@ int rtspd_client_rtsp_header_parse(rtsp_client *prcInfo, char *buf, UINT buf_len
 		} else if (strncmp(ENX_RTSP_HEADER_strACCEPT, buf, sizeof(ENX_RTSP_HEADER_strACCEPT) - 1) == 0) {
 		} else if (strncmp(ENX_RTSP_HEADER_strTRANSPORT, buf, sizeof(ENX_RTSP_HEADER_strTRANSPORT) - 1) == 0) {
 		} else if (buf_len) {
-			flprintf("Header : [%s][size:%d]\r\n", buf, buf_len);
+			flprintf("Header : [%s][size:%d]\n", buf, buf_len);
 		}
 // Debug Print End
 	}
@@ -89,9 +89,9 @@ int rtspd_client_rtsp_header_parse(rtsp_client *prcInfo, char *buf, UINT buf_len
 			if (strncmp(ENX_RTSP_HEADER_strACCEPT, buf, sizeof(ENX_RTSP_HEADER_strACCEPT) - 1) == 0) {
 				strData = buf + sizeof(ENX_RTSP_HEADER_strACCEPT);
 				if (strstr(strData, "application/sdp")) {
-					prcInfo->isAccept = DEF_YES;
+					prcInfo->isAccept = ENX_YES;
 				} else {
-					prcInfo->isAccept = DEF_NO;
+					prcInfo->isAccept = ENX_NO;
 				}
 			}
 			break;
@@ -126,18 +126,19 @@ int rtspd_client_rtsp_header_parse(rtsp_client *prcInfo, char *buf, UINT buf_len
 //							prcInfo->nQuery = ENX_RTSP_STRTYPE_numBACKCHANNEL;
 						}
 					} else {
-						flprintf("Unknown Setup url(%s)\r\n", prcInfo->strUrl);
+						flprintf("Unknown Setup url(%s)\n", prcInfo->strUrl);
 					}
 				}
 
 				if (strncmp(ENX_RTSP_HEADER_strTRANSPORT, buf, sizeof(ENX_RTSP_HEADER_strTRANSPORT) - 1) == 0) {
-					prcInfo->isTransport = DEF_YES;
+					prcInfo->isTransport = ENX_YES;
 					int rtp_port = -1, rtcp_port = -1;
 					strData = buf + sizeof(ENX_RTSP_HEADER_strTRANSPORT);
+					hexDump("SETUP", strData, strlen(strData));
 					if (strstr(strData, "RTP/AVP/TCP")) { // TCP
 						prcInfo->eTransport = ENX_RTSP_TRANSPORT_TCP;
 						if (prcInfo->setup_query == ENX_RTSP_STRTYPE_VIDEO) {
-							printf("Transport TCP\r\n");
+							printf("Transport TCP\n");
 						}
 						if ((strTemp = strstr(strData, "interleaved="))) {
 							sscanf(strTemp, "interleaved=%d-%d", &rtp_port, &rtcp_port);
@@ -145,13 +146,13 @@ int rtspd_client_rtsp_header_parse(rtsp_client *prcInfo, char *buf, UINT buf_len
 					} else if (strstr(strData, "RTP/AVP")) { // UDP
 						prcInfo->eTransport = ENX_RTSP_TRANSPORT_UDP;
 						if (prcInfo->setup_query == ENX_RTSP_STRTYPE_VIDEO) {
-							printf("Transport UDP\r\n");
+							printf("Transport UDP\n");
 						}
 						if ((strTemp = strstr(strData, "client_port="))) {
 							sscanf(strTemp, "client_port=%d-%d", &rtp_port, &rtcp_port);
 						}
 					} else {
-						flprintf("Unknown Transport type(%s)\r\n", strData);
+						flprintf("Unknown Transport type(%s)\n", strData);
 					}
 
 					switch (prcInfo->eTransport) {
@@ -160,6 +161,7 @@ int rtspd_client_rtsp_header_parse(rtsp_client *prcInfo, char *buf, UINT buf_len
 						case ENX_RTSP_TRANSPORT_HTTP:
 							prcInfo->rtp_ss[prcInfo->nQuery].rtp_port = rtp_port;
 							prcInfo->rtp_ss[prcInfo->nQuery].rtcp_port = rtcp_port;
+							printf("Port: %d-%d\n", rtp_port, rtcp_port);
 							break;
 						case ENX_RTSP_TRANSPORT_NONE:
 							break;
@@ -184,7 +186,7 @@ int rtspd_client_rtsp_header_parse(rtsp_client *prcInfo, char *buf, UINT buf_len
 		case ENX_RTSP_METHOD_SET_PARAMETER:
 			break;
 		default:
-			flprintf("Unknown Method(id) : %d\r\n", prcInfo->method);
+			flprintf("Unknown Method(id) : %d\n", prcInfo->method);
 			res = -1;
 			break;
 	}
@@ -422,7 +424,7 @@ int rtspd_client_rtsp_method_parse(rtsp_client *prcInfo, BYTE *buf, UINT buf_len
 	} else if (strcmp(ENX_RTSP_METHOD_steSET_PARAMETER, strMethod) == 0) {
 		prcInfo->method = ENX_RTSP_METHOD_SET_PARAMETER;
 	} else {
-		flprintf("Unknown Method : %s\r\n", strMethod);
+		flprintf("Unknown Method : %s\n", strMethod);
 		LEAVE();
 		return -1;
 	}
@@ -447,13 +449,13 @@ int rtspd_client_rtsp_method_parse(rtsp_client *prcInfo, BYTE *buf, UINT buf_len
 	*strEnd = RTSP_chrNULL;
 	strlcpy(prcInfo->strVersion, strVersion, sizeof(prcInfo->strVersion));	
 
-//	flprintf(" Method : [%d/%s]\r\n", prcInfo->method, strMethod);
-//	flprintf("    Url : [%s]\r\n", prcInfo->strUrl);
-//	flprintf("Version : [%s]\r\n", prcInfo->strVersion);
+//	flprintf(" Method : [%d/%s]\n", prcInfo->method, strMethod);
+//	flprintf("    Url : [%s]\n", prcInfo->strUrl);
+//	flprintf("Version : [%s]\n", prcInfo->strVersion);
 
 	// 1회성 변수 초기화
-	prcInfo->isAccept = DEF_NO;
-	prcInfo->isTransport = DEF_NO;
+	prcInfo->isAccept = ENX_NO;
+	prcInfo->isTransport = ENX_NO;
 	prcInfo->setup_query = ENX_RTSP_STRTYPE_NONE;
 	prcInfo->nQuery = ENX_RTSP_STRTYPE_numNONE;
 	while (1) {
@@ -502,10 +504,16 @@ int rtspd_client_rtsp_check_url(rtsp_client *prcInfo, char *url)
 				if (strEnd != NULL) {
 					if (strcmp(strEnd, "/"H264URL) == 0) {
 						res = 0;
-						prcInfo->isLive = ENX_RTSP_STREAM_LIVE_H264_1_1;
+						prcInfo->isLive = ENX_RTSP_STREAM_LIVE_H264_1;
 					} else if (strcmp(strEnd, "/"HSUBURL) == 0) {
 						res = 0;
-						prcInfo->isLive = ENX_RTSP_STREAM_LIVE_H264_1_2;
+						prcInfo->isLive = ENX_RTSP_STREAM_LIVE_H264_2;
+					} else if (strcmp(strEnd, "/"H265_1URL) == 0) {
+						res = 0;
+						prcInfo->isLive = ENX_RTSP_STREAM_LIVE_H265_1;
+					} else if (strcmp(strEnd, "/"H265_2URL) == 0) {
+						res = 0;
+						prcInfo->isLive = ENX_RTSP_STREAM_LIVE_H265_2;
 					}
 #if (JPEG_STREAM==1)
 					else if (strcmp(strEnd, "/"JPEGURL) == 0) {
@@ -522,26 +530,29 @@ int rtspd_client_rtsp_check_url(rtsp_client *prcInfo, char *url)
 					else if (strncmp(strEnd, "/sdcard/", sizeof("/sdcard/") - 1) == 0) {
 						strEnd += 1;
 						strEnd = strchr(strEnd, '/');
-						flprintf("SDcard Path: [%s]\r\n", strEnd);
+						flprintf("SDcard Path: [%s]\n", strEnd);
 
 						// 해당 파일이 실제로 존재하는지 확인!
 						res = 0;
 						prcInfo->isLive = ENX_RTSP_STREAM_FILE_H264_TYPE;
 					} else {
-						flprintf("Error URL\r\n");
+						flprintf("Error URL\n");
 					}
 				} else {
-					flprintf("Error URL\r\n");
+					flprintf("Error URL\n");
 				}
 			} else {
-				flprintf("Error URL\r\n");
+				flprintf("Error URL\n");
 			}
 		} else {
 			// 승인된 서비스 리스트
 			switch (prcInfo->isLive) {
 				case ENX_RTSP_STREAM_FILE_H264_TYPE:
-				case ENX_RTSP_STREAM_LIVE_H264_1_1:
-				case ENX_RTSP_STREAM_LIVE_H264_1_2:
+				case ENX_RTSP_STREAM_FILE_H265_TYPE:
+				case ENX_RTSP_STREAM_LIVE_H264_1:
+				case ENX_RTSP_STREAM_LIVE_H264_2:
+				case ENX_RTSP_STREAM_LIVE_H265_1:
+				case ENX_RTSP_STREAM_LIVE_H265_2:
 #if (JPEG_STREAM==1)
 				case ENX_RTSP_STREAM_LIVE_JPEG:
 #endif
@@ -558,9 +569,9 @@ int rtspd_client_rtsp_check_url(rtsp_client *prcInfo, char *url)
 	}
 
 	if (res == -1) {
-		flprintf("Error URL: %s\r\n", url);
+		flprintf("Error URL: %s\n", url);
 //	} else {
-//		flprintf("Accept URL: %s\r\n", url);
+//		flprintf("Accept URL: %s\n", url);
 	}
 
 	LEAVE();
@@ -572,7 +583,7 @@ int rtspd_client_rtsp_make_datetime(char *buf)
 	ENTER();
 
 	struct tm tmout;
-	enx_get_tmtime(gptMsgShare.TIME, &tmout, DEF_NO, DEF_YES);
+	enx_get_tmtime(gptMsgShare.TIME, &tmout, ENX_NO);
 	int len = sprintf(buf, ENX_RTSP_RESPONSE_DATE, strWeek[tmout.tm_wday], strMonth[tmout.tm_mon], tmout.tm_mday, tmout.tm_year+1900, tmout.tm_hour, tmout.tm_min, tmout.tm_sec);
 
 	LEAVE();
@@ -594,7 +605,7 @@ int rtspd_client_rtsp_process_error(rtsp_client *prcInfo, char *buf, int *buf_le
 	} else if (strcmp(ENX_RTSP_RESPONSE_401, strError) == 0) {
 		; // 401 error은 state를 ERROR로 변경하지 않는다. RTSP Authorization.
 	} else {
-		flprintf("%s\r\n", strError);
+		flprintf("%s\n", strError);
 		rtspd_client_rtsp_state(prcInfo, ENX_RTSP_STATE_ERROR);
 	}
 
@@ -639,7 +650,7 @@ int rtspd_client_rtsp_process_describe(rtsp_client *prcInfo, char *buf, int *buf
 	int res = 0;
 
 	if (rtspd_client_rtsp_state(prcInfo, ENX_RTSP_STATE_DESCRIBE) == 0) {
-		if (prcInfo->isAccept == DEF_YES) {
+		if (prcInfo->isAccept == ENX_YES) {
 			char strSdp[1024] = {0};
 			char strIP[16] = {0};
 			char *strpIP, *strEnd;
@@ -654,57 +665,76 @@ int rtspd_client_rtsp_process_describe(rtsp_client *prcInfo, char *buf, int *buf
 				}
 
 				if (strEnd != NULL) {
-					strlcpy(strIP, strpIP, min(sizeof(strIP), (UINT)(strEnd - strpIP)));
+					strlcpy(strIP, strpIP, min(sizeof(strIP), (UINT)(strEnd - strpIP + 1)));
 	 			} else {
-					flprintf("Error MY IP(%s)\r\n", prcInfo->strUrl);
+					printf("Error MY IP(%s)\n", prcInfo->strUrl);
 					UINT getDefaultIP;
 					network_default_netif_get_ip(&getDefaultIP);
-					sprintf(strIP, "%IP", getDefaultIP);
+					es_sprintf(strIP, "%IP", getDefaultIP);
 				}
 			}
 
-			const char* sdpSessionFmt =	"v=0\r\n"
-										"o=- 0 0 IN IP4 %s\r\n"
-										"s=Session streamed by \""RTSPD_SERVER_AGENT"\"\r\n"
-										"i=%s\r\n" // Filename or H264Stream or JPEGStream
-										"c=IN IP4 0.0.0.0\r\n"
-										"t=0 0\r\n"
-										"a=tool:"RTSPD_SERVER_AGENT"\r\n"
-										"a=control:%s\r\n"
-										"a=range:npt=0-\r\n"
-										"a=x-qt-text-nam:Session streamed by \""RTSPD_SERVER_AGENT"\"\r\n"
-										"a=x-qt-text-inf:%s\r\n";
+			const char* sdpSessionFmt =	"v=0\n"
+										"o=- 0 0 IN IP4 %s\n"
+										"s=Session streamed by \""RTSPD_SERVER_AGENT"\"\n"
+										"i=%s\n" // Filename or H264Stream or JPEGStream
+										"c=IN IP4 0.0.0.0\n"
+										"t=0 0\n"
+										"a=tool:"RTSPD_SERVER_AGENT"\n"
+										"a=control:%s\n"
+										"a=range:npt=0-\n"
+										"a=x-qt-text-nam:Session streamed by \""RTSPD_SERVER_AGENT"\"\n"
+										"a=x-qt-text-inf:%s\n";
 
 			switch (prcInfo->isLive) {
 				case ENX_RTSP_STREAM_FILE_H264_TYPE:
-					flprintf("Not support(%d)\r\n", prcInfo->isLive);
+				case ENX_RTSP_STREAM_FILE_H265_TYPE:
+					flprintf("Not support(%d)\n", prcInfo->isLive);
 					break;
-				case ENX_RTSP_STREAM_LIVE_H264_1_1:
-				case ENX_RTSP_STREAM_LIVE_H264_1_2:
+				case ENX_RTSP_STREAM_LIVE_H264_1:
+				case ENX_RTSP_STREAM_LIVE_H264_2:
 					{
-//						flprintf("Live Type(%d)\r\n", prcInfo->isLive);
-						const char* sdpH264Line =	"m=video 0 RTP/AVP %u\r\n" // mediaType(video, audio), port(def 0), payloadType
-													"b=AS:20480\r\n"
-													"a=rtpmap:%u H264/90000\r\n" // payloadType, payloadFormatName(H264, JPEG, etc..), TimestampFrequency(H264 def 90kHZ, JPEG...?), 
-													"a=control:%s/%s\r\n" // track1 ~ track?? => session 당 1
-													"a=recvonly\r\n"
-													"a=fmtp:%u packetization-mode=1\r\n"
-//													"a=fmtp:96 packetization-mode=1;profile-level-id=420029;sprop-parameter-sets=Z0IAKZWgFAFsQA==,aM4eDA==\r\n" // sps(720), pps(q25)
-//													"a=fmtp:96 packetization-mode=1;profile-level-id=420029;sprop-parameter-sets=Z0IAKZWgHgCJeVA=,aM4eDA==\r\n" // sps(1080), pps(q25)
+//						flprintf("Live Type(%d)\n", prcInfo->isLive);
+						const char* sdpH264Line =	"m=video 0 RTP/AVP %u\n" // mediaType(video, audio), port(def 0), payloadType
+													"b=AS:20480\n"
+													"a=rtpmap:%u H264/90000\n" // payloadType, payloadFormatName(H.264, H.265, JPEG, etc..), TimestampFrequency(H.264/H.265 def 90kHZ, JPEG...?),
+													"a=control:%s/%s\n" // track1 ~ track?? => session 당 1
+													"a=recvonly\n"
+													"a=fmtp:%u packetization-mode=1\n"
+//													"a=fmtp:96 packetization-mode=1;profile-level-id=420029;sprop-parameter-sets=Z0IAKZWgFAFsQA==,aM4eDA==\n" // sps(720), pps(q25)
+//													"a=fmtp:96 packetization-mode=1;profile-level-id=420029;sprop-parameter-sets=Z0IAKZWgHgCJeVA=,aM4eDA==\n" // sps(1080), pps(q25)
 													;
 						sdp_len  = sprintf(strSdp, sdpSessionFmt, strIP, "H264Stream", prcInfo->strUrl, "H264Stream");
 						sdp_len += sprintf(strSdp + sdp_len, sdpH264Line, RTP_numPayload_H264, RTP_numPayload_H264, prcInfo->strUrl, ENX_RTSP_SDP_URL_VIDEO, RTP_numPayload_H264);
 					}
 					break;
+				case ENX_RTSP_STREAM_LIVE_H265_1:
+				case ENX_RTSP_STREAM_LIVE_H265_2:
+					{
+//						flprintf("Live Type(%d)\n", prcInfo->isLive);
+						const char* sdpH265Line =	"m=video 0 RTP/AVP %u\n" // mediaType(video, audio), port(def 0), payloadType
+													"b=AS:20480\n"
+													"a=rtpmap:%u H265/90000\n" // payloadType, payloadFormatName(H.264, H.265, JPEG, etc..), TimestampFrequency(H.264/H.265 def 90kHZ, JPEG...?),
+													"a=control:%s/%s\n" // track1 ~ track?? => session 당 1
+													"a=recvonly\n"
+													"a=fmtp:%u sprop-sps=QgEBAWAAAAMAsAAAAwAAAwB7oAPAgBDlja5JMvwCAAADAAIAAAMAeUI=; sprop-pps=RAHA8vA8kAA=\n"
+													"a=Media_header:MEDIAINFO=494D4B48010200000400050000000000000000000000000000000000000000000000000000000000;\n"
+													"a=appversion:1.0\n"
+//													"a=fmtp:%u packetization-mode=1\n"
+													;
+						sdp_len  = sprintf(strSdp, sdpSessionFmt, strIP, "H265Stream", prcInfo->strUrl, "H265Stream");
+						sdp_len += sprintf(strSdp + sdp_len, sdpH265Line, RTP_numPayload_H265, RTP_numPayload_H265, prcInfo->strUrl, ENX_RTSP_SDP_URL_VIDEO, RTP_numPayload_H265);
+					}
+					break;
 #if (JPEG_STREAM==1)
 				case ENX_RTSP_STREAM_LIVE_JPEG:
 					{
-//						flprintf("Live Type(%d)\r\n", prcInfo->isLive);
-						const char* sdpJPEGLine =	"m=video 0 RTP/AVP %u\r\n" // mediaType(video, audio), port(def 0), payloadType
-													"b=AS:20480\r\n"
-													"a=rtpmap:%u JPEG/90000\r\n" // payloadType, payloadFormatName(H264, JPEG, etc..), TimestampFrequency(H264 def 90kHZ, JPEG...?), 
-													"a=control:%s/%s\r\n" // track1 ~ track?? => session 당 1
-													"a=recvonly\r\n"
+//						flprintf("Live Type(%d)\n", prcInfo->isLive);
+						const char* sdpJPEGLine =	"m=video 0 RTP/AVP %u\n" // mediaType(video, audio), port(def 0), payloadType
+													"b=AS:20480\n"
+													"a=rtpmap:%u JPEG/90000\n" // payloadType, payloadFormatName(H264, JPEG, etc..), TimestampFrequency(H264 def 90kHZ, JPEG...?),
+													"a=control:%s/%s\n" // track1 ~ track?? => session 당 1
+													"a=recvonly\n"
 													;
 						sdp_len  = sprintf(strSdp, sdpSessionFmt, strIP, "JPEGStream", prcInfo->strUrl, "JPEGStream");
 						sdp_len += sprintf(strSdp + sdp_len, sdpJPEGLine, RTP_numPayload_JPEG, RTP_numPayload_JPEG, prcInfo->strUrl, ENX_RTSP_SDP_URL_VIDEO);
@@ -714,12 +744,12 @@ int rtspd_client_rtsp_process_describe(rtsp_client *prcInfo, char *buf, int *buf
 #if (SW_JPEG_ENCODER==1)
 				case ENX_RTSP_STREAM_LIVE_JPEG_SW:
 					{
-//						flprintf("Live Type(%d)\r\n", prcInfo->isLive);
-						const char* sdpJPEGLine =	"m=video 0 RTP/AVP %u\r\n" // mediaType(video, audio), port(def 0), payloadType
-													"b=AS:2048\r\n"
-													"a=rtpmap:%u JPEG/90000\r\n" // payloadType, payloadFormatName(H264, JPEG, etc..), TimestampFrequency(H264 def 90kHZ, JPEG...?), 
-													"a=control:%s/%s\r\n" // track1 ~ track?? => session 당 1
-													"a=recvonly\r\n"
+//						flprintf("Live Type(%d)\n", prcInfo->isLive);
+						const char* sdpJPEGLine =	"m=video 0 RTP/AVP %u\n" // mediaType(video, audio), port(def 0), payloadType
+													"b=AS:2048\n"
+													"a=rtpmap:%u JPEG/90000\n" // payloadType, payloadFormatName(H264, JPEG, etc..), TimestampFrequency(H264 def 90kHZ, JPEG...?),
+													"a=control:%s/%s\n" // track1 ~ track?? => session 당 1
+													"a=recvonly\n"
 													;
 						sdp_len  = sprintf(strSdp, sdpSessionFmt, strIP, "JPEGStream", prcInfo->strUrl, "JPEGStream");
 						sdp_len += sprintf(strSdp + sdp_len, sdpJPEGLine, RTP_numPayload_JPEG, RTP_numPayload_JPEG, prcInfo->strUrl, ENX_RTSP_SDP_URL_VIDEO);
@@ -727,32 +757,32 @@ int rtspd_client_rtsp_process_describe(rtsp_client *prcInfo, char *buf, int *buf
 				break;
 #endif
 				default:
-					flprintf("Error(%d)\r\n", prcInfo->isLive);
+					flprintf("Error(%d)\n", prcInfo->isLive);
 					break;
 			}
 
 #ifdef __AUDIO__
 #if (AUDIO_CODEC==AUDIO_CODEC_RAW)
-			const char* sdpAudLine =	"m=audio 0 RTP/AVP %u\r\n"
-										"b=AS:128\r\n"
-										"a=rtpmap:%u L16/8000\r\n"
-										"a=control:%s/%s\r\n"
-										"a=recvonly\r\n";
+			const char* sdpAudLine =	"m=audio 0 RTP/AVP %u\n"
+										"b=AS:128\n"
+										"a=rtpmap:%u L16/8000\n"
+										"a=control:%s/%s\n"
+										"a=recvonly\n";
 			// raw
 			sdp_len += sprintf(strSdp + sdp_len, sdpAudLine, RTP_numPayload_L16S, RTP_numPayload_L16S, prcInfo->strUrl, ENX_RTSP_SDP_URL_AUDIO);
 #elif (AUDIO_CODEC==AUDIO_CODEC_G711A)
-			const char* sdpG711Line =	"m=audio 0 RTP/AVP %u\r\n"
-										"b=AS:64\r\n"
-										"a=rtpmap:%u PCM%c/8000\r\n"
-										"a=control:%s/%s\r\n"
-										"a=recvonly\r\n";
+			const char* sdpG711Line =	"m=audio 0 RTP/AVP %u\n"
+										"b=AS:64\n"
+										"a=rtpmap:%u PCM%c/8000\n"
+										"a=control:%s/%s\n"
+										"a=recvonly\n";
 			sdp_len += sprintf(strSdp + sdp_len, sdpG711Line, RTP_numPayload_PCMA, RTP_numPayload_PCMA, 'A', prcInfo->strUrl, ENX_RTSP_SDP_URL_AUDIO);
 #elif (AUDIO_CODEC==AUDIO_CODEC_G711U)
-			const char* sdpAudLine =	"m=audio 0 RTP/AVP %u\r\n"
-										"b=AS:64\r\n"
-										"a=rtpmap:%u PCM%c/8000\r\n"
-										"a=control:%s/%s\r\n"
-										"a=recvonly\r\n";
+			const char* sdpAudLine =	"m=audio 0 RTP/AVP %u\n"
+										"b=AS:64\n"
+										"a=rtpmap:%u PCM%c/8000\n"
+										"a=control:%s/%s\n"
+										"a=recvonly\n";
 			sdp_len += sprintf(strSdp + sdp_len, sdpAudLine, RTP_numPayload_PCMU, RTP_numPayload_PCMU, 'U', prcInfo->strUrl, ENX_RTSP_SDP_URL_AUDIO);
 #endif
 #endif
@@ -784,7 +814,7 @@ int rtspd_client_rtsp_process_setup(rtsp_client *prcInfo, char *buf, int *buf_le
 	int res = 0;
 
 	if (rtspd_client_rtsp_state(prcInfo, ENX_RTSP_STATE_SETUP) == 0) {
-		if (prcInfo->isTransport == DEF_YES) {
+		if (prcInfo->isTransport == ENX_YES) {
 			// 전송 가능한 통신프로토콜로 요청했는지 판단한다.
 			switch (prcInfo->eTransport) {
 				case ENX_RTSP_TRANSPORT_TCP:
@@ -803,9 +833,14 @@ int rtspd_client_rtsp_process_setup(rtsp_client *prcInfo, char *buf, int *buf_le
 					case ENX_RTSP_STRTYPE_VIDEO:
 						switch (prcInfo->isLive) {
 							case ENX_RTSP_STREAM_FILE_H264_TYPE:
-							case ENX_RTSP_STREAM_LIVE_H264_1_1:
-							case ENX_RTSP_STREAM_LIVE_H264_1_2:
+							case ENX_RTSP_STREAM_LIVE_H264_1:
+							case ENX_RTSP_STREAM_LIVE_H264_2:
 								prcInfo->rtp_ss[prcInfo->nQuery].payload_type = RTP_numPayload_H264;
+								break;
+							case ENX_RTSP_STREAM_FILE_H265_TYPE:
+							case ENX_RTSP_STREAM_LIVE_H265_1:
+							case ENX_RTSP_STREAM_LIVE_H265_2:
+								prcInfo->rtp_ss[prcInfo->nQuery].payload_type = RTP_numPayload_H265;
 								break;
 #if (JPEG_STREAM==1)
 							case ENX_RTSP_STREAM_LIVE_JPEG:
@@ -819,7 +854,7 @@ int rtspd_client_rtsp_process_setup(rtsp_client *prcInfo, char *buf, int *buf_le
 #endif
 							default:
 								res = -1;
-								flprintf("Stream Type(%d)\r\n", prcInfo->isLive);
+								flprintf("Stream Type(%d)\n", prcInfo->isLive);
 								rtspd_client_rtsp_process_error(prcInfo, buf, buf_len, ENX_RTSP_RESPONSE_404);
 								break;
 						}
@@ -875,7 +910,7 @@ int rtspd_client_rtsp_process_setup(rtsp_client *prcInfo, char *buf, int *buf_le
 							prcInfo->rtp_ss[prcInfo->nQuery].ssrc, strDate);
 						break;
 					case ENX_RTSP_TRANSPORT_NONE:
-						flprintf("Error Case\r\n");
+						flprintf("Error Case\n");
 						break;
 				}
 
@@ -887,7 +922,7 @@ int rtspd_client_rtsp_process_setup(rtsp_client *prcInfo, char *buf, int *buf_le
 					sprintf(strbuf, "rtp%d", prcInfo->index);
 					prcInfo->rtp_ss[prcInfo->nQuery].tx_ready = ENX_RTP_TXSTE_READY;
 					if (prcInfo->play_query == ENX_RTSP_STRTYPE_NONE) {
-						vTaskCreate(strbuf, rtspd_client_rtp_main, prcInfo, _32KB_STACK_SIZE, LV4_TASK_PRIO);
+						vTaskCreate(strbuf, rtspd_client_rtp_main, prcInfo, LV3_STACK_SIZE, LV4_TASK_PRIO);
 					}
 					prcInfo->play_query |= prcInfo->setup_query;
 				} else if (prcInfo->eTransport == ENX_RTSP_TRANSPORT_UDP) {
@@ -910,7 +945,7 @@ int rtspd_client_rtsp_process_setup(rtsp_client *prcInfo, char *buf, int *buf_le
 				rtspd_client_rtsp_process_error(prcInfo, buf, buf_len, ENX_RTSP_RESPONSE_412);
 				break;
 			default:
-				flprintf("Error: case fail\r\n");
+				flprintf("Error: case fail\n");
 				break;
 		}
 	}
@@ -954,7 +989,7 @@ int rtspd_client_rtsp_process_play(rtsp_client *prcInfo, char *buf, int *buf_len
 				nLen = sprintf(strRtpinfo + offset - 1, RTSP_strCRLF); // - 1 => 문자열 끝에 있는 ','를 제거하고 CLRF를 붙인다.
 				offset += nLen;											// $CMT-hjlee-180220 - 
 				if (offset >= 1024) {									// $CMT-hjlee-180220 - 
-					flprintf("buffer overflow(%dbyte)\r\n", offset);	// $CMT-hjlee-180220 - 
+					flprintf("buffer overflow(%dbyte)\n", offset);	// $CMT-hjlee-180220 -
 				}														// $CMT-hjlee-180220 - 
 
 				*buf_len = sprintf(buf, ENX_RTSP_RESPONSE_HEAD_S "%s%s" RTSP_strCRLF, 
@@ -986,7 +1021,7 @@ int rtspd_client_rtsp_process_pause(rtsp_client *prcInfo, char *buf, int *buf_le
 	int res = 0;
 
 	if (rtspd_client_rtsp_state(prcInfo, ENX_RTSP_STATE_PAUSE) == 0) {
-//		flprintf("state1(%d)\r\n", prcInfo->state);
+//		flprintf("state1(%d)\n", prcInfo->state);
 		char strDate[40] = {0};
 		rtspd_client_rtsp_make_datetime(strDate);
 		if (prcInfo->nSession == 0) {
@@ -995,7 +1030,7 @@ int rtspd_client_rtsp_process_pause(rtsp_client *prcInfo, char *buf, int *buf_le
 			*buf_len = sprintf(buf, ENX_RTSP_RESPONSE_HEAD_S "%s" RTSP_strCRLF, ENX_RTSP_RESPONSE_200, prcInfo->nCSeq, prcInfo->nSession, strDate);
 		}
 	} else {
-		flprintf("state2(%d)\r\n", prcInfo->state);
+		flprintf("state2(%d)\n", prcInfo->state);
 		rtspd_client_rtsp_process_error(prcInfo, buf, buf_len, ENX_RTSP_RESPONSE_400);
 	}
 
@@ -1014,7 +1049,7 @@ int rtspd_client_rtsp_process_teardown(rtsp_client *prcInfo, char *buf, int *buf
 	int res = 0;
 
 	if (rtspd_client_rtsp_state(prcInfo, ENX_RTSP_STATE_TEARDOWN) == 0) {
-//		flprintf("state1(%d)\r\n", prcInfo->state);
+//		flprintf("state1(%d)\n", prcInfo->state);
 		char strDate[40] = {0};
 		rtspd_client_rtsp_make_datetime(strDate);
 		if (prcInfo->nSession == 0) {
@@ -1023,7 +1058,7 @@ int rtspd_client_rtsp_process_teardown(rtsp_client *prcInfo, char *buf, int *buf
 			*buf_len = sprintf(buf, ENX_RTSP_RESPONSE_HEAD_S "%s" RTSP_strCRLF, ENX_RTSP_RESPONSE_200, prcInfo->nCSeq, prcInfo->nSession, strDate);
 		}
 	} else {
-		flprintf("state2(%d)\r\n", prcInfo->state);
+		flprintf("state2(%d)\n", prcInfo->state);
 		rtspd_client_rtsp_process_error(prcInfo, buf, buf_len, ENX_RTSP_RESPONSE_400);
 	}
 
@@ -1089,7 +1124,7 @@ int rtspd_client_rtsp_response(rtsp_client *prcInfo, char *buf, int *buf_len)
 	*buf_len = 0;
 
 	if (prcInfo->state == ENX_RTSP_STATE_TEARDOWN) {
-		flprintf("TEARDOWN(412) : %s\r\n", prcInfo->state, prcInfo->strUrl);
+		flprintf("TEARDOWN(%d)(412) : %s\n", prcInfo->state, prcInfo->strUrl);
 		rtspd_client_rtsp_process_error(prcInfo, buf, buf_len, ENX_RTSP_RESPONSE_412);
 		res = -1;
 	} else if (rtspd_client_rtsp_check_url(prcInfo, prcInfo->strUrl) != -1) {
@@ -1119,13 +1154,13 @@ int rtspd_client_rtsp_response(rtsp_client *prcInfo, char *buf, int *buf_len)
 				rtspd_client_rtsp_process_set_parameter(prcInfo, buf, buf_len);
 				break;
 			default:
-				flprintf("Unknown Method(id) : %d\r\n", prcInfo->method);
+				flprintf("Unknown Method(id) : %d\n", prcInfo->method);
 				rtspd_client_rtsp_process_error(prcInfo, buf, buf_len, ENX_RTSP_RESPONSE_400);
 				res = -1;
 				break;
 		}
 	} else {
-		flprintf("Unknown URL(501) : %s\r\n", prcInfo->strUrl);
+		flprintf("Unknown URL(501) : %s\n", prcInfo->strUrl);
 		rtspd_client_rtsp_process_error(prcInfo, buf, buf_len, ENX_RTSP_RESPONSE_501);
 		res = -1;
 	}

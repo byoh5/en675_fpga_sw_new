@@ -270,7 +270,7 @@ BYTE GetDDC_Access (byte* SysCtrlRegVal)
 			return TRUE;
 		}
 		WriteByteTPI(TPI_SYSTEM_CONTROL_DATA_REG, sysCtrl);			// 0x1A[2] = "1" - Requst the DDC bus
-		sleep_(200000);
+		DelayMS(200);
 	}
 
 	WriteByteTPI(TPI_SYSTEM_CONTROL_DATA_REG, sysCtrl);				// Failure... restore original value.

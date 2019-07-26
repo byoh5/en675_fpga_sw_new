@@ -224,7 +224,7 @@ void sys_unlock_tcpip_core(void);
  * If the application sends a lot of data out of ROM (or other static memory),
  * this should be set high.
  */
-#define MEMP_NUM_PBUF                   128
+#define MEMP_NUM_PBUF                   128 // 64
 
 /**
  * MEMP_NUM_RAW_PCB: Number of raw connection PCBs
@@ -269,7 +269,7 @@ void sys_unlock_tcpip_core(void);
  * MEMP_NUM_REASSDATA: the number of IP packets simultaneously queued for
  * reassembly (whole packets, not fragments!)
  */
-#define MEMP_NUM_REASSDATA              5
+#define MEMP_NUM_REASSDATA              15
 
 /**
  * MEMP_NUM_FRAG_PBUF: the number of IP fragments simultaneously sent
@@ -300,7 +300,7 @@ void sys_unlock_tcpip_core(void);
  * The number of sys timeouts used by the core stack (not apps)
  * The default number of timeouts is calculated here for all enabled modules.
  */
-//#define LWIP_NUM_SYS_TIMEOUT_INTERNAL   (2 * (LWIP_TCP + IP_REASSEMBLY + LWIP_ARP + (2*LWIP_DHCP) + LWIP_AUTOIP + LWIP_IGMP + LWIP_DNS + PPP_NUM_TIMEOUTS + (LWIP_IPV6 * (1 + LWIP_IPV6_REASS + LWIP_IPV6_MLD))))
+#define LWIP_NUM_SYS_TIMEOUT_INTERNAL   (2 * (LWIP_TCP + IP_REASSEMBLY + LWIP_ARP + (2*LWIP_DHCP) + LWIP_AUTOIP + LWIP_IGMP + LWIP_DNS + PPP_NUM_TIMEOUTS + (LWIP_IPV6 * (1 + LWIP_IPV6_REASS + LWIP_IPV6_MLD))))
 
 /**
  * MEMP_NUM_SYS_TIMEOUT: the number of simultaneously active timeouts.
@@ -506,7 +506,7 @@ void sys_unlock_tcpip_core(void);
  * PBUF_POOL_SIZE > IP_REASS_MAX_PBUFS so that the stack is still able to receive
  * packets even if the maximum amount of fragments is enqueued for reassembly!
  */
-#define IP_REASS_MAX_PBUFS              50
+#define IP_REASS_MAX_PBUFS              100
 
 /**
  * IP_DEFAULT_TTL: Default value for Time-To-Live used by transport layers.

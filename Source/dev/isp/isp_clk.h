@@ -23,6 +23,13 @@
 #define	ISP_CLK_PCLK_DIV2	4
 #define	ISP_CLK_PLL_DIV0	5
 
+#define C_PLL	ISP_CLK_PLL
+#define C_148M	ISP_CLK_148M
+#define C_74M	ISP_CLK_74M
+#define C_PCK	ISP_CLK_PCLK
+#define C_PCKD2	ISP_CLK_PCLK_DIV2
+#define C_PLLD0	ISP_CLK_PLL_DIV0
+
 //	Down-Scale Clock-----------------------------------------------	isp_interface.c
 #define	DS_ISP_297M                 1
 #define	DS_ISP_148M                 1

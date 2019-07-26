@@ -46,6 +46,7 @@ UINT BDmaMemCpy_isr_async(UINT nCH, BYTE *apbDst, BYTE *apbSrc, UINT anNum)
 	return doneID;
 }
 
+#ifdef __FREERTOS__
 void BDmaMemCpy_rtos(UINT nCH, BYTE *apbDst, BYTE *apbSrc, UINT anNum)
 {
 	ENX_DEBUGF(DGB_DMA_MSG, "%u, 0x%08X <- 0x%08X, %uByte\n", nCH, apbDst, apbSrc, anNum);
@@ -74,6 +75,7 @@ UINT BDmaMemCpy_rtos_async(UINT nCH, BYTE *apbDst, BYTE *apbSrc, UINT anNum)
 	portEXIT_CRITICAL();
 	return doneID;
 }
+#endif
 
 void BDmaMemSet_isr(UINT nCH, BYTE *apbDst, BYTE abVal, UINT anNum)
 {
@@ -101,6 +103,7 @@ UINT BDmaMemSet_isr_async(UINT nCH, BYTE *apbDst, BYTE abVal, UINT anNum)
 	return doneID;
 }
 
+#ifdef __FREERTOS__
 void BDmaMemSet_rtos(UINT nCH, BYTE *apbDst, BYTE abVal, UINT anNum)
 {
 	ENX_DEBUGF(DGB_DMA_MSG, "%u, 0x%08X <- 0x%02X, %uByte\n", nCH, apbDst, abVal, anNum);
@@ -114,6 +117,7 @@ void BDmaMemSet_rtos(UINT nCH, BYTE *apbDst, BYTE abVal, UINT anNum)
 	while (arrBDMA[nCH]->DONE_PTR != arrBDMA[nCH]->JOB_PTR);
 	portEXIT_CRITICAL();
 }
+#endif
 
 void BDmaIrqCallback(UINT nCH, irq_fn irqfn, void *arg)
 {
@@ -198,6 +202,7 @@ UINT CDmaMemCpy_isr_async(UINT nCH, BYTE *apbDst, BYTE *apbSrc, UINT anNum)
 	return doneID;
 }
 
+#ifdef __FREERTOS__
 void CDmaMemCpy_rtos(UINT nCH, BYTE *apbDst, BYTE *apbSrc, UINT anNum)
 {
 	ENX_DEBUGF(DGB_DMA_MSG, "%u, 0x%08X <- 0x%08X, %uByte\n", nCH, apbDst, apbSrc, anNum);
@@ -211,6 +216,22 @@ void CDmaMemCpy_rtos(UINT nCH, BYTE *apbDst, BYTE *apbSrc, UINT anNum)
 	while (arrCDMA[nCH]->DONE_PTR != arrCDMA[nCH]->JOB_PTR);
 	portEXIT_CRITICAL();
 }
+
+UINT CDmaMemCpy_rtos_async(UINT nCH, BYTE *apbDst, BYTE *apbSrc, UINT anNum)
+{
+	ENX_DEBUGF(DGB_DMA_MSG, "%u, 0x%08X <- 0x%08X, %uByte\n", nCH, apbDst, apbSrc, anNum);
+	portENTER_CRITICAL();
+	UINT doneID = arrCDMA[nCH]->JOB_PTR;
+	arrCDMA[nCH]->JOB_PTR++;
+	arrCDMA[nCH]->MODE = 0;
+	arrCDMASRC[nCH]->SRC = (intptr_t)apbSrc;
+	arrCDMADST[nCH]->DST = (intptr_t)apbDst;
+	arrCDMALEN[nCH]->LEN = anNum;
+	arrCDMA[nCH]->GO = 1;
+	portEXIT_CRITICAL();
+	return doneID;
+}
+#endif
 
 void CDmaMemSet_isr(UINT nCH, BYTE *apbDst, BYTE abVal, UINT anNum)
 {
@@ -237,6 +258,7 @@ UINT CDmaMemSet_isr_async(UINT nCH, BYTE *apbDst, BYTE abVal, UINT anNum)
 	return doneID;
 }
 
+#ifdef __FREERTOS__
 void CDmaMemSet_rtos(UINT nCH, BYTE *apbDst, BYTE abVal, UINT anNum)
 {
 	ENX_DEBUGF(DGB_DMA_MSG, "%u, 0x%08X <- 0x%02X, %uByte\n", nCH, apbDst, abVal, anNum);
@@ -250,6 +272,22 @@ void CDmaMemSet_rtos(UINT nCH, BYTE *apbDst, BYTE abVal, UINT anNum)
 	while (arrCDMA[nCH]->DONE_PTR != arrCDMA[nCH]->JOB_PTR);
 	portEXIT_CRITICAL();
 }
+
+UINT CDmaMemSet_rtos_async(UINT nCH, BYTE *apbDst, BYTE abVal, UINT anNum)
+{
+	ENX_DEBUGF(DGB_DMA_MSG, "%u, 0x%08X <- 0x%02X, %uByte\n", nCH, apbDst, abVal, anNum);
+	portENTER_CRITICAL();
+	UINT doneID = arrCDMA[nCH]->JOB_PTR;
+	arrCDMA[nCH]->JOB_PTR++;
+	arrCDMA[nCH]->VALUE = abVal;
+	arrCDMA[nCH]->MODE = 1;
+	arrCDMADST[nCH]->DST = (intptr_t)apbDst;
+	arrCDMALEN[nCH]->LEN = anNum;
+	arrCDMA[nCH]->GO = 1;
+	portEXIT_CRITICAL();
+	return doneID;
+}
+#endif
 
 void CDmaIrqCallback(UINT nCH, irq_fn irqfn, void *arg)
 {

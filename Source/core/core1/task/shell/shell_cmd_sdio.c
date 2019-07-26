@@ -9,6 +9,7 @@
 #include "enx_freertos.h"
 
 #include "shell_cmd_sdio.h"
+#include <stdio.h>	// for snprintf
 #include <string.h> // for memset
 #include <stdlib.h> // for srand
 #include <string.h> // for strcmp
@@ -42,10 +43,9 @@ static SdioAutoTestBuffer sdcditem;
 
 static void sdio_create_random(BYTE *data, uint64_t size)
 {
-	uint64_t t = time(NULL);
-	srand(t);
+	srand(rdcycle());
 	for (uint64_t i = 0; i < size; i++) {
-		data[i] = rand() % 255;
+		data[i] = i;//rand() % 255;
 	}
 }
 
@@ -58,6 +58,7 @@ static void SdioCDTestTask(void *ctx)
 		vTaskDelete(NULL);
 	}
 
+#if 1
 	sdcditem.arrSrc = pvPortMalloc(sdcditem.u64BufSize);
 	if (sdcditem.arrSrc == NULL) {
 		_Rprintf("malloc error(arrSrc), size(%u)\n", sdcditem.u64BufSize);
@@ -72,17 +73,21 @@ static void SdioCDTestTask(void *ctx)
 		sdcditem.taskHandle = NULL;
 		vTaskDelete(NULL);
 	}
+#else
+	sdcditem.arrSrc = 0x90000000;
+	sdcditem.arrDst = 0x90400000;
+#endif
 
 	BYTE *parrSrc = (BYTE *)ENX_MEM_ALIGN(sdcditem.arrSrc);
 	BYTE *parrDst = (BYTE *)ENX_MEM_ALIGN(sdcditem.arrDst);
 
-	printf("SDIO-CD Memory Src(0x%08X->0x%08X)\n", sdcditem.arrSrc, parrSrc);
-	printf("SDIO-CD Memory Dst(0x%08X->0x%08X)\n", sdcditem.arrDst, parrDst);
+	printf("SDIO-CD Memory Src(0x%08lX->0x%08lX)\n", (intptr_t)sdcditem.arrSrc, (intptr_t)parrSrc);
+	printf("SDIO-CD Memory Dst(0x%08lX->0x%08lX)\n", (intptr_t)sdcditem.arrDst, (intptr_t)parrDst);
 
-	//srand(rdcycle());
-	srand(3);
+	srand(rdcycle());
+	//srand(3);
 
-	printf("SDIO-CD Test Task(Src:0x%08X)(Dst:0x%08X)(Size:%u)(Count:%u)\n", parrSrc, parrDst, sdcditem.u64BufSize, sdcditem.u32TestCount);
+	printf("SDIO-CD Test Task(Src:0x%08lX)(Dst:0x%08lX)(Size:%lu)(Count:%u)\n", (intptr_t)parrSrc, (intptr_t)parrDst, sdcditem.u64BufSize, sdcditem.u32TestCount);
 	char strPrintSize[16] = {0};
 	UINT u32MaxIdx = SdioCdGetSectorCnt() - 4000;
 	getSDGBSizeT(strPrintSize);
@@ -109,26 +114,36 @@ static void SdioCDTestTask(void *ctx)
 		sdcditem.arrSrc[i] = rand() % 255;
 	}
 	hwflush_dcache_range((ULONG)sdcditem.arrSrc, u32RelTestSize);
-
+#define SDTEST_ALL_AREA 1
+#if SDTEST_ALL_AREA
+	UINT u32StartSector = 65536;
+#else
 	UINT u32StartSector = u32MaxIdx - sdcditem.u32TestBlock - 1 - sdcditem.u32TestBlock;
+#endif
 	UINT u32EndSector = u32MaxIdx - 1 - sdcditem.u32TestBlock;
 	printf("Test Sector: 0x%08X ~ 0x%08X\n", u32StartSector, u32EndSector);
 
 	u32RelTestSize = 0;
 	UINT pass = 0, fail = 0, flag = 0;
+	UINT maxCount = sdcditem.u64BufSize / u32DataBlockByte - 1;
+	char buf[64] = {0};
 	for (UINT i = 0; i < sdcditem.u32TestCount; i++) {
 		UINT testSector = rand() % ((u32EndSector - u32StartSector) + 1) + u32StartSector;
 #if 1
 		UINT readCount = 0;
-		if ((rand() % 4) == 0) {
+		if ((rand() % 5) == 0) {
 			readCount = 1;
 		} else {
+#if SDTEST_ALL_AREA
+			readCount = rand() % (maxCount - 2) + 2;
+#else
 			UINT maxCount = u32EndSector - testSector;
 			if (maxCount <= 2) {
 				readCount = 1;
 			} else {
 				readCount = rand() % (maxCount - 2) + 2;
 			}
+#endif
 		}
 #else
 		UINT readCount = i + 1;
@@ -139,10 +154,18 @@ static void SdioCDTestTask(void *ctx)
 
 		printf("%3u%% %5u/%5u Test Sector(0x%08X ~ 0x%08X) Count(%8u) %6s-", ((i+1) * 100) / sdcditem.u32TestCount, i+1, sdcditem.u32TestCount, testSector, testSector+readCount-1, readCount, readCount == 1 ? "single" : "multi");
 
+		ULONG wstart = BenchTimeStart();
 		SdioCdWrite(parrSrc, testSector, readCount);
+		UINT wgap = BenchTimeStop(wstart);
+		snprintf(buf, 64, "%5.2f", ((readCount * u32DataBlockByte) / 1024.0 / 1024.0) / (wgap / 1000.0 / 1000.0));
+		_Gprintf("W:%sMB/s ", buf);
 		//printf("W");
 
+		ULONG rstart = BenchTimeStart();
 		SdioCdRead(parrDst, testSector, readCount);
+		UINT rgap = BenchTimeStop(rstart);
+		snprintf(buf, 64, "%5.2f", ((readCount * u32DataBlockByte) / 1024.0 / 1024.0) / (rgap / 1000.0 / 1000.0));
+		_Gprintf("R:%sMB/s", buf);
 		//printf("R");
 
 //		vTaskDelay(1);
@@ -189,14 +212,14 @@ static void SdioCDReadTestTask(void *ctx)
 
 	sdcditem.arrSrc = pvPortMalloc(sdcditem.u64BufSize);
 	if (sdcditem.arrSrc == NULL) {
-		printf("malloc error(arrSrc), size(%u)\n", sdcditem.u64BufSize);
+		printf("malloc error(arrSrc), size(%lu)\n", sdcditem.u64BufSize);
 		sdcditem.taskHandle = NULL;
 		vTaskDelete(NULL);
 	}
 
 	sdcditem.arrDst = pvPortMalloc(sdcditem.u64BufSize);
 	if (sdcditem.arrDst == NULL) {
-		printf("malloc error(arrDst), size(%u)\n", sdcditem.u64BufSize);
+		printf("malloc error(arrDst), size(%lu)\n", sdcditem.u64BufSize);
 		vPortFree(sdcditem.arrSrc);
 		sdcditem.taskHandle = NULL;
 		vTaskDelete(NULL);
@@ -205,7 +228,7 @@ static void SdioCDReadTestTask(void *ctx)
 	BYTE *parrOrg = (BYTE *)ENX_MEM_ALIGN(sdcditem.arrSrc);
 	BYTE *parrSdr = (BYTE *)ENX_MEM_ALIGN(sdcditem.arrDst);
 
-	printf("SDIO-CD Read Test Task(Org: 0x%08X)(SDr: 0x%08X)(Buffer Size: %u)\n", parrOrg, parrSdr, sdcditem.u64BufSize);
+	printf("SDIO-CD Read Test Task(Org: 0x%08lX)(SDr: 0x%08lX)(Buffer Size: %lu)\n", (intptr_t)parrOrg, (intptr_t)parrSdr, sdcditem.u64BufSize);
 	char strPrintSize[16] = {0};
 	UINT u32MaxIdx = SdioCdGetSectorCnt();
 	getSDGBSizeT(strPrintSize);
@@ -331,14 +354,14 @@ static void SdioCDWriteTestTask(void *ctx)
 
 	BYTE *alloc = pvPortMalloc(sdcditem.u64BufSize);
 	if (alloc == NULL) {
-		printf("malloc error(arrSrc), size(%u)\n", sdcditem.u64BufSize);
+		printf("malloc error(arrSrc), size(%lu)\n", sdcditem.u64BufSize);
 		sdcditem.taskHandle = NULL;
 		vTaskDelete(NULL);
 	}
 
 	sdcditem.arrSrc = (BYTE *)ENX_MEM_ALIGN(alloc);
 
-	printf("SDIO-CD Write Test Task(Base: 0x%08X)\n", sdcditem.arrSrc);
+	printf("SDIO-CD Write Test Task(Base: 0x%08lX)\n", (intptr_t)sdcditem.arrSrc);
 	char strPrintSize[16] = {0};
 	UINT u32MaxIdx = SdioCdGetSectorCnt();
 	getSDGBSizeT(strPrintSize);
@@ -388,9 +411,9 @@ int cmd_test_sdio(int argc, char *argv[])
 
 	if (sdcd_data.alloc == NULL) {
 		sdcd_data.alloc = pvPortMalloc(nBufferSize+512);
-		printf("SDIO-CD test memory Init (0x%08X)\n", sdcd_data.alloc);
+		printf("SDIO-CD test memory Init (0x%08lX)\n", (intptr_t)sdcd_data.alloc);
 		sdcd_data.data = (BYTE *)ENX_MEM_ALIGN(sdcd_data.alloc);
-		printf("SDIO-CD test memory ALIGN64 address (0x%08X)\n", sdcd_data.data);
+		printf("SDIO-CD test memory ALIGN64 address (0x%08lX)\n", (intptr_t)sdcd_data.data);
 	}
 
 	if(argc == 1) {
@@ -432,7 +455,7 @@ int cmd_test_sdio(int argc, char *argv[])
 				UINT eaddr = strtol(argv[4], NULL, 16);
 				if (strcmp(argv[2], "s") == 0) {
 					for (UINT i = saddr; i <= eaddr; i++) {
-						printf("SDIO-CD %s[S] Addr(0x%08X) Dst(0x%08X)\n", strMode[nMode], i, sdcd_data.data);
+						printf("SDIO-CD %s[S] Addr(0x%08X) Dst(0x%08lX)\n", strMode[nMode], i, (intptr_t)sdcd_data.data);
 						if (nMode == 0) { // Read
 							memset(sdcd_data.data, 0, nBufferSize);
 							SdioCdRead(sdcd_data.data, i, 1);
@@ -450,7 +473,7 @@ int cmd_test_sdio(int argc, char *argv[])
 						printf("Max Count 8, input(0x%08X/0x%08X=>%d)\n", saddr, eaddr, nCount);
 						return 0;
 					}
-					printf("SDIO-CD %s[M] Addr(0x%08X~0x%08X) Dst(0x%08X)\n", strMode[nMode], saddr, eaddr, sdcd_data.data);
+					printf("SDIO-CD %s[M] Addr(0x%08X~0x%08X) Dst(0x%08lX)\n", strMode[nMode], saddr, eaddr, (intptr_t)sdcd_data.data);
 					if (nMode == 0) { // Read
 						memset(sdcd_data.data, 0, nBufferSize);
 						SdioCdRead(sdcd_data.data, saddr, nCount);
@@ -466,7 +489,7 @@ int cmd_test_sdio(int argc, char *argv[])
 				}
 			} else if (argc == 3) {
 				UINT saddr = strtol(argv[2], NULL, 16);
-				printf("SDIO-CD %s[S] Addr(0x%08X) Dst(0x%08X)\n", strMode[nMode], saddr, sdcd_data.data);
+				printf("SDIO-CD %s[S] Addr(0x%08X) Dst(0x%08lX)\n", strMode[nMode], saddr, (intptr_t)sdcd_data.data);
 				if (nMode == 0) { // Read
 					memset(sdcd_data.data, 0, nBufferSize);
 					SdioCdRead(sdcd_data.data, saddr, 1);

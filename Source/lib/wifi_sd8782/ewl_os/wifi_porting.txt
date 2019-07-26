@@ -1,0 +1,66 @@
+110622
+- marvell wifi stack is working well.
+- additional work
+  . sdio multi-block read, bug exists in current.
+- fpga version 110531 
+
+11/06/23
+- fpga version 110622
+- porting wifi s/w to the latest Rtos version(11/06/23)
+- when sdio clock rate is up, downloading firmware image is error,
+- reading sdio multi block mode is implemented.
+
+11/06/30
+- fpga & firmware version 110626
+- Operating sdio cmd53 read/write is good.
+- lwIp stack and socket interface is connected to wifi.
+- the value of lwIp option "LWIP_NETIF_TX_SINGLE_PBUF" is modified 0 into 1.
+  this option change multi pbuf type into sigle buffer type
+
+  the modified lwip option 
+  #include "moal_api.h"                                            //  modified for wifi
+  /* Wi-Fi configuration */
+  #define ETH_PAD_SIZE                    MLAN_HEADER_SIZE         //  modified for wifi
+
+  #define LWIP_NETIF_TX_SINGLE_PBUF             1 		           // 0 --> 1 modified for wifi
+  #define PBUF_POOL_SIZE                        4                  // 8-->4  modified for wifi
+  #define PBUF_LINK_HLEN                       (14 + ETH_PAD_SIZE) // modified from 16
+
+
+11/07/01
+ - wifi web server is operated, 
+   however TCP_MSS is changed from 536 to 536*2 
+   web server is not working.
+ - TCP_SND_BUF  is changed into (10*TCP_MSS) 
+
+
+11/07/05
+ - When TCP_MSS is changed large (ex from 536 to 536*2)
+   this problom comes from struct of pbuf. pbuf is composed of linked list.
+   however marvell wifi'buffer strut is sigle buffer. and linked list pbuf is 
+   converted into single. To make single pbuf, pbuf_coalesce() is used in 
+   woal_hard_start_xmit()
+
+ - MJPEG'img is tranfered successfully.
+
+ - TCP_MSS, TCP_WND, LWIP_NETIF_TX_SINGLE_PBUF
+ 
+ 
+11/07/08
+ - IOCTL wait queue is implemented. Freertos's msg queue is used.
+   when ioctrl operation is completed. User or process can be signaled. 
+
+ - moal_recv_event() in moal_shim.c removed wireless_send_event()   
+ 
+11/07/12
+- WEP is implemented, Also 64/128 bit mode was tested. the used key is provided 
+  by AP. wifi_wep_connect()
+
+- linux's iwconfig function call interface is mimiced by iw_handler struct
+  and wext_handle_ioctl()
+  
+- when memory is alloced by malloc(), the memory should initialized by '0',
+  To do this allow s/w to work normally.        
+ 
+ 
+  

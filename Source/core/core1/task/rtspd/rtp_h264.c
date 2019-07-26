@@ -40,8 +40,8 @@
 #include "rtp_h264.h"
 
 #if 0
-#define ENTER() printf(" IN %04d:%s\r\n", __LINE__, __func__)
-#define LEAVE() printf("OUT %04d:%s\r\n", __LINE__, __func__)
+#define ENTER() printf(" IN %04d:%s\n", __LINE__, __func__)
+#define LEAVE() printf("OUT %04d:%s\n", __LINE__, __func__)
 #else
 #define ENTER()
 #define LEAVE()
@@ -51,7 +51,7 @@ static void rtspd_client_rtp_h264_check_framenum(UINT *detectErr, BYTE *addr)
 {
 	BYTE frameNum = 0;
 	BYTE frameNal = *(addr + 4);
-	if (frameNal == 0x61) {			// P frame
+	if (frameNal == 0x61 || frameNal == 0x41) {			// P frame
 		frameNum = (*(((int *)addr) + 1) >> 13) & 0xFF;
 		// H.264 Frame Number Info
 		// *(((int *)addr)+1) (0000 0000 0001 1111 1110 0000 0000 0000)
@@ -60,7 +60,7 @@ static void rtspd_client_rtp_h264_check_framenum(UINT *detectErr, BYTE *addr)
 			//   E1 20 = (8*1) + ((0010 0000)>>5) = Frame 9
 			*detectErr = frameNum;
 		} else {
-			printf("addr(0x%08X), newNum(%02d), oldNum(%02d)\r\n    Frame Number Detect Error!!\r\n", addr, frameNum, *detectErr);
+			printf("addr(0x%08X), newNum(%02d), oldNum(%02d)\n    Frame Number Detect Error!!\n", (UINT)(intptr_t)addr, frameNum, *detectErr);
 			*detectErr = 0xFFFFFFFF;
 		}
 	} else if (frameNal == 0x67) {	// SPS+PPS+I frame
@@ -119,36 +119,37 @@ int rtspd_client_rtp_h264_main(rtsp_client *prcInfo)
 					}
 				}
 
-				invalidate_dcache_range((u32)rtpSession->rtp_pk.base, (u32)(rtpSession->rtp_pk.base + 32));
-				rtspd_client_rtp_h264_check_framenum(&rtpSession->rtp_pk.nalnum, (BYTE *)rtpSession->rtp_pk.base);
+				hwflush_dcache_range((u32)rtpSession->rtp_pk.base, 32);
+#if 0
+				rtspd_client_rtp_h264_check_framenum(&rtpSession->rtp_pk.nalnum, (BYTE *)(intptr_t)rtpSession->rtp_pk.base);
 				if (rtpSession->rtp_pk.nalnum == 0xFFFFFFFF) { // nalnum(sequence number)에 오차가 생긴다면 다음 I까지 pass
-					printf("%s(%d) : slow network speed? small memory allocation?\r\n", __func__, __LINE__);
-					printf("%s(%d) : or changed IDR(gop)?\r\n", __func__, __LINE__);
+					printf("%s(%d) : slow network speed? small memory allocation?\n", __func__, __LINE__);
+					printf("%s(%d) : or changed IDR(gop)?\n", __func__, __LINE__);
 					break;
 				}
-
+#endif
 				rtpSession->tx_ready = ENX_RTP_TXSTE_DOING;
 				// This case goes directly to "ENX_RTP_TXSTE_DOING".
 			} else {
 				break;
 				// switch break;
-			}
+			} // @suppress("No break at end of case")
 		case ENX_RTP_TXSTE_DOING:
 			{
 				// 남은 h264의 크기
 				h264left = rtpSession->rtp_pk.size - rtpSession->rtp_pk.offset;
 				if (((int)h264left) < 0) {
-					flprintf("h264left error(%d)\r\n", h264left);
-					flprintf("rtp_pk.size(%d) rtp_pk.offset(%d)\r\n", rtpSession->rtp_pk.size, rtpSession->rtp_pk.offset);
+					flprintf("h264left error(%d)\n", h264left);
+					flprintf("rtp_pk.size(%d) rtp_pk.offset(%d)\n", rtpSession->rtp_pk.size, rtpSession->rtp_pk.offset);
 				}
 
 				// base기준 전송을 보내야 할 h264 주소
-				base_offset = (BYTE *)(rtpSession->rtp_pk.base + rtpSession->rtp_pk.offset);
+				base_offset = (BYTE *)(intptr_t)(rtpSession->rtp_pk.base + rtpSession->rtp_pk.offset);
 
 				// NAL unit test
 				if (rtpSession->rtp_pk.offset != 0) {
 					// invalidate_dcache_range는 offset == 0인 단계에서 하므로 할 필요 없음(ENX_RTP_TXSTE_READY단계에서 진행)
-					invalidate_dcache_range((u32)rtpSession->rtp_pk.base, (u32)(rtpSession->rtp_pk.base + 32));
+					hwflush_dcache_range(rtpSession->rtp_pk.base, 32);
 				}
 				if (base_offset[0] == 0x00) {
 					UINT loop = LWIP_MIN(h264left, 20);
@@ -159,7 +160,7 @@ int rtspd_client_rtp_h264_main(rtsp_client *prcInfo)
 						}
 					}
 					if ((loop == h264left) && (nalzerocnt != 0) && (rtpSession->rtp_pk.size != h264left)) {
-						printf("left(%d/%d) nalzerocnt(%d)\r\n", h264left, rtpSession->rtp_pk.size, nalzerocnt);
+						printf("left(%d/%d) nalzerocnt(%d)\n", h264left, rtpSession->rtp_pk.size, nalzerocnt);
 					}
 				}
 
@@ -167,11 +168,11 @@ int rtspd_client_rtp_h264_main(rtsp_client *prcInfo)
 					// NAL unit(0x00 0x00 0x00 0x01 or 0x00 0x00 0x01) does not transmit
 					rtpSession->rtp_pk.offset += nalzerocnt;
 					if (nalzerocnt > 4) {
-						flprintf("NAL Jump(%d)\r\n", nalzerocnt);
-						hexDump("Base", (void *)rtpSession->rtp_pk.base, 32);
+						flprintf("NAL Jump(%d)\n", nalzerocnt);
+						hexDump("Base", (void *)(intptr_t)rtpSession->rtp_pk.base, 32);
 					}
 					h264left -= nalzerocnt;
-					base_offset = (BYTE *)(rtpSession->rtp_pk.base + rtpSession->rtp_pk.offset);
+					base_offset = (BYTE *)(intptr_t)(rtpSession->rtp_pk.base + rtpSession->rtp_pk.offset);
 
 					// Get : NAL unit type
 					rtpSession->rtp_pk.naltype = base_offset[0] & 0x1F;
@@ -217,7 +218,7 @@ int rtspd_client_rtp_h264_main(rtsp_client *prcInfo)
 					rtspHead = (rthInterleaved *)send_buffer;
 					rtspHead->un8Magic = '$';
 					rtspHead->un8Channel = rtpSession->rtp_port;
-					rtspHead->un16Length = 0; // packet가 모두 생성되고 나서 다시 설정 해주어야 한다.
+					rtspHead->un16Length = htons(0); // packet가 모두 생성되고 나서 다시 설정 해주어야 한다.
 					rtpSession->buf_len[rtpSession->buf_idx] = sizeof(rthInterleaved);
 				}
 
@@ -233,9 +234,11 @@ int rtspd_client_rtp_h264_main(rtsp_client *prcInfo)
 				rtpHead->un4CSRCcount = 0;
 				rtpHead->un1Markerbit = 0;
 				rtpHead->un7Payloadtype = rtpSession->payload_type;
-				rtpHead->un16Sequencenum = ++rtpSession->start_seq;
-				rtpHead->un32Timestamp = rtpSession->start_rtptime;
-				rtpHead->un32SSIdentifier = rtpSession->ssrc;
+				rtpHead->un16Sequencenum = htons(++rtpSession->start_seq);
+				rtpHead->un32Timestamp = htonl(rtpSession->start_rtptime);
+				rtpHead->un32SSIdentifier = htonl(rtpSession->ssrc);
+				//hexDump("rtpHead", rtpHead, sizeof(rthRTPHeader));
+				//_Yprintf("SEQ(0x%04X) TS(0x%08X) SSID(0x%08X)\n", rtpSession->start_seq, rtpSession->start_rtptime, rtpSession->ssrc);
 				if (prcInfo->eTransport == ENX_RTSP_TRANSPORT_UDP) {
 					rtpSession->buf_len[rtpSession->buf_idx] = sizeof(rthRTPHeader);
 				} else {
@@ -245,7 +248,10 @@ int rtspd_client_rtp_h264_main(rtsp_client *prcInfo)
 				if (spsppsSize) {
 					// SPS or PPS
 					h264Data = send_buffer + rtpSession->buf_len[rtpSession->buf_idx];
-					DmaMemCpy_ip(h264Data, base_offset, spsppsSize);
+					//BDmaMemCpy_rtos(0, h264Data, base_offset, spsppsSize);
+					memcpy(h264Data, base_offset, spsppsSize);
+
+					//hexDump("IDR", base_offset, spsppsSize);
 
 					rtpSession->rtp_pk.offset += spsppsSize;
 					rtpSession->buf_len[rtpSession->buf_idx] += spsppsSize;
@@ -276,7 +282,8 @@ int rtspd_client_rtp_h264_main(rtsp_client *prcInfo)
 						remaining = h264left;
 					}
 
-					DmaMemCpy_ip(send_buffer + rtpSession->buf_len[rtpSession->buf_idx], base_offset, remaining);
+					//BDmaMemCpy_rtos(0, send_buffer + rtpSession->buf_len[rtpSession->buf_idx], base_offset, remaining);
+					memcpy(send_buffer + rtpSession->buf_len[rtpSession->buf_idx], base_offset, remaining);
 
 					rtpSession->rtp_pk.offset += remaining;
 					rtpSession->rtp_pk.data_offset += remaining;
@@ -284,17 +291,17 @@ int rtspd_client_rtp_h264_main(rtsp_client *prcInfo)
 				}
 
 				if (prcInfo->eTransport == ENX_RTSP_TRANSPORT_TCP || prcInfo->eTransport == ENX_RTSP_TRANSPORT_HTTP) {
-					if (rtspHead->un16Length > 1456) {
-						flprintf("TEST! Size: %d\r\n", rtspHead->un16Length);
+					if (ntohs(rtspHead->un16Length) > 1456) {
+						flprintf("TEST! Size: %d\n", ntohs(rtspHead->un16Length));
 					}
-					rtspHead->un16Length = rtpSession->buf_len[rtpSession->buf_idx] - sizeof(rthInterleaved);
+					rtspHead->un16Length = htons(rtpSession->buf_len[rtpSession->buf_idx] - sizeof(rthInterleaved));
 				}
 
 
 				if (rtpSession->rtp_pk.offset == rtpSession->rtp_pk.size) {
 					if (fuSize) {
 						if (fuHead->un1Startbit == 1) {
-							flprintf("TEST! H.264 Size: %d\r\n", rtpSession->rtp_pk.size);
+							flprintf("TEST! H.264 Size: %d\n", rtpSession->rtp_pk.size);
 						}
 						fuHead->un1Endbit = 1;
 					}
@@ -302,16 +309,16 @@ int rtspd_client_rtp_h264_main(rtsp_client *prcInfo)
 					rtpSession->tx_ready = ENX_RTP_TXSTE_END;
 					// This case goes directly to "ENX_RTP_TXSTE_END".
 					if (h264left <= 100) {
-//						flprintf("H.264 tail packet(%d byte)\r\n", h264left);
+//						flprintf("H.264 tail packet(%d byte)\n", h264left);
 					}
 				} else {
 					if (h264left <= 100) {
-//						flprintf("H.264 tail packet(%d byte)\r\n", h264left);
+//						flprintf("H.264 tail packet(%d byte)\n", h264left);
 					}
 					break;
 					// switch break;
 				}
-			}
+			} // @suppress("No break at end of case")
 		case ENX_RTP_TXSTE_END:
 			rtpSession->tx_ready = ENX_RTP_TXSTE_READY;
 			break;

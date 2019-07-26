@@ -14,6 +14,8 @@
 #include "dev.h"
 #include "enx_freertos.h"
 
+#include <sys/time.h>
+
 extern void hwflush_dcache_line(uint);
 
 //******************************************************************************
@@ -80,12 +82,14 @@ void hwflush_dcache_range(ulong sadr, ulong size)
 #endif
 }
 
+#ifdef __FREERTOS__
 void hwflush_dcache_range_rtos(ulong sadr, ulong size)
 {
 	portENTER_CRITICAL();
 	hwflush_dcache_range(sadr, size);
 	portEXIT_CRITICAL();
 }
+#endif
 
 //------------------------------------------------------------------------------
 //
@@ -317,3 +321,10 @@ void test_dcache()
 	flush_page(adr-1);
 }
 */	
+
+UINT timeoffset(UINT offset)
+{
+	struct timeval t1;
+	gettimeofday(&t1, NULL);
+	return (t1.tv_sec + offset);
+}

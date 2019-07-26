@@ -203,7 +203,7 @@ BYTE fat_get_freesize(DriveNum dnNum)
 	FRESULT res;
 	TCHAR buf[4] = {0};
 	FATFS *fs = NULL;
-	DWORD fre_clust, tot_sect;
+	UINT fre_clust, tot_sect;
 	sprintf(buf, "%d:", dnNum);
 	res = f_getfree((const TCHAR *)buf, &fre_clust, &fs);
 	if (res != FR_OK) {
@@ -213,8 +213,8 @@ BYTE fat_get_freesize(DriveNum dnNum)
 	tot_sect = fs->n_fatent - 2;	//  * fs->csize
 	bFreesize = (BYTE)((fre_clust*100.0)/tot_sect);
 #ifdef ENX_DEBUG
-	unsigned int nVer;
-	int nPow = 0;
+	ULONG nVer;
+	ULONG nPow = 0;
 	nVer = fs->ssize * fs->csize;
 	for (nPow = 0; nPow < 10; nPow++) {
 		if ((nVer >> nPow) == 1024) {

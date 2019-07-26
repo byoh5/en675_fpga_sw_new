@@ -5,8 +5,13 @@
 코드 구성
 ---------
 
-FPGA ver 19.06.05 입니다.
-이 코드는 Flash이 없는 환경에서 테스트 되었습니다. Source Code는 SRAM에서 작동중입니다.
+FPGA ver 19.07.05 입니다.
+이 코드는 Flash이 없는 환경에서 테스트 되었습니다. Source Code는 DDR에서 작동중입니다.
+DDR 메모리의 용량 및 FPGA버전에 따라서 Debug폴더에 있는 아래의 파일을 ddrinit.bin으로 이름을 변경합니다.
+  512MB: ddrinit_sel2_wrltc0.bin, ddrinit_sel2_wrltc1.bin
+  1GB:   ddrinit_sel4_wrltc0.bin, ddrinit_sel4_wrltc1.bin
+"\\192.168.0.10\_연구소_Team2\_EN675\Document\EN675_개발환경구성_Cmake_190527.pptx" 의 DDR로 바로 부팅하기를 참조하시기 바랍니다.
+
 CPU0, 1, 2, 3은 source/core폴더에서 core0, core1, core2, core3의 main_.c 파일을 root로 합니다.
 CPU0에서 임시로 freeRTOS가 작동중입니다. DDR BSS영역 뒤의 4MByte 영역을 RTOS Heap 영역으로 사용합니다.
 만약 freeRTOS를 사용하지 않는다면 Cmake/device.cmake의 USE_FREERTOS 부분을 찾아 0으로 수정하시면 됩니다.

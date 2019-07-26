@@ -150,10 +150,12 @@ void EthTxPacket(BYTE *addr, UINT Len)
 	ETH_TX_ADR = (intptr_t)addr;
 	ETH_TX_LEN = Len;
 	while (ETH_TX_FULL) {
+#if 0
 		if (ETH_TX_PAUSE) {
 			printf("p");
 		}
-#if 0
+#endif
+#if 1
 #if 0
 #if 0
 #if 0
@@ -245,11 +247,48 @@ void EthRxTxInit(UINT type, UINT speed, UINT duplex)
 		}
 
 		// eth lbm
-		// eth lbc 1000
+		// eth lbt 1000
+#if 1 // 190708
 		ETH_TX_CLKEDGE = 1;
-		ETH_TX_TCKDLY = 2;
+		ETH_TX_TCKDLY = 0x6;
+		ETH_RX_RCKEDGE = 1;
+		ETH_RX_RCKDLY = 0x1;
+#elif 0 // 190701
+		ETH_TX_CLKEDGE = 1;
+		ETH_TX_TCKDLY = 0x9;
+		ETH_RX_RCKEDGE = 0;
+		ETH_RX_RCKDLY = 0x9;
+#elif 0 // 190626
+		ETH_TX_CLKEDGE = 1;
+		ETH_TX_TCKDLY = 0x7;
+		ETH_RX_RCKEDGE = 1;
+		ETH_RX_RCKDLY = 0x2;
+#elif 0 // 190624
+		ETH_TX_CLKEDGE = 0;
+		ETH_TX_TCKDLY = 0xC;
+		ETH_RX_RCKEDGE = 1;
+		ETH_RX_RCKDLY = 0x2;
+#elif 0 // 190621
+		ETH_TX_CLKEDGE = 1;
+		ETH_TX_TCKDLY = 0x5;
+		ETH_RX_RCKEDGE = 1;
+		ETH_RX_RCKDLY = 0x2;
+#elif 0 // 190620
+		ETH_TX_CLKEDGE = 1;
+		ETH_TX_TCKDLY = 0x1;
 		ETH_RX_RCKEDGE = 1;
 		ETH_RX_RCKDLY = 0xE;
+#elif 0 // 19.06.03 오전
+		ETH_TX_CLKEDGE = 1;
+		ETH_TX_TCKDLY = 0x7;
+		ETH_RX_RCKEDGE = 0;
+		ETH_RX_RCKDLY = 0x7;
+#elif 1 // 19.06.03 오후
+		ETH_TX_CLKEDGE = 1;
+		ETH_TX_TCKDLY = 0x5;
+		ETH_RX_RCKEDGE = 1;
+		ETH_RX_RCKDLY = 0xB;
+#endif
 
 		ETH_TX_TXENDLY	= 0;
 		ETH_TX_TXD0DLY	= 0;
@@ -301,22 +340,37 @@ void EthRxTxInit(UINT type, UINT speed, UINT duplex)
 		break;
 
 	case ETHPHY_TYPE_RMII:
+		ETH_RX_DATTYPE		= 2;
+		switch (speed) {
+		case ETHPHY_SPD_10:
+			ETH_RX_ERTYPE	= 2;
+			break;
+		case ETHPHY_SPD_100:
+			ETH_RX_ERTYPE	= 0;
+			break;
+		}
+
 		ETH_TX_DATBIT	= 0;
-		ETH_TX_DATTYPE	= 1;
+		ETH_TX_DATTYPE	= 0;
 		ETH_TX_CLKOE	= 0;
-		ETH_TX_CLKEDGE	= 1;
 		ETH_TX_CLKSEL	= 1;
 		ETH_TX_CRSCHK	= 0;
 		ETH_TX_COLCHK	= 0;
 		ETH_TX_RTYEN	= 0;
 		ETH_TX_RTYLMT	= 0;
+
+		ETH_TX_CLKEDGE = 0;
+		ETH_TX_TCKDLY = 0x0;
+		ETH_RX_RCKEDGE = 0;
+		ETH_RX_RCKDLY = 0x0;
+
 		ETH_TX_TXENDLY	= 0;
 		ETH_TX_TXD0DLY	= 0;
 		ETH_TX_TXD1DLY	= 0;
 		ETH_TX_TXD2DLY	= 0;
 		ETH_TX_TXD3DLY	= 0;
-		ETH_TX_TCKDLY	= 0;
-		ETH_TX_IFGGAP	= 10;
+
+		ETH_TX_IFGGAP	= 20;
 		break;
 	}
 }

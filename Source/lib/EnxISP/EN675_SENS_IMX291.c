@@ -1,0 +1,124 @@
+/* **************************************************************************
+ File Name	:	EN675_SENS_IMX291.c
+ Description:	EN675 - IMX291 device driver
+ Designer	:	Kim, Sunghoon
+ Date		:	19. 6. 11
+ Copyright ⓒ Eyenix Co., Ltd. All Rights Reserved.
+*************************************************************************** */
+
+#define __SENS_LIST__
+#include "dev_model.h"				// EN675 - __SENS_LIST__
+#define model_Sens	SENS_IMX291
+
+#include "isp_lib_main.h"
+
+//-------------------------------------------------------------------------------------------------
+
+const WORD gwTblIMX291[][2] = {		// sLVDS, Sensor Master
+								/*ID2*/
+								{0x3005,	0x01},
+								{0x3007,	0x40}, // WINMODE  - 190314 0x40 -> 0x00
+								{0x3009,	0x00}, // FRSEL    - 190314 0x00 -> 0x01
+								{0x300a,	0x04}, // Black Lv - 190314 0x04 -> 0xf0 & ISP Clamp Off-Set 0x00 -> 0x310 ※0x04로 하는 경우 포화영역 경계선 부분에 노이즈 발생
+//								{0x300b,	0x00},
+								{0x300f,	0x00},
+								{0x3010,	0x21},
+								{0x3012,	0x64},
+								{0x3016,	0x09},
+								{0x3018,	0x65},
+								{0x3019,	0x04},
+//								{0x301a,	0x00},
+								{0x301c,	0x4C}, // HMAX - 190314 0x4C -> 0x98
+								{0x301d,	0x04}, // HMAX - 190314 0x04 -> 0x08
+								{0x3046,	0xe1},
+//								{0x3048,	0x00},
+//								{0x3049,	0x0a},
+								{0x304b,	0x00}, // Sync Out - 190314 0x00 -> 0x0a
+								{0x305c,	0x18},
+								{0x305d,	0x00},
+								{0x305e,	0x20},
+								{0x305f,	0x01},
+								{0x3070,	0x02},
+								{0x3071,	0x11},
+								{0x309b,	0x10},
+								{0x309c,	0x22},
+								{0x30a2,	0x02},
+								{0x30a6,	0x20},
+								{0x30a8,	0x20},
+								{0x30aa,	0x20},
+								{0x30ac,	0x20},
+								{0x30b0,	0x43},
+
+								/*ID3*/
+								{0x3119,	0x9e},
+								{0x311c,	0x1e},
+								{0x311e,	0x08},
+								{0x3128,	0x05},
+								{0x3129,	0x00},
+								{0x313d,	0x83},
+								{0x3150,	0x03},
+								{0x315e,	0x1a},
+								{0x3164,	0x1a},
+								{0x317c,	0x00},
+                             	{0x317e,	0x00},
+                                {0x31ec,	0x0e},
+
+								/*ID4*/
+								{0x32b8,	0x50},
+								{0x32b9,	0x10},
+								{0x32ba,	0x00},
+								{0x32bb,	0x04},
+								{0x32c8,	0x50},
+								{0x32c9,	0x10},
+								{0x32ca,	0x00},
+								{0x32cb,	0x04},
+
+								/*ID5*/
+								{0x332c,	0xd3},
+								{0x332d,	0x10},
+								{0x332e,	0x0d},
+								{0x3358,	0x06},
+								{0x3359,	0xe1},
+								{0x335a,	0x11},
+								{0x3360,	0x1e},
+								{0x3361,	0x61},
+								{0x3362,	0x10},
+								{0x33b0,	0x50},
+								{0x33b2,	0x1A},
+								{0x33b3,	0x04},
+
+								/*ID6*/
+								{0x3480,	0x49}
+								};
+
+void InitSensRun(void)
+{
+	SetSens(0x3000,0x1);		 WaitXus(1000);		// standby
+	SetSens(0x3002,0x1);		 WaitXus(1000);		// xmaster stop
+
+	for(UINT i=0;i<ARRAY_SIZE(gwTblIMX291); i++)
+	{
+		SetSens(gwTblIMX291[i][0], gwTblIMX291[i][1]);
+		//WaitXus(200);
+	}
+
+	SetSens(0x309c, 0x22);					// Clamp sensitivity adjust	// 150317 LH
+
+	SetSens(0x3000, 0x0);	WaitXus(30000);	// standby cancel
+	SetSens(0x3002, 0x0);	WaitXus(20000);	// xmaster
+
+	// SensClk
+	if(gbSensFps==60) {
+		SetSens(0x3009, 0x01);	//FRSEL
+		SetSens(0x301c, 0x98);	//HMAX
+		SetSens(0x301d, 0x08);	//HMAX
+	} else {
+		SetSens(0x3009, 0x02);	//FRSEL
+		SetSens(0x301c, 0x30);	//HMAX
+		SetSens(0x301d, 0x11);	//HMAX
+	}
+
+	//Sensor V Reverse
+	SetSens(0x3007, 0x41);
+}
+

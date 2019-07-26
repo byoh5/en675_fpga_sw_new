@@ -33,6 +33,8 @@
 
 #if (ENX_RTSP_use==1)
 
+#include <sys/time.h> // gettimeofday
+
 #include "msg.h"
 #include "user.h"
 

@@ -258,7 +258,9 @@ UINT TimerIsIrq(UINT nCH)
 void IrqTimer(UINT nCH)
 {
 	if (TimerIsIrq(nCH)) {
-		printf("Timer%u IRQ Get\n", nCH);
+		if (IRQ_TIMER8 == 0) {
+			printf("Timer%u IRQ Get\n", nCH);
+		}
 		if (arrTIMERIrq[nCH].irqfn) {
 			arrTIMERIrq[nCH].irqfn(arrTIMERIrq[nCH].arg);
 		}

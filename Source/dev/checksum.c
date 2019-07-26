@@ -1,5 +1,5 @@
 #include "dev.h"
-
+#include "enx_freertos.h"
 #if 1
 
 #define SWAP_BYTES_IN_WORD(w) (((w) & 0xff) << 8) | (((w) & 0xff00) >> 8)
@@ -14,6 +14,20 @@ WORD Checksum16(BYTE *apbDst, UINT anNum)
 	while (CHKSUM_GO);
 	return SWAP_BYTES_IN_WORD(CHKSUM_DAT);
 }
+
+#ifdef __FREERTOS__
+WORD Checksum16_rtos(BYTE *apbDst, UINT anNum)
+{
+	portENTER_CRITICAL();
+	CHKSUM_ADR = (intptr_t)apbDst;
+	CHKSUM_LEN = anNum;
+	CHKSUM_GO = 1;
+	while (CHKSUM_GO);
+	WORD res = SWAP_BYTES_IN_WORD(CHKSUM_DAT);
+	portEXIT_CRITICAL();
+	return res;
+}
+#endif
 
 void ChksumIrqCallback(irq_fn irqfn, void *arg)
 {

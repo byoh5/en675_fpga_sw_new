@@ -101,14 +101,14 @@ void FontClrAll(BYTE Alpha, BYTE Color)
 
 	for(j=0; j<gnFontYw; j++) {															// Initial Font ID
 		for(i=0; i<(gnFontXw+1); i++,n++) {
-			if(i<gnFontXw)			{SetFontID(n, SPACE_CHAR_ID);}		// fill space
-			else if((j+1)<gnFontYw)	{SetFontID(n, ISP_FONT_LINE_RET);}	// Line returnID
-			else					{SetFontID(n, ISP_FONT_PAGE_RET);}	// Page returnID
+			if(i<gnFontXw)	{SetFontID(n, SPACE_CHAR_ID);}		// fill space
+			else			{SetFontID(n, ISP_FONT_LINE_RET);}	// Line returnID
 
 			SetFontAttr(n, Color);
 			SetFontAlpha(n, Alpha);
 		}
 	}
+	SetFontID(ISP_FONT_ID_EA-1, ISP_FONT_PAGE_RET);
 
 	//FONT_MUTE0w(0);
 	//FONT_ON0w(0);

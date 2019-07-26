@@ -96,7 +96,6 @@
 //-------------------------------------------------------------------------------------------------
 // Snatch logic address (Regulate with logic address .CAUTION)
 #define	BASE_SENS			0x4000		// 0x300 ea 		sensor control
-#define BASE_SENS_OV		0x4800
 #define BASE_EN331			0x5000
 #define BASE_EEPROM			0x6000
 #define BASE_MICOM_PAR		0x8000
@@ -537,16 +536,46 @@ void UartRxAddr(const int aiWrite)
 		// ISP Write Code
 		SetIsp(wAddr, gnRxData);
 
-		GRP3 = wAddr;
-		GRP4 = gnRxData;
-		GRP7 = GetIsp(wAddr);
+		//GRP3 = wAddr;
+		//GRP4 = gnRxData;
+		//GRP7 = GetIsp(wAddr);
 		,
 		// ISP Read Code
 		,
 		GetIsp(wAddr))
 
+#ifdef __SENSOR__
+	SET_ADDR(BASE_SENS, BASE_EN331,		// Sensor : 0x4000 ~ 0x4fff
+		// Sensor Write Code
+		UartTxStrHexNoIRQ("SetSens:", wAddr, 2);
+		UartTxStrHexNoIRQ("Data:", gnRxData, 8);
+	#if model_Sony || model_Omni
+		SetSens(0x3000+wAddr, gnRxData);
+	#else
 
-		SET_ADDR(BASE_MICOM_PAR, BASE_MICOM_PAR + 0x20,	// Micom Para : 0x8000 ~ 0x8020
+	#endif
+	#if model_Aptn
+		WaitXus(20000);
+	#endif
+		,
+		// Sensor Read Code
+		UartTxStrHexNoIRQ("GetSens:", wAddr, 8);
+		//UartTxStrHex("GetSens:", wAddr, 8);
+		//const UINT nBuf = GetSens(wAddr);
+		,
+
+	#if model_Pana || model_Aptn
+
+	#elif model_Sony || model_Omni
+		//GetSens((SENS_CONTROL_MODE) ? SENS_SONY_ID2_TWI : SENS_SONY_ID2, wAddr)
+		GetSens(0x3000+wAddr)
+	#else
+
+	#endif
+		/*nBuf*//*0x0*//* =Dummy */)
+#endif
+
+	SET_ADDR(BASE_MICOM_PAR, BASE_MICOM_PAR + 0x20,	// Micom Para : 0x8000 ~ 0x8020
 		// User Parameter Custom Write Code
 		//gnRxPar[wAddr] = (/*PL_STA < wAddr &&*/ wAddr < 0x1F/*PL_END*/) ? hex2dec(gnRxData) : gnRxData ;
 		//gnRxPar[wAddr] = hex2dec(gnRxData);

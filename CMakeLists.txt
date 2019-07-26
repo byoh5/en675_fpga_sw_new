@@ -51,6 +51,9 @@ ADD_SUBDIRECTORY( Source/lib )
 #ADD_SUBDIRECTORY( Source/boot )
 ADD_SUBDIRECTORY( Source/core )
 
+#add_dependencies ( core1 lwip )
+add_dependencies ( lwip core1 )
+
 #ADD_CUSTOM_COMMAND ( test COMMAND make all -DTEST=y )
 
 #ADD_CUSTOM_COMMAND (

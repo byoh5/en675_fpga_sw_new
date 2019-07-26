@@ -28,7 +28,7 @@
 #endif
 
 // SDIO1 define
-#define USE_SDIO1			0
+#define USE_SDIO1			1
 #if USE_SDIO1
 #define SDIO1_SPEED			400000
 #endif

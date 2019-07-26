@@ -85,7 +85,7 @@
 #define DDR_DLY_DQ25OUT(CH) _bm(_DDR0_19,REG_BASE_DDR[CH], (19<<3),DLY_DQ25OUT) // 4 Bit, 4'h0, RW
 #define DDR_DLY_DQ24OUT(CH) _bm(_DDR0_19,REG_BASE_DDR[CH], (19<<3),DLY_DQ24OUT) // 4 Bit, 4'h0, RW
 
-const ULONG REG_BASE_DDR[] = { REG_BASE_DDR0, REG_BASE_DDR1 };
+const volatile ULONG REG_BASE_DDR[] = { REG_BASE_DDR0, REG_BASE_DDR1 };
 
 
 #define TEST_DDR0_SIZE DDR0_SIZE
@@ -100,14 +100,16 @@ char DdrMapTest(BYTE bCH)
 	for(pDDR = (volatile ULONG *)DDR_BASE; pDDR < (volatile ULONG *)(DDR_BASE+TEST_DDR0_SIZE); pDDR++)
 	{
 		if ((ULONG)pDDR % 64 == 0) hwflush_dcache_range((ULONG)pDDR, 0x40);
-		*pDDR = (ULONG)pDDR;
+		//*pDDR = (ULONG)pDDR;
+		*pDDR = (ULONG)0x55555555aaaaaaaa;
 	}
 	ULONG ok = 0, fail = 0;
 	for(pDDR = (volatile ULONG *)DDR_BASE; pDDR < (volatile ULONG *)(DDR_BASE+TEST_DDR0_SIZE); pDDR++)
 	{
 		if ((ULONG)pDDR % 64 == 0) hwflush_dcache_range((ULONG)pDDR, 0x40);
 		ULONG getdata = *pDDR;
-		if (getdata != (ULONG)pDDR)
+		//if (getdata != (ULONG)pDDR)
+		if (getdata != (ULONG)0x55555555aaaaaaaa)
 		{
                 printf("DDR Test - X: %08lx 0x%08lx\n", pDDR, getdata);
                 fail++;
@@ -195,7 +197,7 @@ void CaOutDly(BYTE bCH, int var)
 
 char ddr_cal_test(BYTE bCH)
 {
-	char result = 0;
+	volatile char result = 0;
 	DDR_MR_ADR(bCH) = 32;
 	DDR_MR_WE(bCH)  = 0;
 	DDR_MR_REQ(bCH) = 1;
@@ -236,10 +238,10 @@ char ddr_cal_test(BYTE bCH)
 }
 char ddr_rw_test(BYTE bCH)
 {
-	const ULONG DDR_BASE = (bCH==1) ? DDR1_BASE : DDR0_BASE;
+	const volatile ULONG DDR_BASE = (bCH==1) ? DDR1_BASE : DDR0_BASE;
 
-	char result = 0;
-	UINT *ADDR0_BASE = (UINT *)(DDR_BASE);
+	volatile char result = 0;
+	volatile UINT *ADDR0_BASE = (UINT *)(DDR_BASE);
 	hwflush_dcache_range(DDR_BASE, 0x40);
 	ADDR0_BASE[0] = 0xffffffff;
 	ADDR0_BASE[1] = 0;
@@ -316,8 +318,8 @@ void DdrOffOn(BYTE bCH)
 
 void DdrInit(BYTE bCH, BYTE Sel)
 {
-	int i;
-	char min=15, max=0;
+	volatile int i;
+	volatile char min=15, max=0;
 
 	DdrOff(bCH);
 
@@ -326,7 +328,7 @@ void DdrInit(BYTE bCH, BYTE Sel)
 	DDR_RD_VAL_EDGE(bCH) = 1;
 	DDR_RD_VAL_LTC(bCH)	= 6;
 	DDR_MRR_VAL_LTC(bCH)	= 6;
-	DDR_WR_LTC(bCH) 		= 1;
+	DDR_WR_LTC(bCH) 		= 0;
 
 	DdrOn(bCH);
 
@@ -334,7 +336,7 @@ void DdrInit(BYTE bCH, BYTE Sel)
 	{
 		DDR_DLY_CSOUT(bCH) = i;
 		CaOutDly(bCH,i);
-		char temp = ddr_cal_test(bCH);
+		volatile char temp = ddr_cal_test(bCH);
 		if(temp!=0) printf("_");
 		else
 		{
@@ -354,7 +356,7 @@ void DdrInit(BYTE bCH, BYTE Sel)
 	for(i=0;i<16;i++)
 	{
 		DDR_DLY_DQS0IN(bCH) = i;
-		char temp = ddr_cal_test(bCH);
+		volatile char temp = ddr_cal_test(bCH);
 		if(temp!=0)  printf("_");
 		else
 		{
@@ -371,7 +373,7 @@ void DdrInit(BYTE bCH, BYTE Sel)
 	for(i=0;i<16;i++)
 	{
 		DDR_DLY_DQS1IN(bCH) = i;
-		char temp = ddr_cal_test(bCH);
+		volatile char temp = ddr_cal_test(bCH);
 		if(temp!=0)  printf("_");
 		else
 		{
@@ -388,7 +390,7 @@ void DdrInit(BYTE bCH, BYTE Sel)
 	for(i=0;i<16;i++)
 	{
 		DDR_DLY_DQS2IN(bCH) = i;
-		char temp = ddr_cal_test(bCH);
+		volatile char temp = ddr_cal_test(bCH);
 		if(temp!=0)  printf("_");
 		else
 		{
@@ -405,7 +407,7 @@ void DdrInit(BYTE bCH, BYTE Sel)
 	for(i=0;i<16;i++)
 	{
 		DDR_DLY_DQS3IN(bCH) = i;
-		char temp = ddr_cal_test(bCH);
+		volatile char temp = ddr_cal_test(bCH);
 		if(temp!=0)  printf("_");
 		else
 		{
@@ -425,7 +427,7 @@ void DdrInit(BYTE bCH, BYTE Sel)
 	{
 		DmOutDly(bCH,i);
 		DqOutDly(bCH,i);
-		char temp = ddr_rw_test(bCH);
+		volatile char temp = ddr_rw_test(bCH);
 		if(temp!=0)  printf("_");
 		else
 		{
@@ -443,7 +445,7 @@ void DdrInit(BYTE bCH, BYTE Sel)
 	for(i=0;i<16;i++)
 	{
 		DDR_DLY_DM0OUT(bCH) = i;
-		char temp = ddr_rw_test(bCH);
+		volatile char temp = ddr_rw_test(bCH);
 		if(temp!=0)  printf("_");
 		else
 		{
@@ -459,7 +461,7 @@ void DdrInit(BYTE bCH, BYTE Sel)
 	for(i=0;i<16;i++)
 	{
 		DDR_DLY_DM1OUT(bCH) = i;
-		char temp = ddr_rw_test(bCH);
+		volatile char temp = ddr_rw_test(bCH);
 		if(temp!=0)  printf("_");
 		else
 		{
@@ -474,7 +476,7 @@ void DdrInit(BYTE bCH, BYTE Sel)
 	for(i=0;i<16;i++)
 	{
 		DDR_DLY_DM2OUT(bCH) = i;
-		char temp = ddr_rw_test(bCH);
+		volatile char temp = ddr_rw_test(bCH);
 		if(temp!=0)  printf("_");
 		else
 		{
@@ -489,7 +491,7 @@ void DdrInit(BYTE bCH, BYTE Sel)
 	for(i=0;i<16;i++)
 	{
 		DDR_DLY_DM3OUT(bCH) = i;
-		char temp = ddr_rw_test(bCH);
+		volatile char temp = ddr_rw_test(bCH);
 		if(temp!=0)  printf("_");
 		else
 		{
@@ -505,7 +507,7 @@ void DdrInit(BYTE bCH, BYTE Sel)
 	for(i=0;i<16;i++)
 	{
 		DqG0OutDly(bCH,i);
-		char temp = ddr_rw_test(bCH);
+		volatile char temp = ddr_rw_test(bCH);
 		if(temp!=0)  printf("_");
 		else
 		{
@@ -520,7 +522,7 @@ void DdrInit(BYTE bCH, BYTE Sel)
 	for(i=0;i<16;i++)
 	{
 		DqG1OutDly(bCH,i);
-		char temp = ddr_rw_test(bCH);
+		volatile char temp = ddr_rw_test(bCH);
 		if(temp!=0)  printf("_");
 		else
 		{
@@ -535,7 +537,7 @@ void DdrInit(BYTE bCH, BYTE Sel)
 	for(i=0;i<16;i++)
 	{
 		DqG2OutDly(bCH,i);
-		char temp = ddr_rw_test(bCH);
+		volatile char temp = ddr_rw_test(bCH);
 		if(temp!=0)  printf("_");
 		else
 		{
@@ -553,7 +555,7 @@ void DdrInit(BYTE bCH, BYTE Sel)
 	for(i=0;i<16;i++)
 	{
 		DqG3OutDly(bCH,i);
-		char temp = ddr_rw_test(bCH);
+		volatile char temp = ddr_rw_test(bCH);
 		if(temp!=0)  printf("_");
 		else
 		{
@@ -565,5 +567,5 @@ void DdrInit(BYTE bCH, BYTE Sel)
 	DqG3OutDly(bCH,min+2);
 	printf("DDR_DQG3_OUT(%d) : %d\n",bCH,min+2);
 
-//	DdrMapTest();
+//	DdrMapTest(bCH);
 }

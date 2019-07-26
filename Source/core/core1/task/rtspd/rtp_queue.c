@@ -33,11 +33,14 @@
 
 #if (ENX_RTSP_use==1)
 
+#include <string.h> // memset
+
+#include "enx_freertos.h"
 #include "rtspd.h"
 
 #if 1
-#define ENTER() printf(" IN %04d:%s\r\n", __LINE__, __func__)
-#define LEAVE() printf("OUT %04d:%s\r\n", __LINE__, __func__)
+#define ENTER() printf(" IN %04d:%s\n", __LINE__, __func__)
+#define LEAVE() printf("OUT %04d:%s\n", __LINE__, __func__)
 #else
 #define ENTER()
 #define LEAVE()
@@ -64,10 +67,10 @@ ENX_OKFAIL rtp_queue_put(rtp_queue *prqbuf, rtp_queue_data *prefdata)
 {
 	ENX_OKFAIL bRes = ENX_FAIL;
 
-// 	flprintf("addr(0x%08X) size(%8d) flag(%d) ts(%5d)\r\n", prefdata->addr, prefdata->size, prefdata->flags, prefdata->ts);
+// 	flprintf("addr(0x%08X) size(%8d) flag(%d) ts(%5d)\n", prefdata->addr, prefdata->size, prefdata->flags, prefdata->ts);
 
 	if(cQueue_isfull(prqbuf) == ENX_OK) {
-		flprintf("full!\r\n");
+		flprintf("full!\n");
 	}
 
 	rtp_queue_data *pdata = &(prqbuf->data[prqbuf->tail]);
@@ -86,8 +89,7 @@ ENX_OKFAIL rtp_queue_put(rtp_queue *prqbuf, rtp_queue_data *prefdata)
 ENX_OKFAIL rtp_queue_get(rtp_queue *prqbuf, rtp_queue_data *pdata)
 {
 	BYTE bRes = ENX_FAIL;
-	if(cQueue_isempty(prqbuf) == ENX_FAIL)
-	{
+	if (cQueue_isempty(prqbuf) == ENX_FAIL) {
 		portENTER_CRITICAL();
 
 		rtp_queue_data *prefdata = &(prqbuf->data[prqbuf->head]);
@@ -108,8 +110,7 @@ ENX_OKFAIL rtp_queue_get(rtp_queue *prqbuf, rtp_queue_data *pdata)
 ENX_OKFAIL rtp_queue_peek(rtp_queue *prqbuf, rtp_queue_data *pdata)
 {
 	ENX_OKFAIL bRes = ENX_FAIL;
-	if(cQueue_isempty(prqbuf) == ENX_FAIL)
-	{
+	if (cQueue_isempty(prqbuf) == ENX_FAIL) {
 		portENTER_CRITICAL();
 
 		rtp_queue_data *prefdata = &(prqbuf->data[prqbuf->head]);

@@ -514,7 +514,7 @@ byte ChangeVideoMode(void)
 #endif
 
     DisableTMDS();                  // turn off TMDS output
-    sleep_(T_RES_CHANGE_DELAY);    // allow control InfoFrames to pass through to the sink device.
+    DelayMS(T_RES_CHANGE_DELAY);    // allow control InfoFrames to pass through to the sink device.
 
 	if (VideoModeDescription.ColorDepth == VMD_COLOR_DEPTH_8BIT)
 	{

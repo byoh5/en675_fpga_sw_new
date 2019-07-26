@@ -4,7 +4,6 @@
 
 //	Digital Input Interface------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
-
 static UINT g_ConfigICh0 = 0;
 static UINT g_ConfigICh1 = 0;
 static UINT g_ConfigICh2 = 0;
@@ -13,7 +12,6 @@ static UINT g_ConfigICh3 = 0;
 //	Pin : SS_DIN0 ~ SS_DIN15, SS_HS, SS_VS, SS_CKI
 UINT Isp_DigIn_CH0_Config(UINT iMode, UINT ClkDly, UINT RegLatchPos, UINT Hsp, UINT Hw, UINT Vsp, UINT Vw, BOOL Set)
 {
-
 	if(Set==IF_MODE_SET)
 	{
 		//	Clock Power Down
@@ -205,7 +203,6 @@ UINT Isp_DigIn_CH0_Config(UINT iMode, UINT ClkDly, UINT RegLatchPos, UINT Hsp, U
 
 	g_ConfigICh0 = iMode;
 	return IF_SET_OK;
-
 }
 
 //	Pin : SS_DIN8 ~ SS_DIN15, GPIO4(Clock),   Option : GPIO7(Hsync), GPIO8(Vsync), GPIO9(Clock Out)
@@ -809,7 +806,6 @@ static UINT Use24To31	=	USE_EMPTY;
 
 UINT Isp_DigOut_Config(UINT PinList, UINT Mode, UINT Rsync, UINT Res, UINT Path, UINT Hsp, UINT Vsp)
 {
-
 	UINT HTW = 0x896;
 	UINT VTW = 0x464;
 	UINT HW	 = 0x780;
@@ -1401,26 +1397,20 @@ UINT Isp_DigOut_Config(UINT PinList, UINT Mode, UINT Rsync, UINT Res, UINT Path,
 //										CLK_DDR_RATE1       //	Digital Output Channel 1 DDR Rate Clock
 void Isp_Dout_Clock0_Config(BOOL Dcko, BYTE DckoClk, BYTE DckoDly, BOOL ClkoInv)
 {
-
 	if(Dcko)	{	DCKO0_PDw(0);	DCKO0_DLYw(DckoDly);	DCKO0_SELw(DckoClk);	DCKO0_INVw(ClkoInv);	DCKO0_PDw(1);	DCKO0_OENw(0);	}
 	else		{	DCKO0_PDw(0);	DCKO0_OENw(1);	}
-
 }
 
 void Isp_Dout_Clock1_Config(BOOL Dcko, BYTE DckoClk, BYTE DckoDly, BOOL ClkoInv)
 {
-
 	if(Dcko)	{	DCKO1_PDw(0);	DCKO1_DLYw(DckoDly);	DCKO1_SELw(DckoClk);	DCKO1_INVw(ClkoInv);	DCKO1_PDw(1);	DCKO1_OENw(0);	}
 	else		{	DCKO1_PDw(0);	DCKO1_OENw(1);	}
-
 }
 
 void Isp_Dout_Clock2_Config(BOOL Dcko, BYTE DckoClk, BYTE DckoDly, BOOL ClkoInv)
 {
-
 	if(Dcko)	{	DCKO2_PDw(0);	DCKO2_DLYw(DckoDly);	DCKO2_SELw(DckoClk);	DCKO2_INVw(ClkoInv);	DCKO2_PDw(1);	DCKO2_OENw(0);	}
 	else		{	DCKO2_PDw(0);	DCKO2_OENw(1);	}
-
 }
 
 
@@ -1451,7 +1441,7 @@ void Isp_Dout1_Sync_Config(UINT Htw, UINT HSyncOfs, UINT VSyncOfs, UINT Hsp, UIN
 void Isp_Ddr_Init(BYTE IspFrcMode)
 {
 	SD_MODw(IspFrcMode);
-	sleep_(100000);
+	WaitXus(60000);			// 1frame 이상 delay 필요
 	CPU_FRC_ENw(1);
 	BUS_RD_RSTw(1);
 }
@@ -1509,7 +1499,6 @@ void Isp_Ddr_Init(BYTE IspFrcMode)
 //	Normally Default Value -> Color : 1, Intl : 0
 void Isp_WrCh0_Config(UINT Path, SHORT Hw, BYTE WrSync, BOOL Color, BOOL Intl, BYTE VlcMode, BYTE Clk, BOOL OnOff)
 {
-
 	if(OnOff==0) {	YCW_CK0_PDw(0);	return;	}
 
 	IM_HWI0w(Hw);
@@ -1552,13 +1541,11 @@ void Isp_WrCh0_Config(UINT Path, SHORT Hw, BYTE WrSync, BOOL Color, BOOL Intl, B
 	}
 
 	YCW_CK0_SET(Clk);
-
 }
 
 //	Normally Default Value -> Color : 1, Intl : 0, FrcPage : 0, Rdock : 0, RdCh : 0
 void Isp_WrCh1_Config(BYTE Path, SHORT Hw, BYTE WrSync, BOOL Color, BOOL Intl, BYTE VlcMode, BYTE Clk, BOOL IsFrc, BYTE FrcPage, BYTE Rdock, BYTE RdCh, BOOL OnOff)
 {
-
 	if(OnOff==0) {	YCW_CK1_PDw(0);	return;	}
 
 	IM_HWI1w(Hw);																	//	Horizontal Width
@@ -1773,7 +1760,6 @@ void Isp_WrCh0_Wr(BYTE Mode, BOOL WrEn, BOOL ClkEn)
 	else	{	IM_GO0w(0);		IM_CGO0w(0);	}
 
 	YCW_CK0_PDw(ClkEn);
-
 }
 
 void Isp_WrCh1_Wr(BYTE Mode, BOOL WrEn, BOOL ClkEn)
@@ -1929,7 +1915,6 @@ void Isp_WrCh4_FrcAdr(UINT YAdr0, UINT CAdr0, UINT YAdr1, UINT CAdr1, UINT YAdr2
 
 void Isp_ISyncGen_Config1(BYTE SyncMode, BYTE Clk, UINT Htwi, UINT Vtwi, UINT Hw, UINT Vw, BOOL OnOff)
 {
-
 	RYC_OSYNC_MOD1w(SyncMode);
 	RYC_HTWO1w(Htwi-2);
 	RYC_VTWO1w(Vtwi-1);
@@ -1942,7 +1927,6 @@ void Isp_ISyncGen_Config1(BYTE SyncMode, BYTE Clk, UINT Htwi, UINT Vtwi, UINT Hw
 
 void Isp_ISyncGen_Config2(BYTE SyncMode, BYTE Clk, UINT Htwi, UINT Vtwi, UINT Hw, UINT Vw, BOOL OnOff)
 {
-
 	RYC_OSYNC_MOD2w(SyncMode);
 	RYC_HTWO2w(Htwi-2);
 	RYC_VTWO2w(Vtwi-1);
@@ -1955,7 +1939,6 @@ void Isp_ISyncGen_Config2(BYTE SyncMode, BYTE Clk, UINT Htwi, UINT Vtwi, UINT Hw
 
 void Isp_ISyncGen_Config3(BYTE SyncMode, BYTE Clk, UINT Htwi, UINT Vtwi, UINT Hw, UINT Vw, BOOL OnOff)
 {
-
 	RYC_OSYNC_MOD3w(SyncMode);
 	RYC_HTWO3w(Htwi-2);
 	RYC_VTWO3w(Vtwi-1);
@@ -2015,7 +1998,6 @@ void Isp_ISyncGen_Config3(BYTE SyncMode, BYTE Clk, UINT Htwi, UINT Vtwi, UINT Hw
 //	Normally Default Value -> Color : 1
 void Isp_RdCh0_Config(BYTE Path, SHORT Hw, BYTE Color, BYTE Clk, BYTE RdSync, BYTE VlcMode, BOOL OnOff)
 {
-
 	IM_RHWI0w(Hw);										//	Read Horizontal Width
 	IM_CLRREN0w(Color);									//	Read Color ?
 
@@ -2039,13 +2021,11 @@ void Isp_RdCh0_Config(BYTE Path, SHORT Hw, BYTE Color, BYTE Clk, BYTE RdSync, BY
 
 	if(OnOff)	{	IM_RON0w(1);	YCR_CK0_SET(Clk);	}
 	else		{	IM_RON0w(0);	YCR_CK0_PDw(0);		}
-
 }
 
 //	Normally Default Value -> Color : 1, Rdock : 0, WrCh : 0
 void Isp_RdCh1_Config(BYTE Path, SHORT Hw, BYTE Color, BYTE Clk, BYTE RdSync, BYTE VlcMode, BOOL IsFrc, BYTE Rdock, BYTE WrCh, BOOL OnOff)
 {
-
 	IM_RHWI1w(Hw);										//	Read Horizontal Width
 	IM_CLRREN1w(Color);									//	Read Color ?
 	IM_RFRC1_ONw(IsFrc);								//	Use Frc ?
@@ -2072,13 +2052,11 @@ void Isp_RdCh1_Config(BYTE Path, SHORT Hw, BYTE Color, BYTE Clk, BYTE RdSync, BY
 
 	if(OnOff)	{	IM_RON1w(1);	YCR_CK1_SET(Clk);	}
 	else		{	IM_RON1w(0);	YCR_CK1_PDw(0);		}
-
 }
 
 //	Normally Default Value -> Color : 1, Rdock : 0, WrCh : 1
 void Isp_RdCh2_Config(BYTE Path, SHORT Hw, BYTE Color, BYTE Clk, BYTE RdSync, BYTE VlcMode, BOOL IsFrc, BYTE Rdock, BYTE WrCh, BOOL OnOff)
 {
-
 	IM_RHWI2w(Hw);										//	Read Horizontal Width
 	IM_CLRREN2w(Color);									//	Read Color ?
 	IM_RFRC2_ONw(IsFrc);								//	Use Frc ?
@@ -2105,13 +2083,11 @@ void Isp_RdCh2_Config(BYTE Path, SHORT Hw, BYTE Color, BYTE Clk, BYTE RdSync, BY
 
 	if(OnOff)	{	IM_RON2w(1);	YCR_CK2_SET(Clk);	}
 	else		{	IM_RON2w(0);	YCR_CK2_PDw(0);		}
-
 }
 
 //	Normally Default Value -> Color : 1, Rdock : 0, WrCh : 2
 void Isp_RdCh3_Config(BYTE Path, SHORT Hw, BYTE Color, BYTE Clk, BYTE RdSync, BYTE VlcMode, BOOL IsFrc, BYTE Rdock, BYTE WrCh, BOOL OnOff)
 {
-
 	IM_RHWI3w(Hw);										//	Read Horizontal Width
 	IM_CLRREN3w(Color);									//	Read Color ?
 	IM_RFRC3_ONw(IsFrc);								//	Use Frc ?
@@ -2138,13 +2114,11 @@ void Isp_RdCh3_Config(BYTE Path, SHORT Hw, BYTE Color, BYTE Clk, BYTE RdSync, BY
 
 	if(OnOff)	{	IM_RON3w(1);	YCR_CK3_SET(Clk);	}
 	else		{	IM_RON3w(0);	YCR_CK3_PDw(0);		}
-
 }
 
 //	Normally Default Value -> Color : 1, Rdock : 0, WrCh : 3
 void Isp_RdCh4_Config(BYTE Path, SHORT Hw, BYTE Color, BYTE Clk, BYTE RdSync, BYTE VlcMode, BOOL IsFrc, BYTE Rdock, BYTE WrCh, BOOL OnOff)
 {
-
 	IM_RHWI4w(Hw);										//	Read Horizontal Width
 	IM_CLRREN4w(Color);									//	Read Color ?
 	IM_RFRC4_ONw(IsFrc);								//	Use Frc ?
@@ -2171,7 +2145,6 @@ void Isp_RdCh4_Config(BYTE Path, SHORT Hw, BYTE Color, BYTE Clk, BYTE RdSync, BY
 
 	if(OnOff)	{	IM_RON4w(1);	YCR_CK4_SET(Clk);	}
 	else		{	IM_RON4w(0);	YCR_CK4_PDw(0);		}
-
 }
 
 //	Read Channel0 Manual Read Address Setting	-> Read Channel 0 is only using manual adress
@@ -2214,7 +2187,7 @@ void Isp_RdCh4_MAdr(UINT YAdr, UINT CAdr)
 //--------------------------------------------------------------------------------------------------------------------------------------
 void Isp_DS_Step_Config(UINT DsCoeff)
 {
-		CODEC_DS_STEPw(DsCoeff);
+	CODEC_DS_STEPw(DsCoeff);
 }
 
 //	DSRatioX, DSRatioY -> 64 (1 : 1), 128( 1: 0.5), ........
@@ -2285,7 +2258,6 @@ void Isp_DS0_Config(BYTE Path, BYTE Clk, SHORT DSRatioX, SHORT DSRatioY, SHORT D
 	else			{	CDS0_PCK_PDw(0);	}
 
 	DS0_ONw(OnOff);
-
 }
 
 void Isp_DS1_Config(BYTE Path, BYTE Clk, SHORT DSRatioX, SHORT DSRatioY, SHORT DsHwi, SHORT DsVwi, BYTE Hlpf, BYTE Vlpf, SHORT Hoff, SHORT Voff, BOOL OnOff)
@@ -2336,7 +2308,6 @@ void Isp_DS1_Config(BYTE Path, BYTE Clk, SHORT DSRatioX, SHORT DSRatioY, SHORT D
 	else			{	CDS1_PCK_PDw(0);	}
 
 	DS1_ONw(OnOff);
-
 }
 
 void Isp_DS2_Config(BYTE Path, BYTE Clk, SHORT DSRatioX, SHORT DSRatioY, SHORT DsHwi, SHORT DsVwi, BYTE Hlpf, BYTE Vlpf, SHORT Hoff, SHORT Voff, BOOL OnOff)
@@ -2438,9 +2409,7 @@ void Isp_DS3_Config(BYTE Path, BYTE Clk, SHORT DSRatioX, SHORT DSRatioY, SHORT D
 	else			{	CDS3_PCK_PDw(0);	}
 
 	DS3_ONw(OnOff);
-
 }
-
 
 //	EdgeOnOff	->	0 : Off, 1: On
 //	MGain		->	Edge Enhancement Main Gain (ROI Center Area)
@@ -2550,7 +2519,6 @@ void Isp_DS3_Edge_Enhance_Config(BOOL EdgeOnOff, BYTE MGain, BYTE Slice, BYTE Cl
 
 void Isp_DZoom_Config(BOOL OnOff, BYTE Clk, BYTE DzSync, BOOL IsAutoAlign, BOOL IsDkxAuto, BYTE DzoomCh, UINT DzVwo, UINT Dkx, UINT Dky, UINT DzRdHsp, UINT DzRdVsp, UINT HOffset, UINT VOffset)
 {
-
 	if(IsAutoAlign)					{	DZ_DAONw(IsAutoAlign);														}
 	else							{	DZ_DAONw(IsAutoAlign);		DZ_HSP_POSw(HOffset);	DZ_VSP_POSw(VOffset);	}
 
@@ -2636,7 +2604,6 @@ void Isp_Pip_Clk_Config(BOOL PipOnOff, BYTE Clk, BYTE MainImgCh, BYTE Sync, BOOL
 	else				{	FONT0_PIP_ONw(0);	PIP0_ONw(0);	PIP1_ONw(0);	PIP2_ONw(0);	PIP3_ONw(0);	PIP_PPCK_PDw(0);
 							PIP0_BOX_ONw(0);	PIP1_BOX_ONw(0);	PIP2_BOX_ONw(0);	PIP3_BOX_ONw(0);
 						}
-
 }
 
 //	PipRdCh			->	PIP_DDR_RD_CH0				//	DDR Read Channel 0
@@ -2751,7 +2718,6 @@ void Isp_Pip_Ch3_Config(BOOL OnOff, BYTE PipRdCh, UINT PipHsp, UINT PipVsp, UINT
 
 UINT Isp_Img_HMerge(BOOL OnOff, BYTE Clk, BYTE ChCnt, BYTE RdSync, UINT HtwSync, UINT Htw, UINT Hw, UINT Hsp, UINT Vsp, UINT Vw)
 {
-
 	if(Htw!=Hw*ChCnt)	{	return	IF_NO_MATCH_ERROR;	}
 
 	MRG_HSP0w(Hsp);
@@ -2787,7 +2753,6 @@ UINT Isp_Img_HMerge(BOOL OnOff, BYTE Clk, BYTE ChCnt, BYTE RdSync, UINT HtwSync,
 	else		{	IMGM_CK_PDw(0);		RI1_MR_ONw(0);	RI2_MR_ONw(0);	RI3_MR_ONw(0);	RI4_MR_ONw(0);		}
 
 	return	IF_SET_OK;
-
 }
 
 //	Encoder Output-----------------------------------------------------------------------------------------------------------------------
@@ -2822,7 +2787,6 @@ void Isp_Cvbs_Config(BOOL OnOff, BOOL IsNtsc, BYTE CvbsFreq, BYTE SourceFrq, BYT
 	ECK_PDw(0);		CDS3_PCK_PDw(0);	HWE_AUTOw(0);
 	DS3_KXY_ONw(0);	DS3_HLPFw(2);	DS3_VLPFw(2);
 	DS3_DKY_STw(0);	DS3_HOFFw(0);	DS3_VOFFw(0);
-
 
 
 	HSPEw(Hsp);
@@ -2889,7 +2853,6 @@ void Isp_Cvbs_Config(BOOL OnOff, BOOL IsNtsc, BYTE CvbsFreq, BYTE SourceFrq, BYT
 
 	if(OnOff==FN_ON)	{	DS3_ONw(1);		CDS3_PCK_PDw(1);	ECK_PDw(1);		ENC_ONw(1); }
 	else				{	DS3_ONw(0);		CDS3_PCK_PDw(0);	ECK_PDw(0);		ENC_ONw(0);	}
-
 }
 
 void Isp_Cvbs_Adr(UINT CvbsAdr0, UINT CvbsAdr1, UINT CvbsAdr2)

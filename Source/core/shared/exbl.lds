@@ -25,7 +25,7 @@ SECTIONS
   .text :
   {
     *(.text.init)
-  } > SRAM
+  } > DDR
 
   /* text: Program code section */
   .text : 
@@ -33,7 +33,7 @@ SECTIONS
     *(.text)
     *(.text.*)
     *(.gnu.linkonce.t.*)
-  } > SRAM
+  } > DDR
 
   /* rodata: Read-only data */
   .rodata : 
@@ -42,7 +42,7 @@ SECTIONS
     *(.rodata)
     *(.rodata.*)
     *(.gnu.linkonce.r.*)
-  } > SRAM
+  } > DDR
 
   /* End of code and read-only segment */
   PROVIDE( etext = . );
@@ -56,7 +56,7 @@ SECTIONS
   {
     PROVIDE( __htif_base = .);
     *(.htif)
-  } > SRAM
+  } > DDR
   . = ALIGN(0x1000);
 
   /*--------------------------------------------------------------------*/
@@ -76,7 +76,7 @@ SECTIONS
     *(.srodata*)
     *(.gnu.linkonce.d.*)
     *(.comment)
-  } > SRAM
+  } > DDR
 
   /* End of initialized data segment */
   . = ALIGN(4);

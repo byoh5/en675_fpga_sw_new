@@ -146,7 +146,7 @@ void SdioPrintCSD(SD_CSD *csd)
 		printf("csd->READ_BLK_MISALIGN  [ 77: 77] : 0x%08X(%u)\n", csd->csd_v2.READ_BLK_MISALIGN, csd->csd_v2.READ_BLK_MISALIGN);
 		printf("csd->DSR_IMP            [ 76: 76] : 0x%08X(%u)\n", csd->csd_v2.DSR_IMP, csd->csd_v2.DSR_IMP);
 		printf("csd->_res2              [ 75: 70] : 0x%08X(%u)\n", csd->csd_v2._res2, csd->csd_v2._res2);
-		printf("csd->C_SIZE             [ 69: 48] : 0x%08X(%u)\n", csd->csd_v2.C_SIZE0 << 6 | csd->csd_v2.C_SIZE1, csd->csd_v2.C_SIZE0 << 6 | csd->csd_v2.C_SIZE1);
+		printf("csd->C_SIZE             [ 69: 48] : 0x%08X(%u)\n", csd->csd_v2.C_SIZE0 << 16 | csd->csd_v2.C_SIZE1, csd->csd_v2.C_SIZE0 << 16 | csd->csd_v2.C_SIZE1);
 		printf("csd->_res3              [ 47: 47] : 0x%08X(%u)\n", csd->csd_v2._res3, csd->csd_v2._res3);
 		printf("csd->ERASE_BLK_EN       [ 46: 46] : 0x%08X(%u)\n", csd->csd_v2.ERASE_BLK_EN, csd->csd_v2.ERASE_BLK_EN);
 		printf("csd->SECTOR_SIZE        [ 45: 39] : 0x%08X(%u)\n", csd->csd_v2.SECTOR_SIZE, csd->csd_v2.SECTOR_SIZE);
@@ -618,8 +618,9 @@ static UINT SdioCdSetClock(void)
 			ENX_DEBUGF(DBG_SDIO_CD_ERR, "Problem switching card into high-speed mode!\n");
 		} else {
 			ENX_DEBUGF(DBG_SDIO_CD_CMD, "Set High speed mode\n");
+//			SdioSetClockDiv(sdinfo.nCH, 0xffff);
 			SdioSetClockDiv(sdinfo.nCH, 0);
-//			SdioSetClockDiv(sdinfo.nCH, 1);
+//			SdioSetClockDiv(sdinfo.nCH, 3);
 //			SdioSetClockDiv(sdinfo.nCH, 6);
 		}
 
@@ -873,6 +874,8 @@ void SdioCdInit(UINT nCH)
 	sdinfo.nCH = nCH;
 	sdinfo.nErrorCode = 0;
 
+	SdioSetIoMode(sdinfo.nCH, SDIO_CD_MODE);
+
 	GpioSetOut(SD_GPIO_RST, GPIO_OUT_LOW); // LO:ON HI:OFF
 	SdioSetDelayfn(sdinfo.nCH, (user_delay_fn)ENX_SDIOCD_DELAY);
 
@@ -920,8 +923,8 @@ UINT SdioCdGetSectorCnt(void)
 		printf("         BLOCK_LEN(%u)\n", sdinfo.csd.csd_v1.READ_BL_LEN);
 		printf("         SECTOR(%u)\n", nSector);
 	} else if (sdinfo.csd.csd_v1.CSD_STRUCTURE == 1) { // CSD 2.0
-		nSector = (((sdinfo.csd.csd_v2.C_SIZE0 << 6) | (sdinfo.csd.csd_v2.C_SIZE1)) + 1) << 10;
-		printf("CSD2.0 : C_SIZE(%u)\n", sdinfo.csd.csd_v2.C_SIZE0 << 6 | sdinfo.csd.csd_v2.C_SIZE1);
+		nSector = (((sdinfo.csd.csd_v2.C_SIZE0 << 16) | (sdinfo.csd.csd_v2.C_SIZE1)) + 1) << 10;
+		printf("CSD2.0 : C_SIZE(%u)\n", sdinfo.csd.csd_v2.C_SIZE0 << 16 | sdinfo.csd.csd_v2.C_SIZE1);
 		printf("         SECTOR(%u)\n", nSector);
 	} else {
 		ENX_DEBUGF(DBG_SDIO_CD_ERR, "CSD Version error(%d)\n", sdinfo.csd.csd_v1.CSD_STRUCTURE);
@@ -943,7 +946,7 @@ UINT SdioCdGetSize(void)
 		nSector = (((csd->C_SIZE0 << 10 | csd->C_SIZE1) + 1) * (0x1 << (csd->C_SIZE_MULT + 2)) * (0x1 << (csd->READ_BL_LEN))) >> 9;
 	} else if (sdinfo.csd.csd_v1.CSD_STRUCTURE == 1) {
 		SD_CSD_v2 *csd = &(sdinfo.csd.csd_v2);
-		nSector = ((csd->C_SIZE0 << 6 | csd->C_SIZE1) + 1) << 10;
+		nSector = ((csd->C_SIZE0 << 16 | csd->C_SIZE1) + 1) << 10;
 	} else {
 		ENX_DEBUGF(DBG_SDIO_CD_ERR, "CSD Version error(%d)\n", sdinfo.csd.csd_v1.CSD_STRUCTURE);
 	}
@@ -1042,6 +1045,15 @@ ENX_OKFAIL SdioCdWrite(const BYTE *buff, UINT sector, UINT count)
 	}
 
 	nGetByte = SdioGetDataBlockByte(sdinfo.nCH) * count;
+
+	// ACMD23 : Data Write - Pre-erased Setting prior to a Multiple Block Write Operation
+	if(sdinfo.ocr.CCS) {
+		SdioCdAppCmd(sdinfo.rca);
+		nRes = SdioCmd(sdinfo.nCH, SDCMD_SET_WR_BLK_ERASE_COUNT, count, &nResp, ecrtR1);
+		if (nRes == ENX_FAIL) {
+			_Rprintf("Error: ACMD23\n");
+		}
+	}
 
 	ENX_SDIOCD_IRQ_LOCK();
 	ENX_SDIOCD_FLUSH_DCACHE((ULONG)getData, nGetByte);

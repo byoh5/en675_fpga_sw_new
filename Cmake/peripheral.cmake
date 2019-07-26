@@ -1,5 +1,5 @@
 ﻿SET ( USE_SDIO0 1 ) # 0:unused  1:use
-SET ( USE_SDIO1 0 ) # 0:unused  1:use
+SET ( USE_SDIO1 1 ) # 0:unused  1:use
 SET ( SDIO0_SPEED 400000 )
 SET ( SDIO1_SPEED 400000 )
 

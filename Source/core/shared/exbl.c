@@ -43,6 +43,11 @@ void WaitXms(uint64_t ms)
 	WaitXus(ms * 1000);
 }
 
+ULONG TimeGetMs(void)
+{
+	return *mtime / TIME_1MS;
+}
+
 ULONG BenchTimeStart(void)
 {
 	return rdcycle();
@@ -94,7 +99,7 @@ void hexDump(char *desc, void *addr, int len)
 
 	// Output description if given.
 	if (desc != NULL) {
-		printf("%s\n", desc);
+		_Cprintf("%s\n", desc);
 	}
 	printf("Addr(0x%08X) Size(%u)\n", addr, len);
 
@@ -256,13 +261,38 @@ void hexCmpDump(char *desc, void *addr1, void*addr2, int len)
 	}
 }
 
+#if 0
 void sleep_(int cnt)
 {
 	for(int i=0;i<cnt;i++){
-		__asm("C.NOP");
+		__asm("C.NOP");			// 1 cycle = 15 clock = 15/CPU_FREQ sec,  컴파일 옵션 : -O0
 	}
 
 }
+
+void sleep_test(void)
+{
+	const ULONG sleep1Ksta = BenchTimeStart();
+	sleep_(1000);
+	const UINT sleep1Ktime = BenchTimeStop(sleep1Ksta);
+	_printf("sleep_(1000) : %dus\r\n", sleep1Ktime);
+
+	const ULONG sleep10Ksta = BenchTimeStart();
+	sleep_(10000);
+	const UINT sleep10Ktime = BenchTimeStop(sleep10Ksta);
+	_printf("sleep_(10000) : %dus\r\n", sleep10Ktime);
+
+	const ULONG sleep100Ksta = BenchTimeStart();
+	sleep_(100000);
+	const UINT sleep100Ktime = BenchTimeStop(sleep100Ksta);
+	_printf("sleep_(100000) : %dus\r\n", sleep100Ktime);
+
+	const ULONG sleep1Msta = BenchTimeStart();
+	sleep_(1000000);
+	const UINT sleep1Mtime = BenchTimeStop(sleep1Msta);
+	_printf("sleep_(1000000) : %dus\r\n", sleep1Mtime);
+}
+#endif
 
 void main_(void)
 {
