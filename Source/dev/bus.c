@@ -71,9 +71,9 @@ void BusOutput(void *ctx)
 	else							printf("RD:%5u ",BUS_ACT_BYTE3);
 	printf("B/s, IO/s:%7u | ", BUS_IO_CNT3);
 
-	if (BUS_ACT_BYTE4 >= 1000000)	printf("ETH WR:%5uM",BUS_ACT_BYTE4/1000000);
-	else if (BUS_ACT_BYTE4 >= 1000)	printf("ETH WR:%5uK",BUS_ACT_BYTE4/1000);
-	else							printf("ETH WR:%5u ",BUS_ACT_BYTE4);
+	if (BUS_ACT_BYTE4 >= 1000000)	printf("BDMA WR:%5uM",BUS_ACT_BYTE4/1000000);
+	else if (BUS_ACT_BYTE4 >= 1000)	printf("BDMA WR:%5uK",BUS_ACT_BYTE4/1000);
+	else							printf("BDMA WR:%5u ",BUS_ACT_BYTE4);
 	printf("B/s, IO/s:%7u ", BUS_IO_CNT4);
 
 	if (BUS_ACT_BYTE5 >= 1000000)	printf("RD:%5uM",BUS_ACT_BYTE5/1000000);
@@ -112,7 +112,7 @@ void BusInit(void)
 	BUS_ID3 = 0x40;
 	BUS_EN3 = 1;
 
-	UINT id = 0x58;
+	UINT id = 0x48;
 
 	BUS_RW4 = 1;
 	BUS_ID_WIDTH4 = 4;

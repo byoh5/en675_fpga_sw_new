@@ -41,6 +41,8 @@ Change log:
 #include "mlan_sdio.h"
 #include "mlan_meas.h"
 
+#ifdef STA_SUPPORT
+
 /********************************************************
 			Local Variables
 ********************************************************/
@@ -2157,3 +2159,4 @@ done:
 	LEAVE();
 	return ret;
 }
+#endif

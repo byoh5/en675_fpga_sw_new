@@ -233,7 +233,7 @@ ENX_OKFAIL EthphyLinkInfo(void)
 	MdioRead(ethphy_info.addr, ETHPHY_PHYC1R_ADR, &wPHYC1R); // Read the PHY Control 1 Register.
 	EthphyRegView(ETHPHY_PHYC1R_ADR, wPHYC1R);
 
-	ethphy_info.type = ETHPHY_TYPE_MII;
+	ethphy_info.type = ETHPHY_TYPE_VAL;
 
 	if (!(wPHYC1R & ETHPHY_PC1R_LINK_STATUS)) {
 		ENX_DEBUGF(DBG_ETHPHY_ERR, "Not linked.\n");
@@ -310,8 +310,8 @@ void EthphyLoopbackMode(void)
 
 	// Set ethernet PHY : loopback mode, Speed(100Mbps), Full-duplex
 	MdioWrite(ethphy_info.addr, ETHPHY_BCR_ADR, ETHPHY_BCR_LOOPBACK | ETHPHY_BCR_SPEED | ETHPHY_BCR_FULLDPLX);
-	ethphy_info.type = ETHPHY_TYPE_MII;
-	ethphy_info.speed = ETHPHY_SPD_100;
+	ethphy_info.type = ETHPHY_TYPE_VAL;
+	ethphy_info.speed = ETHPHY_SPD_VAL;
 	ethphy_info.duplex = ETHPHY_DUPLEX_FULL;
 
 	printf("  Type(%d), Speed(%d), Duplex(%d)\n", ethphy_info.type, ethphy_info.speed, ethphy_info.duplex);

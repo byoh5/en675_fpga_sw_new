@@ -6,6 +6,9 @@
 #ifdef __ETHPHY_KSZ8081MNX__
 #include "ksz8081mnx.h"
 #endif
+#ifdef __ETHPHY_KSZ8081RNB__
+#include "ksz8081rnb.h"
+#endif
 #ifdef __ETHPHY_KSZ9031RNX__
 #include "ksz9031rnx.h"
 #endif

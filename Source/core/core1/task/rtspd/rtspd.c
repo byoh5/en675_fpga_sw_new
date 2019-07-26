@@ -50,6 +50,7 @@
 #include "rtspd_process.h"
 #include "rtcp_process.h"
 #include "rtp_h264.h"
+#include "rtp_h265.h"
 #if (JPEG_STREAM==1)
 #include "rtp_jpeg.h"
 #endif
@@ -61,8 +62,8 @@
 #endif
 
 #if 0
-#define ENTER() printf(" IN %04d:%s\r\n", __LINE__, __func__)
-#define LEAVE() printf("OUT %04d:%s\r\n", __LINE__, __func__)
+#define ENTER() printf(" IN %04d:%s\n", __LINE__, __func__)
+#define LEAVE() printf("OUT %04d:%s\n", __LINE__, __func__)
 #else
 #define ENTER()
 #define LEAVE()
@@ -78,7 +79,7 @@ int rtspd_connect_info_count(void)
 rtsp_connect_info *rtspd_connect_info_get_index(UINT i)
 {
 	if (i >= RTSP_info_MAX) {
-		flprintf("index overflow(max:%d, input:%d)\r\n", RTSP_info_MAX, i);
+		flprintf("index overflow(max:%d, input:%d)\n", RTSP_info_MAX, i);
 		return NULL;
 	}
 	return &rsInfo.rclist[i].conn_info;
@@ -89,50 +90,50 @@ int rtspd_connect_kick(UINT index)
 	return rtspd_client_rtsp_state(&(rsInfo.rclist[index]), ENX_RTSP_STATE_TEARDOWN);
 }
 
-int rtspd_socket_init(UINT nPort)
+int rtspd_socket_init(WORD nPort)
 {
 	struct sockaddr_in serv_addr;
 	int res = 0, serv_sockfd, serv_reuse = 1;
 
 	serv_sockfd = lwip_socket(AF_INET, SOCK_STREAM, 0);
 	if (serv_sockfd == -1) {
-		flprintf("lwip_socket fail\r\n");
+		flprintf("lwip_socket fail\n");
 		return -1;
 	}
 
 	do {
 		res = lwip_setsockopt(serv_sockfd, SOL_SOCKET, SO_REUSEADDR, (char *)&serv_reuse, sizeof(int));
 		if (res == -1) {
-			flprintf("lwip_setsockopt fail(%d)\r\n", errno);
+			flprintf("lwip_setsockopt fail(%d)\n", errno);
 			break;
 		}
 
 		memset(&serv_addr, 0, sizeof(struct sockaddr_in));
 		serv_addr.sin_family = AF_INET;
-		serv_addr.sin_addr.s_addr = INADDR_ANY;
-		serv_addr.sin_port = nPort;
+		serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+		serv_addr.sin_port = htons(nPort);
 
 		res = lwip_bind(serv_sockfd, (struct sockaddr *)&serv_addr, sizeof(struct sockaddr));
 		if (res == -1) {
-			flprintf("lwip_bind fail(%d)\r\n", errno);
+			flprintf("lwip_bind fail(%d)\n", errno);
 			break;
 		}
 
 		res = lwip_listen(serv_sockfd, 5);
 		if (res == -1) {
-			flprintf("lwip_listen fail(%d)\r\n", errno);
+			flprintf("lwip_listen fail(%d)\n", errno);
 			break;
 		}
 
 		res = lwip_fcntl(serv_sockfd, F_GETFL, 0);
 		if (res == -1) {
-			flprintf("lwip_fcntl(GET) fail(%d)\r\n", errno);
+			flprintf("lwip_fcntl(GET) fail(%d)\n", errno);
 			break;
 		}
 
 		res = lwip_fcntl(serv_sockfd, F_SETFL, res | O_NONBLOCK);
 		if (res == -1) {
-			flprintf("lwip_fcntl(SET) fail(%d)\r\n", errno);
+			flprintf("lwip_fcntl(SET) fail(%d)\n", errno);
 			break;
 		}
 
@@ -153,37 +154,37 @@ int rtspd_socket_udp_init(UINT nPort)
 
 	serv_sockfd = lwip_socket(AF_INET, SOCK_DGRAM, 0);
 	if (serv_sockfd == -1) {
-		flprintf("lwip_socket fail\r\n");
+		flprintf("lwip_socket fail\n");
 		return -1;
 	}
 
 	do {
 		res = lwip_setsockopt(serv_sockfd, SOL_SOCKET, SO_REUSEADDR, (char *)&serv_reuse, sizeof(int));
 		if (res == -1) {
-			flprintf("lwip_setsockopt fail(%d)\r\n", errno);
+			flprintf("lwip_setsockopt fail(%d)\n", errno);
 			break;
 		}
 
 		memset(&serv_addr, 0, sizeof(struct sockaddr_in));
 		serv_addr.sin_family = AF_INET;
-		serv_addr.sin_addr.s_addr = INADDR_ANY;
-		serv_addr.sin_port = nPort;
+		serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+		serv_addr.sin_port = htons(nPort);
 
 		res = lwip_bind(serv_sockfd, (struct sockaddr *)&serv_addr, sizeof(struct sockaddr));
 		if (res == -1) {
-			flprintf("lwip_bind fail(%d)\r\n", errno);
+			flprintf("lwip_bind fail(%d)\n", errno);
 			break;
 		}
 
 		res = lwip_fcntl(serv_sockfd, F_GETFL, 0);
 		if (res == -1) {
-			flprintf("lwip_fcntl(GET) fail(%d)\r\n", errno);
+			flprintf("lwip_fcntl(GET) fail(%d)\n", errno);
 			break;
 		}
 
 		res = lwip_fcntl(serv_sockfd, F_SETFL, res | O_NONBLOCK);
 		if (res == -1) {
-			flprintf("lwip_fcntl(SET) fail(%d)\r\n", errno);
+			flprintf("lwip_fcntl(SET) fail(%d)\n", errno);
 			break;
 		}
 
@@ -201,9 +202,9 @@ void rtspd_client_close(rtsp_client *prcInfo)
 {
 	lwip_close(prcInfo->sockfd);
 
-	printf("USER Disconn(%d=>%d) : Local(%IP:%u) Remote(%IP:%u)\r\n", rsInfo.client_count, rsInfo.client_count-1,
-			prcInfo->conn_info.server_addr, prcInfo->conn_info.server_port, 
-			prcInfo->conn_info.client_addr, prcInfo->conn_info.client_port);
+	es_printf("USER Disconn(%d=>%d) : Local(%IP:%u) Remote(%IP:%u)\n", rsInfo.client_count, rsInfo.client_count-1,
+				prcInfo->conn_info.server_addr, prcInfo->conn_info.server_port,
+				prcInfo->conn_info.client_addr, prcInfo->conn_info.client_port);
 
 	vTaskDelay(50); // RTCP input..?
 
@@ -231,7 +232,7 @@ int rtspd_client_udp_read(int rtcpfd, BYTE *buffer, UINT buf_len, rtsp_client **
 		if (errno == EINTR) {
 			return 0;
 		} else {
-			flprintf("lwip_select fail(errno:%d)\r\n", errno);
+			flprintf("lwip_select fail(errno:%d)\n", errno);
 			return -1;
 		}
 	} else if (res == 0) {
@@ -249,7 +250,7 @@ int rtspd_client_udp_read(int rtcpfd, BYTE *buffer, UINT buf_len, rtsp_client **
 			for (i = 0; i < RTSP_info_MAX && (*prcRef == NULL); i++) {
 				if (rsInfo.rclist[i].conn_info.client_addr == client_addr.sin_addr.s_addr) {
 					for (j = 0; j < ENX_RTSP_STRTYPE_numNONE; j++) {
-						if (rsInfo.rclist[i].rtp_ss[j].rtcp_port == client_addr.sin_port) {
+						if (rsInfo.rclist[i].rtp_ss[j].rtcp_port == ntohs(client_addr.sin_port)) {
 							*prcRef = &rsInfo.rclist[i];
 							*media_type = j;
 							break;
@@ -259,7 +260,9 @@ int rtspd_client_udp_read(int rtcpfd, BYTE *buffer, UINT buf_len, rtsp_client **
 			}
 #if 1 // Debug Code, $CMT-hjlee-180919 - 
 			if (*prcRef == NULL) {
-				printf("QueryIP: %IP:%u\r\n", client_addr.sin_addr.s_addr, client_addr.sin_port);
+				char strLog[64];
+				es_sprintf(strLog, "Err, QueryIP: %IP:%u\n", client_addr.sin_addr.s_addr, ntohs(client_addr.sin_port));
+				_Rprintf(strLog);
 			}
 #endif
 		}
@@ -287,7 +290,7 @@ int rtspd_client_read(rtsp_client *prcInfo, BYTE *buffer, UINT buf_len)
 		if (errno == EINTR) {
 			return 0;
 		} else {
-			flprintf("lwip_select fail(errno:%d)\r\n", errno);
+			flprintf("lwip_select fail(errno:%d)\n", errno);
 			return -1;
 		}
 	} else if (res == 0) {
@@ -321,7 +324,7 @@ int rtspd_client_write(rtsp_client *prcInfo, BYTE *buffer, int buf_len)
 		if (errno == EINTR) {
 			return 0;
 		} else {
-			flprintf("lwip_select fail(errno:%d)\r\n", errno);
+			flprintf("lwip_select fail(errno:%d)\n", errno);
 			return -1;
 		}
 	} else if (res == 0) {
@@ -351,7 +354,7 @@ static int rtspd_client_rtp_tcp_send(rtsp_client *prcInfo, int media_type)
 		if (errno == EINTR) {
 			return -3;//0;
 		} else {
-			flprintf("lwip_select fail(errno:%d)\r\n", errno);
+			flprintf("lwip_select fail(errno:%d)\n", errno);
 			return -1;
 		}
 	} else if (res == 0) {
@@ -362,12 +365,12 @@ static int rtspd_client_rtp_tcp_send(rtsp_client *prcInfo, int media_type)
 		rtp_session *prtp_ss = &(prcInfo->rtp_ss[media_type]);
 		res = lwip_send(prcInfo->sockfd, prtp_ss->buffer[prtp_ss->buf_idx], prtp_ss->buf_len[prtp_ss->buf_idx], 1);
 		if (res == -1) {
-			flprintf("lwip_send fail(errno:%d)\r\n", errno); // ECONNRESET?
+			flprintf("lwip_send fail(errno:%d)\n", errno); // ECONNRESET?
 		} else if (res != (int)prtp_ss->buf_len[prtp_ss->buf_idx]) {
-			flprintf("some data can not be transferred(send:%d/%dbyte).\r\n", res, prtp_ss->buf_len[prtp_ss->buf_idx]);
+			flprintf("some data can not be transferred(send:%d/%dbyte).\n", res, prtp_ss->buf_len[prtp_ss->buf_idx]);
 		}
 	} else {
-		flprintf("not lwip_send call\r\n");
+		flprintf("not lwip_send call\n");
 	}
 
 	return res;
@@ -391,7 +394,7 @@ static int rtspd_client_rtp_udp_send(int sockfd, rtsp_client *prcInfo, int media
 		if (errno == EINTR) {
 			return 0;
 		} else {
-			flprintf("lwip_select fail(errno:%d)\r\n", errno);
+			flprintf("lwip_select fail(errno:%d)\n", errno);
 			return -1;
 		}
 	} else if (res == 0) {
@@ -402,7 +405,7 @@ static int rtspd_client_rtp_udp_send(int sockfd, rtsp_client *prcInfo, int media
 		rtp_session *prtp_ss = &(prcInfo->rtp_ss[media_type]);
 		struct sockaddr_in client_addr;
 		client_addr.sin_family = AF_INET;
-		client_addr.sin_port = prtp_ss->rtp_port;
+		client_addr.sin_port = htons(prtp_ss->rtp_port);
 		client_addr.sin_addr.s_addr = prcInfo->conn_info.client_addr;
 		res = lwip_sendto(sockfd, prtp_ss->buffer[prtp_ss->buf_idx], prtp_ss->buf_len[prtp_ss->buf_idx], 0, (struct sockaddr *)&client_addr, sizeof(struct sockaddr_in));
 		if (res == -1) {
@@ -412,20 +415,20 @@ static int rtspd_client_rtp_udp_send(int sockfd, rtsp_client *prcInfo, int media
 				prcInfo->state = ENX_RTSP_STATE_ERROR;
 			}
 			if (errno != 12) {
-				flprintf("lwip_send fail(errno:%d)(cnt:%d)\r\n", errno, prcInfo->errCount); // ECONNRESET?
+				flprintf("lwip_send fail(errno:%d)(cnt:%d)\n", errno, prcInfo->errCount); // ECONNRESET?
 			}
 			if (prcInfo->erroldTime + 5 <= gptMsgShare.TIME) {
 				prcInfo->erroldTime = gptMsgShare.TIME;
 				prcInfo->errCount = 0;
 			}
 		} else if (res != (int)prtp_ss->buf_len[prtp_ss->buf_idx]) {
-			flprintf("some data can not be transferred(send:%d/%dbyte).\r\n", res, prtp_ss->buf_len[prtp_ss->buf_idx]);
+			flprintf("some data can not be transferred(send:%d/%dbyte).\n", res, prtp_ss->buf_len[prtp_ss->buf_idx]);
 		} else {
 			prcInfo->erroldTime = gptMsgShare.TIME;
 			prcInfo->errCount = 0;
 		}
 	} else {
-		flprintf("not lwip_send call\r\n");
+		flprintf("not lwip_send call\n");
 	}
 
 //	LEAVE();
@@ -451,7 +454,7 @@ static int rtspd_client_rtcp_udp_send(int sockfd, rtsp_client *prcInfo, int medi
 		if (errno == EINTR) {
 			return 0;
 		} else {
-			flprintf("lwip_select fail(errno:%d)\r\n", errno);
+			flprintf("lwip_select fail(errno:%d)\n", errno);
 			return -1;
 		}
 	} else if (res == 0) {
@@ -462,16 +465,16 @@ static int rtspd_client_rtcp_udp_send(int sockfd, rtsp_client *prcInfo, int medi
 		rtp_session *prtp_ss = &(prcInfo->rtp_ss[media_type]);
 		struct sockaddr_in client_addr;
 		client_addr.sin_family = AF_INET;
-		client_addr.sin_port = prtp_ss->rtcp_port;
-		client_addr.sin_addr.s_addr = prcInfo->conn_info.client_addr;
+		client_addr.sin_port = htons(prtp_ss->rtcp_port);
+		client_addr.sin_addr.s_addr = htonl(prcInfo->conn_info.client_addr);
 		res = lwip_sendto(sockfd, buffer, buf_len, 0, (struct sockaddr *)&client_addr, sizeof(struct sockaddr_in));
 		if (res == -1) {
-			flprintf("lwip_send fail(errno:%d)\r\n", errno); // ECONNRESET?
+			flprintf("lwip_send fail(errno:%d)\n", errno); // ECONNRESET?
 		} else if (res != (int)buf_len) {
-			flprintf("some data can not be transferred(send:%d/%dbyte).\r\n", res, buf_len);
+			flprintf("some data can not be transferred(send:%d/%dbyte).\n", res, buf_len);
 		}
 	} else {
-		flprintf("not lwip_send call\r\n");
+		flprintf("not lwip_send call\n");
 	}
 
 //	LEAVE();
@@ -490,10 +493,15 @@ int rtspd_client_rtp_video_play(rtsp_client *prcInfo)
 	if (prcInfo->play_query & ENX_RTSP_STRTYPE_VIDEO) {
 		switch (prcInfo->isLive) {
 			case ENX_RTSP_STREAM_FILE_H264_TYPE:
+			case ENX_RTSP_STREAM_FILE_H265_TYPE:
 				break;
-			case ENX_RTSP_STREAM_LIVE_H264_1_1:
-			case ENX_RTSP_STREAM_LIVE_H264_1_2:
+			case ENX_RTSP_STREAM_LIVE_H264_1:
+			case ENX_RTSP_STREAM_LIVE_H264_2:
 				res = rtspd_client_rtp_h264_main(prcInfo);
+				break;
+			case ENX_RTSP_STREAM_LIVE_H265_1:
+			case ENX_RTSP_STREAM_LIVE_H265_2:
+				res = rtspd_client_rtp_h265_main(prcInfo);
 				break;
 			case ENX_RTSP_STREAM_LIVE_JPEG:
 #if (JPEG_STREAM==1)
@@ -508,7 +516,7 @@ int rtspd_client_rtp_video_play(rtsp_client *prcInfo)
 #endif
 			default:
 				res = -1;
-				flprintf("Err, isLive(%d)\r\n", prcInfo->isLive);
+				flprintf("Err, isLive(%d)\n", prcInfo->isLive);
 				break;
 		}
 	}
@@ -530,8 +538,8 @@ int rtspd_client_rtp_audio_play(rtsp_client *prcInfo)
 		switch (prcInfo->isLive) {
 			case ENX_RTSP_STREAM_FILE_H264_TYPE:
 				break;
-			case ENX_RTSP_STREAM_LIVE_H264_1_1:
-			case ENX_RTSP_STREAM_LIVE_H264_1_2:
+			case ENX_RTSP_STREAM_LIVE_H264_1:
+			case ENX_RTSP_STREAM_LIVE_H264_2:
 #if (JPEG_STREAM==1)
 			case ENX_RTSP_STREAM_LIVE_JPEG:
 #endif
@@ -542,7 +550,7 @@ int rtspd_client_rtp_audio_play(rtsp_client *prcInfo)
 				break;
 			default:
 				res = -1;
-				flprintf("Err, isLive(%d)\r\n", prcInfo->isLive);
+				flprintf("Err, isLive(%d)\n", prcInfo->isLive);
 				break;
 		}
 	}
@@ -576,7 +584,7 @@ void rtspd_client_rtp_main(void *ctx)
 				if (prtp_ss->buf_len[prtp_ss->buf_idx] != 0) {
 					send_len = rtspd_client_rtp_tcp_send(prcInfo, ENX_RTSP_STRTYPE_numVIDEO);
 					if (send_len == -1) {
-						flprintf("Error, rtp write\r\n");
+						flprintf("Error, rtp write\n");
 						res = -1;
 						break;
 					} else if (send_len > 0) {
@@ -592,7 +600,7 @@ void rtspd_client_rtp_main(void *ctx)
 							if (prtp_ss->buf_len[prtp_ss->buf_idx] > 0) {
 								send_len = rtspd_client_rtp_tcp_send(prcInfo, ENX_RTSP_STRTYPE_numVIDEO);
 								if (send_len == -1) {
-									flprintf("Error, rtcp write\r\n");
+									flprintf("Error, rtcp write\n");
 									res = -1;
 									break;
 								} else if (send_len > 0) {
@@ -602,7 +610,7 @@ void rtspd_client_rtp_main(void *ctx)
 						}
 #endif
 					} else {
-						flprintf("Drop?(%d)\r\n", send_len);
+						flprintf("Drop?(%d)\n", send_len);
 					}
 				}
 #ifdef __AUDIO__
@@ -611,7 +619,7 @@ void rtspd_client_rtp_main(void *ctx)
 				if (prtp_ss->buf_len[prtp_ss->buf_idx] != 0) {
 					send_len = rtspd_client_rtp_tcp_send(prcInfo, ENX_RTSP_STRTYPE_numAUDIO);
 					if (send_len == -1) {
-						flprintf("Error, rtp write\r\n");
+						flprintf("Error, rtp write\n");
 						res = -1;
 						break;
 					} else if (send_len > 0) {
@@ -627,7 +635,7 @@ void rtspd_client_rtp_main(void *ctx)
 							if (prtp_ss->buf_len[prtp_ss->buf_idx] > 0) {
 								send_len = rtspd_client_rtp_tcp_send(prcInfo, ENX_RTSP_STRTYPE_numAUDIO);
 								if (send_len == -1) {
-									flprintf("Error, rtcp write\r\n");
+									flprintf("Error, rtcp write\n");
 									res = -1;
 									break;
 								} else if (send_len > 0) {
@@ -729,16 +737,16 @@ void rtspd_client_main(void *ctx)
 		if (prcInfo->state == ENX_RTSP_STATE_TEARDOWN) {
 			break;
 		} else if (prcInfo->state == ENX_RTSP_STATE_ERROR) {
-			flprintf("state ERROR, client close\r\n");
+			flprintf("state ERROR, client close\n");
 			break;
 		} else if (prcInfo->lastTime + RTSP_TIMEOUT < gptMsgShare.UPTIME) {
-			printf("RTSP Timeout\r\n");
+			printf("RTSP Timeout\n");
 			break;
 		}
 
 		read_size = rtspd_client_read(prcInfo, buffer + read_offset, 1460);	// read
 		if (read_size == -1) {
-			flprintf("read_size -1, client close\r\n");
+			flprintf("read_size -1, client close\n");
 			break;
 		} else if (read_size == 0) {
 			read_offset = 0;
@@ -749,28 +757,28 @@ void rtspd_client_main(void *ctx)
 
 		read_offset += read_size;
 		if (read_offset > 4096) {			// $CMT-hjlee-180212 - Test code
-			flprintf("buffer overflow\r\n");// $CMT-hjlee-180212 - Test code
+			flprintf("buffer overflow\n");// $CMT-hjlee-180212 - Test code
 		}									// $CMT-hjlee-180212 - Test code
 
 		if (buffer[0] == '$') { // RTSP interleaved
-//			flprintf("RTSP interleaved(read:%d/%d)\r\n", read_size, read_offset);
+//			flprintf("RTSP interleaved(read:%d/%d)\n", read_size, read_offset);
 //			hexDump("interleaved", buffer, read_offset);
 
 			rthInterleaved *pInter = (rthInterleaved *)buffer;
 			if (pInter->un16Length == (read_offset - sizeof(rthInterleaved))) { // 모든 RTSP interleaved packet가 들어옴.
-//				flprintf("RTSP interleaved done(read:%d)\r\n", read_offset);
+//				flprintf("RTSP interleaved done(read:%d)\n", read_offset);
 				read_offset = 0;
 			} else {
 				// continue...
 			}
 		} else { // RTSP method
-//			flprintf("RTSP method(read:%d/%d)\r\n", read_size, read_offset);
+//			flprintf("RTSP method(read:%d/%d)\n", read_size, read_offset);
 //			hexDump("method", buffer, read_offset);
 
 			if ((buffer[read_offset-4] == '\r') && (buffer[read_offset-3] == '\n') && (buffer[read_offset-2] == '\r') && (buffer[read_offset-1] == '\n')) {
 				buffer[read_offset] = '\0';
 				if (rtspd_client_rtsp_method_parse(prcInfo, buffer, read_offset) == -1) {
-					flprintf("RTSP Method parse fail\r\n");
+					flprintf("RTSP Method parse fail\n");
 				} else {
 					if ((prcInfo->login == ENX_OK) || (prcInfo->method == ENX_RTSP_METHOD_OPTIONS) || (prcInfo->method == ENX_RTSP_METHOD_TEARDOWN)) {
 						rtspd_client_rtsp_response(prcInfo, (char *)buffer, &write_size);
@@ -788,11 +796,11 @@ void rtspd_client_main(void *ctx)
 				if (write_size) {
 //					struct tm tmout;
 //					enx_get_tmtime(gptMsgShare.TIME, &tmout, DEF_YES, DEF_YES);
-//					flprintf("Output size: %d\r\n", write_size);
+//					flprintf("Output size: %d\n", write_size);
 //					hexDump("RTSP TX", buffer, write_size);
 //					int a = rtspd_client_write(prcInfo, buffer, write_size);
 					rtspd_client_write(prcInfo, buffer, write_size);
-//					printf("%04d-%02d-%02d %s %02d:%02d:%02d - RTSP TX res: [%d]\r\n", tmout.tm_year+1900, tmout.tm_mon+1, tmout.tm_mday, strWeek[tmout.tm_wday], tmout.tm_hour, tmout.tm_min, tmout.tm_sec, a);
+//					printf("%04d-%02d-%02d %s %02d:%02d:%02d - RTSP TX res: [%d]\n", tmout.tm_year+1900, tmout.tm_mon+1, tmout.tm_mday, strWeek[tmout.tm_wday], tmout.tm_hour, tmout.tm_min, tmout.tm_sec, a);
 				}
 
 				read_offset = 0;
@@ -802,12 +810,12 @@ void rtspd_client_main(void *ctx)
 		}
 	}
 
-//	flprintf("Client close wait\r\n");
+//	flprintf("Client close wait\n");
 	prcInfo->state = ENX_RTSP_STATE_TEARDOWN; // client_rtp_main이 close 되길 기다린다.
 	while (prcInfo->play_query != 0) {
 		vTaskDelay(1);
 	}
-//	flprintf("Client close\r\n");
+//	flprintf("Client close\n");
 	rtspd_client_close(prcInfo);
 
 	LEAVE();
@@ -831,7 +839,7 @@ int rtspd_socket_accept(rtsp_server *prsInfo, struct sockaddr_in *clie_addr)
 		if (errno == EINTR) {
 			return 0;
 		} else {
-			flprintf("lwip_select fail\r\n");
+			flprintf("lwip_select fail\n");
 			return -1;
 		}
 	} else if (res == 0) {
@@ -842,10 +850,10 @@ int rtspd_socket_accept(rtsp_server *prsInfo, struct sockaddr_in *clie_addr)
 		if (FD_ISSET(prsInfo->sockfd, &fd)) {
 			clie_sockfd = lwip_accept(prsInfo->sockfd, (struct sockaddr *)clie_addr, (socklen_t *)&clie_len);
 			if (clie_sockfd == -1) {
-				flprintf("lwip_accept fail, errno(%d)\r\n", errno);
+				flprintf("lwip_accept fail, errno(%d)\n", errno);
 				break;
 			} else if (prsInfo->client_count >= RTSP_info_MAX) {
-				flprintf("lwip_accept fail, client_count max(%d)\r\n", prsInfo->client_count);
+				flprintf("lwip_accept fail, client_count max(%d)\n", prsInfo->client_count);
 				lwip_close(clie_sockfd);
 				clie_sockfd = -2;
 				break;
@@ -853,7 +861,7 @@ int rtspd_socket_accept(rtsp_server *prsInfo, struct sockaddr_in *clie_addr)
 				int opt_val = 1;
 				res = lwip_setsockopt(clie_sockfd, IPPROTO_TCP, TCP_NODELAY, &opt_val, sizeof(int));
 				if (res == -1) {
-					flprintf("lwip_setsockopt fail\r\n");
+					flprintf("lwip_setsockopt fail\n");
 					lwip_close(clie_sockfd);
 					clie_sockfd = -1;
 					break;
@@ -861,7 +869,7 @@ int rtspd_socket_accept(rtsp_server *prsInfo, struct sockaddr_in *clie_addr)
 
 				res = lwip_fcntl(clie_sockfd, F_GETFL, 0);
 				if (res == -1) {
-					flprintf("lwip_fcntl fail\r\n");
+					flprintf("lwip_fcntl fail\n");
 					lwip_close(clie_sockfd);
 					clie_sockfd = -1;
 					break;
@@ -869,7 +877,7 @@ int rtspd_socket_accept(rtsp_server *prsInfo, struct sockaddr_in *clie_addr)
 
 				res = lwip_fcntl(clie_sockfd, F_SETFL, res | O_NONBLOCK);
 				if (res == -1) {
-					flprintf("lwip_fcntl fail\r\n");
+					flprintf("lwip_fcntl fail\n");
 					lwip_close(clie_sockfd);
 					clie_sockfd = -1;
 					break;
@@ -894,22 +902,22 @@ int rtspd_socket_client_new(rtsp_server *prsInfo, int clie_sockfd)
 			struct sockaddr_in nameaddr;
 			socklen_t namelen = sizeof(struct sockaddr_in);
 			if (lwip_getsockname(clie_sockfd, (struct sockaddr *)&nameaddr, &namelen) == 0) {
-				prsInfo->rclist[i].conn_info.server_addr = nameaddr.sin_addr.s_addr;
-				prsInfo->rclist[i].conn_info.server_port = nameaddr.sin_port;
+				prsInfo->rclist[i].conn_info.server_addr = (nameaddr.sin_addr.s_addr);
+				prsInfo->rclist[i].conn_info.server_port = (nameaddr.sin_port);
 			}
 			namelen = sizeof(struct sockaddr_in);
 			if (lwip_getpeername(clie_sockfd, (struct sockaddr *)&nameaddr, &namelen) == 0) {
-				prsInfo->rclist[i].conn_info.client_addr = nameaddr.sin_addr.s_addr;
-				prsInfo->rclist[i].conn_info.client_port = nameaddr.sin_port;
+				prsInfo->rclist[i].conn_info.client_addr = (nameaddr.sin_addr.s_addr);//ntohl
+				prsInfo->rclist[i].conn_info.client_port = (nameaddr.sin_port);//ntohs
 			}
 
 			prsInfo->rclist[i].conn_info.video_type = 0;
 			prsInfo->rclist[i].conn_info.rtp_type = 0;
 			prsInfo->rclist[i].conn_info.connect_time = gptMsgShare.TIME;
 
-			printf("USER Conn(%d=>%d) : Local(%IP:%u) Remote(%IP:%u)\r\n", prsInfo->client_count, prsInfo->client_count+1,
-					prsInfo->rclist[i].conn_info.server_addr, prsInfo->rclist[i].conn_info.server_port, 
-					prsInfo->rclist[i].conn_info.client_addr, prsInfo->rclist[i].conn_info.client_port);
+			es_printf("USER Conn(%d=>%d) : Local(%IP:%u) Remote(%IP:%u)\n", prsInfo->client_count, prsInfo->client_count+1,
+					prsInfo->rclist[i].conn_info.server_addr, ntohs(prsInfo->rclist[i].conn_info.server_port),
+					prsInfo->rclist[i].conn_info.client_addr, ntohs(prsInfo->rclist[i].conn_info.client_port));
 
 			prsInfo->client_count++;
 
@@ -937,7 +945,7 @@ void rtspd_client_udp_rtp_main(void *ctx)
 						if (prtp_ss->buf_len[prtp_ss->buf_idx] != 0) {
 							send_len = rtspd_client_rtp_udp_send(rtpfd, prcInfo, ENX_RTSP_STRTYPE_numVIDEO);
 							if (send_len == -1) {
-//								flprintf("Error, rtp write\r\n");
+//								flprintf("Error, rtp write\n");
 								res = -1;
 								break;
 							} else if (send_len > 0) {
@@ -953,7 +961,7 @@ void rtspd_client_udp_rtp_main(void *ctx)
 						if (prtp_ss->buf_len[prtp_ss->buf_idx] != 0) {
 							send_len = rtspd_client_rtp_udp_send(rtpfd, prcInfo, ENX_RTSP_STRTYPE_numAUDIO);
 							if (send_len == -1) {
-								flprintf("Error, rtp write\r\n");
+								flprintf("Error, rtp write\n");
 								res = -1;
 								break;
 							} else if (send_len > 0) {
@@ -1001,7 +1009,7 @@ void rtspd_client_udp_rtcp_main(void *ctx)
 		rtsp_client *prcRef = NULL;
 		read_size = rtspd_client_udp_read(rtcpfd, buffer, 4096, &prcRef, &media_type); // read
 		if (read_size == -1) {
-			flprintf("read_size -1, client close\r\n");
+			flprintf("read_size -1, client close\n");
 			break;
 		} else if (read_size == 0) {
 			read_offset = 0;
@@ -1019,19 +1027,19 @@ void rtspd_client_udp_rtcp_main(void *ctx)
 				//int lens = buffer[3];
 				switch (buffer[1]) {
 					case RTCP_SR:
-						printf("RTCP SR RX (No destination.)\r\n");
+						printf("RTCP SR RX (No destination.)\n");
 						break;
 					case RTCP_RR:
-						printf("RTCP RR RX (No destination.)\r\n");
+						printf("RTCP RR RX (No destination.)\n");
 						break;
 					case RTCP_SDES:
-						printf("RTCP SDES RX (No destination.)\r\n");
+						printf("RTCP SDES RX (No destination.)\n");
 						break;
 					case RTCP_BYE:
-						printf("RTCP BYE RX (No destination.)\r\n");
+						printf("RTCP BYE RX (No destination.)\n");
 						break;
 					case RTCP_APP:
-						printf("RTCP APP RX (No destination.)\r\n");
+						printf("RTCP APP RX (No destination.)\n");
 						break;
 					default:
 						logflag = 1;
@@ -1060,7 +1068,7 @@ void rtspd_client_udp_rtcp_main(void *ctx)
 							if (res > 0) {
 								send_len = rtspd_client_rtcp_udp_send(rtcpfd, prcInfo, ENX_RTSP_STRTYPE_numVIDEO, buffer, res);
 								if (send_len == -1) {
-									flprintf("Error, rtp write\r\n");
+									flprintf("Error, rtp write\n");
 									res = -1;
 									break;
 								} else if (send_len > 0) {
@@ -1076,7 +1084,7 @@ void rtspd_client_udp_rtcp_main(void *ctx)
 							if (res > 0) {
 								send_len = rtspd_client_rtcp_udp_send(rtcpfd, prcInfo, ENX_RTSP_STRTYPE_numAUDIO, buffer, res);
 								if (send_len == -1) {
-									flprintf("Error, rtp write\r\n");
+									flprintf("Error, rtp write\n");
 									res = -1;
 									break;
 								} else if (send_len > 0) {
@@ -1103,9 +1111,9 @@ void rtspd_socket_server(void *ctx)
 	rsInfo.client_accept_timeout_sec = 3;
 	rsInfo.client_count = 0;
 	rsInfo.client_last_id = rand() * rand();
-	rsInfo.sockfd = rtspd_socket_init(gtNetwork.nRtspPort);
+	rsInfo.sockfd = rtspd_socket_init(gtNetwork.portnumRTSP);
 	if (rsInfo.sockfd == -1) {
-		flprintf("RTSP server start fail\r\n");
+		flprintf("RTSP server start fail\n");
 	} else {
 		rtp_queue pdata_video[RTSP_info_MAX];
 #ifdef __AUDIO__
@@ -1127,7 +1135,7 @@ void rtspd_socket_server(void *ctx)
 			int client_sockfd, res;
 			client_sockfd = rtspd_socket_accept(&rsInfo, &client_addr);
 			if (client_sockfd == -1) {
-				flprintf("RTSP server accept error\r\n");
+				flprintf("RTSP server accept error\n");
 				vTaskDelay(100);
 				continue;
 			} else if (client_sockfd == -2) {
@@ -1149,7 +1157,7 @@ void rtspd_socket_server(void *ctx)
 #endif
 				vTaskCreate(strbuf, rtspd_client_main, &rsInfo.rclist[res], LV3_STACK_SIZE, LV5_TASK_PRIO);
 			} else {
-				flprintf("unchecked, why?\r\n");
+				flprintf("unchecked, why?\n");
 			}
 		}
 
@@ -1161,7 +1169,7 @@ void rtspd_socket_server(void *ctx)
 		}
 	}
 
-	flprintf("RTSP server stop\r\n");
+	flprintf("RTSP server stop\n");
 	vTaskDelete(NULL);
 
 	UNUSED(ctx);

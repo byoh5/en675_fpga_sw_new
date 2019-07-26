@@ -64,12 +64,13 @@
 													//*1 : AP SSID + MAC Address(LSB 24bit) => EN673_xxxxxx
 
 #if WIFI_AP_SSID_MAC
-#define WIFI_AP_SSID					"EN673_"	// broadcast to SSID
+#define WIFI_AP_SSID					"EN675_"	// broadcast to SSID
 #else
-#define WIFI_AP_SSID					"EN673_WIFI_TEST"	// broadcast to SSID
+#define WIFI_AP_SSID					"EN675_WIFI_TEST"	// broadcast to SSID
 #endif
-#define WIFI_AP_SWITCH					DEF_ON		// on(DEF_ON)? off(DEF_OFF)?
+#define WIFI_AP_SWITCH					ENX_ON		// on(DEF_ON)? off(DEF_OFF)?
 #define WIFI_AP_AUTH					wifi_WPA2_PSK	// (wifi_OPEN) or (wifi_WPA2_PSK)
+//#define WIFI_AP_AUTH					wifi_OPEN	// (wifi_OPEN) or (wifi_WPA2_PSK)
 #define WIFI_AP_KEY						"1234567890"	// KEY
 #define WIFI_AP_CH						5			// default channel
 #define WIFI_AP_MAXUSER					5			// default max user
@@ -80,7 +81,7 @@
 #endif
 
 // Station mode
-#define WIFI_STA_SWITCH					DEF_OFF		// on(DEF_ON)? off(DEF_OFF)?
+#define WIFI_STA_SWITCH					ENX_OFF		// on(DEF_ON)? off(DEF_OFF)?
 #define WIFI_STA_SSID					"eyenix_1005"	// connect to SSID
 #define WIFI_STA_AUTH					wifi_WPA2_PSK	// (wifi_OPEN) or (wifi_WPA2_PSK)
 #define WIFI_STA_KEY					"eyenix12"	// KEY
@@ -123,10 +124,14 @@
 													//*1 : RTSP server use
 
 #if (ENX_RTSP_use==1)
+#define RTSP_portnum					554
+
 #define RTSP_info_MAX					(2)			// RTSP User Count
 
 #define H264URL							"h264"		// H264 CH.1
 #define HSUBURL 						"hsub"		// H264 CH.2
+#define H265_1URL						"h265"		// H265 CH.1
+#define H265_2URL						"h265_2"	// H265 CH.2
 #define JPEGURL							"jpeg"		// M-JPEG
 #define JSUBURL							"jsub"		// M-JPEG(SW)
 //#define PLAYBACK						"sdcard"	// playback

@@ -64,6 +64,9 @@ void SflsModelISSI(BYTE u8Type, BYTE u8Capa)
 	switch (u8Type) {
 	case 0x60:	//	QUAD
 		switch (u8Capa) {
+		case 0x17:	// IS25LP064
+			printf("IS25LP064-noTEST\n");
+			break;
 		case 0x18:	// IS25LP128
 			printf("IS25LP128-noTEST\n");
 			break;

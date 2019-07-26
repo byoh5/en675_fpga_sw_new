@@ -1460,7 +1460,9 @@ wlan_process_int_status(mlan_adapter * pmadapter)
 			       "wlan: Unexpected TxDn, old mp_wr_bitmap=0x%08x, new mp_wr_bitmap=0x%08x\n",
 			       mp_wr_bitmap, pmadapter->mp_wr_bitmap);
 		}
+#ifdef SDIO_MULTI_PORT_TX_AGGR
 		pmadapter->last_recv_wr_bitmap = pmadapter->mp_wr_bitmap;
+#endif
 		PRINTM(MINTR, "DNLD: wr_bitmap=0x%08x\n",
 		       pmadapter->mp_wr_bitmap);
 		if (!(pmadapter->mp_wr_bitmap & (1 << pmadapter->curr_wr_port))

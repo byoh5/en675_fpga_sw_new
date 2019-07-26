@@ -38,6 +38,7 @@ Change log:
 #include "mlan_sdio.h"
 #include "mlan_11h.h"
 
+#ifdef STA_SUPPORT
 /********************************************************
 			Local Variables
 ********************************************************/
@@ -5480,3 +5481,4 @@ wlan_ops_sta_ioctl(t_void * adapter, pmlan_ioctl_req pioctl_req)
 	LEAVE();
 	return status;
 }
+#endif

@@ -518,7 +518,7 @@ void trap_from_machine_mode_freertos(uintptr_t mcause, uintptr_t mepc, uintptr_t
 				volatile unsigned int source = *iClaimCompliet[i]; // Get Claim IRQ
 				if (source == 0) {
 					continue;
-				} else if (IRQ_ETH_RX == 0 && IRQ_CDC == 0 && IRQ_I2S_TX == 0) {
+				} else if (IRQ_ETH_RX == 0 && IRQ_CDC == 0 && IRQ_I2S_TX == 0 && SDIO1_IO_IRQ == 0 && IRQ_TIMER8 == 0) {
 					printf("CPU%u-OS-IRQ%d (%d/%c)\n", cpuid, source, i, i%2==0 ? 'M':'S');
 				}
 				switch (source) {

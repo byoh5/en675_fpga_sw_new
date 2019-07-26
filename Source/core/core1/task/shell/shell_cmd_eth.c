@@ -46,7 +46,7 @@ static UINT eth_tx_test(BYTE *u8BufferAlign, ULONG *count)
 	clear_csr(mie, MIP_MTIP);
 	clear_csr(mie, MIP_MEIP);
 #endif
-	*count = 0;
+	(*count) = 0;
 	ULONG a = BenchTimeStart();
 	while (eth_test_task_sw) {
 		//hwflush_dcache_range(u8BufferAlign, 1514);
@@ -58,7 +58,7 @@ static UINT eth_tx_test(BYTE *u8BufferAlign, ULONG *count)
 		if (ETH_TX_PAUSE) {
 			printf("2");
 		}
-		*count++;
+		(*count)++;
 	}
 #if 0
 	set_csr(mie, MIP_MTIP);
@@ -110,8 +110,16 @@ void cmd_eth_test_task(void *ctx)
 		hwflush_dcache_range((ulong)u8BufferAlign, 1514);
 
 		if (eth_test_task_txtck == 1) {
-			for (int i = 0; i < 16; i++) {
-
+			for (int e = 0; e < 2; e++) {
+				for (int i = 0; i < 16; i++) {
+					ETH_TX_TCKDLY = i;
+					printf("TX CLK Edge(%u) Dly(%u)\n", ETH_TX_CLKEDGE, ETH_TX_TCKDLY);
+					for (int loop = 100; loop; loop--) {
+						EthTxPacket(u8BufferAlign, eth_test_size);
+					}
+					vTaskDelay(100);
+				}
+				ETH_TX_CLKEDGE = ~ETH_TX_CLKEDGE;
 			}
 		} else {
 			end = eth_tx_test(u8BufferAlign, &count);
@@ -151,7 +159,6 @@ void cmd_eth_test_task(void *ctx)
 	} else {
 		printf("Malloc Fail\n");
 	}
-	printf("%s(%d) : End\n", __func__, __LINE__);
 	vTaskDelete(NULL);
 
 	UNUSED(ctx);
@@ -172,8 +179,8 @@ void eth_rx_state(void)
 	printf("ETH_RX_EN       (rx en ) : %u\n", ETH_RX_EN);
 	printf("ETH_RX_CRC_EN   (rx crc) : %u\n", ETH_RX_CRC_EN);
 	printf("ETH_RX_ERR_EN   (rx err) : %u\n", ETH_RX_ERR_EN);
-	printf("ETH_RX_DATTYPE  (rx er ) : %u\n", ETH_RX_ERTYPE);
-	printf("ETH_RX_ERTYPE   (rx tp ) : %u\n", ETH_RX_DATTYPE);
+	printf("ETH_RX_ERTYPE   (rx er ) : %u\n", ETH_RX_ERTYPE);
+	printf("ETH_RX_DATTYPE  (rx tp ) : %u\n", ETH_RX_DATTYPE);
 	printf("== RX Clock & Delay =========\n");
 	printf("ETH_RX_RCKEDGE	(rx e  ) : %u\n", ETH_RX_RCKEDGE);
 	printf("ETH_RX_RCKDLY	(rx rck) : %u\n", ETH_RX_RCKDLY);
@@ -229,8 +236,8 @@ void eth_rx_state(void)
 void eth_tx_state(void)
 {
 	printf("== TX state ===============\n");
-	printf("ETH_TX_DATBIT   (tx tp ) : %u\n", ETH_TX_DATBIT);
-	printf("ETH_TX_DATTYPE  (tx tck) : %u\n", ETH_TX_DATTYPE);
+	printf("ETH_TX_DATBIT   (tx db ) : %u\n", ETH_TX_DATBIT);
+	printf("ETH_TX_DATTYPE  (tx dt ) : %u\n", ETH_TX_DATTYPE);
 	printf("ETH_TX_CLKOE    (tx ce ) : %u\n", ETH_TX_CLKOE);
 	printf("ETH_TX_CLKSEL   (tx cs ) : %u\n", ETH_TX_CLKSEL);
 	printf("ETH_TX_CRSCHK   (tx cr ) : %u\n", ETH_TX_CRSCHK);
@@ -263,16 +270,12 @@ int cmd_test_eth(int argc, char *argv[])
 	if (argc == 1) { // state print
 		printf("== Ethernet State ==========\n");
 		printf("ETH Type                 : ");
-		if (ETH_RX_DATTYPE == 0 && ETH_TX_DATTYPE == 0) {
+		if (ETH_RX_DATTYPE == 0 && ETH_TX_DATTYPE == 0 && ETH_TX_DATBIT == 1) {
 			printf("MII Type\n");
-		} else if(ETH_RX_DATTYPE == 1 && ETH_TX_DATTYPE == 1) {
-			if (ETH_TX_DATBIT == 0) {
-				printf("RMII Type\n");
-			} else if (ETH_TX_DATBIT == 1) {
-				printf("RGMII Type\n");
-			} else {
-				printf("Unknown Type(RX_DATTYPE:%d, TX_DATTYPE:%d, TX_DATBIT:%d)\n", ETH_RX_DATTYPE, ETH_TX_DATTYPE, ETH_TX_DATBIT);
-			}
+		} else if(ETH_RX_DATTYPE == 1 && ETH_TX_DATTYPE == 1 && ETH_TX_DATBIT == 1) {
+			printf("RGMII Type\n");
+		} else if(ETH_RX_DATTYPE == 2 && ETH_TX_DATTYPE == 0 && ETH_TX_DATBIT == 0) {
+			printf("RMII Type\n");
 		} else {
 			printf("Unknown Type(RX_DATTYPE:%d, TX_DATTYPE:%d, TX_DATBIT:%d)\n", ETH_RX_DATTYPE, ETH_TX_DATTYPE, ETH_TX_DATBIT);
 		}
@@ -306,25 +309,23 @@ int cmd_test_eth(int argc, char *argv[])
 				} else if (strcmp(argv[2], "off") == 0) {
 					gptMsgDebug.ETH_RX_CHECK = 0;
 				}
-#if 0
-				else if(strcmp(argv[2], "auto") == 0)
-				{
-					int i, j;
+#if 1
+				else if (strcmp(argv[2], "auto") == 0) {
 					gptMsgDebug.ETH_RX_CHECK = 1;
-					for(i=0;i<2;i++)
-					{
-						for(j=0;j<16;j++)
-						{
-							netifapi_netif_set_down(&gnif_eth);
+					for (int i = 0; i < 2; i++) {
+						for (int j = 0; j < 16; j++) {
+							netifapi_netif_set_down(netif_state[enlETHERNET]._netif);
 							ETH_RX_RCKDLY = j;
 							printf("\nETH EDGE_RXCLK(%d) ETH_RX_RCKDLY(%d)\n", ETH_RX_RCKEDGE, ETH_RX_RCKDLY);
-							netifapi_netif_set_up(&gnif_eth);
+							netifapi_netif_set_up(netif_state[enlETHERNET]._netif);
 							vTaskDelay(500);
 						}
 						ETH_RX_RCKEDGE = ~ETH_RX_RCKEDGE;
 					}
 					gptMsgDebug.ETH_RX_CHECK = 0;
 				}
+#endif
+#if 0
 				else if(strcmp(argv[2], "reset") == 0)
 				{
 					printf("Ethernet RX IRQ Stop!\n");
@@ -350,15 +351,15 @@ int cmd_test_eth(int argc, char *argv[])
 					IrqEnable(IRQ_ETH);
 				}
 #endif
-				else if (strcmp(argv[1], "buf") == 0) {
-					if (strcmp(argv[2], "all") == 0) {
+				else if (strcmp(argv[2], "buf") == 0) {
+					if (strcmp(argv[3], "all") == 0) {
 						for (UINT idx = 0; idx < 256; idx++) {
 							printf("Show buffer[%u]\n", idx);
 							hwflush_dcache_range((ULONG)qEthernetRX.pkt_data[idx].buffer, 1536);
 							hexDump("Show buffer", qEthernetRX.pkt_data[idx].buffer, 1536);
 						}
 					} else {
-						BYTE idx = atoi(argv[2]);
+						BYTE idx = atoi(argv[3]);
 						printf("Show buffer[%u]\n", idx);
 						hwflush_dcache_range((ULONG)qEthernetRX.pkt_data[idx].buffer, 1536);
 						hexDump("Show buffer", qEthernetRX.pkt_data[idx].buffer, 1536);
@@ -611,6 +612,14 @@ int cmd_test_eth(int argc, char *argv[])
 #endif
 #if (ETHPHY_LOOPBACK_TEST==1)
 #if defined(__ETHPHY_KSZ8081MNX__)
+		else if (argc == 2 && strcmp(argv[1], "lbm") == 0) {
+			if (EthloopbackGetMode() == ePlk_off) {
+				vTaskCreate("eth_lb", EthloopbackTask, NULL, LV3_STACK_SIZE, LV5_TASK_PRIO);
+			} else {
+				printf("Ethernet loopback mode is ready.\n");
+			}
+		}
+#elif defined(__ETHPHY_KSZ8081RNB__)
 		else if (argc == 2 && strcmp(argv[1], "lbm") == 0) {
 			if (EthloopbackGetMode() == ePlk_off) {
 				vTaskCreate("eth_lb", EthloopbackTask, NULL, LV3_STACK_SIZE, LV5_TASK_PRIO);

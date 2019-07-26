@@ -167,6 +167,9 @@
 #define WF_GPIO_RST	${USE_WF_RST}
 #define WF_GPIO_IRQ	${USE_WF_IRQ}
 #define WF_SDIO_CH	${WF_SDIO_CH}
+#if ${USE_WF_SD8782}
+#define __WIFI_SD8782__
+#endif
 #endif // __WIFI__
 
 #if ${USE_FIESYSTEM}

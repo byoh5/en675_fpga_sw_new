@@ -154,6 +154,7 @@
 
 // Tick irq ////////////////////////////////////////////////////////////////////
 #define TIME_TICK			100							// 10ms
+#define TIME_1MS			((MCK_FREQ / 100) / 1000)
 #define TIMECMP_NEXT_VAL	((MCK_FREQ / 100) / TIME_TICK)
 
 
@@ -173,6 +174,7 @@
 #include "hdmi.h"					// EN675 - ISP
 
 #include "cfg_network.h"			// EN675 - Network
+#include "cfg_filesystem.h"			// EN675 - File system
 
 #include "asm.h"					// CPU
 #include "bits.h"					// CPU

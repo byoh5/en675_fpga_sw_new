@@ -39,6 +39,7 @@ Change log:
 #include "mlan_11n.h"
 #include "mlan_11h.h"
 
+#ifdef STA_SUPPORT
 /********************************************************
 			Local Constants
 ********************************************************/
@@ -4466,3 +4467,4 @@ wlan_free_curr_bcn(IN mlan_private * pmpriv)
 	}
 	LEAVE();
 }
+#endif

@@ -362,7 +362,9 @@ woal_init_sw(moal_handle * handle)
 #ifdef MFG_CMD_SUPPORT
     device.mfg_mode = (t_u32) mfg_mode;
 #endif
-  
+#ifdef DEBUG_LEVEL1
+    device.drvdbg = drvdbg;
+#endif
     device.int_mode = (t_u32) intmode;
     device.gpio_pin = (t_u32) gpiopin;
     device.auto_ds = (t_u32) auto_ds;
@@ -697,7 +699,7 @@ woal_init_fw(moal_handle * handle)
         goto done;
     }
 
-    /* Wait for mlan_init to complete */  
+    /* Wait for mlan_init to complete */
     while (handle->hardware_status != HardwareStatusReady)
     {
         if(sdio_irq)
@@ -727,6 +729,7 @@ done:
  *
  *  @return        MLAN_STATUS_SUCCESS 
  */
+#ifdef STA_SUPPORT
 mlan_status
 woal_init_sta_dev(moal_private * priv)
 {
@@ -751,7 +754,7 @@ woal_init_sta_dev(moal_private * priv)
     LEAVE();
     return MLAN_STATUS_SUCCESS;
 }
-
+#endif
 
 /**
  *  @brief This function initializes the private structure 
@@ -990,7 +993,7 @@ woal_fill_mlan_buffer(mlan_buffer * pmbuf, struct pbuf* p)
     //pmbuf->buf_type = MLAN_BUF_TYPE_DATA;
     pmbuf->pbuf  = (t_u8*)p->payload + sizeof(mlan_buffer);
     pmbuf->data_offset = (t_u8*)peth_data - ((t_u8*)p->payload + sizeof(mlan_buffer));
-    pmbuf->data_len = p->tot_len-MLAN_HEADER_SIZE;        
+    pmbuf->data_len = p->tot_len-MLAN_HEADER_SIZE;
     pmbuf->priority = priority;
     pmbuf->buf_type = 0;
     pbuf_header(p,(s16)(-sizeof(mlan_buffer)));
@@ -1025,7 +1028,7 @@ woal_hard_start_xmit(struct pbuf* p, moal_private *priv)
     if (!p->tot_len || (p->tot_len > ETH_FRAME_LEN+MLAN_HEADER_SIZE)) {
         PRINTM(MERROR, "Tx Error: Bad skb length %d : %d\n",
                p->tot_len, ETH_FRAME_LEN);
-		printf("FREE: p(0x%08X) - %s - error\r\n", p, __func__);
+		printf("FREE: p(0x%08X) - %s - error\n", p, __func__);
         pbuf_free(p);
         goto done;
     }
@@ -1040,7 +1043,6 @@ woal_hard_start_xmit(struct pbuf* p, moal_private *priv)
     /* Return value is all MLAN_STATUS_PEDGING  */
     switch (status) {
         case MLAN_STATUS_PENDING:
-//			printf(" NEW: p(0x%08X)\r\n", p);
             mlan_main_process(m_handle[0]->pmlan_adapter);
             break;
         case MLAN_STATUS_SUCCESS:
@@ -1048,7 +1050,7 @@ woal_hard_start_xmit(struct pbuf* p, moal_private *priv)
             break;
         case MLAN_STATUS_FAILURE:
         default:
-			printf("%s Error: %d\r\n", __func__, status);
+			printf("%s Error: %d\n", __func__, status);
             PRINTM(MERROR,"%s : err %d \n",__func__,status);   
             pbuf_free(p);
             return -1;
@@ -1118,7 +1120,7 @@ woal_free_mlan_buffer(moal_handle * handle, pmlan_buffer pmbuf)
     if (pmbuf->pdesc)
     {
         p = pmbuf->pdesc;
-//    	printf("FREE: p(0x%08X) - %s\r\n", p, __func__);
+//    	printf("FREE: p(0x%08X) - %s\n", p, __func__);
         pbuf_free(p);
     }
     ewl_os_free(pmbuf);

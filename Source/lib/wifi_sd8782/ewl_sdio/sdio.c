@@ -2,6 +2,7 @@
 #include "msg.h"
 #include "sdio_func.h"
 #include "sdio.h"
+#include "sdio_wf.h"
 #include <netif/etharp.h>
 #include <ewl_os.h>
 
@@ -40,7 +41,7 @@
 #endif
 
 #ifdef SDIO_DEBUG
-#define dev_dbg printf
+#define dev_dbg _Gprintf
 #else
 #define dev_dbg
 #endif
@@ -52,16 +53,17 @@
 #define RCA_RCA_MASK		0xffff0000
 
 
-/* SD commands                           type  argument     response */
+/* SD commands                           type   argument                 response */
   /* class 0 */
 /* This is basically the same command as for MMC with some quirks. */
-#define SD_SEND_RELATIVE_ADDR     3   	 /* bcr                     R6  */
-#define SD_SEND_IF_COND           CMD8   /* bcr  [11:0] See below   R7  */
+#define SD_SEND_RELATIVE_ADDR       3 /* bcr  |                             | R6  */
+#define SD_SELECT_CARD              7 /* ac   | [31:16] RCA                 | R1b */
+#define SD_SEND_IF_COND             8 /* bcr  | [11:0] See below            | R7  */
 
-/* SDIO commands                    type  argument     response */
-#define SD_IO_SEND_OP_COND          5 /* bcr  [23:0] OCR         R4  */
-#define SD_IO_RW_DIRECT            52 /* ac   [31:0] See below   R5  */
-#define SD_IO_RW_EXTENDED          53 /* adtc [31:0] See below   R5  */
+/* SDIO commands                         type   argument                 response */
+#define SD_IO_SEND_OP_COND          5 /* bcr  | [23:0] OCR                  | R4  */
+#define SD_IO_RW_DIRECT            52 /* ac   | [31:0] See below            | R5  */
+#define SD_IO_RW_EXTENDED          53 /* adtc | [31:0] See below            | R5  */
 
 /*
  * SD_IO_RW_DIRECT argument format:
@@ -437,7 +439,7 @@ int sdio_irq = 0;
 //-------------------------------------------------------------------------------------------------
 // Irq from external chip (By pulling down DAT[1] pin)
 extern int init_boot;
-
+#if 0
 void disable_ext_sdio_irq(void)
 {
 	enter();
@@ -459,7 +461,7 @@ void enabled_ext_sdio_irq(void)
     Sdio1EiCip();
     leave();
 }
-
+#endif
 /*
     handle sdio irq       
 */
@@ -471,7 +473,7 @@ void ewl_sdio_ext_irq_handler(void *dummy)
     {        
         sdio_irq = 1;
 		wifiPollGiveFromISR();
-        Sdio1DiCip(); //disable sdio ext irq
+		SdioWfSetIoIrqEn(ENX_OFF); //disable sdio ext irq
     }
     leave();
     UNUSED(dummy);
@@ -490,9 +492,9 @@ void sdio_fun_irq(void)
             sdio_irq_handler[0](&gsdio_func[0]);
             /* send work queue */
         }
-		SDIO1_CHIP_IRQ_CLR = 1;
+        //SdioWfIoIrqClear();
         //sdio_irq = 0;
-        Sdio1EiCip(); /* enable irq */
+        SdioWfSetIoIrqEn(ENX_ON); /* enable irq */
     }
     //dev_dbg("Leave : %s \n", __func__);
 }
@@ -614,6 +616,9 @@ sdio_enable_wide(void)
         leave();
         return ret;
     }
+
+    SdioSetBitMode(WF_SDIO_CH, SDIO_4BIT_MODE);
+
 	leave();
     return ret;
 }
@@ -625,12 +630,11 @@ sdio_enable_wide(void)
 static int 
 sdio_enable_hs(void)
 {
-	int ret;
+	SDIO_OKFAIL ret;
 	u8 speed;
 	enter();
 
-	if (!bsdio_highspeed)
-	{
+	if (!bsdio_highspeed) {
 		ewl_os_printf("%s(%d) : case1\n", __func__, __LINE__);
 		SdioWfSetNormalSpeed();
 		leave();
@@ -638,19 +642,18 @@ sdio_enable_hs(void)
 	}
 
 	ret = SdioWfRegRead(&speed, 0, SDIO_CCCR_SPEED);
-	if (ret)
-	{
+	if (ret) {
 		ewl_os_printf("%s(%d) : case2\n", __func__, __LINE__);
 		SdioWfSetNormalSpeed();
 		leave();
 		return ret;
 	}
 
+#if 1
 	speed |= SDIO_SPEED_EHS;
 
 	ret = SdioWfRegWrite(speed, 0, SDIO_CCCR_SPEED);
-	if (ret)
-	{
+	if (ret) {
 		ewl_os_printf("%s(%d) : case3\n", __func__, __LINE__);
 		SdioWfSetNormalSpeed();
 		leave();
@@ -658,6 +661,9 @@ sdio_enable_hs(void)
 	}
 
 	SdioWfSetHighSpeed();
+#else
+	SdioWfSetNormalSpeed();
+#endif
 
 	leave();
 	return 0;
@@ -673,29 +679,27 @@ example ocr valaue 3f8080 for i.mx51
 
 int mmc_send_if_cond(u32 ocr)
 {
-    UINT    nErr;
-    UINT    nResp;
-    UINT    arg;
-    u8 result_pattern;
-    u8 test_pattern = 0xAA;
-    
-    
-    /*
-     * To support SD 2.0 cards, we must always invoke SD_SEND_IF_COND
-     * before SD_APP_OP_COND. This command will harmlessly fail for
-     * SD 1.0 cards.
-     */
-    arg = ((ocr & 0xFF8000) != 0) << 8 | test_pattern;
-    
-    nErr = Sdio1Cmd( 8, arg, 1, 0, 0, 0);
-    nResp = SDIO1_RESP0;
-    
-    if(nErr) return nErr;
-    
-    result_pattern = nResp & 0xFF;
-    if (result_pattern != test_pattern)
-        return -1;
-    return 0;
+	UINT nResp;
+	u8 result_pattern;
+	u8 test_pattern = 0xAA;
+
+	/*
+	 * To support SD 2.0 cards, we must always invoke SD_SEND_IF_COND
+	 * before SD_APP_OP_COND. This command will harmlessly fail for
+	 * SD 1.0 cards.
+	*/
+	UINT arg = ((ocr & 0xFF8000) != 0) << 8 | test_pattern;
+	SDIO_OKFAIL nErr = SdioWfCmd(SD_SEND_IF_COND, arg, &nResp, ecrtR7);
+
+	if (nErr == SDIO_FAIL) {
+		return nErr;
+	}
+
+	result_pattern = nResp & 0xFF;
+	if (result_pattern != test_pattern) {
+		return -1;
+	}
+	return 0;
 }
 
 /**
@@ -712,38 +716,31 @@ int mmc_send_if_cond(u32 ocr)
 */
 int mmc_send_io_op_cond(u32 ocr, u32 *rocr)
 {
-    int i;
-
-    /*After reset, io device should be reponsed in 3 usec */
-    for(i=10; i; i--)
-    {
-        Sdio1Cmd( 5, ocr, 1, 0, 0, 0);
-        *rocr = SDIO1_RESP0;
-        ewl_os_wait_us(100);
-        if(*rocr & R4_CARD_READY) return 0;
-    }
-    dev_dbg("Card Power up status bit failed \n");
-    return 1;
+	/*After reset, io device should be reponsed in 3 usec */
+	for (int i = 10; i; i--) {
+	SdioWfCmd(SD_IO_SEND_OP_COND, ocr, rocr, ecrtR4);
+	ewl_os_wait_us(100);
+		if (*rocr & R4_CARD_READY) {
+			return SDIO_OK;
+		}
+	}
+	dev_dbg("Card Power up status bit failed\n");
+	return SDIO_FAIL;
 }
 
 int mmc_send_relative_addr(u32 *rca)
 {
-    UINT    nResp;
-    UINT    nErr;
-    nErr = Sdio1Cmd( 3, 0, 1, 0, 0, 0); 
-    nResp = SDIO1_RESP0;
-    *rca = (nResp & RCA_RCA_MASK);
-    
-    return nErr;
-} 
+	UINT nResp;
+	SDIO_OKFAIL nErr = SdioWfCmd(SD_SEND_RELATIVE_ADDR, 0, &nResp, ecrtR6);
+	*rca = (nResp & RCA_RCA_MASK);
+	return nErr;
+}
 
 int mmc_select_card(u32 rca)
 {
-    UINT    nErr;  
-    UINT    nResp;
-    nErr = Sdio1Cmd( 7, (UINT)rca, 1, 0, 0, 0);
-    nResp = SDIO1_RESP0;
-    return nErr;
+	UINT nResp;
+	SDIO_OKFAIL nErr = SdioWfCmd(SD_SELECT_CARD, (UINT)rca, &nResp, ecrtR1b);
+	return nErr;
 }
 
 int sdio_reset(void)
@@ -754,9 +751,9 @@ int sdio_reset(void)
 	/* SDIO Simplified Specification V2.0, 4.4 Reset for SDIO */
 	ret = SdioWfRegRead(&abort, 0, SDIO_CCCR_ABORT);
 	if (ret)
-		abort = 0x08;//this means RES bit in CCR I/O ABORT(0x6)
+	abort = 0x08;//this means RES bit in CCR I/O ABORT(0x6)
 	else
-		abort |= 0x08;
+	abort |= 0x08;
 
 	return SdioWfRegWrite(abort, 0, SDIO_CCCR_ABORT);
 }
@@ -767,64 +764,66 @@ int sdio_reset(void)
 
 int sdio_read_cccr(void)
 {
-    int ret;
-    int cccr_vsn;
-    unsigned char data;
-    
-    ret = SdioWfRegRead(&data, 0, SDIO_CCCR_CCCR);
-    
-    cccr_vsn = (data&0x0f);
+	SDIO_OKFAIL ret;
+	int cccr_vsn;
+	unsigned char data;
 
-    ret = SdioWfRegRead(&data, 0, SDIO_CCCR_CAPS);
-    
-	if (data & SDIO_CCCR_CAP_SMB)	dev_dbg("WIFI init : multi block\n");
-	if (data & SDIO_CCCR_CAP_LSC)	dev_dbg("WIFI init : low speed\n");
-	if (data & SDIO_CCCR_CAP_4BLS)	dev_dbg("WIFI init : 4bit bus\n");
-    
-    if (cccr_vsn >= SDIO_CCCR_REV_1_10) {
-        ret = SdioWfRegRead(&data, 0, SDIO_CCCR_POWER);
-        if (ret)
-            goto out;  
-		if (data & SDIO_POWER_SMPC)	dev_dbg("WIFI init : high power\n");
-    }
-    if (cccr_vsn >= SDIO_CCCR_REV_1_20) {
-        ret = SdioWfRegRead(&data, 0, SDIO_CCCR_SPEED);
-        if (ret)
-            goto out;
-        if (data & SDIO_SPEED_SHS)
-        {   
-			dev_dbg("WIFI init : high speed\n");
-            bsdio_highspeed = 1;
-        }
-    }    
-out:
-  return ret;  
+	ret = SdioWfRegRead(&data, 0, SDIO_CCCR_CCCR);
+	printf("SDIO52(CCCR_CCCR): 0x%02X\n", data);
+	cccr_vsn = (data&0x0f);
+
+	ret = SdioWfRegRead(&data, 0, SDIO_CCCR_CAPS);
+	printf("SDIO52(CCCR_CAPS): 0x%02X\n", data);
+	if (data & SDIO_CCCR_CAP_SMB)	dev_dbg("Wi-Fi init : multi-bloc\n");
+	if (data & SDIO_CCCR_CAP_LSC)	dev_dbg("Wi-Fi init : low speed\n");
+	if (data & SDIO_CCCR_CAP_4BLS)	dev_dbg("Wi-Fi init : 4-bit low speed\n");
+
+	if (cccr_vsn >= SDIO_CCCR_REV_1_10) {
+		ret = SdioWfRegRead(&data, 0, SDIO_CCCR_POWER);
+		if (ret == SDIO_FAIL) {
+			goto out;
+		}
+		if (data & SDIO_POWER_SMPC)	dev_dbg("Wi-Fi init : high power\n");
+	}
+	if (cccr_vsn >= SDIO_CCCR_REV_1_20) {
+		ret = SdioWfRegRead(&data, 0, SDIO_CCCR_SPEED);
+		if (ret == SDIO_FAIL) {
+			goto out;
+		}
+		if (data & SDIO_SPEED_SHS) {
+			dev_dbg("Wi-Fi init : high speed\n");
+			bsdio_highspeed = 1;
+		}
+	}
+	out:
+	return ret;
 }
 
 static int sdio_read_fbr(struct sdio_func *func)
 {
-    int ret;
-    unsigned char data;
-	dev_dbg("WIFI init : num %d\n", func->num);
-    ret = SdioWfRegRead(&data, 0, SDIO_FBR_BASE(func->num) + SDIO_FBR_STD_IF);
-    
-    if (ret)
-        goto out;
+	SDIO_OKFAIL ret;
+	unsigned char data;
+	dev_dbg("Wi-Fi init : num %d\n", func->num);
+	ret = SdioWfRegRead(&data, 0, SDIO_FBR_BASE(func->num) + SDIO_FBR_STD_IF);
 
-    data &= 0x0f;
+	if (ret == SDIO_FAIL) {
+		goto out;
+	}
 
-    if(data == 0x0f)
-	{
-        ret = SdioWfRegRead(&data, 0, SDIO_FBR_BASE(func->num) + SDIO_FBR_STD_IF_EXT);
-        if (ret)
-            goto out;
-    }
-    
-    func->class = data;
-	dev_dbg("WIFI init : class %d\n", func->class);
-  
+	data &= 0x0f;
+
+	if (data == 0x0f) {
+		ret = SdioWfRegRead(&data, 0, SDIO_FBR_BASE(func->num) + SDIO_FBR_STD_IF_EXT);
+		if (ret == SDIO_FAIL) {
+			goto out;
+		}
+	}
+
+	func->class = data;
+	dev_dbg("Wi-Fi init : class %d\n", func->class);
+
 out:
-  return ret;
+	return ret;
 }
 
 static int sdio_read_cis(struct sdio_func *func)
@@ -886,7 +885,7 @@ static int sdio_read_cis(struct sdio_func *func)
       case 0x20: //CISTPL_MANFID
         func->vendor = tpl_data[0] | (tpl_data[1]<<8);
         func->device = tpl_data[2] | (tpl_data[3]<<8);
-        dev_dbg("WIFI init : vendor(0x%X), device(0x%X)\n", func->vendor, func->device);
+        dev_dbg("Wi-Fi init : vendor(0x%X), device(0x%X)\n", func->vendor, func->device);
         break;
       case 0x21: //CISTPL_FUNCID
         break;
@@ -1014,216 +1013,38 @@ void restore_int(void)
 
 #endif
 
-ISRD static BYTE sdio_data_buffer[4096];
+static ATTR_MALIGN64 BYTE sdio_data_tx_buffer[2048];
+static ATTR_MALIGN64 BYTE sdio_data_rx_buffer[2048];
 
 int sdio_write_pbuf(struct sdio_func *func, unsigned int addr, void *pbuf, int count)
 {
-    BOOL bRes = SDIO_FAIL;
-	UINT nResp = 0, nArg = 0;
+	SDIO_OKFAIL bRes = SDIO_FAIL;
 	struct pbuf *p = (struct pbuf *)pbuf;
-	UINT remainder = count;
-	UINT size = 0, blocks = 0;
 
 	SDIO_DAT_LOG_START;
 
-	disable_int();
-
-	if(func->blksz != 256)
-	{
-		while(1)
-			eprintf("blksz(%d)\n", func->blksz);
-	}
-
-	while(remainder > sdio_max_byte_size(func))	// 256보다 크거나 같으면...
-    {
-		blocks = remainder / 256;
-		size = blocks * 256;
-		if(debug_msg_t.WIFI_INTER_LOG & WIFI_LOG_WPB)
-		{
-			eprintf("BLOCK size(%d) p->tot_len(%d) p->len(%d)\n", size, p->tot_len, p->len);
-		}
-
-		if(size > 2048)
-		{
-			while(1)
-				eprintf("size(%d)\n", size);
-		}
-
-		while(SDIO1_DAT_EN);
-
-		SDIO1_DATLEN = blocks;
-		SDIO1_DAT_BL = func->blksz;
-
-#if 0
-		int qq = 0;
-		while(p != NULL)
-		{
-			DmaMemCpy_isr((BYTE *)SDIO1_BASE, p->payload, p->len);
-//			eprintf("Step%d! p->payload(0x%08X) p->len(%d)\n", qq++, p->payload, p->len);
-			p = p->next;
-		}
-#endif
-
-		nArg = CMD53_WRITE | func->num<<28 | addr<<9 | blocks | CMD53_BMODE;
-		bRes = Sdio1Cmd(53, nArg, 1, 0, 1, 1);
-		nResp = SDIO1_RESP0;
-
-		if(nResp & 0x0000CB00)
-			eprintf("Resp Err(0x%08X)\n", nResp);
-
-#if 0
-		if(p->len != p->tot_len)
-		{
-			struct pbuf *q = p;
-			eprintf("step0 : q->tot_len(%d) q->len(%d)\n", q->tot_len, q->len);
+	if (p->len == p->tot_len || p->next == NULL) {
+		bRes = SdioWfDatWrite(p->payload, func->num, addr, count);
+	} else {
+		_Rprintf("%s: ....%u/%u/%u\n", __func__, p->len, p->tot_len, count);
+		ULONG offset = 0;
+		struct pbuf *q = p;
+		hwflush_dcache_range(sdio_data_tx_buffer, p->tot_len);
+#if 1
+		while (q) {
+			memcpy(sdio_data_tx_buffer + offset, q->payload, q->len);
+			offset += q->len;
 			q = q->next;
-			if(q)
-			{
-				eprintf("step1 : q->tot_len(%d) q->len(%d)\n", q->tot_len, q->len);
-			}
-			else
-			{
-				eprintf("step1 : q(NULL)\n");
-			}
 		}
-#endif
-
-		if(bRes == SDIO_OK)
-		{
-#if 0
-			int qq = 0;
-			while(p != NULL)
-			{
-				while(SDIO1_DAT_FULL)
-					NOP();
-
-				DmaMemCpy_isr((BYTE *)SDIO1_BASE, p->payload, p->len);
-
-//				eprintf("Step%d! p->payload(0x%08X) p->len(%d)\n", qq++, p->payload, p->len);
-
-				p = p->next;
-			}
 #else
-			BYTE *ppos = sdio_data_buffer;
-			while(p != NULL)
-			{
-				DmaMemCpy_isr((BYTE *)ppos, p->payload, p->len);
-				ppos += p->len;
-				p = p->next;
-			}
-
-			if(debug_msg_t.WIFI_INTER_LOG & WIFI_LOG_WPB)
-			{
-				invalidate_dcache_range((UINT)sdio_data_buffer, ((UINT)sdio_data_buffer) + size);
-				hexDump("read_pbuf-BLOCK", sdio_data_buffer, size);
-			}
-
-			while(SDIO1_DAT_FULL)
-				NOP();
-
-			DmaMemCpy_isr((BYTE *)SDIO1_BASE, sdio_data_buffer, size);
+		while (q) {
+			BDmaMemCpy_rtos(0, sdio_data_tx_buffer + offset, q->payload, q->len);
+			offset += q->len;
+			q = q->next;
+		}
 #endif
-			while(SDIO1_DAT_EN);
-			SDIO1_DAT_WE = 0;
-			
-			if(SDIO1_DAT_CRCERR)
-			{
-				eprintf("CRC Error\n");
-				eprintf("Addr(0x%08X) BLOCK(%d) size(%d) SDIO1_DAT_BL(%d) count(%d)\n", addr, blocks, size, SDIO1_DAT_BL, count);
-				eprintf("[53] res(%d) RESP(0x%08X) DAT_EMPTY(%d) DAT_FULL(%d) DAT_CRC(%c) CMD_CRC(%c) CMD_RESTTOUT(%c)\n", bRes, nResp, SDIO1_DAT_EMPTY, SDIO1_DAT_FULL, SDIO1_DAT_CRCERR == 0 ? 'T' : 'F', SDIO1_CMD_CRCERR == 0 ? 'T' : 'F', SDIO1_CMD_RESPTOUT == 0 ? 'T' : 'F');
-			}
-
-			remainder -= size;
-		}
-		else
-		{
-			eprintf("CMD Error !!!!!!!!!!\n");
-			SDIO1_DAT_EN = 0;
-			SDIO1_DAT_WE = 0;
-			break;
-		}
+		bRes = SdioWfDatWrite(sdio_data_tx_buffer, func->num, addr, count);
 	}
-
-	while(remainder > 0)
-	{
-		size = min(remainder, sdio_max_byte_size(func));
-		if(debug_msg_t.WIFI_INTER_LOG & WIFI_LOG_WPB)
-		{
-			eprintf("BYTE size(%d) p->tot_len(%d) p->len(%d)\n", size, p->tot_len, p->len);
-		}
-
-		while(SDIO1_DAT_EN);
-
-		SDIO1_DATLEN = 1;
-		SDIO1_DAT_BL = size;
-
-		nArg = CMD53_WRITE | func->num<<28 | addr<<9 | size;
-		bRes = Sdio1Cmd(53, nArg, 1, 0, 1, 1);
-		nResp = SDIO1_RESP0;
-
-		if(nResp & 0x0000CB00)
-			eprintf("Resp Err(0x%08X)\n", nResp);
-
-		if(bRes == SDIO_OK)
-		{
-#if 0
-			int qq = 0;
-			while(p != NULL)
-			{
-				while(SDIO1_DAT_FULL)
-					NOP();
-
-				DmaMemCpy_isr((BYTE *)SDIO1_BASE, p->payload, p->len);
-				
-//				eprintf("Step%d! p->payload(0x%08X) p->len(%d)\n", qq++, p->payload, p->len);
-
-				p = p->next;
-			}
-#else
-			BYTE *ppos = sdio_data_buffer;
-			while(p != NULL)
-			{
-				DmaMemCpy_isr((BYTE *)ppos, p->payload, p->len);
-				ppos += p->len;
-				p = p->next;
-			}
-
-			if(debug_msg_t.WIFI_INTER_LOG & WIFI_LOG_WPB)
-			{
-				invalidate_dcache_range((UINT)sdio_data_buffer, ((UINT)sdio_data_buffer) + size);
-				hexDump("write_pbuf-BYTE", sdio_data_buffer, size);
-			}
-
-			while(SDIO1_DAT_FULL)
-				NOP();
-
-			DmaMemCpy_isr((BYTE *)SDIO1_BASE, sdio_data_buffer, size);
-#endif
-			while(SDIO1_DAT_EN);
-			SDIO1_DAT_WE = 0;
-
-			if(SDIO1_DAT_CRCERR)
-			{
-				eprintf("CRC Error\n");
-				eprintf("Addr(0x%08X) size(%d) SDIO1_DAT_BL(%d) count(%d)\n", addr, size, SDIO1_DAT_BL, count);
-				eprintf("[53] res(%d) RESP(0x%08X) DAT_EMPTY(%d) DAT_FULL(%d) DAT_CRC(%c) CMD_CRC(%c) CMD_RESTTOUT(%c)\n", bRes, nResp, SDIO1_DAT_EMPTY, SDIO1_DAT_FULL, SDIO1_DAT_CRCERR == 0 ? 'T' : 'F', SDIO1_CMD_CRCERR == 0 ? 'T' : 'F', SDIO1_CMD_RESPTOUT == 0 ? 'T' : 'F');
-			}
-
-			remainder -= size;
-		}
-		else
-		{
-			eprintf("CMD Error !!!!!!!!!!\n");
-			SDIO1_DAT_EN = 0;
-			SDIO1_DAT_WE = 0;
-			break;
-		}
-	}
-
-	if(debug_msg_t.WIFI_INTER_LOG & WIFI_LOG_WSPB)
-		eprintf("[53] res(%d) RESP(0x%08X) DAT_EMPTY(%d) DAT_FULL(%d) DAT_CRC(%c) CMD_CRC(%c) CMD_RESTTOUT(%c)\n", bRes, nResp, SDIO1_DAT_EMPTY, SDIO1_DAT_FULL, SDIO1_DAT_CRCERR == 0 ? 'T' : 'F', SDIO1_CMD_CRCERR == 0 ? 'T' : 'F', SDIO1_CMD_RESPTOUT == 0 ? 'T' : 'F');
-
-	restore_int();
 
 	SDIO_DAT_LOG_END;
 
@@ -1244,186 +1065,9 @@ int sdio_write_pbuf(struct sdio_func *func, unsigned int addr, void *pbuf, int c
 int sdio_writesb(struct sdio_func *func, unsigned int addr, void *src,
         int count)
 {
-/*
-@arg
-the arg is already setup by the caller of owl_sdio_cmd(). For CMD53
-the argument has the following semantics:
-
-R/W flag:         1   [31]
-Function:         3   [28:30]
-Block mode:       1   [27]
-OP code:          1   [26]
-Address:          17  [9:25]
-Byte/block count: 9   [0:8]     
-*/
-	BOOL bRes = SDIO_FAIL;
-	UINT nResp = 0, nArg = 0;
-	BYTE *buff = (BYTE *)src;
-	UINT remainder = count;
-	UINT size = 0, blocks = 0;
-	UINT step2flag = 0;
-
-	disable_int();
-
 	SDIO_DAT_LOG_START;
 
-	if(func->blksz != 256)
-		eprintf("Black Size ????? (%d)\n", func->blksz);
-
-	tprintf("Addr(0x%08X) count(%d) blksz(%d)\n", addr, count, func->blksz);
-
-	while(remainder > sdio_max_byte_size(func))	// 256보다 크거나 같으면...
-    {
-		step2flag = 1;
-	
-		blocks = remainder / 256;
-		size = blocks * 256;
-		if(debug_msg_t.WIFI_INTER_LOG & WIFI_LOG_WSB)
-		{
-			eprintf("BLOCK size(%d)\n", size);
-		}
-
-		if(size > 2048)
-		{
-			while(1)
-				eprintf("size(%d)\n", size);
-		}
-
-		while(SDIO1_DAT_EN);
-
-		SDIO1_DATLEN = blocks;
-		SDIO1_DAT_BL = func->blksz;
-
-		nArg = CMD53_WRITE | func->num<<28 | addr<<9 | blocks | CMD53_BMODE;
-		bRes = Sdio1Cmd(53, nArg, 1, 0, 1, 1);
-		nResp = SDIO1_RESP0;
-
-		if(nResp & 0x0000CB00)
-			eprintf("Resp Err(0x%08X)\n", nResp);
-
-		if(bRes == SDIO_OK)
-		{
-#if 0
-			while(SDIO1_DAT_FULL)
-				NOP();
-
-			DmaMemCpy_isr((BYTE *)SDIO1_BASE, buff, size);
-
-			while(SDIO1_DAT_EN);
-			SDIO1_DAT_WE = 0;
-
-			if(SDIO1_DAT_CRCERR)
-			{
-				eprintf("CRC Error\n");
-				eprintf("Addr(0x%08X) BLOCK(%d) size(%d) SDIO1_DAT_BL(%d) count(%d)\n", addr, blocks, size, SDIO1_DAT_BL, count);
-				eprintf("[53] res(%d) RESP(0x%08X) DAT_EMPTY(%d) DAT_FULL(%d) DAT_CRC(%c) CMD_CRC(%c) CMD_RESTTOUT(%c)\n",
-					bRes, nResp, SDIO1_DAT_EMPTY, SDIO1_DAT_FULL, SDIO1_DAT_CRCERR == 0 ? 'T' : 'F', 
-					SDIO1_CMD_CRCERR == 0 ? 'T' : 'F', SDIO1_CMD_RESPTOUT == 0 ? 'T' : 'F');
-			}
-
-			remainder -= size;
-			buff += size;
-#else
-#if 1
-			UINT bl;
-			for(bl=0;bl<blocks;bl++)
-			{
-				while(SDIO1_DAT_FULL)
-					NOP();
-
-				DmaMemCpy_isr((BYTE *)SDIO1_BASE, buff, SDIO1_DAT_BL);
-				buff += SDIO1_DAT_BL;
-
-				if(SDIO1_DAT_CRCERR)
-				{
-					eprintf("CRC Error\n");
-					eprintf("Addr(0x%08X) BLOCK(%d) size(%d) SDIO1_DAT_BL(%d) count(%d)\n", addr, blocks, size, SDIO1_DAT_BL, count);
-					eprintf("[53] res(%d) RESP(0x%08X) DAT_EMPTY(%d) DAT_FULL(%d) DAT_CRC(%c) CMD_CRC(%c) CMD_RESTTOUT(%c)\n", bRes, nResp, SDIO1_DAT_EMPTY, SDIO1_DAT_FULL, SDIO1_DAT_CRCERR == 0 ? 'T' : 'F', SDIO1_CMD_CRCERR == 0 ? 'T' : 'F', SDIO1_CMD_RESPTOUT == 0 ? 'T' : 'F');
-				}
-			}
-#endif
-
-			while(SDIO1_DAT_EN);
-			SDIO1_DAT_WE = 0;
-
-			if(SDIO1_DAT_CRCERR)
-			{
-				eprintf("CRC Error\n");
-				eprintf("Addr(0x%08X) BLOCK(%d) size(%d) SDIO1_DAT_BL(%d) count(%d)\n", addr, blocks, size, SDIO1_DAT_BL, count);
-				eprintf("[53] res(%d) RESP(0x%08X) DAT_EMPTY(%d) DAT_FULL(%d) DAT_CRC(%c) CMD_CRC(%c) CMD_RESTTOUT(%c)\n", bRes, nResp, SDIO1_DAT_EMPTY, SDIO1_DAT_FULL, SDIO1_DAT_CRCERR == 0 ? 'T' : 'F', SDIO1_CMD_CRCERR == 0 ? 'T' : 'F', SDIO1_CMD_RESPTOUT == 0 ? 'T' : 'F');
-			}
-
-			remainder -= size;
-//			buff += size;
-#endif
-		}
-		else
-		{
-			eprintf("CMD Error\n");
-			SDIO1_DAT_EN = 0;
-			SDIO1_DAT_WE = 0;
-			break;
-		}
-	}
-
-	while(remainder > 0)
-	{
-		if(step2flag != 0)
-		{
-			eprintf("2 Step Flag! size(%d)\n", count);
-		}
-	
-		size = min(remainder, sdio_max_byte_size(func));
-		if(debug_msg_t.WIFI_INTER_LOG & WIFI_LOG_WSB)
-		{
-			eprintf("BYTE size(%d)\n", size);
-		}
-		while(SDIO1_DAT_EN);
-
-		SDIO1_DATLEN = 1;
-		SDIO1_DAT_BL = size;
-
-		nArg = CMD53_WRITE | func->num<<28 | addr<<9 | size;
-		bRes = Sdio1Cmd(53, nArg, 1, 0, 1, 1);
-		nResp = SDIO1_RESP0;
-
-		if(nResp & 0x0000CB00)
-			eprintf("Resp Err(0x%08X)\n", nResp);
-
-		if(bRes == SDIO_OK)
-		{
-			while(SDIO1_DAT_FULL)
-				NOP();
-
-			DmaMemCpy_isr((BYTE *)SDIO1_BASE, buff, size);
-			while(SDIO1_DAT_EN);
-			SDIO1_DAT_WE = 0;
-
-			if(SDIO1_DAT_CRCERR)
-			{
-				eprintf("CRC Error\n");
-				eprintf("Addr(0x%08X) size(%d) SDIO1_DAT_BL(%d) count(%d)\n", addr, size, SDIO1_DAT_BL, count);
-				eprintf("[53] res(%d) RESP(0x%08X) DAT_EMPTY(%d) DAT_FULL(%d) DAT_CRC(%c) CMD_CRC(%c) CMD_RESTTOUT(%c)\n",
-					bRes, nResp, SDIO1_DAT_EMPTY, SDIO1_DAT_FULL, SDIO1_DAT_CRCERR == 0 ? 'T' : 'F', 
-					SDIO1_CMD_CRCERR == 0 ? 'T' : 'F', SDIO1_CMD_RESPTOUT == 0 ? 'T' : 'F');
-			}
-
-			remainder -= size;
-			buff += size;
-		}
-		else
-		{
-			eprintf("CMD Error\n");
-			SDIO1_DAT_EN = 0;
-			SDIO1_DAT_WE = 0;
-			break;
-		}
-	}
-
-	if(debug_msg_t.WIFI_INTER_LOG & WIFI_LOG_WSSB)
-		eprintf("  [53] res(%d) RESP(0x%08X) DAT_EMPTY(%d) DAT_FULL(%d) DAT_CRC(%c) CMD_CRC(%c) CMD_RESTTOUT(%c)\n", bRes, nResp, SDIO1_DAT_EMPTY, SDIO1_DAT_FULL, SDIO1_DAT_CRCERR == 0 ? 'T' : 'F', SDIO1_CMD_CRCERR == 0 ? 'T' : 'F', SDIO1_CMD_RESPTOUT == 0 ? 'T' : 'F');
-
-	restore_int();
+	SDIO_OKFAIL bRes = SdioWfDatWrite(src, func->num, addr, count);
 
 	SDIO_DAT_LOG_END;
 
@@ -1444,149 +1088,9 @@ Byte/block count: 9   [0:8]
  */
 int sdio_readsb(struct sdio_func *func, void *dst, unsigned int addr, int count)
 {
-	BOOL bRes = SDIO_FAIL;
-	UINT nResp = 0, nArg = 0;
-	BYTE *buf = (BYTE *)dst;
-	UINT remainder = count;
-	UINT size = 0, blocks = 0;
-
 	SDIO_DAT_LOG_START;
 
-	disable_int();
-
-	if(func->blksz != 256)
-	{
-		while(1)
-			eprintf("blksz(%d)\n", func->blksz);
-	}
-
-	tprintf("Addr(0x%08X) SDIO1_DAT_BL(%d) count(%d)\n", addr, SDIO1_DAT_BL, count);
-
-	while(remainder > sdio_max_byte_size(func))
-    {
-		blocks = remainder / 256;
-		size = blocks * 256;
-		if(debug_msg_t.WIFI_INTER_LOG & WIFI_LOG_RSB)
-		{
-			eprintf("BLOCK size(%d)\n", size);
-		}
-
-		if(size > 2048)
-		{
-			while(1)
-				eprintf("size(%d)\n", size);
-		}
-
-		while(SDIO1_DAT_EN);
-
-		SDIO1_DATLEN = blocks;
-		SDIO1_DAT_BL = func->blksz;
-
-		nArg = CMD53_READ | func->num<<28 | addr<<9 | blocks | CMD53_BMODE;
-		bRes = Sdio1Cmd(53, nArg, 1, 0, 1, 0);	// CMD18과 비슷(read)
-		nResp = SDIO1_RESP0;
-
-		if(nResp & 0x0000CB00)
-			eprintf("Resp Err(0x%08X)\n", nResp);
-
-		if(bRes == SDIO_OK)
-		{
-#if 1
-			while(SDIO1_DAT_EMPTY)
-				NOP();
-
-			if(SDIO1_DAT_CRCERR)
-			{
-				eprintf("CRC Error\n");
-				eprintf("Addr(0x%08X) BLOCK(%d) size(%d) SDIO1_DAT_BL(%d) count(%d)\n", addr, blocks, size, SDIO1_DAT_BL, count);
-				eprintf("[53] res(%d) RESP(0x%08X) DAT_EMPTY(%d) DAT_FULL(%d) DAT_CRC(%c) CMD_CRC(%c) CMD_RESTTOUT(%c)\n", bRes, nResp, SDIO1_DAT_EMPTY, SDIO1_DAT_FULL, SDIO1_DAT_CRCERR == 0 ? 'T' : 'F', SDIO1_CMD_CRCERR == 0 ? 'T' : 'F', SDIO1_CMD_RESPTOUT == 0 ? 'T' : 'F');
-			}
-
-			DmaMemCpy_ip((BYTE *)buf, (BYTE *)SDIO1_BASE, size);
-			invalidate_dcache_range((UINT)buf, ((UINT)buf) + size);
-
-			remainder -= size;
-			buf += size;
-#else
-			int bl;
-			for(bl=0;bl<blocks;bl++)
-			{
-				while(SDIO1_DAT_EMPTY)
-					NOP();
-
-				if(SDIO1_DAT_CRCERR)
-				{
-					eprintf("CRC Error\n");
-					eprintf("Addr(0x%08X) BLOCK(%d) size(%d) SDIO1_DAT_BL(%d) count(%d)\n", addr, blocks, size, SDIO1_DAT_BL, count);
-					eprintf("[53] res(%d) RESP(0x%08X) DAT_EMPTY(%d) DAT_FULL(%d) DAT_CRC(%c) CMD_CRC(%c) CMD_RESTTOUT(%c)\n", bRes, nResp, SDIO1_DAT_EMPTY, SDIO1_DAT_FULL, SDIO1_DAT_CRCERR == 0 ? 'T' : 'F', SDIO1_CMD_CRCERR == 0 ? 'T' : 'F', SDIO1_CMD_RESPTOUT == 0 ? 'T' : 'F');
-				}
-
-				DmaMemCpy_isr((BYTE *)buf, (BYTE *)SDIO1_BASE, SDIO1_DAT_BL);
-				invalidate_dcache_range((UINT)buf, ((UINT)buf) + SDIO1_DAT_BL);
-
-				buf += SDIO1_DAT_BL;
-			}
-
-			remainder -= size;
-//			buf += size;
-#endif
-		}
-		else
-		{
-			SDIO1_DAT_EN = 0;
-			eprintf("[53] res(%d) RESP(0x%08X) DAT_EMPTY(%d) DAT_FULL(%d) DAT_CRC(%c) CMD_CRC(%c) CMD_RESTTOUT(%c)\n", bRes, nResp, SDIO1_DAT_EMPTY, SDIO1_DAT_FULL, SDIO1_DAT_CRCERR == 0 ? 'T' : 'F', SDIO1_CMD_CRCERR == 0 ? 'T' : 'F', SDIO1_CMD_RESPTOUT == 0 ? 'T' : 'F');
-		}
-	}
-
-	while(remainder > 0)
-	{
-		size = min(remainder, sdio_max_byte_size(func));
-		if(debug_msg_t.WIFI_INTER_LOG & WIFI_LOG_RSB)
-		{
-			eprintf("BYTE size(%d)\n", size);
-		}
-
-		while(SDIO1_DAT_EN);
-
-		SDIO1_DATLEN = 1;
-		SDIO1_DAT_BL = size;
-
-		nArg = CMD53_READ | func->num<<28 | addr<<9 | size;
-		bRes = Sdio1Cmd(53, nArg, 1, 0, 1, 0);
-		nResp = SDIO1_RESP0;
-		
-		if(nResp & 0x0000CB00)
-			eprintf("Resp Err(0x%08X)\n", nResp);
-
-		if(bRes == SDIO_OK)
-		{
-			while(SDIO1_DAT_EMPTY)
-				NOP();
-
-			if(SDIO1_DAT_CRCERR)
-			{
-				eprintf("CRC Error\n");
-				eprintf("Addr(0x%08X) size(%d) SDIO1_DAT_BL(%d) count(%d)\n", addr, size, SDIO1_DAT_BL, count);
-				eprintf("[53] res(%d) RESP(0x%08X) DAT_EMPTY(%d) DAT_FULL(%d) DAT_CRC(%c) CMD_CRC(%c) CMD_RESTTOUT(%c)\n", bRes, nResp, SDIO1_DAT_EMPTY, SDIO1_DAT_FULL, SDIO1_DAT_CRCERR == 0 ? 'T' : 'F', SDIO1_CMD_CRCERR == 0 ? 'T' : 'F', SDIO1_CMD_RESPTOUT == 0 ? 'T' : 'F');
-			}
-
-			DmaMemCpy_isr((BYTE *)buf, (BYTE *)SDIO1_BASE, size);
-			invalidate_dcache_range((UINT)buf, ((UINT)buf) + size);
-
-			remainder -= size;
-			buf += size;
-		}
-		else
-		{
-			SDIO1_DAT_EN = 0;
-			eprintf("[53] res(%d) RESP(0x%08X) DAT_EMPTY(%d) DAT_FULL(%d) DAT_CRC(%c) CMD_CRC(%c) CMD_RESTTOUT(%c)\n", bRes, nResp, SDIO1_DAT_EMPTY, SDIO1_DAT_FULL, SDIO1_DAT_CRCERR == 0 ? 'T' : 'F', SDIO1_CMD_CRCERR == 0 ? 'T' : 'F', SDIO1_CMD_RESPTOUT == 0 ? 'T' : 'F');
-		}
-	}
-
-	if(debug_msg_t.WIFI_INTER_LOG & WIFI_LOG_RSSB)
-		eprintf("  [53] res(%d) RESP(0x%08X) DAT_EMPTY(%d) DAT_FULL(%d) DAT_CRC(%c) CMD_CRC(%c) CMD_RESTTOUT(%c)\n", bRes, nResp, SDIO1_DAT_EMPTY, SDIO1_DAT_FULL, SDIO1_DAT_CRCERR == 0 ? 'T' : 'F', SDIO1_CMD_CRCERR == 0 ? 'T' : 'F', SDIO1_CMD_RESPTOUT == 0 ? 'T' : 'F');
-
-	restore_int();
+	SDIO_OKFAIL bRes = SdioWfDatRead(dst, func->num, addr, count);
 
 	SDIO_DAT_LOG_END;
 
@@ -1595,187 +1099,24 @@ int sdio_readsb(struct sdio_func *func, void *dst, unsigned int addr, int count)
 
 int sdio_read_pbuf(struct sdio_func *func, void *pbuf, unsigned int addr, int count)
 {
-	BOOL bRes = SDIO_FAIL;
-	UINT nResp = 0, nArg = 0;
+	SDIO_OKFAIL bRes = SDIO_FAIL;
 	struct pbuf *p = (struct pbuf *)pbuf;
-	UINT remainder = count;
-	UINT size = 0, blocks = 0;
 
 	SDIO_DAT_LOG_START;
 
-	disable_int();
-
-	if(func->blksz != 256)
-	{
-		while(1)
-			eprintf("blksz(%d)\n", func->blksz);
-	}
-
-	tprintf("Addr(0x%08X) SDIO1_DAT_BL(%d) count(%d) p->len(%d), p->tot_len(%d)\n", addr, SDIO1_DAT_BL, count, p->len, p->tot_len);
-
-	while(remainder > sdio_max_byte_size(func))
-    {
-		blocks = remainder / 256;
-		size = blocks * 256;
-		if(debug_msg_t.WIFI_INTER_LOG & WIFI_LOG_RPB)
-		{
-			eprintf("BLOCK size(%d) p->tot_len(%d) p->len(%d)\n", size, p->tot_len, p->len);
-		}
-
-		if(size > 2048)
-		{
-			while(1)
-				eprintf("size(%d)\n", size);
-		}
-
-		while(SDIO1_DAT_EN);
-
-		SDIO1_DATLEN = blocks;
-		SDIO1_DAT_BL = func->blksz;
-
-		nArg = CMD53_READ | func->num<<28 | addr<<9 | blocks | CMD53_BMODE;
-		bRes = Sdio1Cmd(53, nArg, 1, 0, 1, 0);
-		nResp = SDIO1_RESP0;
-
-		if(nResp & 0x0000CB00)
-			eprintf("Resp Err(0x%08X)\n", nResp);
-
-		if(bRes == SDIO_OK)
-		{
-#if 0
-			while(SDIO1_DAT_EMPTY)
-				NOP();
-
-			if(SDIO1_DAT_CRCERR)
-			{
-				eprintf("CRC Error\n");
-				eprintf("Addr(0x%08X) BLOCK(%d) size(%d) SDIO1_DAT_BL(%d) count(%d)\n", addr, blocks, size, SDIO1_DAT_BL, count);
-				eprintf("[53] res(%d) RESP(0x%08X) DAT_EMPTY(%d) DAT_FULL(%d) DAT_CRC(%c) CMD_CRC(%c) CMD_RESTTOUT(%c)\n", bRes, nResp, SDIO1_DAT_EMPTY, SDIO1_DAT_FULL, SDIO1_DAT_CRCERR == 0 ? 'T' : 'F', SDIO1_CMD_CRCERR == 0 ? 'T' : 'F', SDIO1_CMD_RESPTOUT == 0 ? 'T' : 'F');
-			}
-
-			DmaMemCpy_isr((BYTE *)sdio_data_buffer, (BYTE *)SDIO1_BASE, size);
-
-			if(debug_msg_t.WIFI_INTER_LOG & WIFI_LOG_RPB)
-			{
-				invalidate_dcache_range((UINT)sdio_data_buffer, ((UINT)sdio_data_buffer) + size);
-				hexDump("read_pbuf-BLOCK", sdio_data_buffer, size);
-			}
-#else
-			UINT _i;
-			BYTE *loopppos = sdio_data_buffer;
-			for(_i=0;_i<blocks;_i++)
-			{
-				while(SDIO1_DAT_EMPTY)
-					NOP();
-
-				if(SDIO1_DAT_CRCERR)
-				{
-					eprintf("CRC Error\n");
-					eprintf("Addr(0x%08X) BLOCK(%d) size(%d) SDIO1_DAT_BL(%d) count(%d)\n", addr, blocks, size, SDIO1_DAT_BL, count);
-					eprintf("[53] res(%d) RESP(0x%08X) DAT_EMPTY(%d) DAT_FULL(%d) DAT_CRC(%c) CMD_CRC(%c) CMD_RESTTOUT(%c)\n", bRes, nResp, SDIO1_DAT_EMPTY, SDIO1_DAT_FULL, SDIO1_DAT_CRCERR == 0 ? 'T' : 'F', SDIO1_CMD_CRCERR == 0 ? 'T' : 'F', SDIO1_CMD_RESPTOUT == 0 ? 'T' : 'F');
-				}
-
-				DmaMemCpy_isr((BYTE *)loopppos, (BYTE *)SDIO1_BASE, SDIO1_DAT_BL);
-
-				if(SDIO1_DAT_CRCERR)
-				{
-					eprintf("CRC Error\n");
-					eprintf("Addr(0x%08X) BLOCK(%d) size(%d) SDIO1_DAT_BL(%d) count(%d)\n", addr, blocks, size, SDIO1_DAT_BL, count);
-					eprintf("[53] res(%d) RESP(0x%08X) DAT_EMPTY(%d) DAT_FULL(%d) DAT_CRC(%c) CMD_CRC(%c) CMD_RESTTOUT(%c)\n", bRes, nResp, SDIO1_DAT_EMPTY, SDIO1_DAT_FULL, SDIO1_DAT_CRCERR == 0 ? 'T' : 'F', SDIO1_CMD_CRCERR == 0 ? 'T' : 'F', SDIO1_CMD_RESPTOUT == 0 ? 'T' : 'F');
-				}
-
-				loopppos += SDIO1_DAT_BL;
-			}
-
-			if(debug_msg_t.WIFI_INTER_LOG & WIFI_LOG_RPB)
-			{
-				invalidate_dcache_range((UINT)sdio_data_buffer, ((UINT)sdio_data_buffer) + size);
-				hexDump("read_pbuf-BLOCK", sdio_data_buffer, size);
-			}
-
-#endif
-			BYTE *ppos = sdio_data_buffer;
-
-			while(p != NULL)
-			{
-				DmaMemCpy_isr(p->payload, ppos, p->len);
-				invalidate_dcache_range((UINT)p->payload, ((UINT)p->payload) + p->len);
-				ppos += p->len;
-				p = p->next;
-			}
-
-			remainder -= size;
-		}
-		else
-		{
-			SDIO1_DAT_EN = 0;
-			eprintf("[53] res(%d) RESP(0x%08X) DAT_EMPTY(%d) DAT_FULL(%d) DAT_CRC(%c) CMD_CRC(%c) CMD_RESTTOUT(%c)\n", bRes, nResp, SDIO1_DAT_EMPTY, SDIO1_DAT_FULL, SDIO1_DAT_CRCERR == 0 ? 'T' : 'F', SDIO1_CMD_CRCERR == 0 ? 'T' : 'F', SDIO1_CMD_RESPTOUT == 0 ? 'T' : 'F');
+	if (p->len == p->tot_len) {
+		bRes = SdioWfDatRead(p->payload, func->num, addr, count);
+	} else {
+		_Rprintf("%s: ....%u/%u/%u\n", __func__, p->len, p->tot_len, count);
+		bRes = SdioWfDatRead(sdio_data_rx_buffer, func->num, addr, count);
+		ULONG offset = 0;
+		struct pbuf *q = p;
+		while (q) {
+			BDmaMemCpy_rtos(0, q->payload, sdio_data_rx_buffer + offset, q->len);
+			offset += q->len;
+			q = q->next;
 		}
 	}
-
-	while(remainder > 0)
-	{
-		size = min(remainder, sdio_max_byte_size(func));
-		if(debug_msg_t.WIFI_INTER_LOG & WIFI_LOG_RPB)
-		{
-			eprintf("BYTE size(%d) p->tot_len(%d) p->len(%d)\n", size, p->tot_len, p->len);
-		}
-
-		while(SDIO1_DAT_EN);
-
-		SDIO1_DATLEN = 1;
-		SDIO1_DAT_BL = size;
-
-		nArg = CMD53_READ | func->num<<28 | addr<<9 | size;
-		bRes = Sdio1Cmd(53, nArg, 1, 0, 1, 0);
-		nResp = SDIO1_RESP0;
-
-		if(nResp & 0x0000CB00)
-			eprintf("Resp Err(0x%08X)\n", nResp);
-
-		if(bRes == SDIO_OK)
-		{
-			while(SDIO1_DAT_EMPTY)
-				NOP();
-
-			if(SDIO1_DAT_CRCERR)
-			{
-				eprintf("CRC Error\n");
-				eprintf("Addr(0x%08X) size(%d) SDIO1_DAT_BL(%d) count(%d)\n", addr, size, SDIO1_DAT_BL, count);
-				eprintf("[53] res(%d) RESP(0x%08X) DAT_EMPTY(%d) DAT_FULL(%d) DAT_CRC(%c) CMD_CRC(%c) CMD_RESTTOUT(%c)\n", bRes, nResp, SDIO1_DAT_EMPTY, SDIO1_DAT_FULL, SDIO1_DAT_CRCERR == 0 ? 'T' : 'F', SDIO1_CMD_CRCERR == 0 ? 'T' : 'F', SDIO1_CMD_RESPTOUT == 0 ? 'T' : 'F');
-			}
-
-			DmaMemCpy_isr((BYTE *)sdio_data_buffer, (BYTE *)SDIO1_BASE, size);
-
-			if(debug_msg_t.WIFI_INTER_LOG & WIFI_LOG_RPB)
-			{
-				invalidate_dcache_range((UINT)sdio_data_buffer, ((UINT)sdio_data_buffer) + size);
-				hexDump("read_pbuf-BYTE", sdio_data_buffer, size);
-			}
-
-			BYTE *ppos = sdio_data_buffer;
-
-			while(p != NULL)
-			{
-				DmaMemCpy_isr(p->payload, ppos, p->len);
-				invalidate_dcache_range((UINT)p->payload, ((UINT)p->payload) + p->len);
-				ppos += p->len;
-				p = p->next;
-			}
-
-			remainder -= size;
-		}
-		else
-		{
-			SDIO1_DAT_EN = 0;
-			eprintf("[53] res(%d) RESP(0x%08X) DAT_EMPTY(%d) DAT_FULL(%d) DAT_CRC(%c) CMD_CRC(%c) CMD_RESTTOUT(%c)\n", bRes, nResp, SDIO1_DAT_EMPTY, SDIO1_DAT_FULL, SDIO1_DAT_CRCERR == 0 ? 'T' : 'F', SDIO1_CMD_CRCERR == 0 ? 'T' : 'F', SDIO1_CMD_RESPTOUT == 0 ? 'T' : 'F');
-		}
-	}
-
-	if(debug_msg_t.WIFI_INTER_LOG & WIFI_LOG_RSPB)
-		eprintf("[53] res(%d) RESP(0x%08X) DAT_EMPTY(%d) DAT_FULL(%d) DAT_CRC(%c) CMD_CRC(%c) CMD_RESTTOUT(%c)\n", bRes, nResp, SDIO1_DAT_EMPTY, SDIO1_DAT_FULL, SDIO1_DAT_CRCERR == 0 ? 'T' : 'F', SDIO1_CMD_CRCERR == 0 ? 'T' : 'F', SDIO1_CMD_RESPTOUT == 0 ? 'T' : 'F');
-
-	restore_int();
 
 	SDIO_DAT_LOG_END;
 

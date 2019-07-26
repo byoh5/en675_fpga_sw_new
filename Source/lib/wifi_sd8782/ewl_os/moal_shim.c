@@ -564,7 +564,7 @@ moal_ioctl_complete(IN t_void * pmoal_handle,
 	
 	wait = (wait_queue *) pioctl_req->reserved_1;
 	PRINTM(MIOCTL,
-	     "IOCTL completed: %p id=0x%lx sub_id=0x%lx, action=%d,  status=%d, status_code=0x%lx\n",
+	     "IOCTL completed: %p id=0x%lx sub_id=0x%lx, action=%d,  status=%d, status_code=0x%x\n",
 	     pioctl_req, pioctl_req->req_id, (*(t_u32 *) pioctl_req->pbuf),
 	     (int) pioctl_req->action, status, pioctl_req->status_code);
 
@@ -595,7 +595,7 @@ moal_ioctl_complete(IN t_void * pmoal_handle,
         if (status != MLAN_STATUS_SUCCESS)
         {
 	    	PRINTM(MERROR,
-	             "IOCTL failed: id=0x%lx, action=%d, status_code=0x%lx\n",
+	             "IOCTL failed: id=0x%lx, action=%d, status_code=0x%x\n",
 	             pioctl_req->req_id, (int) pioctl_req->action,
 	             pioctl_req->status_code);
 		}
@@ -671,7 +671,7 @@ moal_send_packet_complete(IN t_void * pmoal_handle,
 		
 		if (p)
 		{
-//			printf("FREE: p(0x%08X) - %s\r\n", p, __func__);
+//			printf("FREE: p(0x%08X) - %s\n", p, __func__);
 			pbuf_free(p);
         }
 	}
@@ -803,7 +803,7 @@ moal_recv_packet(IN t_void * pmoal_handle, IN pmlan_buffer pmbuf)
                 if (pmbuf->data_offset < MLAN_HEADER_SIZE) {
 					struct pbuf *q = pbuf_alloc(PBUF_RAW, pmbuf->data_len + MLAN_HEADER_SIZE, PBUF_RAM);
 					if (q == NULL) {
-						printf("%s(%d) pbuf NULL! alloc Fail!(%dbyte)\r\n", __func__, __LINE__, pmbuf->data_len + MLAN_HEADER_SIZE);
+						printf("%s(%d) pbuf NULL! alloc Fail!(%dbyte)\n", __func__, __LINE__, pmbuf->data_len + MLAN_HEADER_SIZE);
 					} else {
 						pbuf_header(q, -MLAN_HEADER_SIZE);
 						pbuf_copy(q, p);
@@ -815,14 +815,14 @@ moal_recv_packet(IN t_void * pmoal_handle, IN pmlan_buffer pmbuf)
 				pmbuf->pdesc = NULL;
                 pmbuf->pbuf = NULL;
                 pmbuf->data_offset = pmbuf->data_len = 0;
-				vPortEnterCritical();
+				ewl_os_disable_int();
                 if (!PQUEUE_FULL(priv->pqueue)) {
                     PQUEUE_ENQUEUE(priv->pqueue, p);
-					vPortExitCritical();
+                    ewl_os_restore_int();
                	} else {
-	               	vPortExitCritical();
+               		ewl_os_restore_int();
                     PRINTM(MERROR, "buffer pull !!!\n");
-					printf("%s(%d) rx drop\r\n", __func__, __LINE__);
+					printf("%s(%d) rx drop\n", __func__, __LINE__);
                     pbuf_free(p);
                 }
 	        } else {    
@@ -1003,19 +1003,19 @@ moal_recv_event(IN t_void * pmoal_handle, IN pmlan_event pmevent)
 //
 #endif /* STA_SUPPORT */
     case MLAN_EVENT_ID_FW_HS_WAKEUP:
-		flprintf("MLAN_EVENT_ID_FW_HS_WAKEUP\r\n");
+		flprintf("MLAN_EVENT_ID_FW_HS_WAKEUP\n");
         /* simulate HSCFG_CANCEL command */
         PRINTM(MMSG,"MLAN_EVENT_ID_FW_START_TX \n");
         woal_cancel_hs(priv, MOAL_NO_WAIT);
         break;
 
     case MLAN_EVENT_ID_DRV_HS_ACTIVATED:
-		flprintf("MLAN_EVENT_ID_DRV_HS_ACTIVATED\r\n");
+		flprintf("MLAN_EVENT_ID_DRV_HS_ACTIVATED\n");
         PRINTM(MMSG,"MLAN_EVENT_ID_DRV_HS_DEACTIVATED \n");
         break;
 
     case MLAN_EVENT_ID_DRV_HS_DEACTIVATED:
-		flprintf("MLAN_EVENT_ID_DRV_HS_DEACTIVATED\r\n");
+		flprintf("MLAN_EVENT_ID_DRV_HS_DEACTIVATED\n");
         PRINTM(MMSG,"MLAN_EVENT_ID_DRV_HS_DEACTIVATED \n");
         break;
 
@@ -1052,16 +1052,16 @@ moal_recv_event(IN t_void * pmoal_handle, IN pmlan_event pmevent)
 
 
     case MLAN_EVENT_ID_DRV_PASSTHRU:
-//		flprintf("MLAN_EVENT_ID_DRV_PASSTHRU\r\n");
+//		flprintf("MLAN_EVENT_ID_DRV_PASSTHRU\n");
         PRINTM(MMSG,"MLAN_EVENT_ID_DRV_PASSTHRU \n");
         break;
 
     case MLAN_EVENT_ID_DRV_MEAS_REPORT:
-		flprintf("MLAN_EVENT_ID_DRV_MEAS_REPORT\r\n");
+		flprintf("MLAN_EVENT_ID_DRV_MEAS_REPORT\n");
         break;
 
     default:
-		flprintf("pmevent->event_id(0x%08X)\r\n", pmevent->event_id);
+		flprintf("pmevent->event_id(0x%08X)\n", pmevent->event_id);
         break;
     }
   done:

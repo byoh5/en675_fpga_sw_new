@@ -2,6 +2,7 @@
 #define __USER_H__
 
 #include "dev.h"
+#include "wifi_cfg.h"
 
 typedef struct{
 	VideoResolution	eResolution;	//  4Byte
@@ -77,6 +78,16 @@ typedef struct {
 
 typedef struct {
 	NetifAddress	naEthernet;
+//	NetifAddress	naWifiuap;
+//	NetifAddress	naWifista;
+
+#if defined(__WIFI__)
+	tWifiUAPcfg		UAPcfg;
+	tWifiSTAcfg		STAcfg;
+#else
+	tWifiUAPcfg		_Dummy_tWifiUAPcfg;
+	tWifiSTAcfg		_Dummy_tWifiSTAcfg;
+#endif
 
 #if (NET_SNTPC==1)
 	UINT			u1UseSntp;				// Network - Date - SNTP enable 0:off, 1:on
@@ -87,6 +98,9 @@ typedef struct {
 #else
 	UINT			nDummy2[20];
 #endif
+
+	WORD			portnumRTSP;
+
 } tNetwork; // Size: ____byte(0x__)
 #endif
 #endif

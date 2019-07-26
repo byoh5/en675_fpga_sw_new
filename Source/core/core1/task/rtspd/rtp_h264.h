@@ -34,13 +34,17 @@
 
 // 2 byte
 typedef struct {
-	uint16 un1Fbit:1;
-	uint16 un2NRI:2;
-	uint16 un5Type:5;
-	uint16 un1Startbit:1;
-	uint16 un1Endbit:1;
-	uint16 un1Forbiddenbit:1;
-	uint16 un5Nalunittype:5;
+	BF_3(
+	uint8 un1Fbit:1,
+	uint8 un2NRI:2,
+	uint8 un5Type:5
+	)
+	BF_4(
+	uint8 un1Startbit:1,
+	uint8 un1Endbit:1,
+	uint8 un1Forbiddenbit:1,
+	uint8 un5Nalunittype:5
+	)
 }__attribute__ ((packed)) avcFUHeader;
 
 extern int rtspd_client_rtp_h264_main(rtsp_client *prcInfo);

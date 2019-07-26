@@ -10,6 +10,8 @@
 #include <stdlib.h> // for srand
 #include <string.h> // for strcmp, memset
 
+#include "en675_ddr_init_bin.h"
+
 const char *sSflsTest[]      = {"Test SFLS",                                      (char*)0};
 
 //*************************************************************************************************
@@ -656,6 +658,36 @@ int cmd_test_sfls(int argc, char *argv[])
 				sflsitem.taskHandle = NULL;
 			}
 #endif
+		} else if (strcmp(argv[1], "wbin") == 0) {
+			BYTE *p8WBase = (BYTE *)SFLS_BASE;
+			BYTE *p8eBase = p8WBase;
+
+			printf("binary copy: %ubyte\n", EN675_DDR_INIT_BIN_LEN);
+
+			for (int i = 0 ; i < EN675_DDR_INIT_BIN_LEN; i += 4096) {
+				SflsSectErase(((UINT)(intptr_t)p8eBase) + i, ENX_YES);
+			}
+			printf("Erase Done!!\n");
+
+			BDmaMemCpy_rtos(0, p8WBase, (BYTE *)en675_ddr_init_bin, EN675_DDR_INIT_BIN_LEN);
+
+			printf("Write Done!\n");
+#if 0
+			BYTE *p8RBase = pvPortMalloc(EN675_DDR_INIT_BIN_LEN + 64);
+			if(p8RBase == NULL) {
+				printf("Error!\n");
+				while(1);
+			}
+
+			hwflush_dcache_range((ulong)p8RBase, EN675_DDR_INIT_BIN_LEN);
+
+			BDmaMemCpy_rtos(0, p8RBase, (BYTE *)(intptr_t)startAddr, SFLSDATA_PP_SIZE*readCount);
+#else
+			hwflush_dcache_range((ulong)p8WBase, EN675_DDR_INIT_BIN_LEN);
+#endif
+			int errchk_cp = memcmp(en675_ddr_init_bin, p8WBase, EN675_DDR_INIT_BIN_LEN);
+			printf("memcmp Done!(%d)\n", errchk_cp);
+
 		} else {
 			Shell_Unknown();
 		}

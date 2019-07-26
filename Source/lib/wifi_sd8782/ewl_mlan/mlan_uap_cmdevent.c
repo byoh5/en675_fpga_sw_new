@@ -1553,7 +1553,6 @@ wlan_uap_ret_cmd_ap_config(IN pmlan_private pmpriv,
 		resp->size - (sizeof(HostCmd_DS_SYS_CONFIG) - 1 + S_DS_GEN);
 
 	while (tlv_buf_left >= sizeof(MrvlIEtypesHeader_t)) {
-
 		tlv_type = wlan_le16_to_cpu(tlv->type);
 		tlv_len = wlan_le16_to_cpu(tlv->len);
 

@@ -117,7 +117,6 @@ static err_t low_level_ethif_output(struct netif *netif, struct pbuf *p)
 // Ethernet RX
 static UINT *pRX_LEN_INFO = (UINT *)(REG_BASE_ETH + 0x80000);
 static BYTE gRxPktTail = 0;
-
 static void network_ethif_pkt_input_irq(void *ctx)
 {
 //	struct netif *netif = netif_state[enlETHERNET]._netif;
@@ -136,8 +135,10 @@ static void network_ethif_pkt_input_irq(void *ctx)
 			pkinfo->flag = 0;
 			num_loop(qEthernetRX.tail, NETRX_BUF_COUNT);	// next head
 
-//			hwflush_dcache_range((ULONG)pkinfo->data, (UINT)u32PktSize+64);
-//			hexDump("IP input", pkinfo->data, u32PktSize+64);
+			if (gptMsgDebug.ETH_RX_CHECK) {
+				hwflush_dcache_range((ULONG)pkinfo->data, (UINT)u32PktSize+64);
+				hexDump("IP input", pkinfo->data, u32PktSize+64);
+			}
 		} else {
 			_Rprintf("EthRX Err(%u/%u)(Size:%u)\n", gRxPktHead, gRxPktTail, u32PktSize);
 		}
@@ -241,10 +242,14 @@ void network_ethif_pkt_input_loopback_irq(void *ctx)
 
 		if (u32PktSize <= 1518 && u32PktSize >= 60) {
 			// D-cache flush
-			hwflush_dcache_range((ULONG)qEthernetRX.pkt_data[gRxPktTail].buffer, u32PktSize);
+			hwflush_dcache_range((ULONG)qEthernetRX.pkt_data[gRxPktTail].buffer, u32PktSize+4);
 
 			//printf("H(%d) T(%d)\n", gRxPktHead, gRxPktTail);
 			//hexDump("RECV", qEthernetRX.pkt_data[gRxPktTail].buffer, u32PktSize);
+			if (gptMsgDebug.ETH_RX_CHECK) {
+				printf("EthRX Idx[%s%3u%s/%s%3u%s] - %u\n", TTY_COLOR_YELLOW, gRxPktHead, TTY_COLOR_RESET, TTY_COLOR_GREEN, gRxPktTail, TTY_COLOR_RESET, u32PktSize);
+				hexDump("ETH Input", qEthernetRX.pkt_data[gRxPktTail].buffer, u32PktSize+4);
+			}
 
 			// Data compare
 			for (UINT i = 0; i < u32PktSize; i++) {

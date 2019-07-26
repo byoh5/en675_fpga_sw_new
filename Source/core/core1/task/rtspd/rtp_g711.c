@@ -87,14 +87,14 @@ int rtspd_client_rtp_g711_main(rtsp_client *prcInfo)
 				// This case goes directly to "ENX_RTP_TXSTE_DOING".
 			} else {
 				break; // switch break;
-			}
+			} // @suppress("No break at end of case")
 		case ENX_RTP_TXSTE_DOING:
 			{
 				// 남은 g711의 크기
 				g711left = rtpSession->rtp_pk.size - rtpSession->rtp_pk.offset;
 
 				// base기준 전송을 보내야 할 g711 주소
-				base_offset = (BYTE *)(rtpSession->rtp_pk.base + rtpSession->rtp_pk.offset);
+				base_offset = (BYTE *)(intptr_t)(rtpSession->rtp_pk.base + rtpSession->rtp_pk.offset);
 
 				// RTSP Interleaved(4byte)
 				if (prcInfo->eTransport == ENX_RTSP_TRANSPORT_TCP || prcInfo->eTransport == ENX_RTSP_TRANSPORT_HTTP) {
@@ -123,7 +123,7 @@ int rtspd_client_rtp_g711_main(rtsp_client *prcInfo)
 					remaining = g711left;
 				}
 
-				DmaMemCpy_ip(send_buffer + rtpSession->buf_len[rtpSession->buf_idx], base_offset, remaining);
+				BDmaMemCpy_rtos(0, send_buffer + rtpSession->buf_len[rtpSession->buf_idx], base_offset, remaining);
 
 				rtpSession->rtp_pk.offset += remaining;
 				rtpSession->buf_len[rtpSession->buf_idx] += remaining;
@@ -140,7 +140,7 @@ int rtspd_client_rtp_g711_main(rtsp_client *prcInfo)
 					break;
 					// switch break;
 				}
-			}
+			} // @suppress("No break at end of case")
 		case ENX_RTP_TXSTE_END:
 			rtpSession->tx_ready = ENX_RTP_TXSTE_READY;
 			break;

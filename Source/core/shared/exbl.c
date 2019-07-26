@@ -43,6 +43,11 @@ void WaitXms(uint64_t ms)
 	WaitXus(ms * 1000);
 }
 
+ULONG TimeGetMs(void)
+{
+	return *mtime / TIME_1MS;
+}
+
 ULONG BenchTimeStart(void)
 {
 	return rdcycle();
@@ -94,7 +99,7 @@ void hexDump(char *desc, void *addr, int len)
 
 	// Output description if given.
 	if (desc != NULL) {
-		printf("%s\n", desc);
+		_Cprintf("%s\n", desc);
 	}
 	printf("Addr(0x%08X) Size(%u)\n", addr, len);
 

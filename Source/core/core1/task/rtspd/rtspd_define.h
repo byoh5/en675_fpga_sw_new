@@ -42,8 +42,11 @@ typedef enum {
 // Stream type
 typedef enum {
 	ENX_RTSP_STREAM_FILE_H264_TYPE,
-	ENX_RTSP_STREAM_LIVE_H264_1_1,
-	ENX_RTSP_STREAM_LIVE_H264_1_2,
+	ENX_RTSP_STREAM_FILE_H265_TYPE,
+	ENX_RTSP_STREAM_LIVE_H264_1,
+	ENX_RTSP_STREAM_LIVE_H264_2,
+	ENX_RTSP_STREAM_LIVE_H265_1,
+	ENX_RTSP_STREAM_LIVE_H265_2,
 	ENX_RTSP_STREAM_LIVE_JPEG,
 	ENX_RTSP_STREAM_LIVE_JPEG_SW,
 	ENX_RTSP_STREAM_NONE,
@@ -172,12 +175,16 @@ typedef struct {
 
 // 12 byte
 typedef struct {
-	uint32 un2RTPVersion:2;
-	uint32 un1Padding:1;
-	uint32 un1Extension:1;
-	uint32 un4CSRCcount:4;
-	uint32 un1Markerbit:1;
-	uint32 un7Payloadtype:7;
+	BF_4(
+		uint8 un2RTPVersion:2,
+		uint8 un1Padding:1,
+		uint8 un1Extension:1,
+		uint8 un4CSRCcount:4
+	)
+	BF_2(
+		uint8 un1Markerbit:1,
+		uint8 un7Payloadtype:7
+	)
 	uint16 un16Sequencenum;
 	uint32 un32Timestamp;
 	uint32 un32SSIdentifier;
@@ -193,9 +200,11 @@ typedef struct {
 	UINT data_offset;// JPEG
 
 	UINT nalfirst; // H.264
-	UINT naltype; // H.264
+	UINT naltype; // H.264/H.265
 	UINT nalidc; // H.264
 	UINT nalnum; // H.264
+
+	WORD nalunithdr; // H.265
 } rtp_packet;
 
 typedef struct {
@@ -268,8 +277,8 @@ typedef struct {
 	rtsp_method_type method; // 공통, 현재의 RTSP method
 	char strUrl[128]; // 공통, 현재의 요청 URL
 	char strVersion[12]; // 공통, 현재의 RTSP Version(?)
-	int isAccept; // Describe명령, client가 주는 Appcpt header가 존재하며, 그 값이 application/sdp 일 경우 DEF_YES.
-	int isTransport; // Setup명령, client가 주는 Transport header가 존재하며, 
+	ENX_YN isAccept; // Describe명령, client가 주는 Appcpt header가 존재하며, 그 값이 application/sdp 일 경우 DEF_YES.
+	ENX_YN isTransport; // Setup명령, client가 주는 Transport header가 존재하며,
 	UINT setup_query; // Setup명령, 
 	UINT nQuery; // Setup명령, 
 } rtsp_client;
@@ -292,7 +301,8 @@ typedef struct {
 #define RTP_numPayload_PCMA	8
 #define RTP_numPayload_L16S 11
 #define RTP_numPayload_JPEG	26
-#define RTP_numPayload_H264	96
+#define RTP_numPayload_H264	96 // == H.265
+#define RTP_numPayload_H265	96 // == H.264
 
 #define RTSP_TIMEOUT 60
 #define RTCP_SR_INTERVAL 10

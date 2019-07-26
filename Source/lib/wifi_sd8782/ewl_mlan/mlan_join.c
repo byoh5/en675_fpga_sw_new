@@ -42,6 +42,8 @@ Change log:
 #include "mlan_11n.h"
 #include "mlan_11h.h"
 
+#ifdef STA_SUPPORT
+
 /********************************************************
 			Local Constants
 ********************************************************/
@@ -2163,3 +2165,4 @@ wlan_band_to_radio_type(IN t_u8 band)
 	LEAVE();
 	return ret_radio_type;
 }
+#endif

@@ -33,5 +33,7 @@ extern ulong dmread64(ulong adr);
 // misc
 extern void rv_util_test();
 
+extern UINT timeoffset(UINT offset);
+
 #endif//_RV_UTILS_H_
 

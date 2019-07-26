@@ -27,18 +27,31 @@ typedef ATTR_MALIGN16 struct {
 	UINT nSetClock;
 } SDIO_WF;
 
+// CMD5
+#define OCR_VOL_WIND		0x00ff8000
+
+// R4
+#define R4_C				0x80000000
+#define R4_FUNC_NUM			0x70000000
+#define R4_MEM_PRESENT		0x08000000
+#define R4_OCR				0x00ffff00
+
 // CMD52
 #define CMD52_READ  			0x00000000
 #define CMD52_WRITE				0x80000000
 
 extern void SdioWfSetHighSpeed(void);
 extern void SdioWfSetNormalSpeed(void);
-extern ENX_OKFAIL SdioWfRegWrite(BYTE data, UINT func, UINT addr);
-extern ENX_OKFAIL SdioWfRegRead(BYTE *data, UINT func, UINT addr);
-extern ENX_OKFAIL SdioWfDatWrite(BYTE *data, UINT func, UINT addr);
-extern ENX_OKFAIL SdioWfDatRead(BYTE *data, UINT func, UINT addr);
+extern SDIO_OKFAIL SdioWfRegWrite(BYTE data, UINT func_num, UINT addr);
+extern SDIO_OKFAIL SdioWfRegRead(BYTE *data, UINT func_num, UINT addr);
+extern SDIO_OKFAIL SdioWfDatWrite(BYTE *data, UINT func_num, UINT addr, UINT size);
+extern SDIO_OKFAIL SdioWfDatRead(BYTE *data, UINT func_num, UINT addr, UINT size);
+extern SDIO_OKFAIL SdioWfCmd(BYTE Cmd, UINT Arg, UINT *nResp, eCmdRespType cmdType);
 extern ENX_OKFAIL SdioWfInitProcess(void);
 extern void SdioWfInit(UINT nCH);
+extern void SdioWfIoIrqCallback(irq_fn irqfn, void *arg);
+extern void SdioWfSetIoIrqEn(ENX_SWITCH sw);
+extern void SdioWfIoIrqClear(void);
 
 #endif // __WIFI__
 #endif // _SDIO_WF_H_

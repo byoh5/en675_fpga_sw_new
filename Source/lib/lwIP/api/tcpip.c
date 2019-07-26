@@ -440,8 +440,11 @@ tcpip_send_msg_wait_sem(tcpip_callback_fn fn, void *apimsg, sys_sem_t *sem)
 #if LWIP_TCPIP_CORE_LOCKING
   LWIP_UNUSED_ARG(sem);
   LOCK_TCPIP_CORE();
+  printf("1");
   fn(apimsg);
+  printf("2");
   UNLOCK_TCPIP_CORE();
+  printf("3");
   return ERR_OK;
 #else /* LWIP_TCPIP_CORE_LOCKING */
   TCPIP_MSG_VAR_DECLARE(msg);

@@ -9,7 +9,7 @@
 #include "moal_priv.h"
 #include "moal_wext.h"
 
-
+#ifdef STA_SUPPORT
 /** 
  *  @brief Copy Rates
  *   
@@ -1094,3 +1094,4 @@ woal_do_ioctl(moal_private * priv, struct ifreq *req, int cmd)
     LEAVE();
     return ret;
 }
+#endif

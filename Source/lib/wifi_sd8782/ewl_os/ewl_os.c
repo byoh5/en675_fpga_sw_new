@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "enx_freertos.h"
 #include "ewl_os.h"
 
 #ifndef MAX_PRINTF_LEN
@@ -230,19 +231,41 @@ ewl_os_strstr(const char * s1,const char * s2)
 u32
 ewl_os_timer_get_ms(void)
 {
-    return timer_get_ms();
+    return TimeGetMs();
 }
 
 void 
-ewl_os_timer_cancel_timeout(u32 id)
+ewl_os_timer_cancel_timeout(TimerHandle_t id)
 {
+#if 1
+	if (id) {
+		xTimerDelete(id, 0);
+	}
+#else
     timer_cancel_timeout(id);
+#endif
 }
 
-u32 
+TimerHandle_t
 ewl_os_timer_sched_timeout_cb(u32 ms, u8 type, void (*cb)(void *ctx), void* ctx)
 {
+#if 1
+	TimerHandle_t th = xTimerCreate("ewlosT", ms, type, ( void * )ctx, cb);
+	if (th) {
+		BaseType_t xReturn = xTimerStart(th, 0);
+		if (xReturn == pdPASS) {
+			return th;
+		} else {
+			printf("%s(%d): error.\n", __func__, __LINE__);
+			return NULL;
+		}
+	} else {
+		printf("%s(%d): error.\n", __func__, __LINE__);
+		return NULL;
+	}
+#else
     return timer_sched_timeout_cb(ms,type,cb,ctx);
+#endif
 }
 
 void ewl_os_disable_int(void)

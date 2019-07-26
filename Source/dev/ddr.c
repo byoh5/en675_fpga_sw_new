@@ -328,7 +328,7 @@ void DdrInit(BYTE bCH, BYTE Sel)
 	DDR_RD_VAL_EDGE(bCH) = 1;
 	DDR_RD_VAL_LTC(bCH)	= 6;
 	DDR_MRR_VAL_LTC(bCH)	= 6;
-	DDR_WR_LTC(bCH) 		= 1;
+	DDR_WR_LTC(bCH) 		= 0;
 
 	DdrOn(bCH);
 

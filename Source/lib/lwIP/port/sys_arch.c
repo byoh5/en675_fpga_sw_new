@@ -233,8 +233,9 @@ sys_mutex_unlock(sys_mutex_t *mutex)
   BaseType_t ret;
   LWIP_ASSERT("mutex != NULL", mutex != NULL);
   LWIP_ASSERT("mutex->mut != NULL", mutex->mut != NULL);
-
+  printf("a");
   ret = xSemaphoreGiveRecursive(mutex->mut);
+  printf("b");
   LWIP_ASSERT("failed to give the mutex", ret == pdTRUE);
 }
 
@@ -689,14 +690,16 @@ WORD my_chksum(const void *dataptr, WORD len)
 
 //	ULONG stime = BenchTimeStart();
 
+	BYTE *ptr;
 	WORD hw_chksum1 = 0;
 	hwflush_dcache_range_rtos((ULONG)dataptr, len);
 	if (((ULONG)dataptr) % 64 == 0) {
-		hw_chksum1 = Checksum16((BYTE *)dataptr, len);
+		ptr = dataptr;
 	} else {
-		BDmaMemCpy_isr(0, chksumData, (BYTE *)dataptr, len);
-		hw_chksum1 = Checksum16((BYTE *)chksumData, len);
+		ptr = chksumData;
+		BDmaMemCpy_rtos(0, chksumData, (BYTE *)dataptr, len);
 	}
+	hw_chksum1 = Checksum16((BYTE *)ptr, len);
 
 //	ULONG a_out = BenchTimeStop(stime);
 //	stime = BenchTimeStart();
@@ -707,7 +710,7 @@ WORD my_chksum(const void *dataptr, WORD len)
 
 	static uint64_t oking = 0;
 	if (sw_chksum != hw_chksum1) {
-		_Rprintf("[CHKSUM:0x%08X] SW(0x%04X) HW(0x%04X) len(%4u) ing(%u)\n", (intptr_t)dataptr, sw_chksum, hw_chksum1, len, oking);
+		_Rprintf("[CHKSUM:0x%08X] SW(0x%04X) HW(0x%04X) len(%4u) ing(%u) %s\n", (intptr_t)ptr, sw_chksum, hw_chksum1, len, oking, ptr == chksumData ? "align" : "");
 		//hexDump("Checksum", dataptr, len);
 		oking = 0;
 	} else {
@@ -727,8 +730,11 @@ void my_copy(void* dst, void* src, unsigned long len)
 #endif
 #else
 //	printf("DST(0x%08X SRC(0x%08X) LEN(%8u)\n", dst, src, len);
-	//hwflush_dcache_range_rtos(dst, len);
-    memcpy(dst, src, len);
-    //hwflush_dcache_range_rtos(dst, len);
+//	hwflush_dcache_range_rtos(src, len);
+//	hwflush_dcache_range_rtos(dst, len);
+//	BDmaMemCpy_rtos(0, dst, src, len);
+//	hwflush_dcache_range_rtos(dst, len);
+	memcpy(dst, src, len);
+//	hwflush_dcache_range_rtos(dst, len);
 #endif
 }

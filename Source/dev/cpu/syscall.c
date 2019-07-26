@@ -381,9 +381,9 @@ size_t sys_brk(size_t pos)
 
 
 	if (pos == 0) {
-		return 0x80800000;
+		return 0x81000000;
 	} else {
-		if (pos > (0x80000000 + 64*1024*1024))
+		if (pos > (0x80000000 + 64*1024*1024 - 8*1024*1024))
 			return -1;
 		return pos;
 	}

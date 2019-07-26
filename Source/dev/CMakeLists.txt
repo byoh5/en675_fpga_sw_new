@@ -40,6 +40,7 @@ SET ( DEV_HDRS
 	sfls/issi_is25lp128.h
 	ethernet/ethphy.h
 	ethernet/ksz8081mnx.h
+	ethernet/ksz8081rnb.h
 	ethernet/ksz9031rnx.h
 	eeprom/eeprom.h
 	key/key.h
@@ -139,6 +140,7 @@ SET ( DEV_SRCS
 	string/uart_string.c
 	ethernet/ethphy.c
 	ethernet/ksz8081mnx.c
+	ethernet/ksz8081rnb.c
 	ethernet/ksz9031rnx.c
 	rtc/rtc.c
 	rtc/rtc-lib.c

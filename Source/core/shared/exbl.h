@@ -5,6 +5,7 @@
 
 extern void WaitXus(uint64_t us);
 extern void WaitXms(uint64_t ms);
+extern ULONG TimeGetMs(void);
 extern ULONG BenchTimeStart(void);
 //extern ULONG BenchTimeStop(ULONG start_time);
 extern UINT BenchTimeStop(ULONG start_time);

@@ -34,7 +34,7 @@
 #include "wext.h"
 #include "iw_handler.h"  
 
-
+#ifdef STA_SUPPORT
 /** Approximate amount of data needed to pass a scan result back to iwlist */
 #define MAX_SCAN_CELL_SIZE  (IW_EV_ADDR_LEN           \
                              + MLAN_MAX_SSID_LENGTH   \
@@ -2160,3 +2160,4 @@ struct iw_handler_def woal_handler_def = {
   standard:(iw_handler *) woal_handler,
 };
                             
+#endif

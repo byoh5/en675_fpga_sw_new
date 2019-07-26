@@ -29,16 +29,16 @@ extern moal_handle *m_handle[];    /** The global variable of a pointer to moal_
     Get WiFi Driver handle for STA MODE
 */
 
-int
+void *
 ewl_get_sta_handle(void)
 {
-    return (int)sta_priv;
+    return (void *)sta_priv;
 }
 
-int 
+void *
 ewl_get_uap_handle(void)
 {
-    return (int)uap_priv;
+    return (void *)uap_priv;
 }
 
                         
@@ -160,7 +160,7 @@ ewl_init(void)
     card = (struct sdio_mmc_card*)func->priv_data;
 
     if (MLAN_STATUS_SUCCESS != woal_init_fw(card->handle)) {
-        PRINTM(MFATAL, "Firmware Init Failed\r\n");
+        PRINTM(MFATAL, "Firmware Init Failed\n");
         return EWL_FAILURE;
     }
 
@@ -262,7 +262,7 @@ void ewl_poll(void)
 **/
 
 void
-ewl_set_conn_cb(int handle, 
+ewl_set_conn_cb(void *handle,
                 void (*conn_cb)(BYTE *buf, int buf_len),void (*disconn_cb)(BYTE *buf, int buf_len))
 {
     moal_private *priv = (moal_private *)handle;
@@ -385,7 +385,7 @@ ewl_set_multicast_addr(struct netif *netif, u8 *multicast_mac)
     @return 1 = connected;
             0 = is not;
 */
-
+#ifdef STA_SUPPORT
 int
 ewl_sta_is_connected(void)
 {
@@ -405,3 +405,4 @@ ewl_sta_get_freq(struct netif *netif)
     dprintf("m %d, e %d, i %d, flags %x \n",fwrq.m, fwrq.e, fwrq.i, fwrq.flags);
     return 0;
 }
+#endif

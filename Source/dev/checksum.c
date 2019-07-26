@@ -15,6 +15,7 @@ WORD Checksum16(BYTE *apbDst, UINT anNum)
 	return SWAP_BYTES_IN_WORD(CHKSUM_DAT);
 }
 
+#ifdef __FREERTOS__
 WORD Checksum16_rtos(BYTE *apbDst, UINT anNum)
 {
 	portENTER_CRITICAL();
@@ -26,6 +27,7 @@ WORD Checksum16_rtos(BYTE *apbDst, UINT anNum)
 	portEXIT_CRITICAL();
 	return res;
 }
+#endif
 
 void ChksumIrqCallback(irq_fn irqfn, void *arg)
 {

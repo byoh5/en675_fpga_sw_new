@@ -7,8 +7,9 @@
 static struct netif gnif_eth; // Ethernet
 #endif
 #if defined(__WIFI__)
-struct netif *gtwlif_sta = NULL;// Wi-Fi STA mode
-struct netif *gtwlif_uap = NULL;// Wi-Fi UAP mode
+#include "wifi_task.h"
+//struct netif *gtwlif_sta = NULL;// Wi-Fi STA mode
+//struct netif *gtwlif_uap = NULL;// Wi-Fi UAP mode
 #endif
 
 SemaphoreHandle_t xtxwl_sem = NULL;
@@ -87,17 +88,17 @@ void network_default_netif(void)
 	}
 #endif
 #ifdef __WIFI__
-	if (gtwlif_sta && netif_is_up(gtwlif_sta) && netif_is_link_up(gtwlif_sta)) {
-		if (netif_default != gtwlif_sta) {
-			netif_set_default(gtwlif_sta);
+	if (netif_state[enlWIFISTA]._netif && netif_is_up(netif_state[enlWIFISTA]._netif) && netif_is_link_up(netif_state[enlWIFISTA]._netif)) {
+		if (netif_default != netif_state[enlWIFISTA]._netif) {
+			netif_set_default(netif_state[enlWIFISTA]._netif);
 			printf(strDefnetif, netif_state[enlWIFISTA].ifname);
 			return;
 		}
 	}
 
-	if (gtwlif_uap && netif_is_up(gtwlif_uap) && netif_is_link_up(gtwlif_uap)) {
-		if (netif_default != gtwlif_uap) {
-			netif_set_default(gtwlif_uap);
+	if (netif_state[enlWIFIUAP]._netif && netif_is_up(netif_state[enlWIFIUAP]._netif) && netif_is_link_up(netif_state[enlWIFIUAP]._netif)) {
+		if (netif_default != netif_state[enlWIFIUAP]._netif) {
+			netif_set_default(netif_state[enlWIFIUAP]._netif);
 			printf(strDefnetif, netif_state[enlWIFIUAP].ifname);
 			return;
 		}
@@ -142,6 +143,7 @@ static void tcpip_init_done_func(void *ctx)
 #if defined(__ETHERNET__)
 	network_ethif_start();
 #endif
+
 	UNUSED(ctx);
 }
 

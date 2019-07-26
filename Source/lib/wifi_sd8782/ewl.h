@@ -255,7 +255,7 @@ ewl_set_disconnect_cb(void (*disconnect_cb)(int));
 typedef void   (*ewl_init_netif_cb_t)(void* ctx);
 
                 
-int
+void *
 ewl_get_sta_handle(void);
 
 void 
@@ -269,7 +269,7 @@ void
 ewl_get_hwaddr(struct netif *netif, u8* pmac);
 
 void
-ewl_set_conn_cb(int handle, 
+ewl_set_conn_cb(void *handle,
                 void (*conn_cb)(BYTE *buf, int buf_len),void (*disconn_cb)(BYTE *buf, int buf_len));
 
 void 

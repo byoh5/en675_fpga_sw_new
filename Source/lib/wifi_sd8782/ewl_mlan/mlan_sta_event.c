@@ -37,6 +37,7 @@ Change log:
 #include "mlan_11n.h"
 #include "mlan_11h.h"
 
+#ifdef STA_SUPPORT
 /********************************************************
 			Global Variables
 ********************************************************/
@@ -762,3 +763,4 @@ wlan_ops_sta_process_event(IN t_void * priv)
 	LEAVE();
 	return ret;
 }
+#endif

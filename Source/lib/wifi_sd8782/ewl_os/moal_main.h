@@ -232,7 +232,7 @@ struct _moal_handle
  */
 struct timer_handler
 {
-    t_u32 id; /* timer id that we use. */
+	TimerHandle_t id; /* timer id that we use. */
     void (*handler)(void *ctx);
     void *data;
 };
@@ -304,11 +304,18 @@ woal_mod_timer(pmoal_drv_timer timer, t_u32 MillisecondPeriod)
 {
     timer->time_period = MillisecondPeriod;
     timer->timer_is_canceled = MFALSE;
+#if 1
+    timer->ti.id = ewl_os_timer_sched_timeout_cb(MillisecondPeriod,
+                                           timer->timer_is_periodic,
+                                           timer->ti.handler,
+                                           timer->ti.data);
+#else
     timer->ti.id = timer_sched_timeout_cb(MillisecondPeriod,
                                            timer->timer_is_periodic, 
                                            timer->ti.handler,
                                            timer->ti.data);
-    
+
+#endif
 }
 
 /** 
@@ -491,7 +498,7 @@ woal_get_bss_type(moal_private *priv, struct ifreq *req);
 int
 woal_hard_start_xmit(struct pbuf* p , moal_private *priv);
 
-int
+void *
 ewl_get_sta_handle(void);
 
 mlan_status

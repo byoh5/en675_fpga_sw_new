@@ -108,7 +108,7 @@
 #define ETHPHY_GPIO_RST	54
 #define ETHPHY_GPIO_IRQ	53
 #define ETHPHY_MDIO_ADR	1
-#if 1
+#if 0
 #define __ETHPHY_KSZ8081MNX__
 #define ETHPHY_TYPE_VAL 2
 #define ETHPHY_SPD_VAL 100
@@ -120,7 +120,7 @@
 #define ETHPHY_SPD_VAL 100
 #define ETHPHY_DUPLEX_VAL 2
 #endif // __ETHPHY_KSZ8081RNB__
-#if 0
+#if 1
 #define __ETHPHY_KSZ9031RNX__
 #define ETHPHY_TYPE_VAL 1
 #define ETHPHY_SPD_VAL 1000
@@ -129,7 +129,7 @@
 #endif // __ETHERNET__
 #endif // __NETWORK__
 
-#if 1
+#if 0
 #define __AUDIO__
 #define AUDIO_GPIO_RST	20
 #define AUDIO_GPIO_IRQ	21
@@ -167,6 +167,9 @@
 #define WF_GPIO_RST	35
 #define WF_GPIO_IRQ	34
 #define WF_SDIO_CH	1
+#if 0
+#define __WIFI_SD8782__
+#endif
 #endif // __WIFI__
 
 #if 1

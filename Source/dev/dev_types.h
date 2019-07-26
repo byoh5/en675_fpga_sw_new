@@ -123,6 +123,11 @@ typedef enum {
 	ENX_OK = 1
 } ENX_OKFAIL;
 
+typedef enum {
+	SDIO_OK = 0,
+	SDIO_FAIL = 1
+} SDIO_OKFAIL;
+
 #define FALSE					0
 #define TRUE					1
 
@@ -586,6 +591,34 @@ typedef enum {
 	e_pmEndorUnknown = 2,
 } H264ProfileMode;
 
+//******************************************************************************
+// Wi-Fi define
+//------------------------------------------------------------------------------
+enum {
+	WLIF_UAP_START,
+	WLIF_STA_START,
+	WLIF_UAP_ACTIVE,
+	WLIF_STA_ACTIVE,
+	WLIF_STA_CONNECT_WAIT,
+	WLIF_CONNECTED,
+	WLIF_DIS_CONNECTED,
+	WLIF_SCAN,
+	WLIF_UAP_BSS_ON,
+	WLIF_UAP_BSS_OFF,
+	WLIF_UAP_BSS_ERROR,
+	WLIF_UAP_DISCONN,
+	WLIF_INIT_FAIL = 0x1000,
+	WLIF_STA_NO_AP = 0x1001,
+	WLIF_STA_WPA_AUTH_FAIL = 0x1002,
+	WLIF_NONE = 0xFFFF,
+};
+
+typedef struct {
+	UINT netif;			//	netif pointer
+	UINT type;			//	0 - sta, 1 -uap
+	UINT event;			//	0 connected, 1 disconnected, 2 scan
+	BYTE mac_addr[8];	//	wifi mac address(6byte).
+} wlif_priv_t;
 
 //******************************************************************************
 // Key define

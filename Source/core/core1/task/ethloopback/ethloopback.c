@@ -17,7 +17,7 @@ static eEthphyLoopbackRes EthphyLoopbackTest(EthLoopbackGp *elg)
 	srand(rdcycle());
 	for (UINT i = 0; i < ETHPHY_LOOPBACK_PACKET_CNT; i++) {
 		for (UINT j = 0; j < ETHPHY_LOOPBACK_PACKET_SIZE; j++) {
-			elg->arrBuffer[i][j] = i;
+			elg->arrBuffer[i][j] = j;
 //			elg->arrBuffer[i][j] = rand();
 		}
 	}
@@ -29,8 +29,6 @@ static eEthphyLoopbackRes EthphyLoopbackTest(EthLoopbackGp *elg)
 		hwflush_dcache_range((ULONG)elg->arrSendBuffer, ETHPHY_LOOPBACK_PACKET_SIZE);
 		memcpy(elg->arrSendBuffer, elg->arrBuffer[ethlp.u8Index], ETHPHY_LOOPBACK_PACKET_SIZE);
 		hwflush_dcache_range((ULONG)elg->arrSendBuffer, ETHPHY_LOOPBACK_PACKET_SIZE);
-
-		//hexDump("SEND", SendBuffer, ETHPHY_LOOPBACK_PACKET_SIZE);
 
 		EthTxPacket(elg->arrSendBuffer, ETHPHY_LOOPBACK_PACKET_SIZE);
 
@@ -150,6 +148,7 @@ static void EthloopbackFree(EthLoopbackGp *elg)
 void EthloopbackTask(void *ctx)
 {
 	vTaskDelay(100);
+	eEthphyLoopbackRes lpRes;
 
 	ethlp.eRunMode = ePlk_init;
 	ethlp.u32Loop = 0;
@@ -187,8 +186,8 @@ void EthloopbackTask(void *ctx)
 		switch (ethlp.eRunMode) {
 		case ePlk_single:
 			EthSetRxEn(ENX_ON);
-			EthphyLoopbackTest(&ethlp);
-			printf("The test is complete.\n");
+			lpRes = EthphyLoopbackTest(&ethlp);
+			printf("The test is complete(%d).\n", lpRes);
 			break;
 		case ePlk_auto:
 			EthSetRxEn(ENX_ON);

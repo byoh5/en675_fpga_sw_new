@@ -9,6 +9,7 @@
 #include "dev.h"
 
 //#include <types.h>
+#include "enx_freertos.h" // for TimerHandle_t
 #include <stdarg.h> /* for va_list  */
 
 void* 
@@ -61,9 +62,9 @@ u32
 ewl_os_timer_get_ms(void);
 
 void 
-ewl_os_timer_cancel_timeout(u32 id);
+ewl_os_timer_cancel_timeout(TimerHandle_t id);
 
-u32 
+TimerHandle_t
 ewl_os_timer_sched_timeout_cb(u32 ms, u8 type, void (*cb)(void *ctx), void* ctx);
 
 void

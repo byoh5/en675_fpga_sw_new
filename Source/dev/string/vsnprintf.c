@@ -481,11 +481,15 @@ int es_printf(const char *format, ...)
 	int len = vsnprintf_(buf, PRINTFBUF_SIZE, format, args);
 	va_end(args);
 
+#ifdef __ECM_STRING__
+	UartTxStrEx(DEBUG_UART_NUM, buf, 0, len, 0);
+#else
 	pbuf = buf;
 	while (*pbuf) {
 		if (*pbuf == '\n') UartTx(DEBUG_UART_NUM, '\r');
 		UartTx(DEBUG_UART_NUM, *pbuf++);
 	}
+#endif
 
 	return len;
 }

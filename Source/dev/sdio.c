@@ -126,7 +126,7 @@ ENX_OKFAIL SdioCmd(UINT nCH, BYTE Cmd, UINT Arg, UINT *nResp, eCmdRespType cmdTy
 	}
 
 	SdioGetResp(nCH, nResp, cmdType);
-	if (Cmd != 23 && Cmd != 55) {
+	if (Cmd != 23 && Cmd != 55 && Cmd != 52) {
 		printf("[%2u] res(%c) RESP0(0x%08X)\n", Cmd, nRes == ENX_OK ? 'O' : 'X', nResp[0]);
 		if (cmdType == ecrtR2) {
 			printf("[%2u] res(%c) RESP1(0x%08X)\n", Cmd, nRes == ENX_OK ? 'O' : 'X', nResp[1]);
@@ -417,7 +417,7 @@ UINT SdioDatIsIrq(UINT nCH)
 void IrqSdio(UINT nCH)
 {
 	if (SdioIoIsIrq(nCH)) {
-		printf("SDIO%d-IO IRQ Get\n", nCH);
+		//printf("SDIO%d-IO IRQ Get\n", nCH);
 		if (arrSDIOIoIrq[nCH].irqfn) {
 			arrSDIOIoIrq[nCH].irqfn(arrSDIOIoIrq[nCH].arg);
 		}

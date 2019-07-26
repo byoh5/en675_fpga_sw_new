@@ -12,7 +12,7 @@
 
 #define DEFAULT_AP_SSID "u2ap"
 
-int 
+void *
 ewl_get_uap_handle(void);
 
 static mlan_uap_bss_param apcfg;
