@@ -153,6 +153,12 @@ extern void httpd_cgi_handler(struct fs_file *file, const char* uri, int iNumPar
  * LWIP_HTTPD_SSI_INCLUDE_TAG as zero in your lwip options file, or use JavaScript
  * style block comments in the form / * # name * / (without the spaces).
  */
+
+typedef struct {
+	int index;
+	const char *tag;
+} ConfigSSITags;
+
 typedef u16_t (*tSSIHandler)(
 #if LWIP_HTTPD_SSI_RAW
                              const char* ssi_tag_name,
@@ -172,7 +178,7 @@ typedef u16_t (*tSSIHandler)(
  * (if LWIP_HTTPD_SSI_RAW==1, only the first argument is used)
  */
 void http_set_ssi_handler(tSSIHandler pfnSSIHandler,
-                          const char **ppcTags, int iNumTags);
+                          const ConfigSSITags *ppcTags, int iNumTags);
 
 /** For LWIP_HTTPD_SSI_RAW==1, return this to indicate the tag is unknown.
  * In this case, the webserver writes a warning into the page.

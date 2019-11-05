@@ -1,0 +1,108 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+<title></title>
+<link rel="stylesheet" type="text/css" href="bootstrap.min.css">
+<link rel="stylesheet" type="text/css" href="style.css">
+<script type="text/javascript">
+<!--
+//<!--#sy_inf_m-->
+//<!--#sy_inf_t-->
+//<!--#sy_inf_r-->
+
+function SetFormDefaults()
+{
+	document.form.s_i_mall.value = m_total + " Byte";
+	document.form.s_i_mfr1.value = m_free1 + " Byte";
+	document.form.s_i_mfr2.value = m_free2 + " Byte";
+	var simuse = 100 - (m_free1 * 100) / m_total;
+	document.form.s_i_muse.value = simuse.toFixed(2) + "%";
+
+	document.form.s_i_tcount.value = t_count;
+	document.form.s_i_tstring.value = t_string;
+
+	document.form.s_i_scount.value = stm_cnt[1];
+	for(i = 0 ; i < stm_cnt[0] ; i++)
+	{
+		var t_form = document.getElementById("form" + i);
+		t_form["s_i_lp_" + i].value = stm_user[i][0];
+		t_form["s_i_rp_" + i].value = stm_user[i][1];
+		t_form["s_i_tp_" + i].value = stm_user[i][2];
+		t_form["s_i_tm_" + i].value = stm_user[i][3];
+		t_form["s_i_st_" + i].value = stm_user[i][4];
+		if (stm_user[i][0] == "")
+		{
+			t_form["s_i_kik" + i].style.display = "none";
+		}
+	}
+}
+//-->
+</script>
+
+</head>
+<body onload="SetFormDefaults();">
+	<div class="sub-title">
+		<form id="init" name="init" method="get" action="appinit.cgi">
+			<input class="btn btn-default pull-right" style="width:100px" name="btOK" type="submit" value="Init">
+		</form>
+		<h3>System Information</h3>
+	</div>
+	<hr>
+<form id="form" name="form">
+	<h4>Memory Info</h4>
+	<div>
+		<label class="sub-label">Total Heap Size</label>
+		<input name="s_i_mall" type="text" readonly>
+	</div>
+	<div>
+		<label class="sub-label">Free Heap Size</label>
+		<input name="s_i_mfr1" type="text" readonly>
+	</div>
+	<div>
+		<label class="sub-label">Minimum Ever<br \> Free Heap Size</label>
+		<input name="s_i_mfr2" type="text" readonly>
+	</div>
+	<div>
+		<label class="sub-label">Heap Used</label>
+		<input name="s_i_muse" type="text" readonly>
+	</div>
+	<hr>
+	<h4>Task Info</h4>
+	<div>
+		<label class="sub-label">Task Count</label>
+		<input name="s_i_tcount" type="text" readonly>
+	</div>
+	<div>
+		<label class="sub-label">Task List</label>
+		<textarea name="s_i_tstring" rows="12" cols="85" style="font-family:Consolas;"></textarea>
+	</div>
+	<hr>
+	<h4>RTSP Info</h4>
+	<div>
+		<label class="sub-label">RTSP User</label>
+		<input name="s_i_scount" type="text" readonly>
+	</div>
+</form>
+<script type="text/javascript">
+<!--
+for (i = 0 ; i < stm_cnt[0] ; i++)
+{
+document.write("<form id=\"form"+i+"\" name=\"form"+i+"\" method=\"get\" action=\"appquery.cgi\">");
+document.write("<div>");
+if (i == 0)	document.write(" <label class=\"sub-label\">RTSP List</label>");
+else		document.write(" <label class=\"sub-label\">　</label>");
+document.write(" " + i);
+document.write(" <input name=\"s_i_lp_" + i + "\" style=\"width: 160px\" type=\"text\" readonly disabled>");
+document.write(" <input name=\"s_i_rp_" + i + "\" style=\"width: 160px\" type=\"text\" readonly disabled>");
+document.write(" <input name=\"s_i_tp_" + i + "\" style=\"width: 80px\" type=\"text\" readonly disabled>");
+document.write(" <input name=\"s_i_tm_" + i + "\" style=\"width: 150px\" type=\"text\" readonly disabled>");
+document.write(" <input name=\"s_i_st_" + i + "\" style=\"width: 100px\" type=\"text\" readonly disabled>");
+document.write(" <input class=\"btn btn-default btn-xs\" name=\"s_i_kik" + i + "\" type=\"submit\" value=\"kick\">");
+document.write("</div>");
+document.write("</form>");
+}
+-->
+</script>
+</body>
+</html>

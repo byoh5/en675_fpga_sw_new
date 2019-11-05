@@ -99,9 +99,9 @@ void hexDump(char *desc, void *addr, int len)
 
 	// Output description if given.
 	if (desc != NULL) {
-		_Cprintf("%s\n", desc);
+		_Cprintf("%-39s", desc);
 	}
-	printf("Addr(0x%08X) Size(%u)\n", addr, len);
+	printf("Addr(0x%08X)  Size(%10u)\n", addr, len);
 
 	// Process every byte in the data.
 	for (i = 0; i < len; i++) {

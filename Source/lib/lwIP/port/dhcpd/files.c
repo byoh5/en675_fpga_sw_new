@@ -9,9 +9,9 @@
 
 #include "lwip/inet.h"
 
-#include "FreeRTOS.h"
+#include "enx_freertos.h"
 
-#include "debug.h"
+#include "dhcpd/debug.h"
 #include "dhcpd.h"
 #include "files.h"
 #include "options.h"

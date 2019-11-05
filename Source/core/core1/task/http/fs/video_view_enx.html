@@ -1,0 +1,173 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+<title>EN673 H.264 Stream</title>
+<link rel="stylesheet" type="text/css" href="bootstrap.min.css">
+<script type="text/javascript">
+<!--
+//<!--#playinfo-->
+
+function getBrowsertype()
+{
+	var a = navigator.userAgent;
+	if (/mobile/i.test(navigator.userAgent))	return 3;	// mobile
+	else if(/msie|trident/i.test(a))		return 1;	// MS IE
+	else						return 2;	// firefox, chrome, safari, opera, opr
+}
+
+function setScreensize(sizenum) {
+	scExVIP = document.getElementById("ExVIP").style;
+	if(sizenum == 0) {
+		scExVIP.width = '1920px';
+		scExVIP.height = '1080px';
+	} else if(sizenum == 1) {
+		scExVIP.width = '1280px';
+		scExVIP.height = '720px';
+	} else if(sizenum == 2) {
+		scExVIP.width = '800px';
+		scExVIP.height = '600px';
+	} else if(sizenum == 3) {
+		scExVIP.width = '640px';
+		scExVIP.height = '480px';
+	} else if(sizenum == 4) {
+		scExVIP.width = '320px';
+		scExVIP.height = '240px';
+	}
+}
+
+var scSize = 1;
+var Btype = getBrowsertype();
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+function realtimeClock()
+{
+	var cTime = new Date((systime++)*1000);		// EN673 System Time
+	svrTime.innerHTML = getTimeStamp(cTime);
+	setTimeout("realtimeClock()", 1000);
+}
+
+function getTimeStamp(d)
+{
+	var s =	leadingZeros(d.getFullYear(), 4) + '-' +
+		leadingZeros(d.getMonth() + 1, 2) + '-' +
+		leadingZeros(d.getDate(), 2) + ' ' +
+		leadingZeros(d.getHours(), 2) + ':' +
+		leadingZeros(d.getMinutes(), 2) + ':' +
+		leadingZeros(d.getSeconds(), 2);
+	return s;
+}
+
+function leadingZeros(n, digits)
+{
+	var zero = '';
+	n = n.toString();
+	if (n.length < digits)
+	{
+		for (i = 0; i < digits - n.length; i++)
+			zero += '0';
+	}
+	return zero + n;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+function getStreamURL()
+{
+	linkAd = location.href;		// http://192.168.0.195/index.html
+	div = linkAd.split(":");	// dev[0](http)	dev[1](//192.168.0.195/index.html)
+	addChar = div[1].split("/");	// addChar[0](/) addChar[1](/) addChar[2](192.168.0.195) addChar[3](index.html)
+	sslAdd = "rtsp://" + ID + ":1234@" + addChar[2] + ":" + rtpport + "/h264";	// rtsp://192.168.0.195:554/h264
+	return sslAdd;
+}
+
+function doGo(targetURL) {
+	var ExVIP = document.getElementById("ExVIP");
+	ExVIP.playlist.clear();
+	var options = ":rtsp-tcp :network-caching=500";
+	var id = ExVIP.playlist.add(targetURL, "en673", options);
+	ExVIP.playlist.playItem(id);
+	ExVIP.playlist.play();
+	setScreensize(1);
+}
+
+function doPlayOrPause()
+{
+	var ExVIP = document.getElementById("ExVIP");
+	if(ExVIP.playlist.isPlaying) {
+		ExVIP.playlist.togglePause();
+	} else {
+		ExVIP.playlist.play();
+	}
+}
+
+function doStop()
+{
+	document.getElementById("ExVIP").playlist.stop();
+}
+-->
+</script>
+</head>
+<body onload="realtimeClock();">
+<table ID="Table1" align="center" width="1280">
+<tr>
+<td>
+<input class="btn btn-default btn-xs" type=button value="Back" id="Button0" onClick='history.back();' NAME="Button0"> <br \>
+<div id="svrTime"></div>
+</td>
+</tr>
+<tr>
+<td>
+<script type="text/javascript">
+<!--
+if(Btype == 1)
+{
+	document.write("<object classid=\"clsid:409868C4-8AD7-4E29-A24A-F0D47E4D62C8\"");
+	document.write("codebase=\"http://" + ip + "/axvlc.cab#Version=0,0,0,0\"");
+	document.write("id=\"ExVIP\" events=\"True\" VIEWASTEXT>");
+	document.write("<param name=\"ShowDisplay\" value=\"True\" />");
+	document.write("<param name=\"AutoLoop\" value=\"False\" />");
+	document.write("<param name=\"AutoPlay\" value=\"False\" />");
+	document.write("<param name=\"Volume\" value=\"100\" />");
+	document.write("<param name=\"StartTime\" value=\"0\" />");
+	document.write("</object>");
+}
+else if(Btype == 2)
+{
+	document.write("<p><b>This is an unsupported web browser.</b><br />");
+	document.write("<b>Active X web player is IE only.</b></p>");
+}
+else
+{
+	document.write("<p><b>Mobile not supported.</b><br />");
+	document.write("<b>Active X web player is IE only.</b></p>");
+}
+-->
+</script>
+</td>
+</tr>
+<tr>
+<td>
+<script type="text/javascript">
+<!--
+if(Btype == 1)
+{
+	document.write("<input class=\"btn btn-default btn-xs\" type=button value=\"Play\" id=\"PlayOrPause\" onClick='doPlayOrPause();' NAME=\"PlayOrPause\">");
+	document.write("<input class=\"btn btn-default btn-xs\" type=button value=\"Stop\" id=\"Button1\" onClick='doStop();' NAME=\"Button1\">");
+	document.write("<input class=\"btn btn-default btn-xs\" type=button value=\"1920x1080\" id=\"Button10\" onClick='setScreensize(0);' NAME=\"Button10\">");
+	document.write("<input class=\"btn btn-default btn-xs\" type=button value=\"1280x720\" id=\"Button11\" onClick='setScreensize(1);' NAME=\"Button11\">");
+	document.write("<input class=\"btn btn-default btn-xs\" type=button value=\"800x600\" id=\"Button12\" onClick='setScreensize(2);' NAME=\"Button12\">");
+	document.write("<input class=\"btn btn-default btn-xs\" type=button value=\"640x480\" id=\"Button13\" onClick='setScreensize(3);' NAME=\"Button13\">");
+	document.write("<input class=\"btn btn-default btn-xs\" type=button value=\"320x240\" id=\"Button14\" onClick='setScreensize(4);' NAME=\"Button14\">");
+	doGo(getStreamURL());
+}
+-->
+</script>
+</td>
+</tr>
+</table>
+</body>
+</html>

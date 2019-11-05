@@ -160,6 +160,7 @@ void SflsWriteEnable(void)
 
 void SflsSectErase(UINT addr, ENX_YN sync)
 {
+	while (SFLS_USR_REQ);
 	SflsWriteEnable();
 	while (SFLS_USR_REQ);
 	sfls_master->func_secter_erase(addr);
@@ -170,6 +171,7 @@ void SflsSectErase(UINT addr, ENX_YN sync)
 
 void Sfls32KErase(UINT addr, ENX_YN sync)
 {
+	while (SFLS_USR_REQ);
 	SflsWriteEnable();
 	while (SFLS_USR_REQ);
 	sfls_master->func_32k_erase(addr);
@@ -180,6 +182,7 @@ void Sfls32KErase(UINT addr, ENX_YN sync)
 
 void Sfls64KErase(UINT addr, ENX_YN sync)
 {
+	while (SFLS_USR_REQ);
 	SflsWriteEnable();
 	while (SFLS_USR_REQ);
 	sfls_master->func_64k_erase(addr);
@@ -190,6 +193,7 @@ void Sfls64KErase(UINT addr, ENX_YN sync)
 
 void SflsChipErase(ENX_YN sync)
 {
+	while (SFLS_USR_REQ);
 	SflsWriteEnable();
 	while (SFLS_USR_REQ);
 	sfls_master->func_chip_erase(0);

@@ -1,0 +1,82 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+<title></title>
+<link rel="stylesheet" type="text/css" href="..\bootstrap.min.css">
+<link rel="stylesheet" type="text/css" href="..\style.css">
+<script type="text/javascript">
+<!--
+function SetFormDefaults()
+{
+//<!--#isp_fo-->
+
+	document.form.i_f_md[FOCUS_MODE].checked = true;
+	document.form.i_f_ar.selectedIndex = FOCUS_AREA;
+	document.form.i_f_to.value = FOCUS_TONE;
+	document.form.i_f_hp.value = FOCUS_HPOS;
+	document.form.i_f_vp.value = FOCUS_VPOS;
+	document.form.i_f_hs.value = FOCUS_HSIZE;
+	document.form.i_f_vs.value = FOCUS_VSIZE;
+	
+	SetFocusMode();
+}
+
+function SetFocusMode()
+{
+	var foc_switch = document.form.i_f_md[0].checked;
+	document.form.i_f_ar.disabled = foc_switch;
+	document.form.i_f_to.disabled = foc_switch;
+	document.form.i_f_hp.disabled = foc_switch;
+	document.form.i_f_vp.disabled = foc_switch;
+	document.form.i_f_hs.disabled = foc_switch;
+	document.form.i_f_vs.disabled = foc_switch;
+}
+//-->
+</script>
+
+</head>
+<body onload="SetFormDefaults();">
+<form id="form" name="form" method="get" action="appispmu.cgi">
+	<div class="sub-title">
+		<input class="btn btn-default pull-right" name="btOK" type="submit" value="submit">
+		<h3>FOCUS ADJ</h3>
+	</div>
+	<hr>
+	<div>
+		<label class="sub-label">Mode</label>
+		<label class="radio-inline"><input type="radio" name="i_f_md" value=0 onchange=SetFocusMode()>OFF</label>
+		<label class="radio-inline"><input type="radio" name="i_f_md" value=1 onchange=SetFocusMode()>ON</label>
+	</div>
+	<hr>
+	<div>
+		<label class="sub-label">Area</label>
+		<select name="i_f_ar">
+			<option value=0>NARROW</option>
+			<option value=1>MIDDLE</option>
+			<option value=2>WIDE</option>
+		</select>
+	</div>
+	<div>
+		<label class="sub-label">Tone</label>
+		<input name="i_f_to" type="text"> [0~2]
+	</div>
+	<div>
+		<label class="sub-label">H position</label>
+		<input name="i_f_hp" type="text"> [0~60]
+	</div>
+	<div>
+		<label class="sub-label">V position</label>
+		<input name="i_f_vp" type="text"> [0~34]
+	</div>
+	<div>
+		<label class="sub-label">H size</label>
+		<input name="i_f_hs" type="text"> [0~60]
+	</div>
+	<div>
+		<label class="sub-label">V size</label>
+		<input name="i_f_vs" type="text"> [0~34]
+	</div>
+</form>
+</body>
+</html>

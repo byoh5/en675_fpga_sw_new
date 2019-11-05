@@ -35,11 +35,15 @@
 #include "rtp_queue.h"
 #include "rtspd_define.h"
 
+#define RTSPD_USE_DMA 0
+
 extern int rtspd_connect_info_count(void);
 
 extern rtsp_connect_info *rtspd_connect_info_get_index(UINT i);
 
 extern int rtspd_connect_kick(UINT index);
+
+extern int rtspd_player_count(void);
 
 extern void rtp_queue_stream_video_put(UINT addr, UINT size, UINT flags, rtsp_stream_type video_type, UINT ts);
 

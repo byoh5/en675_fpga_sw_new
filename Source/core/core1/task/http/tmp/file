@@ -1,0 +1,32 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+<title></title>
+<script type="text/javascript">
+<!--
+//<!--#nw_tcp-->
+
+count = 20;
+function redirect()
+{
+	if(count-- == 0)
+		top.location = '../index.html';
+
+	setTimeout("redirect()", 1000);
+}
+-->
+</script>
+</head>
+<body onload="redirect();">
+<div>
+<br><h1>Submit : Processing...</h1>
+<hr>
+<h2>&nbsp;After a while, web page is switched.</h2>
+<h4>&nbsp;If you set or change the SSID to connect, the device reboots (it takes 20 seconds to reconnect).<br /><br />
+&nbsp;If a 404 error appears<br />
+&nbsp;&nbsp;&nbsp;- If you set it in Wi-Fi AP mode, reconnect the AP and go to the first page.<br />
+&nbsp;&nbsp;&nbsp;- If you set it in Ethernet / Wi-Fi Station mode, please try to access the web page again.</h4>
+</div>
+</body>
+</html>

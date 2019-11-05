@@ -75,7 +75,9 @@ const char *sBusCmd[]       = {"show bus throughput",                           
 const char *sSysreg[]       = {"Test(System Reg)",                               (char*)0};
 const char *sDump[]         = {"Test(Dump)",                                     (char*)0};
 const char *sCDump[]        = {"Test(hwflush_dcache_range & Dump)",              (char*)0};
+#if defined(__AUDIO__)
 const char *sI2sTest[]      = {"Test(i2s)",                                      (char*)0};
+#endif
 const char *sAdcTest[]      = {"Test(adc)",                                      (char*)0};
 
 tMonCmd gCmdList[] =
@@ -103,6 +105,7 @@ tMonCmd gCmdList[] =
 	{"task",		cmd_task_status,	sTaskStatus		},
 	{"memory",		cmd_mem_ststus,		sMemStatus		},
 	{"time",		cmd_time,			sTimeCmd		},
+	{"user",		cmd_userarea,		sUserAreaCmd	},
 
 //FileSystem
 #if defined(__FILESYSTEM__)
@@ -126,7 +129,7 @@ tMonCmd gCmdList[] =
 	{"fhash",       UsrFileHash,        sFileHash       },
 #if (LOAD_FS_SDCARD==1)
 	{"sdtest",      UsrSDCardSpeedTestCmd, sSDCardSpeedTestCmd},
-//	{"sdsave",		UsrMakevidCmd,		sMakevidCmd		},
+	{"sdsave",		UsrMakevidCmd,		sMakevidCmd		},
 #endif
 	{"ftest",		UseFatTest,			sFatTestCmd		},
 #endif
@@ -141,7 +144,9 @@ tMonCmd gCmdList[] =
 	{"dump",		cmd_test_dump,		sDump			},
 	{"cdump",		cmd_test_dump,		sCDump			},
 	{"sfls",		cmd_test_sfls,		sSflsTest		},
+#if defined(__AUDIO__)
 	{"i2s",			cmd_test_i2s,		sI2sTest		},
+#endif
 	{"adc",			cmd_test_adc,		sAdcTest		},
 	{"sysreg",		cmd_test_sysreg,	sSysreg			},
 	{"bus",			cmd_test_bus,		sBusCmd			},
@@ -598,6 +603,18 @@ int UsrCmd_j(int argc, char *argv[])
 {
 	//set_csr(mie, MIP_MTIP|MIP_MEIP);
 	//clear_csr(mie, MIP_MTIP|MIP_MEIP);
+
+	TimerSetFreq(8, 250, 1000000000, 500000000);
+	TimerSetPWMEn(8, ENX_ON);
+	TimerStart(8);
+
+#if 0
+	WdtInit(10000);
+	while(1) {
+		printf("SYS_WDT_CNT: %u/%u\n", SYS_WDT_CNT, SYS_WDT_LMT);
+		vTaskDelay(10);
+	}
+#endif
 
 #if 0
 	printf("netifapi_netif_set_link_down start\n");
@@ -1072,6 +1089,7 @@ int cmd_test_dump(int argc, char *argv[])
 	UNUSED(argv);
 }
 
+#if defined(__AUDIO__)
 int cmd_test_i2s(int argc, char *argv[])
 {
 	UINT u32GetData = 0;
@@ -1139,16 +1157,52 @@ int cmd_test_i2s(int argc, char *argv[])
 		//tx_lr : 0 : Mute(0), 1: Left, 2: Right, 3: Both -> TX할 때 mute 또는 unmute 선택
 		I2sTxCfg(tx_mode, tx_cd, tx_dw, rd_byte, rd_dw, rd_len, tx_lr);
 	} else {
-		printf("tx_mode: %u\n", I2S_TXMODE);
-		printf("tx_cd  : %u\n", I2S_TXCODEC);
-		printf("tx_dw  : %u\n", I2S_TXDW);
-		printf("rd_byte: %u\n", I2S_RDBYTE);
-		printf("rd_dw  : %u\n", I2S_RDDW);
-		printf("rd_len : %u\n", I2S_RDLEN);
-		printf("tx_lr  : %u\n", I2S_TXLR);
+		// COMMON
+		printf("== I2S COMMON ====\n");
+		printf("I2S_BYTE      : %u\n", I2S_BYTE);
+		printf("I2S_MODE      : %u\n", I2S_MODE);
+		printf("I2S_SCKCNT    : %u\n", I2S_SCKCNT);
+
+		// TX
+		printf("== I2S TX ========\n");
+		printf("I2S_TXEN      : %u\n", I2S_TXEN);
+		printf("I2S_ADRR      : 0x%08X\n", I2S_ADRR);
+		printf("I2S_TX_ADDR   : 0x%08X\n", I2S_TX_ADDR);
+		printf("I2S_TXLR      : %u\n", I2S_TXLR);
+		printf("I2S_TXEDN     : %u\n", I2S_TXEDN);
+		printf("I2S_RDBYTE    : %u\n", I2S_RDBYTE);
+		printf("I2S_TXDW      : %u\n", I2S_TXDW);
+		printf("I2S_TXCODEC   : %u\n", I2S_TXCODEC);
+		printf("I2S_TXMODE    : %u\n", I2S_TXMODE);
+		printf("I2S_RDLEN     : %u\n", I2S_RDLEN);
+		printf("I2S_RDDW      : %u\n", I2S_RDDW);
+
+		// RX
+		printf("== I2S RX ========\n");
+		printf("I2S_RXEN      : %u\n", I2S_RXEN);
+		printf("I2S_ADRW      : 0x%08X\n", I2S_ADRW);
+		printf("I2S_RX_ADDR   : 0x%08X\n", I2S_RX_ADDR);
+		printf("I2S_RXEDN     : %u\n", I2S_RXEDN);
+		printf("I2S_WRBYTE    : %u\n", I2S_WRBYTE);
+		printf("I2S_RXDW      : %u\n", I2S_RXDW);
+		printf("I2S_RXCODEC   : %u\n", I2S_RXCODEC);
+		printf("I2S_RXMODE    : %u\n", I2S_RXMODE);
+		printf("I2S_WRLEN     : %u\n", I2S_WRLEN);
+		printf("I2S_WRDW      : %u\n", I2S_WRDW);
+
+		// IRQ
+		printf("== I2S IRQ =======\n");
+		printf("I2S_IRQ       : %u\n", I2S_IRQ);
+		printf("I2S_TX_IRQ_CLR: %u\n", I2S_TX_IRQ_CLR);
+		printf("I2S_RX_IRQ_CLR: %u\n", I2S_RX_IRQ_CLR);
+		printf("I2S_TX_IRQ_EN : %u\n", I2S_TX_IRQ_EN);
+		printf("I2S_RX_IRQ_EN : %u\n", I2S_RX_IRQ_EN);
+
+		printf("==================\n");
 	}
 	return 0;
 }
+#endif
 
 TimerHandle_t xTimersADCTest;
 static void test_adc_process(TimerHandle_t xTimer)
@@ -1161,7 +1215,7 @@ static void test_adc_process(TimerHandle_t xTimer)
 
 int cmd_test_adc(int argc, char *argv[])
 {
-	if (strcmp(argv[1], "start") == 0) {
+	if (argc == 2 && strcmp(argv[1], "start") == 0) {
 		if (xTimersADCTest == NULL) {
 			xTimersADCTest = xTimerCreate("AdcTest", 50, pdTRUE, ( void * ) 0, test_adc_process);
 			if (xTimersADCTest != NULL) {
@@ -1177,7 +1231,7 @@ int cmd_test_adc(int argc, char *argv[])
 		} else {
 			printf("ADC Timer start fail!\n");
 		}
-	} else if (strcmp(argv[1], "stop") == 0) {
+	} else if (argc == 2 && strcmp(argv[1], "stop") == 0) {
 		BaseType_t xReturn = xTimerStop( xTimersADCTest, 0 );
 		if (xReturn == pdPASS) {
 			printf("ADC Timer stop ok!\n");

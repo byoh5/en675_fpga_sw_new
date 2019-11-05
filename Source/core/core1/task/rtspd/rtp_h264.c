@@ -83,6 +83,7 @@ int rtspd_client_rtp_h264_main(rtsp_client *prcInfo)
 	}
 
 	rtp_session *rtpSession = &(prcInfo->rtp_ss[ENX_RTSP_STRTYPE_numVIDEO]);
+	rtsp_connect_info *rtspConnect = &(prcInfo->conn_info);
 	rtpSession->buf_idx = (rtpSession->buf_idx + 1) % 2;
 
 	UINT remaining;
@@ -217,8 +218,8 @@ int rtspd_client_rtp_h264_main(rtsp_client *prcInfo)
 				if (prcInfo->eTransport == ENX_RTSP_TRANSPORT_TCP || prcInfo->eTransport == ENX_RTSP_TRANSPORT_HTTP) {
 					rtspHead = (rthInterleaved *)send_buffer;
 					rtspHead->un8Magic = '$';
-					rtspHead->un8Channel = rtpSession->rtp_port;
-					rtspHead->un16Length = htons(0); // packet가 모두 생성되고 나서 다시 설정 해주어야 한다.
+					rtspHead->un8Channel = rtspConnect->rtp_port[ENX_RTSP_STRTYPE_numVIDEO]; // TCP에서는 rtp_port는 Channel로 사용됨
+					rtspHead->un16Length = 0; // packet가 모두 생성되고 나서 다시 설정 해주어야 한다.
 					rtpSession->buf_len[rtpSession->buf_idx] = sizeof(rthInterleaved);
 				}
 
@@ -248,8 +249,8 @@ int rtspd_client_rtp_h264_main(rtsp_client *prcInfo)
 				if (spsppsSize) {
 					// SPS or PPS
 					h264Data = send_buffer + rtpSession->buf_len[rtpSession->buf_idx];
-					//BDmaMemCpy_rtos(0, h264Data, base_offset, spsppsSize);
-					memcpy(h264Data, base_offset, spsppsSize);
+					BDmaMemCpy_rtos_flush(RTSPD_USE_DMA, h264Data, base_offset, spsppsSize);
+					//memcpy(h264Data, base_offset, spsppsSize);
 
 					//hexDump("IDR", base_offset, spsppsSize);
 
@@ -282,8 +283,8 @@ int rtspd_client_rtp_h264_main(rtsp_client *prcInfo)
 						remaining = h264left;
 					}
 
-					//BDmaMemCpy_rtos(0, send_buffer + rtpSession->buf_len[rtpSession->buf_idx], base_offset, remaining);
-					memcpy(send_buffer + rtpSession->buf_len[rtpSession->buf_idx], base_offset, remaining);
+					BDmaMemCpy_rtos_flush(RTSPD_USE_DMA, send_buffer + rtpSession->buf_len[rtpSession->buf_idx], base_offset, remaining);
+					//memcpy(send_buffer + rtpSession->buf_len[rtpSession->buf_idx], base_offset, remaining);
 
 					rtpSession->rtp_pk.offset += remaining;
 					rtpSession->rtp_pk.data_offset += remaining;

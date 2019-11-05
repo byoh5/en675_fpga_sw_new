@@ -9,6 +9,7 @@ typedef struct {
 	INT TIMEZONE;
 	time_t UPTIME;
 
+	UINT CMP_DATEID;
 	UINT VIDEO_REC;
 	UINT VIDEO_FPS;
 } share_msg_t;

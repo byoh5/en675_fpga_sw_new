@@ -34,6 +34,9 @@
 
 #include "httpd_opts.h"
 #include "lwip/err.h"
+#if defined(__FILESYSTEM__)
+#include "ff.h"
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -69,6 +72,10 @@ struct fs_file {
   /* pextension is free for implementations to hold private (extensional)
      arbitrary data, e.g. holding some file state or file system handle */
   fs_file_extension *pextension;
+#if LWIP_HTTPD_SUPPORT_11_RANGE
+  int range_start;
+  int range_end;
+#endif
 #if HTTPD_PRECALCULATED_CHECKSUM
   const struct fsdata_chksum *chksum;
   u16_t chksum_count;
@@ -85,6 +92,68 @@ struct fs_file {
 #if LWIP_HTTPD_FS_ASYNC_READ
 typedef void (*fs_wait_cb)(void *arg);
 #endif /* LWIP_HTTPD_FS_ASYNC_READ */
+
+typedef enum {
+  fftNone,
+  fftMalloc,
+  fftBigfile,
+  fftJpeg,
+//fftOnvif,
+  fftDdr
+//fftVidStream
+} fs_file_type;
+
+typedef struct {
+  fs_file_type type;
+  int start;
+  int end;
+  int total;
+  WORD last_modified_date;
+  WORD last_modified_time;
+  UINT code;
+} fs_file_enx;
+
+// stream
+//#include "rtp_queue.h"
+
+struct fs_custom_data {
+#if defined(__FILESYSTEM__)
+  FIL f;
+#endif
+  fs_file_type type;
+  const char *name;
+
+// stream
+#if 0
+  BYTE *buffer;
+  UINT buf_size;
+  UINT stream_nal_ready;
+  BYTE stream_nal[32];
+  BYTE tbuffer[1024];
+  UINT tbuf_size;
+  UINT tbuf_offset;
+  UINT stream_first;
+  UINT sequence_number;
+  int stream_ready;
+  int stream_pos;
+  rtp_queue_data stream_data;
+#endif
+
+#if LWIP_HTTPD_SUPPORT_11_RANGE
+//int start;
+//int end;
+  int total;
+  WORD last_modified_date;
+  WORD last_modified_time;
+  UINT code;
+#endif
+
+#if LWIP_HTTPD_EXAMPLE_CUSTOMFILES_DELAYED
+  int delay_read;
+  fs_wait_cb callback_fn;
+  void *callback_arg;
+#endif
+};
 
 err_t fs_open(struct fs_file *file, const char *name);
 void fs_close(struct fs_file *file);

@@ -159,8 +159,8 @@ int rtspd_client_rtsp_header_parse(rtsp_client *prcInfo, char *buf, UINT buf_len
 						case ENX_RTSP_TRANSPORT_UDP:
 						case ENX_RTSP_TRANSPORT_TCP:
 						case ENX_RTSP_TRANSPORT_HTTP:
-							prcInfo->rtp_ss[prcInfo->nQuery].rtp_port = rtp_port;
-							prcInfo->rtp_ss[prcInfo->nQuery].rtcp_port = rtcp_port;
+							prcInfo->conn_info.rtp_port[prcInfo->nQuery] = rtp_port;
+							prcInfo->conn_info.rtcp_port[prcInfo->nQuery] = rtcp_port;
 							printf("Port: %d-%d\n", rtp_port, rtcp_port);
 							break;
 						case ENX_RTSP_TRANSPORT_NONE:
@@ -492,6 +492,7 @@ int rtspd_client_rtsp_check_url(rtsp_client *prcInfo, char *url)
 	ENTER();
 
 	int res = -1;
+	prcInfo->nVEncoderIdx = -1;
 	if (url) {
 		if (prcInfo->isLive == ENX_RTSP_STREAM_NONE) {
 			prcInfo->isLive = ENX_RTSP_STREAM_ERROR;	// fail 될 경우 default 값
@@ -502,32 +503,7 @@ int rtspd_client_rtsp_check_url(rtsp_client *prcInfo, char *url)
 				strpIP += 2;
 				strEnd = strchr(strpIP, '/');
 				if (strEnd != NULL) {
-					if (strcmp(strEnd, "/"H264URL) == 0) {
-						res = 0;
-						prcInfo->isLive = ENX_RTSP_STREAM_LIVE_H264_1;
-					} else if (strcmp(strEnd, "/"HSUBURL) == 0) {
-						res = 0;
-						prcInfo->isLive = ENX_RTSP_STREAM_LIVE_H264_2;
-					} else if (strcmp(strEnd, "/"H265_1URL) == 0) {
-						res = 0;
-						prcInfo->isLive = ENX_RTSP_STREAM_LIVE_H265_1;
-					} else if (strcmp(strEnd, "/"H265_2URL) == 0) {
-						res = 0;
-						prcInfo->isLive = ENX_RTSP_STREAM_LIVE_H265_2;
-					}
-#if (JPEG_STREAM==1)
-					else if (strcmp(strEnd, "/"JPEGURL) == 0) {
-						res = 0;
-						prcInfo->isLive = ENX_RTSP_STREAM_LIVE_JPEG;
-					}
-#endif
-#if (SW_JPEG_ENCODER==1)
-					else if (strcmp(strEnd, "/"JSUBURL) == 0) {
-						res = 0;
-						prcInfo->isLive = ENX_RTSP_STREAM_LIVE_JPEG_SW;
-					}
-#endif
-					else if (strncmp(strEnd, "/sdcard/", sizeof("/sdcard/") - 1) == 0) {
+					if (strncmp(strEnd, "/sdcard/", sizeof("/sdcard/") - 1) == 0) {
 						strEnd += 1;
 						strEnd = strchr(strEnd, '/');
 						flprintf("SDcard Path: [%s]\n", strEnd);
@@ -536,6 +512,29 @@ int rtspd_client_rtsp_check_url(rtsp_client *prcInfo, char *url)
 						res = 0;
 						prcInfo->isLive = ENX_RTSP_STREAM_FILE_H264_TYPE;
 					} else {
+						char strUrlBuf[STREAM_URL_LENGTH + 1];
+						for (UINT i = 0 ; i < VIDEO_CHANNEL_CNT; i++) {
+							snprintf(strUrlBuf, STREAM_URL_LENGTH, "/%s", (char *)gtUser.vcVideo[i].strStmUrl);
+							if (strcmp(strEnd, strUrlBuf) == 0) {
+								res = 0;
+								prcInfo->nVEncoderIdx = i;
+								switch (gtUser.vcVideo[i].eCodec) {
+								case e_vcodecH265:
+									prcInfo->isLive = ENX_RTSP_STREAM_LIVE_H265_1;
+									break;
+								case e_vcodecH264:
+									prcInfo->isLive = ENX_RTSP_STREAM_LIVE_H264_1;
+									break;
+								case e_vcodecJPEG:
+									prcInfo->isLive = ENX_RTSP_STREAM_LIVE_JPEG;
+									break;
+								}
+								break;
+							}
+						}
+					}
+
+					if (res == -1) {
 						flprintf("Error URL\n");
 					}
 				} else {
@@ -602,6 +601,8 @@ int rtspd_client_rtsp_process_error(rtsp_client *prcInfo, char *buf, int *buf_le
 		; // 461 error은 state를 ERROR로 변경하지 않는다.
 	} else if (strcmp(ENX_RTSP_RESPONSE_458, strError) == 0) {
 		; // 458 error은 state를 ERROR로 변경하지 않는다. SET_PARAMETER은 항상 458이므로...
+	} else if (strcmp(ENX_RTSP_RESPONSE_453, strError) == 0) {
+		; // 453 error은 state를 ERROR로 변경하지 않는다.
 	} else if (strcmp(ENX_RTSP_RESPONSE_401, strError) == 0) {
 		; // 401 error은 state를 ERROR로 변경하지 않는다. RTSP Authorization.
 	} else {
@@ -764,8 +765,25 @@ int rtspd_client_rtsp_process_describe(rtsp_client *prcInfo, char *buf, int *buf
 #ifdef __AUDIO__
 #if (AUDIO_CODEC==AUDIO_CODEC_RAW)
 			const char* sdpAudLine =	"m=audio 0 RTP/AVP %u\n"
+#if (PCM_FREQUENCY==PCM_16BIT_8000HZ)
 										"b=AS:128\n"
 										"a=rtpmap:%u L16/8000\n"
+#elif (PCM_FREQUENCY==PCM_16BIT_16000HZ)
+										"b=AS:256\n"
+										"a=rtpmap:%u L16/16000\n"
+#elif (PCM_FREQUENCY==PCM_16BIT_32000HZ)
+										"b=AS:512\n"
+										"a=rtpmap:%u L16/32000\n"
+#elif (PCM_FREQUENCY==PCM_16BIT_11025HZ)
+										"b=AS:176\n"
+										"a=rtpmap:%u L16/11025\n"
+#elif (PCM_FREQUENCY==PCM_16BIT_22050HZ)
+										"b=AS:352\n"
+										"a=rtpmap:%u L16/22050\n"
+#elif (PCM_FREQUENCY==PCM_16BIT_44100HZ)
+										"b=AS:705\n"
+										"a=rtpmap:%u L16/44100\n"
+#endif
 										"a=control:%s/%s\n"
 										"a=recvonly\n";
 			// raw
@@ -814,21 +832,47 @@ int rtspd_client_rtsp_process_setup(rtsp_client *prcInfo, char *buf, int *buf_le
 	int res = 0;
 
 	if (rtspd_client_rtsp_state(prcInfo, ENX_RTSP_STATE_SETUP) == 0) {
-		if (prcInfo->isTransport == ENX_YES) {
-			// 전송 가능한 통신프로토콜로 요청했는지 판단한다.
-			switch (prcInfo->eTransport) {
-				case ENX_RTSP_TRANSPORT_TCP:
-				case ENX_RTSP_TRANSPORT_UDP:
-					break;
-				case ENX_RTSP_TRANSPORT_HTTP:
-				case ENX_RTSP_TRANSPORT_NONE:
-					res = -1;
-					rtspd_client_rtsp_process_error(prcInfo, buf, buf_len, ENX_RTSP_RESPONSE_461);
-					break;
+		static SemaphoreHandle_t xSemSetup = NULL;
+		if (xSemSetup == NULL) {
+			xSemSetup = xSemaphoreCreateMutex();
+		}
+
+		xSemaphoreTake(xSemSetup, portMAX_DELAY);
+
+		do {
+			// 접속이 추가로 가능한지 판단한다.
+			int check_count = rtspd_player_count();
+			_Yprintf("Check Count: %u\n", check_count);
+			if (check_count >= RTSP_play_MAX) {
+				rtspd_client_rtsp_process_error(prcInfo, buf, buf_len, ENX_RTSP_RESPONSE_453);
+				break;
 			}
 
-			// 올바른 URL을 요청였는지 확인한다.
-			if (res == 0) {
+			prcInfo->rtp_ss = (rtp_session *)pvPortCalloc(ENX_RTSP_STRTYPE_numNONE, sizeof(rtp_session));
+			if (prcInfo->rtp_ss == NULL) {
+				flprintf("rtp_ss NULL response 500\n");
+				rtspd_client_rtsp_process_error(prcInfo, buf, buf_len, ENX_RTSP_RESPONSE_500);
+				break;
+			}
+
+			if (prcInfo->isTransport == ENX_YES) {
+				// 전송 가능한 통신프로토콜로 요청했는지 판단한다.
+				switch (prcInfo->eTransport) {
+					case ENX_RTSP_TRANSPORT_TCP:
+					case ENX_RTSP_TRANSPORT_UDP:
+						break;
+					case ENX_RTSP_TRANSPORT_HTTP:
+					case ENX_RTSP_TRANSPORT_NONE:
+						res = -1;
+						break;
+				}
+
+				if (res == -1) {
+					rtspd_client_rtsp_process_error(prcInfo, buf, buf_len, ENX_RTSP_RESPONSE_461);
+					break;
+				}
+
+				// 올바른 URL을 요청였는지 확인한다.
 				switch (prcInfo->setup_query) {
 					case ENX_RTSP_STRTYPE_VIDEO:
 						switch (prcInfo->isLive) {
@@ -854,8 +898,6 @@ int rtspd_client_rtsp_process_setup(rtsp_client *prcInfo, char *buf, int *buf_le
 #endif
 							default:
 								res = -1;
-								flprintf("Stream Type(%d)\n", prcInfo->isLive);
-								rtspd_client_rtsp_process_error(prcInfo, buf, buf_len, ENX_RTSP_RESPONSE_404);
 								break;
 						}
 						break;
@@ -873,21 +915,30 @@ int rtspd_client_rtsp_process_setup(rtsp_client *prcInfo, char *buf, int *buf_le
 //					case ENX_RTSP_STRTYPE_METADATA:
 //					case ENX_RTSP_STRTYPE_BACKCHANNEL:
 					case ENX_RTSP_STRTYPE_NONE:
+					default:
 						res = -1;
-						rtspd_client_rtsp_process_error(prcInfo, buf, buf_len, ENX_RTSP_RESPONSE_404);
 						break;
 				}
-			}
 
-			// 모두가 올바르므로 전송할 구문 작성 및 client 전송세션의 초기화 작업을 한다.
-			if (res == 0) {
+				if (res == -1) {
+					flprintf("Query(%d) StreamType(%d)\n", prcInfo->setup_query, prcInfo->isLive);
+					rtspd_client_rtsp_process_error(prcInfo, buf, buf_len, ENX_RTSP_RESPONSE_404);
+					break;
+				}
+
+				// 모두가 올바르므로 전송할 구문 작성 및 client 전송세션의 초기화 작업을 한다.
 				if (prcInfo->nSession == 0) {
 					// sessionID는 랜덤하게 결정된 clientID값으로 설정한다.
 					prcInfo->nSession = prcInfo->clientid;
 				}
 
 				prcInfo->rtp_ss[prcInfo->nQuery].ssrc = rand() * rand();
+#if 1
+				_Yprintf("Warning: TEST CODE: RTP start_rtptime\n");
+				prcInfo->rtp_ss[prcInfo->nQuery].start_rtptime = (*mtime * 9) / 50;
+#else
 				prcInfo->rtp_ss[prcInfo->nQuery].start_rtptime = 1 + (UINT)(rand() % (0xFFFFFFFF));
+#endif
 				prcInfo->rtp_ss[prcInfo->nQuery].start_seq = 1 + (WORD)(rand() % (0xFFFF));
 				prcInfo->rtp_ss[prcInfo->nQuery].packet_cnt = 0;
 				prcInfo->rtp_ss[prcInfo->nQuery].total_length = 0;
@@ -897,16 +948,16 @@ int rtspd_client_rtsp_process_setup(rtsp_client *prcInfo, char *buf, int *buf_le
 				rtspd_client_rtsp_make_datetime(strDate);
 				switch (prcInfo->eTransport) {
 					case ENX_RTSP_TRANSPORT_UDP:
-						*buf_len = sprintf(buf, ENX_RTSP_RESPONSE_HEAD_S ENX_RTSP_RESPONSE_SETUP_UDP "%s" RTSP_strCRLF, 
-							ENX_RTSP_RESPONSE_200, prcInfo->nCSeq, prcInfo->nSession, 
-							prcInfo->rtp_ss[prcInfo->nQuery].rtp_port, prcInfo->rtp_ss[prcInfo->nQuery].rtcp_port, 
+						*buf_len = sprintf(buf, ENX_RTSP_RESPONSE_HEAD_S ENX_RTSP_RESPONSE_SETUP_UDP "%s" RTSP_strCRLF,
+							ENX_RTSP_RESPONSE_200, prcInfo->nCSeq, prcInfo->nSession,
+							prcInfo->conn_info.rtp_port[prcInfo->nQuery],prcInfo->conn_info.rtcp_port[prcInfo->nQuery],
 							554, 555, prcInfo->rtp_ss[prcInfo->nQuery].ssrc, strDate);
 						break;
 					case ENX_RTSP_TRANSPORT_TCP:
 					case ENX_RTSP_TRANSPORT_HTTP:
-						*buf_len = sprintf(buf, ENX_RTSP_RESPONSE_HEAD_S ENX_RTSP_RESPONSE_SETUP_TCP "%s" RTSP_strCRLF, 
-							ENX_RTSP_RESPONSE_200, prcInfo->nCSeq, prcInfo->nSession, 
-							prcInfo->rtp_ss[prcInfo->nQuery].rtp_port, prcInfo->rtp_ss[prcInfo->nQuery].rtcp_port, 
+						*buf_len = sprintf(buf, ENX_RTSP_RESPONSE_HEAD_S ENX_RTSP_RESPONSE_SETUP_TCP "%s" RTSP_strCRLF,
+							ENX_RTSP_RESPONSE_200, prcInfo->nCSeq, prcInfo->nSession,
+							prcInfo->conn_info.rtp_port[prcInfo->nQuery],prcInfo->conn_info.rtcp_port[prcInfo->nQuery],
 							prcInfo->rtp_ss[prcInfo->nQuery].ssrc, strDate);
 						break;
 					case ENX_RTSP_TRANSPORT_NONE:
@@ -929,10 +980,12 @@ int rtspd_client_rtsp_process_setup(rtsp_client *prcInfo, char *buf, int *buf_le
 					prcInfo->play_query |= prcInfo->setup_query;
 					prcInfo->rtp_ss[prcInfo->nQuery].tx_ready = ENX_RTP_TXSTE_READY;
 				}
+			} else {
+				rtspd_client_rtsp_process_error(prcInfo, buf, buf_len, ENX_RTSP_RESPONSE_400);
 			}
-		} else {
-			rtspd_client_rtsp_process_error(prcInfo, buf, buf_len, ENX_RTSP_RESPONSE_400);
-		}
+		} while (0);
+
+		xSemaphoreGive(xSemSetup);
 	} else {
 		switch (prcInfo->state) {
 			case ENX_RTSP_STATE_PLAY:
@@ -970,6 +1023,14 @@ int rtspd_client_rtsp_process_play(rtsp_client *prcInfo, char *buf, int *buf_len
 			if (prcInfo->nSession != 0) {
 				char strRtpinfo[1024] = {0};
 				int nLen, offset = sprintf(strRtpinfo, ENX_RTSP_RESPONSE_RTPINFO_H);
+
+				if (prcInfo->rtp_ss == NULL) {
+					flprintf("rtp_ss NULL!!!!!\n");
+					while (1) {
+						vTaskDelay(1);
+					}
+				}
+
 				if (prcInfo->play_query & ENX_RTSP_STRTYPE_VIDEO) {
 					nLen = sprintf(strRtpinfo + offset, ENX_RTSP_RESPONSE_RTPINFO_B, prcInfo->strUrl, ENX_RTSP_SDP_URL_VIDEO, prcInfo->rtp_ss[ENX_RTSP_STRTYPE_numVIDEO].start_seq, prcInfo->rtp_ss[ENX_RTSP_STRTYPE_numVIDEO].start_rtptime);
 					offset += nLen;
@@ -1056,6 +1117,11 @@ int rtspd_client_rtsp_process_teardown(rtsp_client *prcInfo, char *buf, int *buf
 			*buf_len = sprintf(buf, ENX_RTSP_RESPONSE_HEAD "%s" RTSP_strCRLF, ENX_RTSP_RESPONSE_200, prcInfo->nCSeq, strDate);
 		} else {
 			*buf_len = sprintf(buf, ENX_RTSP_RESPONSE_HEAD_S "%s" RTSP_strCRLF, ENX_RTSP_RESPONSE_200, prcInfo->nCSeq, prcInfo->nSession, strDate);
+		}
+
+		if (prcInfo->rtp_ss) {
+			vPortFree(prcInfo->rtp_ss);
+			prcInfo->rtp_ss = NULL;
 		}
 	} else {
 		flprintf("state2(%d)\n", prcInfo->state);

@@ -1,118 +1,4 @@
 #include "dev.h"
-#include "ethphy.h"
-
-char g_key = 0xFF;
-
-#ifdef __FREERTOS__
-#include "enx_freertos.h"
-#include "networkif.h"
-#include "shell.h"
-#include "ledblink.h"
-#include "sdcard.h"
-#include "iperf.h"
-
-#include "pmp.h"
-#include "rtspd.h"
-
-extern void trap_freertos(void); // mentry.S
-
-void TestTask(void* pvParameters)
-{
-	while (1) {
-		printf("Test Task\n");
-		vTaskDelay(3000);
-	}
-}
-
-#if defined(__ETHERNET__)
-void startNetProtocol(void *arg)
-{
-	// Wait for network activation.
-	network_check_netif();
-
-#if (NET_LWIPERF==1)
-	lwiperf_init();
-#endif
-#if (NET_LWIPHTTP==1)
-	extern void httpd_init(void);
-	httpd_init();
-#endif
-#if (NET_SNTPC==1)
-	if (gtNetwork.u1UseSntp == DEF_ON) {
-		sntpc_start();
-	}
-#endif
-#if (ENX_RTSP_use==1)
-	vTaskCreate("rtspd", rtspd_socket_server, NULL, LV3_STACK_SIZE, LV5_TASK_PRIO);
-#endif
-
-	vTaskDelete(NULL);
-	UNUSED(arg);
-}
-#endif
-extern void wifiTask(void *pvParameters);
-void test_freertos(void)
-{
-	vMemoryHeapInit();
-
-	vTaskCreate("shell", ShellTask, NULL, LV2_STACK_SIZE, LV6_TASK_PRIO);
-
-#ifdef __USE_SDIOCD__
-	vTaskCreate("sdcard", SdcardTask, NULL, LV1_STACK_SIZE, LV3_TASK_PRIO);
-#endif
-#ifdef __NETWORK__
-	vTaskCreate("startLwip", startLwip, NULL, LV3_STACK_SIZE, LV7_TASK_PRIO);
-#endif
-	vTaskCreate("ledblink", LedblinkTask, NULL, LV0_STACK_SIZE, LV7_TASK_PRIO);
-#ifdef __NETWORK__
-	vTaskCreate("netProt", startNetProtocol, NULL, LV2_STACK_SIZE, LV5_TASK_PRIO);
-#endif
-#if defined(__WIFI__)
-	vTaskCreate("Wifi", wifiTask, NULL, LV6_STACK_SIZE, LV7_TASK_PRIO);
-#endif
-
-	vTaskStartScheduler();
-}
-
-
-#if 0
-#if 1
-void *__mmap (void *__addr, size_t __len, int __prot, int __flags, int __fd, off_t __offset)
-{
-	flprintf("\n");
-}
-
-void *malloc(size_t x)
-{
-	return pvPortMalloc(x);
-}
-
-void *realloc(void *x, size_t y)
-{
-	return pvPortRealloc(x, y);
-}
-
-void *calloc(size_t x, size_t y)
-{
-	return pvPortCalloc(x, y);
-}
-
-void free(void *x)
-{
-	vPortFree(x);
-}
-#else
-
-#define malloc(x) pvPortMalloc(x)
-#define realloc(x, y) pvPortRealloc(x, y)
-#define calloc(x, y) pvPortCalloc(x, y)
-#define free(x) vPortFree(x)
-
-#endif
-#endif
-
-
-#endif
 
 void enx_peri_init(void)
 {
@@ -151,65 +37,28 @@ void enx_peri_init(void)
 	BDmaInit();
 	CDmaInit();
 
-
-	//DDR_MEM_SEL = 0; //  16MByte(128Mb) S2/S4
-	//DDR_MEM_SEL = 1; //  32MByte(256Mb) S2/S4
-	//DDR_MEM_SEL = 2; //  64MByte(512Mb) S2/S4
-	//DDR_MEM_SEL = 3; // 128MByte(1Gb) S2
-	//DDR_MEM_SEL = 4; // 128MByte(1Gb) S4
-	//DDR_MEM_SEL = 5; // 256MByte(2Gb) S2
-	//DDR_MEM_SEL = 6; // 256MByte(2Gb) S4
-	//DDR_MEM_SEL = 7; // 512MByte(4Gb) S2/S4
-	//DdrInit(2);
-	//DDR_PWR_REQ = 1;
-	//DdrInit(2);
 #if 0
-	DdrInit(0,2);
-	hwflush_dcache_range(DDR0_BASE, 16*1024);
+	DdrInit(0, 2);
+	hwflush_dcache_range_all();
 	BDmaMemSet_isr(0, (BYTE *)DDR0_BASE, 0x00, DDR0_SIZE);
-	//memset((BYTE *)DDR0_BASE, 0x00, DDR0_SIZE);
-	hwflush_dcache_range(DDR0_BASE, 16*1024);
-
 #if 1
-	DdrInit(1,2);
-	hwflush_dcache_range(DDR1_BASE, 16*1024);
+	DdrInit(1, 2);
 	BDmaMemSet_isr(0, (BYTE *)DDR1_BASE, 0x00, DDR1_SIZE);
-	//memset((BYTE *)DDR1_BASE, 0x00, DDR1_SIZE);
-	hwflush_dcache_range(DDR1_BASE, 16*1024);
 #endif
-
+	hwflush_dcache_range_all();
 #else
-#if 1
 	register ULONG hs, he;
 	asm volatile("la %0, __bss_s" : "=r"(hs));
 	asm volatile("la %0, __bss_e" : "=r"(he));
-#else
-	register long t0 asm("t0") = 0;
-	register long t1 asm("t1") = 0;
-	asm("la t0, __bss_s");
-	asm("la t1, __bss_e");
-#endif
 	hwflush_dcache_range(hs, 16*1024);
-	memset(hs, 0, he - hs);
+	memset((void *)hs, 0, he - hs);
 	hwflush_dcache_range(hs, 16*1024);
 #endif
 
-	// DDR
 	printf("%s", TTY_COLOR_RESET);
 
-//	printf("UART7 Div: %u\n", UART7_CLK_DIV);
-
-	//printf("ETH_MDIO_REG0_T: 0x%08X\n", ETH_MDIO_REG0_T);
-	///ETH_MDIO_REG0_T = 0xffffffff;
-	//printf("ETH_MDIO_REG0_T: 0x%08X\n", ETH_MDIO_REG0_T);
-#if 1
-//	SFLS_IO_RXEDGE = 0;
-//	SFLS_IO_TXEDGE = 0;
 	SflsGetinfo();
 	SflsInit();
-	printf("set SFLS_IO_RXEDGE(%u) SFLS_IO_TXEDGE(%u)\n", SFLS_IO_RXEDGE, SFLS_IO_TXEDGE);
-	SflsGetinfo();
-#endif
 
 #if USE_I2C0
 	I2cInit(0, I2C0_SPEED);
@@ -516,6 +365,28 @@ void enx_device_init(void)
 
 void enx_default_userinfo(void)
 {
+	gptMsgShare.VIDEO_FPS = 30;
+
+	gvsVideo[e_vsVSource1].bSwitch = ENX_ON;
+	strcpy(gvsVideo[e_vsVSource1].strName, "Unknown Sensor");
+	gvsVideo[e_vsVSource1].eResolution = e_res1920x1080;
+	gvsVideo[e_vsVSource1].nFps = 30;
+
+	gvsVideo[e_vsVSource2].bSwitch = ENX_OFF;
+	strcpy(gvsVideo[e_vsVSource2].strName, "Not connected");
+	gvsVideo[e_vsVSource2].eResolution = e_resEndorUnknown;
+	gvsVideo[e_vsVSource2].nFps = -1;
+
+	gvsVideo[e_vsVSource3].bSwitch = ENX_OFF;
+	strcpy(gvsVideo[e_vsVSource3].strName, "Not connected");
+	gvsVideo[e_vsVSource3].eResolution = e_resEndorUnknown;
+	gvsVideo[e_vsVSource3].nFps = -1;
+
+	gvsVideo[e_vsVSource4].bSwitch = ENX_OFF;
+	strcpy(gvsVideo[e_vsVSource4].strName, "Not connected");
+	gvsVideo[e_vsVSource4].eResolution = e_resEndorUnknown;
+	gvsVideo[e_vsVSource4].nFps = -1;
+
 #ifdef __ETHERNET__
 	gtSystem.arr8MacAddress[0] = 0x00;
 	gtSystem.arr8MacAddress[1] = 0x01;
@@ -533,6 +404,7 @@ void enx_default_userinfo(void)
 		gtNetwork.naEthernet.u32DnsSvr0 = 0;
 		gtNetwork.naEthernet.u32DnsSvr1 = 0;
 	} else {
+extern UINT ipaddr_addr(const char *cp);
 		gtNetwork.naEthernet.u32IpAddr = ipaddr_addr(ETH_IPADDR);
 		gtNetwork.naEthernet.u32NetMask = ipaddr_addr(ETH_NETMASK);
 		gtNetwork.naEthernet.u32Gateway = ipaddr_addr(ETH_GWADDR);
@@ -552,287 +424,129 @@ void enx_default_userinfo(void)
 	WifiCFG_Default_UAP((tWifiUAPcfg *)&gtNetwork.UAPcfg);
 	WifiCFG_Default_STA((tWifiSTAcfg *)&gtNetwork.STAcfg);
 #endif
-#endif
 
 	gtNetwork.portnumRTSP = RTSP_portnum;
+#endif
+
+	strcpy((char *)gtUser.strDeviceId, DEVICE_ID);
+	strcpy((char *)gtUser.strDeviceName, DEVICE_NAME);
+
+	gtUser.vcVideo[e_vcVEncoder1].nVSourceIdx = e_vsVSource1;
+	snprintf((char *)gtUser.vcVideo[e_vcVEncoder1].strStmUrl, STREAM_URL_LENGTH, "%s%u", RTSP_STREAMURL, e_vcVEncoder1 + 1);
+	gtUser.vcVideo[e_vcVEncoder1].eCodec = e_vcodecH265;
+	gtUser.vcVideo[e_vcVEncoder1].eResolution = e_res1920x1080;
+	gtUser.vcVideo[e_vcVEncoder1].eBRMode = e_brmCVBR;
+	gtUser.vcVideo[e_vcVEncoder1].eBitRate = e_br10m;
+	gtUser.vcVideo[e_vcVEncoder1].eProfileMode = -1;
+	gtUser.vcVideo[e_vcVEncoder1].nIDRFrame = 30;
+	gtUser.vcVideo[e_vcVEncoder1].nFps = gvsVideo[gtUser.vcVideo[e_vcVEncoder1].nVSourceIdx].nFps;
+	gtUser.vcVideo[e_vcVEncoder1].nQuality = 30;
+
+	gtUser.vcVideo[e_vcVEncoder2].nVSourceIdx = e_vsVSource1;
+	snprintf((char *)gtUser.vcVideo[e_vcVEncoder2].strStmUrl, STREAM_URL_LENGTH, "%s%u", RTSP_STREAMURL, e_vcVEncoder2 + 1);
+	gtUser.vcVideo[e_vcVEncoder2].eCodec = e_vcodecH264;
+	gtUser.vcVideo[e_vcVEncoder2].eResolution = e_res640x360;
+	gtUser.vcVideo[e_vcVEncoder2].eBRMode = e_brmCBR;
+	gtUser.vcVideo[e_vcVEncoder2].eBitRate = e_br6m;
+	gtUser.vcVideo[e_vcVEncoder2].eProfileMode = e_pmMainCB;
+	gtUser.vcVideo[e_vcVEncoder2].nIDRFrame = 30;
+	gtUser.vcVideo[e_vcVEncoder2].nFps = gvsVideo[gtUser.vcVideo[e_vcVEncoder2].nVSourceIdx].nFps;
+	gtUser.vcVideo[e_vcVEncoder2].nQuality = 30;
+
+	gtUser.vcVideo[e_vcVEncoder3].nVSourceIdx = e_vsVSource1;
+	snprintf((char *)gtUser.vcVideo[e_vcVEncoder3].strStmUrl, STREAM_URL_LENGTH, "%s%u", RTSP_STREAMURL, e_vcVEncoder3 + 1);
+	gtUser.vcVideo[e_vcVEncoder3].eCodec = e_vcodecJPEG;
+	gtUser.vcVideo[e_vcVEncoder3].eResolution = e_res1920x1080;
+	gtUser.vcVideo[e_vcVEncoder3].eBRMode = e_brmCBR;
+	gtUser.vcVideo[e_vcVEncoder3].eBitRate = e_br20m;
+	gtUser.vcVideo[e_vcVEncoder3].eProfileMode = -1;
+	gtUser.vcVideo[e_vcVEncoder3].nIDRFrame = -1;
+	gtUser.vcVideo[e_vcVEncoder3].nFps = gvsVideo[gtUser.vcVideo[e_vcVEncoder3].nVSourceIdx].nFps;
+	gtUser.vcVideo[e_vcVEncoder3].nQuality = 50;
 }
 
-extern int cmd_test_sysreg(int argc, char *argv[]);
-
-#if 0
-void main_ddr_init(void)
+#ifdef __AUDIO__
+void audtx11_irq(void *ctx)
 {
-	UartInit(7, 625000);
+	UINT pos = I2sTxPos();
+	printf("AUDTX: 0x%08X\n", pos);
+}
 
-	DdrInit(2);
+void audrx11_irq(void *ctx)
+{
+	UINT pos = I2sRxPos();
+	printf("AUDRX: 0x%08X\n", pos);
+}
 
-	//hwflush_dcache_range(DDR0_BASE, 16*1024);
-	BDmaMemSet_isr(0, (BYTE *)DDR0_BASE, 0x00, DDR0_SIZE);
-	//hwflush_dcache_range(DDR0_BASE, 16*1024);
+void audio_test(void)
+{
+	enx_externalirq_init();
+	//tx_mode : 0: L, 1: R, 2: L+R/2, 3: Stereo -> 데이터를 전송할 방향, 2는 한 word의 데이터를 읽은 후 2로 divide, 양방향으로 전송.
+	//tx_cd : 0 or 1: PCM, 2: G711-a, 3: G711-u)
+	//tx_dw : 0->8 , 1->16, 2->24, 3->32 : Tx의 데이터 width
+	//rd_byte : 0: 128B, 1: 256B, 2: 512B, 3: 1KB -> 한번 request에서 읽는 데이터 량
+	//rd_dw : 0->8 , 1->16, 2->24, 3->32 : Rx의 데이터 width
+	//rd_len : 0: 128KB, 1: 256KB, 2: 512KB, 3: 1MB -> Loop를 도는 최대 데이터 량
+	//tx_lr : 0 : Mute(0), 1: Left, 2: Right, 3: Both -> TX할 때 mute 또는 unmute 선택
 
-	printf("DDR Init\n");
+	//I2sTxCfg(3, 0, 1, 2, 0, 0, 3);	// Mono 8KHz, G.711-u, 16bit, Rd:512B Buf:128KB
+	//I2sRxCfg(3, 0, 1, 2, 0, 0);		// Mono 8KHz, G.711-u, 16bit, Wr:512B Buf:128KB
 
-	while (1) {
-		asm ("EBREAK");
-	}
+	I2sTxCfg(3, 0, 1, 1, 1, 3, 3);	// Mono 8KHz, G.711-u, 16bit, Rd:512B Buf:128KB
+	I2sRxCfg(3, 0, 1, 1, 1, 3);		// Mono 8KHz, G.711-u, 16bit, Wr:512B Buf:128KB
 
-	printf("Out\n");
+	I2S_ADRW = 0x80800000;
+	I2S_ADRR = 0x80800000;
+
+	I2sTxIrqCallback(audtx11_irq, NULL);
+	I2sSetTxIrqEn(ENX_ON);
+
+	I2sRxIrqCallback(audrx11_irq, NULL);
+	I2sSetRxIrqEn(ENX_ON);
+
+//	I2sSetRxEn(ENX_ON);
+//	I2sSetTxEn(ENX_ON);
+
+	//hwflush_dcache_range_all();
+	//hwflush_dcache_range(0x80800000, 256);
+	//hexDump("aa", 0x80800000, 256);
+	I2S_RXEN = 1;
+	WaitXms(100);
+	//hwflush_dcache_range_all();
+	//hwflush_dcache_range(0x80800000, 256);
+	//hexDump("aa", 0x80800000, 256);
+	I2S_TXEN = 1;
+
+	while(1);
 }
 #endif
 
-#if 0
-typedef struct {
-    BYTE *arrSrc;
-    BYTE *arrDst;
-    ULONG u64BufSize;
-
-    UINT u32TestSize;
-    UINT u32Move;
-    UINT cMode;
-    UINT u32CH;
-} DmaTestStrfw;
-
-DmaTestStrfw dmaitem;
-
-UINT dma_done_flag  = 0;
-
-void dma_irq(void *ctx)
+void enx_pmp_init(void)
 {
-    dma_done_flag = 1;
-}
-
-void dmatest(UINT nCH, char cMode, UINT nLoop)
-{
-    dmaitem.u64BufSize = 16 * 1024;
-    dmaitem.u32TestSize = -1;
-    dmaitem.u32Move = nLoop;
-    dmaitem.cMode = cMode;
-    dmaitem.u32CH = nCH;
-
-    dmaitem.arrSrc = 0x80020000;
-//    dmaitem.arrSrc = 0x8015ADC0;
-    if (dmaitem.arrSrc == NULL) {
-        printf("malloc error(arrSrc), size(%u)\n", dmaitem.u64BufSize);
-        return;
-    }
-
-    dmaitem.arrDst = 0x80030000;
-//    dmaitem.arrDst = 0x8015EDD0;
-    if (dmaitem.arrDst == NULL) {
-        printf("malloc error(arrDst), size(%u)\n", dmaitem.u64BufSize);
-        return;
-    }
-
-    BYTE *parrSrc = dmaitem.arrSrc;
-    BYTE *parrDst = dmaitem.arrDst;
-
-    if (dmaitem.cMode == 'B') {
-        BDmaIrqCallback(dmaitem.u32CH, dma_irq, NULL);
-        BDmaSetIrqEn(dmaitem.u32CH, ENX_ON);
-    } else if (dmaitem.cMode == 'C') {
-        CDmaIrqCallback(dmaitem.u32CH, dma_irq, NULL);
-        CDmaSetIrqEn(dmaitem.u32CH, ENX_ON);
-    } else {
-        printf("mode error, '%c'\n", dmaitem.cMode);
-        return;
-    }
-
-    //srand(rdcycle());
-    srand(1);
-
-    printf("%cDMA%u Test Task(Move:%u)(Count:%u)", dmaitem.cMode, dmaitem.u32CH, dmaitem.u32Move, dmaitem.u32Move * dmaitem.u32Move);
-    if (dmaitem.u32TestSize == -1) {
-        printf("(Size:Random)\n");
-    } else {
-        printf("(Size:%ubyte)\n", dmaitem.u32TestSize);
-    }
-
-    UINT u32RelTestSize = 0;
-    if (dmaitem.u64BufSize > 16 * 1024 * 1024) {
-        u32RelTestSize = 16 * 1024 * 1024;
-    } else {
-        u32RelTestSize = dmaitem.u64BufSize;
-    }
-    hwflush_dcache_range((ULONG)dmaitem.arrSrc, u32RelTestSize);
-    for (UINT i = 0; i < dmaitem.u64BufSize; i++) {
-        dmaitem.arrSrc[i] = rand() % 255;
-        //dmaitem.arrSrc[i] = 0x22;
-    }
-    //hwflush_dcache_range((ULONG)dmaitem.arrSrc, u32RelTestSize);
-    hwflush_dcache_range_all();
-
-    //hexDump("ORG", parrSrc, 5100);
-    BYTE *pError = parrSrc + 5099;
-    printf("[%02X]", *pError);
-
-
-    u32RelTestSize = 0;
-    UINT pass = 0, fail = 0, flag = 0;
-    for (UINT i = 0; i < dmaitem.u32Move; i++) {
-        parrDst = dmaitem.arrDst;
-        if (dmaitem.u32TestSize == -1) {
-            //u32RelTestSize = rand() % 8192 + 1;
-            u32RelTestSize = rand() % 1024 + 5120;
-        } else {
-            u32RelTestSize = dmaitem.u32TestSize;
-        }
-
-        u32RelTestSize = 5099+1;
-
-        printf("%3u%% %4u/%4u TEST Dst(0x%08X~0x%08X) Src(0x%08X) - Size(%4u) - ", ((i+1) * 100) / dmaitem.u32Move, i+1, dmaitem.u32Move, parrDst, parrDst+dmaitem.u32Move, parrSrc, u32RelTestSize);
-        for (UINT j = 0; j < dmaitem.u32Move; j++) {
-            // Set array
-            //hwflush_dcache_range_rtos((ULONG)parrDst, u32RelTestSize);
-            BDmaMemSet_isr(dmaitem.u32CH, parrDst, 0x0, u32RelTestSize);
-            //hwflush_dcache_range_rtos((ULONG)parrDst, u32RelTestSize);
-
-            //memset(parrDst, 0, u32RelTestSize);
-
-            //portMEMORY_BARRIER();
+// PMP test
 #if 1
-//            printf(".");
-            dma_done_flag = 0;
-            if (dmaitem.cMode == 'B') {
-                // Set array
-                //hwflush_dcache_range((ULONG)parrDst, u32RelTestSize);
-//                portMEMORY_BARRIER();
-                //hwflush_dcache_range_rtos((ULONG)parrDst, u32RelTestSize);
-                //BDmaMemSet_isr(dmaitem.u32CH, parrSrc, 0x00, 7000);
-                //BDmaMemSet_isr(dmaitem.u32CH, parrDst, 0x0F, 7000);
-        //        hwflush_dcache_range((ULONG)parrSrc, u32RelTestSize);
-                BDmaMemCpy_isr(dmaitem.u32CH, parrDst, parrSrc, u32RelTestSize);
-                printf("[%02X]", *pError);
-                //BDmaMemCpy_isr(dmaitem.u32CH, parrDst, parrSrc, u32RelTestSize);
-
-                //memcpy(parrDst, parrSrc, u32RelTestSize);
-                //dma_done_flag = 1;
-
-                //portMEMORY_BARRIER();
-                //hwflush_dcache_range((ULONG)parrDst, u32RelTestSize);
-
-            } else if (dmaitem.cMode == 'C') {
-                // dma copy
-//                hwflush_dcache_range((ULONG)parrDst, u32RelTestSize);
-                CDmaMemCpy_isr_async(dmaitem.u32CH, parrDst, parrSrc, u32RelTestSize);
-            }
-
-//            printf(",");
-            int dma_tick = 0;
-            int dma_timeout = 0;
-            while (dma_done_flag == 0) {
-                dma_tick++;
-                WaitXms(1);
-                if (dma_tick > 3000) {
-                  //  dma_timeout = 1;
-                	printf("Timeout\n");
-                    break;
-                }
-            }
-//            printf("+");
-
-            if (dma_timeout == 0) { // Timeout 3sec
-                if (dmaitem.cMode == 'B') {
-                    //portMEMORY_BARRIER();
-                    printf("[1:%02X]", *pError);
-                    hwflush_dcache_range((ULONG)parrDst, u32RelTestSize);
-                    //hwflush_dcache_range_all();
-                    printf("[2:%02X]", *pError);
-                    //asm volatile ("fence rw,rw");
-                    //asm volatile ("fence w,r");
-                }
-
-                // comp
-                flag = 0;
-                UINT k;
-#if 0
-                k = memcmp(parrSrc, parrDst, u32RelTestSize);
-                if (k != 0) {
-                    flag = 1;
-                }
-#else
-                for (k = 0; k < u32RelTestSize; k++) {
-//                    printf("%x, %x",parrSrc[k],parrDst[k]);
-//                    printf("[%02X]", *pError);
-                    if (parrSrc[k] != parrDst[k]) {
-                        flag = 1;
-//                        printf("%x, %x\n",parrSrc[k-1],parrDst[k-1]);
-                        printf("%x, %x\n",parrSrc[k],parrDst[k]);
-//                        printf("%x, %x\n",parrSrc[k+1],parrDst[k+1]);
-                        break;
-                    }
-                }
-                printf("[%02X]", *pError);
-#endif
-
-                if (flag == 0) {
-                    pass++;
-                    //printf("OK\n");
-                    //printf(".");
+	setup_pmp();
 #if 1
-                    k = 5099;
-                    hexCmpDump("Dma Test", parrSrc + k - 64, parrDst + k - 64, u32RelTestSize - k + 128);
-                    while(1);
+	pmp_entry_set(0, PMP_R|PMP_W|PMP_X|PMP_L, 0xa0000000ul, SRAM_SIZE); // SRAM enabled area
+	pmp_entry_set(1, PMP_L, 0xa0000000ul, 0x20000000ul);				// SRAM disabled area
+	pmp_entry_set(2, PMP_R|PMP_W|PMP_X|PMP_L, 0xc0000000ul, SFLS_SIZE); // FLASH enabled area
+	pmp_entry_set(3, PMP_L, 0xc0000000ul, 0x20000000ul);				// FLASH disabled area
 #endif
-                } else {
-                    _Rprintf("Fail\nError(%u/%u) Move(%u) Dst(0x%08X)\n", k, u32RelTestSize, j, parrDst);
+	printf("PMP setting\n");
+
 #if 0
-                    hexCmpDump("Dma Test", parrSrc, parrDst, u32RelTestSize);
-#else
-
-
-                    hexCmpDump("Dma Test", parrSrc + k - 64, parrDst + k - 64, u32RelTestSize - k + 64);
-
-                    hwflush_dcache_range_all();
-
-                    //hwflush_dcache_range(parrSrc + k, 256);
-                    //hwflush_dcache_range(parrDst + k, 256);
-                    hexDump("parrSrc", parrSrc + k - 64, 256);
-                    hexDump("parrDst", parrDst + k - 64, 256);
+	volatile UINT *ptest;
+//	ptest = (UINT *)0x70000000;
+	ptest = (UINT *)0xb0200000;
+	*ptest = 0xdeadc0de;
 #endif
-
-                    i = j = -0xf;
-                    fail++;
-                    break;
-                }
-            } else {
-                flag = 1;
-                _Rprintf("\nTimeout! 0x%08X <- 0x%08X, Len:%ubyte\n", parrDst, parrSrc, u32RelTestSize);
-                if (dmaitem.cMode == 'C') {
-                    extern void CDmaRegshow(UINT nCH);
-                    CDmaRegshow(dmaitem.u32CH);
-                }
-                i = j = -0xf;
-                fail++;
-                break;
-            }
-//            printf("-");
 #endif
-            // next
-            parrDst++;
-        }
-
-        if (flag == 0) {
-            _Gprintf("OK\n");
-        } else {
-            _Rprintf("Fail\n");
-        }
-
-        parrSrc++;
-    }
-    printf("\nTest End. Pass(%d) Fail(%d)\n", pass, fail);
-
-    if (dmaitem.cMode == 'B') {
-        BDmaIrqCallback(dmaitem.u32CH, NULL, NULL);
-        BDmaSetIrqEn(dmaitem.u32CH, ENX_OFF);
-    } else if (dmaitem.cMode == 'C') {
-        CDmaIrqCallback(dmaitem.u32CH, NULL, NULL);
-        CDmaSetIrqEn(dmaitem.u32CH, ENX_OFF);
-    }
 }
-#endif
 
 void main_0(int cpu_id)
 {
+//	printf("mtime: 0x%08X\n", mtime);
+
 	*mtime = 0; // timer init
 
 	//main_ddr_init();
@@ -848,40 +562,16 @@ void main_0(int cpu_id)
 
 	SYS_REG0 = 0xA; // CPU0 Ready!
 
-	printf("Init Device\n");
+	printf("Init Device - RTL-191016-1408\n");
 
-// PMP test
-#if 0
-	setup_pmp();
-	pmp_entry_set(0, PMP_R|PMP_W|PMP_X|PMP_L, 0xa0000000ul, SRAM_SIZE); // SRAM enabled area
-	pmp_entry_set(1, PMP_L, 0xa0000000ul, 0x20000000ul);				// SRAM disabled area
-	pmp_entry_set(2, PMP_R|PMP_W|PMP_X|PMP_L, 0xc0000000ul, SFLS_SIZE); // FLASH enabled area
-	pmp_entry_set(3, PMP_L, 0xc0000000ul, 0x20000000ul);				// FLASH disabled area
+	enx_pmp_init();
 
-	printf("PMP setting\n");
-#endif
-
-#if 0
-	volatile UINT *ptest;
-//	ptest = (UINT *)0x70000000;
-	ptest = (UINT *)0xb0200000;
-	*ptest = 0xdeadc0de;
-#endif
-
-
-#if 0
-	enx_externalirq_init();
-	dmatest(0, 'B', 200);
-	while(1);
-#endif
-#ifdef __FREERTOS__
-	test_freertos();
-#elif defined(__SENSOR__)
+#if defined(__SENSOR__)
 	enx_externalirq_init();
 
 	Isp_init();
 
-	_printf("--------- Main Loop Start --------- \r\n");
+	printf("--------- Main Loop Start --------- \r\n");
 
 	while (1)
 	{
@@ -895,8 +585,13 @@ void main_0(int cpu_id)
 	}
 #else
 	while (1) {
-		printf(".");
-		WaitXms(1000);
+		if (SYS_REG0 == 0xA) {
+			GpioSetOut(GPIO_LED1, GPIO_OUT_HI);
+			//_printf("%d:%lu\r\n", cpu_id, *mtime);
+			WaitXms(100);
+			SYS_REG0 = 0xB;
+		}
+		WaitXms(1);
 	}
 #endif
 }

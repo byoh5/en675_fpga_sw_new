@@ -96,7 +96,10 @@
 #define configTIMER_TASK_STACK_DEPTH            configMINIMAL_STACK_SIZE
 
 /* Define configASSERT() to disable interrupts and sit in a loop. */
-#define configASSERT(x)                         if( ( x ) == 0 ) { taskDISABLE_INTERRUPTS(); for( ;; ); }
+extern int es_printf(const char *format, ...);
+extern void vTaskInfoPrint(void);
+extern void vMemoryHeapInfoPrint(void);
+#define configASSERT(x)                         if( ( x ) == 0 ) { taskDISABLE_INTERRUPTS(); es_printf("OS Assert! [Task:%s]\n", pcTaskGetName(NULL) == NULL ? "null" : pcTaskGetName(NULL)); vTaskInfoPrint(); vMemoryHeapInfoPrint(); for( ;; ); }
 
 /* FreeRTOS MPU specific definitions. */
 #define configINCLUDE_APPLICATION_DEFINED_PRIVILEGED_FUNCTIONS 0

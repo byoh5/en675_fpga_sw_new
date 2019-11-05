@@ -43,6 +43,7 @@ typedef enum {
 typedef enum {
 	ENX_RTSP_STREAM_FILE_H264_TYPE,
 	ENX_RTSP_STREAM_FILE_H265_TYPE,
+	ENX_RTSP_STREAM_LIVE,
 	ENX_RTSP_STREAM_LIVE_H264_1,
 	ENX_RTSP_STREAM_LIVE_H264_2,
 	ENX_RTSP_STREAM_LIVE_H265_1,
@@ -208,8 +209,8 @@ typedef struct {
 } rtp_packet;
 
 typedef struct {
-	WORD rtp_port;
-	WORD rtcp_port;
+//	WORD rtp_port;
+//	WORD rtcp_port;
 
 	rtp_txstate_type tx_ready;
 	rtp_packet rtp_pk;
@@ -239,6 +240,8 @@ typedef struct {
 	WORD video_type;	// H.264(1,2), MJPEG
 	WORD rtp_type;		// UDP, TCP
 	UINT connect_time;	// connect time, unused=>0x0
+	WORD rtp_port[ENX_RTSP_STRTYPE_numNONE];
+	WORD rtcp_port[ENX_RTSP_STRTYPE_numNONE];
 } rtsp_connect_info;
 
 typedef struct {
@@ -266,11 +269,12 @@ typedef struct {
 #endif
 
 // RTSP method processing...
+	INT nVEncoderIdx;
 	rtsp_stream_type isLive; // live stream인지 sdcard file stream인지 판단
 	int nSession; // rand값. session이 설정된 이후에는 이 항목이 들어가야 한다.
 	UINT play_query;
 	rtsp_transport_type eTransport; // 전송방식(TCP, UDP, HTTP)
-	rtp_session rtp_ss[ENX_RTSP_STRTYPE_numNONE];
+	rtp_session *rtp_ss;
 
 // Variables used as one-time
 	int nCSeq; // 공통, client가 주는 값을 응답값에 넣는다. 필수항목

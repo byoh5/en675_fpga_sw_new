@@ -54,7 +54,9 @@ static UINT eth_tx_test(BYTE *u8BufferAlign, ULONG *count)
 		if (ETH_TX_PAUSE) {
 			printf("1");
 		}
+		portENTER_CRITICAL();
 		EthTxPacket(u8BufferAlign, eth_test_size);
+		portEXIT_CRITICAL();
 		if (ETH_TX_PAUSE) {
 			printf("2");
 		}
@@ -184,6 +186,7 @@ void eth_rx_state(void)
 	printf("== RX Clock & Delay =========\n");
 	printf("ETH_RX_RCKEDGE	(rx e  ) : %u\n", ETH_RX_RCKEDGE);
 	printf("ETH_RX_RCKDLY	(rx rck) : %u\n", ETH_RX_RCKDLY);
+	printf("ETH_RX_RMII     (rx rmi) : %u\n", ETH_RX_RMII10);
 	printf("== RX buffer =================\n");
 	printf("ETH_RX_ADR      (rx adr) : 0x%08X\n", ETH_RX_ADR);
 	printf("ETH_RX_QOS      (rx qos) : %u\n", ETH_RX_QOS);
@@ -242,8 +245,9 @@ void eth_tx_state(void)
 	printf("ETH_TX_CLKSEL   (tx cs ) : %u\n", ETH_TX_CLKSEL);
 	printf("ETH_TX_CRSCHK   (tx cr ) : %u\n", ETH_TX_CRSCHK);
 	printf("ETH_TX_COLCHK   (tx co ) : %u\n", ETH_TX_COLCHK);
-	printf("ETH_TX_RTYEN    (tx rn ) : %u\n", ETH_TX_RTYEN);
-	printf("ETH_TX_RTYLMT   (tx rl ) : %u\n", ETH_TX_RTYLMT);
+	printf("ETH_TX_COLSEL   (tx oen) : %u\n", ETH_TX_COLEN);
+	printf("ETH_TX_COLSEL   (tx os ) : %u\n", ETH_TX_COLSEL);
+	printf("ETH_TX_RMII     (tx rmi) : %u\n", ETH_TX_RMII10);
 	printf("ETH_TX_EMPTY             : %u\n", ETH_TX_EMPTY);
 	printf("ETH_TX_FULL              : %u\n", ETH_TX_FULL);
 	printf("== TX buffer ==============\n");
@@ -301,6 +305,7 @@ int cmd_test_eth(int argc, char *argv[])
 				else if (strcmp(argv[2], "tp") == 0) {		eth_getset(ETH_RX_DATTYPE);	}
 				else if (strcmp(argv[2], "rck") == 0) {		eth_getset(ETH_RX_RCKDLY);	}
 				else if (strcmp(argv[2], "e") == 0)	{		eth_getset(ETH_RX_RCKEDGE);	}
+				else if (strcmp(argv[2], "rmi") == 0) {		eth_getset(ETH_RX_RMII10);	}
 				else if (strcmp(argv[2], "adr") == 0) {		eth_getset(ETH_RX_ADR);		}
 				else if (strcmp(argv[2], "qos") == 0) {		eth_getset(ETH_RX_QOS);		}
 				else if (strcmp(argv[2], "lmt") == 0) {		eth_getset(ETH_RX_LMT);		}
@@ -374,26 +379,27 @@ int cmd_test_eth(int argc, char *argv[])
 			} else {
 				if (strcmp(argv[2], "db") == 0) {			eth_getset(ETH_TX_DATBIT);	}
 				else if (strcmp(argv[2], "dt") == 0) {		eth_getset(ETH_TX_DATTYPE);	}
-				else if(strcmp(argv[2], "ce") == 0) {		eth_getset(ETH_TX_CLKOE);	}
-				else if(strcmp(argv[2], "cs") == 0) {		eth_getset(ETH_TX_CLKSEL);	}
-				else if(strcmp(argv[2], "cr") == 0) {		eth_getset(ETH_TX_CRSCHK);	}
-				else if(strcmp(argv[2], "co") == 0) {		eth_getset(ETH_TX_COLCHK);	}
-				else if(strcmp(argv[2], "rn") == 0) {		eth_getset(ETH_TX_RTYEN);	}
-				else if(strcmp(argv[2], "rl") == 0) {		eth_getset(ETH_TX_RTYLMT);	}
-				else if(strcmp(argv[2], "adr") == 0) {		eth_getset(ETH_TX_ADR);	}
-				else if(strcmp(argv[2], "len") == 0) {		eth_getset(ETH_TX_LEN);	}
-				else if(strcmp(argv[2], "qos") == 0) {		eth_getset(ETH_TX_QOS);	}
-				else if(strcmp(argv[2], "val") == 0) {		eth_getset(ETH_TX_VAL);	}
-				else if(strcmp(argv[2], "p") == 0) {		eth_getset(ETH_TX_PAUSE_EN);}
+				else if (strcmp(argv[2], "ce") == 0) {		eth_getset(ETH_TX_CLKOE);	}
+				else if (strcmp(argv[2], "cs") == 0) {		eth_getset(ETH_TX_CLKSEL);	}
+				else if (strcmp(argv[2], "cr") == 0) {		eth_getset(ETH_TX_CRSCHK);	}
+				else if (strcmp(argv[2], "co") == 0) {		eth_getset(ETH_TX_COLCHK);	}
+				else if (strcmp(argv[2], "oen") == 0) {		eth_getset(ETH_TX_COLEN);	}
+				else if (strcmp(argv[2], "os") == 0) {		eth_getset(ETH_TX_COLSEL);	}
+				else if (strcmp(argv[2], "rmi") == 0) {		eth_getset(ETH_TX_RMII10);	}
+				else if (strcmp(argv[2], "adr") == 0) {		eth_getset(ETH_TX_ADR);		}
+				else if (strcmp(argv[2], "len") == 0) {		eth_getset(ETH_TX_LEN);		}
+				else if (strcmp(argv[2], "qos") == 0) {		eth_getset(ETH_TX_QOS);		}
+				else if (strcmp(argv[2], "val") == 0) {		eth_getset(ETH_TX_VAL);		}
+				else if (strcmp(argv[2], "p") == 0) {		eth_getset(ETH_TX_PAUSE_EN);}
 				else if (strcmp(argv[2], "ifg") == 0) {		eth_getset(ETH_TX_IFGGAP);	}
-				else if(strcmp(argv[2], "e") == 0) {		eth_getset(ETH_TX_CLKEDGE);	}
+				else if (strcmp(argv[2], "e") == 0) {		eth_getset(ETH_TX_CLKEDGE);	}
 				else if (strcmp(argv[2], "tck") == 0) {		eth_getset(ETH_TX_TCKDLY);	}
 				else if (strcmp(argv[2], "n") == 0) {		eth_getset(ETH_TX_TXENDLY);	}
-				else if(strcmp(argv[2], "0") == 0) {		eth_getset(ETH_TX_TXD0DLY);	}
-				else if(strcmp(argv[2], "1") == 0) {		eth_getset(ETH_TX_TXD1DLY);	}
-				else if(strcmp(argv[2], "2") == 0) {		eth_getset(ETH_TX_TXD2DLY);	}
-				else if(strcmp(argv[2], "3") == 0) {		eth_getset(ETH_TX_TXD3DLY);	}
-				else if(strcmp(argv[2], "t") == 0) {		eth_getset(ETH_TX_TXENDLY);
+				else if (strcmp(argv[2], "0") == 0) {		eth_getset(ETH_TX_TXD0DLY);	}
+				else if (strcmp(argv[2], "1") == 0) {		eth_getset(ETH_TX_TXD1DLY);	}
+				else if (strcmp(argv[2], "2") == 0) {		eth_getset(ETH_TX_TXD2DLY);	}
+				else if (strcmp(argv[2], "3") == 0) {		eth_getset(ETH_TX_TXD3DLY);	}
+				else if (strcmp(argv[2], "t") == 0) {		eth_getset(ETH_TX_TXENDLY);
 															eth_getset(ETH_TX_TXD0DLY);
 															eth_getset(ETH_TX_TXD1DLY);
 															eth_getset(ETH_TX_TXD2DLY);
@@ -601,9 +607,11 @@ int cmd_test_eth(int argc, char *argv[])
 				Shell_Unknown();
 			}
 		}
+		else if (argc == 2 && strcmp(argv[1], "tool") == 0) {
+			EthphyLinkView();
+		}
 #if (PHY_DEBUG==1)
-		else if(argc == 3 && strcmp(argv[1], "phy") == 0)
-		{
+		else if (argc == 3 && strcmp(argv[1], "phy") == 0) {
 			BYTE getValue = (BYTE)(atoi(argv[2]) & 0xFF);
 			WORD wBuf;
 			MdioRead(phy_info.addr, getValue, &wBuf);
@@ -611,37 +619,21 @@ int cmd_test_eth(int argc, char *argv[])
 		}
 #endif
 #if (ETHPHY_LOOPBACK_TEST==1)
-#if defined(__ETHPHY_KSZ8081MNX__)
-		else if (argc == 2 && strcmp(argv[1], "lbm") == 0) {
-			if (EthloopbackGetMode() == ePlk_off) {
-				vTaskCreate("eth_lb", EthloopbackTask, NULL, LV3_STACK_SIZE, LV5_TASK_PRIO);
-			} else {
-				printf("Ethernet loopback mode is ready.\n");
-			}
-		}
-#elif defined(__ETHPHY_KSZ8081RNB__)
-		else if (argc == 2 && strcmp(argv[1], "lbm") == 0) {
-			if (EthloopbackGetMode() == ePlk_off) {
-				vTaskCreate("eth_lb", EthloopbackTask, NULL, LV3_STACK_SIZE, LV5_TASK_PRIO);
-			} else {
-				printf("Ethernet loopback mode is ready.\n");
-			}
-		}
-#elif defined(__ETHPHY_KSZ9031RNX__)
-		else if (argc == 3 && strcmp(argv[1], "lbm") == 0) {
+		else if (argc == 4 && strcmp(argv[1], "lbm") == 0) {
 			UINT nSpeed = atoi(argv[2]);
-			if (nSpeed != 100 && nSpeed != 1000) {
-				printf("Speed Error(%d)\n", nSpeed);
+			UINT nDuplex = atoi(argv[3]);
+			if (nSpeed != 10 && nSpeed != 100 && nSpeed != 1000 && nDuplex != 1 && nDuplex != 2) {
+				printf("Speed/nDuplex Error(spd:%d/dup:%d)\n", nSpeed, nDuplex);
 			} else {
+				EthloopbackSetSpeed(nSpeed);
+				EthloopbackSetDuplex(nDuplex);
 				if (EthloopbackGetMode() == ePlk_off) {
 					vTaskCreate("eth_lb", EthloopbackTask, NULL, LV3_STACK_SIZE, LV5_TASK_PRIO);
 				} else {
 					printf("Ethernet loopback mode is ready.\n");
 				}
 			}
-		}
-#endif
-		else if (argc == 3 && strcmp(argv[1], "lbt") == 0) {
+		} else if (argc == 3 && strcmp(argv[1], "lbt") == 0) {
 			if (EthloopbackGetMode() == ePlk_ready) {
 				UINT u32Loop = atoi(argv[2]);
 				EthloopbackSetLoop(u32Loop);

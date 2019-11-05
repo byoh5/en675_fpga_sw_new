@@ -2,7 +2,7 @@
 #ifdef __RTC_LOAD__
 #include "rtc.h"
 #endif
-
+#if 0
 const char* const strWeek[] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
 const char* const strMonth[] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
 
@@ -81,3 +81,4 @@ int set_devicetime(int nTimezone, UINT nYear, UINT nMonth, UINT nDay, UINT nHour
 
 	return DEF_OK;
 }
+#endif

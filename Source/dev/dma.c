@@ -1,5 +1,8 @@
 #include "dev.h"
+
+#ifdef __FREERTOS__
 #include "enx_freertos.h"
+#endif
 
 static volatile _DMA_REG0 * const arrBDMA[BDMA_CNT]    = {(_DMA_REG0 *)(REG_BASE_BDMA0+(0<<3)), (_DMA_REG0 *)(REG_BASE_BDMA1+(0<<3)), (_DMA_REG0 *)(REG_BASE_BDMA2+(0<<3)), (_DMA_REG0 *)(REG_BASE_BDMA3+(0<<3))};
 static volatile _DMA_REG1 * const arrBDMASRC[BDMA_CNT] = {(_DMA_REG1 *)(REG_BASE_BDMA0+(1<<3)), (_DMA_REG1 *)(REG_BASE_BDMA1+(1<<3)), (_DMA_REG1 *)(REG_BASE_BDMA2+(1<<3)), (_DMA_REG1 *)(REG_BASE_BDMA3+(1<<3))};
@@ -74,6 +77,38 @@ UINT BDmaMemCpy_rtos_async(UINT nCH, BYTE *apbDst, BYTE *apbSrc, UINT anNum)
 	arrBDMA[nCH]->GO = 1;
 	portEXIT_CRITICAL();
 	return doneID;
+}
+
+void BDmaMemCpy_rtos_flush(UINT nCH, BYTE *apbDst, BYTE *apbSrc, UINT anNum)
+{
+	ENX_DEBUGF(DGB_DMA_MSG, "%u, 0x%08X <- 0x%08X, %uByte\n", nCH, apbDst, apbSrc, anNum);
+	portENTER_CRITICAL();
+	hwflush_dcache_range((ulong)apbSrc, anNum);
+	hwflush_dcache_range((ulong)apbDst, anNum);
+	arrBDMA[nCH]->JOB_PTR++;
+	arrBDMA[nCH]->MODE = 0;
+	arrBDMASRC[nCH]->SRC = (intptr_t)apbSrc;
+	arrBDMADST[nCH]->DST = (intptr_t)apbDst;
+	arrBDMALEN[nCH]->LEN = anNum;
+	arrBDMA[nCH]->GO = 1;
+	while (arrBDMA[nCH]->DONE_PTR != arrBDMA[nCH]->JOB_PTR);
+	portEXIT_CRITICAL();
+}
+
+void BDmaMemCpy_rtos_discard_flush(UINT nCH, BYTE *apbDst, BYTE *apbSrc, UINT anNum)
+{
+	ENX_DEBUGF(DGB_DMA_MSG, "%u, 0x%08X <- 0x%08X, %uByte\n", nCH, apbDst, apbSrc, anNum);
+	portENTER_CRITICAL();
+	hwflush_dcache_range((ulong)apbSrc, anNum);
+	hwdiscard_dcache_range((ulong)apbDst, anNum);
+	arrBDMA[nCH]->JOB_PTR++;
+	arrBDMA[nCH]->MODE = 0;
+	arrBDMASRC[nCH]->SRC = (intptr_t)apbSrc;
+	arrBDMADST[nCH]->DST = (intptr_t)apbDst;
+	arrBDMALEN[nCH]->LEN = anNum;
+	arrBDMA[nCH]->GO = 1;
+	while (arrBDMA[nCH]->DONE_PTR != arrBDMA[nCH]->JOB_PTR);
+	portEXIT_CRITICAL();
 }
 #endif
 

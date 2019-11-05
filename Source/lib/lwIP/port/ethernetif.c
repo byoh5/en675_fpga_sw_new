@@ -13,6 +13,69 @@ QueueNetTx_t qEthernetTX;
 //*************************************************************************************************
 //
 //-------------------------------------------------------------------------------------------------
+// CRC
+UINT crcTable[256] = {
+		0x00000000, 0x77073096, 0xee0e612c, 0x990951ba, 0x076dc419, 0x706af48f,
+		0xe963a535, 0x9e6495a3,	0x0edb8832, 0x79dcb8a4, 0xe0d5e91e, 0x97d2d988,
+		0x09b64c2b, 0x7eb17cbd, 0xe7b82d07, 0x90bf1d91, 0x1db71064, 0x6ab020f2,
+		0xf3b97148, 0x84be41de,	0x1adad47d, 0x6ddde4eb, 0xf4d4b551, 0x83d385c7,
+		0x136c9856, 0x646ba8c0, 0xfd62f97a, 0x8a65c9ec,	0x14015c4f, 0x63066cd9,
+		0xfa0f3d63, 0x8d080df5,	0x3b6e20c8, 0x4c69105e, 0xd56041e4, 0xa2677172,
+		0x3c03e4d1, 0x4b04d447, 0xd20d85fd, 0xa50ab56b,	0x35b5a8fa, 0x42b2986c,
+		0xdbbbc9d6, 0xacbcf940,	0x32d86ce3, 0x45df5c75, 0xdcd60dcf, 0xabd13d59,
+		0x26d930ac, 0x51de003a, 0xc8d75180, 0xbfd06116, 0x21b4f4b5, 0x56b3c423,
+		0xcfba9599, 0xb8bda50f, 0x2802b89e, 0x5f058808, 0xc60cd9b2, 0xb10be924,
+		0x2f6f7c87, 0x58684c11, 0xc1611dab, 0xb6662d3d,	0x76dc4190, 0x01db7106,
+		0x98d220bc, 0xefd5102a, 0x71b18589, 0x06b6b51f, 0x9fbfe4a5, 0xe8b8d433,
+		0x7807c9a2, 0x0f00f934, 0x9609a88e, 0xe10e9818, 0x7f6a0dbb, 0x086d3d2d,
+		0x91646c97, 0xe6635c01, 0x6b6b51f4, 0x1c6c6162, 0x856530d8, 0xf262004e,
+		0x6c0695ed, 0x1b01a57b, 0x8208f4c1, 0xf50fc457, 0x65b0d9c6, 0x12b7e950,
+		0x8bbeb8ea, 0xfcb9887c, 0x62dd1ddf, 0x15da2d49, 0x8cd37cf3, 0xfbd44c65,
+		0x4db26158, 0x3ab551ce, 0xa3bc0074, 0xd4bb30e2, 0x4adfa541, 0x3dd895d7,
+		0xa4d1c46d, 0xd3d6f4fb, 0x4369e96a, 0x346ed9fc, 0xad678846, 0xda60b8d0,
+		0x44042d73, 0x33031de5, 0xaa0a4c5f, 0xdd0d7cc9, 0x5005713c, 0x270241aa,
+		0xbe0b1010, 0xc90c2086, 0x5768b525, 0x206f85b3, 0xb966d409, 0xce61e49f,
+		0x5edef90e, 0x29d9c998, 0xb0d09822, 0xc7d7a8b4, 0x59b33d17, 0x2eb40d81,
+		0xb7bd5c3b, 0xc0ba6cad, 0xedb88320, 0x9abfb3b6, 0x03b6e20c, 0x74b1d29a,
+		0xead54739, 0x9dd277af, 0x04db2615, 0x73dc1683, 0xe3630b12, 0x94643b84,
+		0x0d6d6a3e, 0x7a6a5aa8, 0xe40ecf0b, 0x9309ff9d, 0x0a00ae27, 0x7d079eb1,
+		0xf00f9344, 0x8708a3d2, 0x1e01f268, 0x6906c2fe, 0xf762575d, 0x806567cb,
+		0x196c3671, 0x6e6b06e7, 0xfed41b76, 0x89d32be0, 0x10da7a5a, 0x67dd4acc,
+		0xf9b9df6f, 0x8ebeeff9, 0x17b7be43, 0x60b08ed5, 0xd6d6a3e8, 0xa1d1937e,
+		0x38d8c2c4, 0x4fdff252, 0xd1bb67f1, 0xa6bc5767, 0x3fb506dd, 0x48b2364b,
+		0xd80d2bda, 0xaf0a1b4c, 0x36034af6, 0x41047a60, 0xdf60efc3, 0xa867df55,
+		0x316e8eef, 0x4669be79, 0xcb61b38c, 0xbc66831a, 0x256fd2a0, 0x5268e236,
+		0xcc0c7795, 0xbb0b4703, 0x220216b9, 0x5505262f, 0xc5ba3bbe, 0xb2bd0b28,
+		0x2bb45a92, 0x5cb36a04, 0xc2d7ffa7, 0xb5d0cf31, 0x2cd99e8b, 0x5bdeae1d,
+		0x9b64c2b0, 0xec63f226, 0x756aa39c, 0x026d930a, 0x9c0906a9, 0xeb0e363f,
+		0x72076785, 0x05005713, 0x95bf4a82, 0xe2b87a14, 0x7bb12bae, 0x0cb61b38,
+		0x92d28e9b, 0xe5d5be0d, 0x7cdcefb7, 0x0bdbdf21, 0x86d3d2d4, 0xf1d4e242,
+		0x68ddb3f8, 0x1fda836e, 0x81be16cd, 0xf6b9265b, 0x6fb077e1, 0x18b74777,
+		0x88085ae6, 0xff0f6a70, 0x66063bca, 0x11010b5c, 0x8f659eff, 0xf862ae69,
+		0x616bffd3, 0x166ccf45, 0xa00ae278, 0xd70dd2ee, 0x4e048354, 0x3903b3c2,
+		0xa7672661, 0xd06016f7, 0x4969474d, 0x3e6e77db, 0xaed16a4a, 0xd9d65adc,
+		0x40df0b66, 0x37d83bf0, 0xa9bcae53, 0xdebb9ec5, 0x47b2cf7f, 0x30b5ffe9,
+		0xbdbdf21c, 0xcabac28a, 0x53b39330, 0x24b4a3a6, 0xbad03605, 0xcdd70693,
+		0x54de5729, 0x23d967bf, 0xb3667a2e, 0xc4614ab8, 0x5d681b02, 0x2a6f2b94,
+		0xb40bbe37, 0xc30c8ea1, 0x5a05df1b, 0x2d02ef8d
+};
+
+UINT crcCompute(const BYTE *buf, size_t size)
+{
+	const BYTE *p = buf;
+	UINT crc;
+
+	crc = ~0U;
+	while (size--)
+		crc = crcTable[(crc ^ *p++) & 0xFF] ^ (crc >> 8);
+
+	UINT celcrc = crc ^ ~0U;
+	return htonl(celcrc);
+}
+
+//*************************************************************************************************
+//
+//-------------------------------------------------------------------------------------------------
 // Mac Filter
 err_t igmp_mac_filter_set(struct netif *netif, const ip4_addr_t *group, enum netif_mac_filter_action action)
 {
@@ -128,6 +191,7 @@ static void network_ethif_pkt_input_irq(void *ctx)
 		}
 		pkt_info *pkinfo;
 		if (u32PktSize <= 1514) {
+
 			pkinfo = &(qEthernetRX.info[qEthernetRX.tail]);
 			pkinfo->data = qEthernetRX.pkt_data[gRxPktTail].buffer;
 			pkinfo->lenth = u32PktSize;
@@ -136,8 +200,8 @@ static void network_ethif_pkt_input_irq(void *ctx)
 			num_loop(qEthernetRX.tail, NETRX_BUF_COUNT);	// next head
 
 			if (gptMsgDebug.ETH_RX_CHECK) {
-				hwflush_dcache_range((ULONG)pkinfo->data, (UINT)u32PktSize+64);
-				hexDump("IP input", pkinfo->data, u32PktSize+64);
+				hwflush_dcache_range((ULONG)pkinfo->data, (UINT)u32PktSize + 4);
+				hexDump("Eth input(+CRC32)", pkinfo->data, u32PktSize + 4);
 			}
 		} else {
 			_Rprintf("EthRX Err(%u/%u)(Size:%u)\n", gRxPktHead, gRxPktTail, u32PktSize);
@@ -277,6 +341,7 @@ void network_ethif_pkt_input_loopback_irq(void *ctx)
 #endif
 
 uint64 TTa, TTb;
+UINT _test_crc32;
 
 static struct pbuf *low_level_input(struct netif *netif)
 {
@@ -312,64 +377,41 @@ static struct pbuf *low_level_input(struct netif *netif)
 		if (p == NULL) {
 			printf("pbuf_alloc fail H(%04d) T(%04d) Size(%04d)\n", qEthernetRX.head, qEthernetRX.tail, wLen);
 		} else {
-			//if (p->len > 1536) {
-			//	printf("0x%08X (%u)\n", p->payload, (UINT)p->len);
-			//}
 #if ETH_PAD_SIZE
 			pbuf_header(p, -ETH_PAD_SIZE); // Drop the padding word
 #endif
+			// Copy to pbuf
 			WORD nTotLen = 0;
-			//portENTER_CRITICAL();
-			//if (p->next != NULL) {
-			//	printf("P-next(0x%08X)\n", p->next);
-			//}
-			hwflush_dcache_range((ULONG)pkt, wLen);
-			//portMEMORY_BARRIER();
-			//if (p->next != NULL) {
-			//	printf("P-next(0x%08X)\n", p->next);
-			//}
-
 			for (struct pbuf *q = p; q != NULL; q = q->next) {
-				//if (q->next != NULL) {
-				//	printf("Q-next(0x%08X)\n", q->next);
-				//}
 				if (q->len) { // Copy to "pbuf"
-#if 0
-					if (q->len > 1536) {
-						printf("1 0x%08X (%u)\n", q->payload, (UINT)q->len);
-					}
-					hwflush_dcache_range((ULONG)q->payload, q->len);
-					if (q->len > 1536) {
-						printf("2 0x%08X <- 0x%08X (%u)(%u)\n", q->payload, pkt + nTotLen, (UINT)q->len, p->len);
-						printf("3 p(0x%08X) q(0x%08X) %s %s \n", p, q, p->next == NULL ? "X" : "O", q->next == NULL ? "X" : "O");
-						while(1);
-					}
-					memcpy(q->payload, pkt + nTotLen, (UINT)q->len);
-					//CDmaMemCpy_isr(0, q->payload, pkt + nTotLen, (UINT)q->len);
-					hwflush_dcache_range((ULONG)q->payload, q->len);
-#else
-					//if (q->len > 1536) {
-					//	printf("1 0x%08X (%u/%u)\n", q->payload, (UINT)q->len, nTotLen);
-					//}
-					//printf("q->next(0x%08X-", q->next);
-#if 0
-					CDmaMemCpy_isr(0, q->payload, pkt + nTotLen, (UINT)q->len);
-#else
 					hwflush_dcache_range((ULONG)q->payload, (UINT)q->len);
-					//portMEMORY_BARRIER();
-					BDmaMemCpy_isr(0, q->payload, pkt + nTotLen, (UINT)q->len);
-					//portMEMORY_BARRIER();
-					//hwflush_dcache_range((ULONG)q->payload, (UINT)q->len);
-#endif
-					//printf("0x%08X)\n", q->next);
-					//if (q->len > 1536) {
-					//	printf("2 0x%08X (%u/%u)\n", q->payload, (UINT)q->len, nTotLen);
-					//}
-#endif
+					//hwdiscard_dcache_range_rtos((ULONG)q->payload, (UINT)q->len);
+					BDmaMemCpy_rtos(0, q->payload, pkt + nTotLen, (UINT)q->len);
+					//hwdiscard_dcache_range_rtos((ULONG)q->payload, (UINT)q->len);
+					hwflush_dcache_range((ULONG)q->payload, (UINT)q->len);
 				}
 				nTotLen += q->len;
 			}
-			//portEXIT_CRITICAL();
+			/////////////////////////////////////////////////////////////////////////////////////
+			// CRC
+#if 0
+			BYTE *data = pkt + wLen;
+			_test_crc32 = (data[0] << 24) | (data[1] << 16) | (data[2] << 8) | (data[3]);
+			UINT celcrc32 = crcCompute(pkt, wLen);
+			if (_test_crc32 != celcrc32) {
+				hwflush_dcache_range((ULONG)(intptr_t)pkt, wLen + 4);
+				_test_crc32 = (data[0] << 24) | (data[1] << 16) | (data[2] << 8) | (data[3]);
+				UINT celcrc32_re = crcCompute(pkt, wLen);
+				if (_test_crc32 != celcrc32_re) {
+					_Rprintf("Error! GetCRC:0x%08X CelCRC:0x%08X\n", _test_crc32, celcrc32);
+					hexDump("CRC Error packet", pkt, wLen + 4);
+					_Rprintf("Recheck fail! GetCRC:0x%08X CelCRC:0x%08X\n", _test_crc32, celcrc32_re);
+				} else {
+					printf("Recheck ok! GetCRC:0x%08X\n", _test_crc32);
+				}
+			}
+#endif
+			/////////////////////////////////////////////////////////////////////////////////////
 #if ETH_PAD_SIZE
 			pbuf_header(p, ETH_PAD_SIZE); // Reclaim the padding word
 #endif
@@ -409,22 +451,32 @@ static void network_ethif_pkt_input(void *ctx)
 	priv = (netif_state_t *)netif->state;
 	ENX_ASSERT(priv);
 
+	EthRxSetAddrOffset(NETRX_BUF_GAP);
+
 	BYTE *pBase = pvPortMalloc(ENX_MEM_ALIGN_BUFFER(NETRX_BUF_COUNT*NETRX_BUF_GAP)+NETRX_BUF_GAP);
+	//BYTE *pBase = pvPortMalloc(ENX_MEM_ALIGN_BUFFER(NETRX_BUF_COUNT*NETRX_BUF_GAP)+NETRX_BUF_GAP+524288);
 	if (pBase == NULL) {
 		printf("Error! Ethernet Rx Base malloc Fail!\n");
 		while (1);
 	} else {
 		qEthernetRX.base = (BYTE *)(((intptr_t)(pBase) + NETRX_BUF_GAP - 1) & ~(intptr_t)(NETRX_BUF_GAP - 1));
+		//qEthernetRX.base = (BYTE *)(((intptr_t)(pBase) + 524288 - 1) & ~(intptr_t)(524288 - 1));
 		_Cprintf("Ethernet Rx Base(0x%08lX) gap(%lu) count(%lu) size(%lu)\n", (ULONG)qEthernetRX.base, NETRX_BUF_GAP, NETRX_BUF_COUNT, NETRX_BUF_COUNT * NETRX_BUF_GAP);
 		EthRxSetBuffer(qEthernetRX.base, NETRX_BUF_COUNT);
 		qEthernetRX.pkt_data = (void *)qEthernetRX.base;
 		qEthernetRX.head = 0;
 		qEthernetRX.tail = 0;
+
+//		*qEthernetRX.base = 0xaabbccdd;
 	}
 
 	hwflush_dcache_range_rtos((ULONG)pBase, 16*1024);
 	memset(pBase, 0xAA, ENX_MEM_ALIGN_BUFFER(NETRX_BUF_COUNT*NETRX_BUF_GAP));
 	hwflush_dcache_range_rtos((ULONG)pBase, 16*1024);
+
+//	pmp_entry_set(4, PMP_R|PMP_L, (ULONG)qEthernetRX.base, 524288); 			// DDR enabled area
+//	pmp_entry_set(5, PMP_R|PMP_W|PMP_X|PMP_L, 0x80000000ul, DDR1_SIZE); // DDR enabled area
+//	pmp_entry_set(6, PMP_L, 0x80000000ul, 0x20000000ul);				// DDR disabled area
 
 	EthRxIrqCallback(network_ethif_pkt_input_irq, NULL);
 	EthSetRxIrqEn(ENX_ON);
@@ -434,7 +486,7 @@ static void network_ethif_pkt_input(void *ctx)
 		if (ulTaskNotifyTake(pdTRUE, portMAX_DELAY)) {
 			while ((p = low_level_input(netif))) {
 #if 1
-				hwflush_dcache_range((ULONG)p->payload, (UINT)p->len);
+				// hwflush_dcache_range((ULONG)p->payload, (UINT)p->len);
 				// points to packet payload, which starts with an Ethernet header
 				ethhdr = (struct eth_hdr *)p->payload;
 				switch (htons(ethhdr->type)) {
@@ -462,6 +514,7 @@ static void network_ethif_pkt_input(void *ctx)
 					case 0x22EA: // Stream Reservation Protocol
 					case 0x6003: // DECnet Phase IV
 					case ETHTYPE_RARP: // Reverse Address Resolution Protocol
+					case 0x8033: // HikVision SADP (discovery protocol) tool, for managing settings on Hikvision IP network cameras
 					case 0x809B: // AppleTalk (Ethertalk)
 					case 0x80F3: // AppleTalk Address Resolution Protocol (AARP)
 					case ETHTYPE_VLAN: // VLAN-tagged frame (IEEE 802.1Q) and Shortest Path Bridging IEEE 802.1aq with NNI compatibility[10]
@@ -511,8 +564,10 @@ static void network_ethif_pkt_input(void *ctx)
 						break;
 					default:
 						printf("payload(0x%08lX) len(%u)\n", (intptr_t)p->payload, p->len);
-						hwflush_dcache_range((ULONG)p->payload, (UINT)p->len+64);
-						hexDump("IP input error + 64byte", p->payload, p->len+64);
+						//hwflush_dcache_range((ULONG)p->payload, (UINT)p->len);
+						UINT celcrc32 = crcCompute(p->payload, p->len);
+						_Rprintf("Error! GetCRC:0x%08X CelCRC:0x%08X\n", _test_crc32, celcrc32);
+						hexDump("IP input error", p->payload, p->len);
 #if 0
 						hwflush_dcache_range((ULONG)p->payload, (UINT)p->len);
 						portMEMORY_BARRIER();
@@ -702,7 +757,7 @@ void network_ethif_start(void)
 		printf("Error! Ethernet Tx Base malloc Fail!\n");
 		while (1);
 	} else {
-		qEthernetTX.base = (BYTE *)(((intptr_t)(pBase) + NETRX_BUF_GAP - 1) & ~(intptr_t)(NETRX_BUF_GAP - 1));
+		qEthernetTX.base = (BYTE *)(((intptr_t)(pBase) + NETTX_BUF_GAP - 1) & ~(intptr_t)(NETTX_BUF_GAP - 1));
 		_Cprintf("Ethernet Tx Base(0x%08lX) gap(%lu) count(%lu) size(%lu)\n", (ULONG)qEthernetTX.base, NETTX_BUF_GAP, NETTX_BUF_COUNT, NETTX_BUF_COUNT * NETTX_BUF_GAP);
 		qEthernetTX.pkt_data = (void *)qEthernetTX.base;
 		qEthernetTX.index = 0;
@@ -717,6 +772,6 @@ void network_ethif_start(void)
 //	ChangeDefDeviceId();
 
 	netif_state[enlETHERNET].link_notity = vTaskCreate("eifLink", network_ethif_link, NULL, LV2_STACK_SIZE, LV7_TASK_PRIO);
-	netif_state[enlETHERNET].xrx_notity = vTaskCreate("eifRx", network_ethif_pkt_input, netif_state[enlETHERNET]._netif, LV5_STACK_SIZE, LV7_TASK_PRIO);
+	netif_state[enlETHERNET].xrx_notity = vTaskCreate("eifRx", network_ethif_pkt_input, netif_state[enlETHERNET]._netif, LV5_STACK_SIZE, LV6_TASK_PRIO);
 }
 #endif

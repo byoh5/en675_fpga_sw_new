@@ -13,7 +13,7 @@ extern void enx_externalirq_init(void);
 // Device driver ///////////////////////////////////////////////////////////////
 
 extern void DdrTest(void); // ddr.c
-extern void DdrInit(BYTE bCH, BYTE Sel); // ddr.c
+extern ENX_OKFAIL DdrInit(BYTE bCH, BYTE Sel, UINT nWrltc); // ddr.c
 
 extern void SflsInit(void);
 extern UINT SflsGetinfo(void);
@@ -100,6 +100,8 @@ extern void BDmaMemCpy_isr(UINT nCH, BYTE *apbDst, BYTE *apbSrc, UINT anNum);
 extern UINT BDmaMemCpy_isr_async(UINT nCH, BYTE *apbDst, BYTE *apbSrc, UINT anNum);
 extern void BDmaMemCpy_rtos(UINT nCH, BYTE *apbDst, BYTE *apbSrc, UINT anNum);
 extern UINT BDmaMemCpy_rtos_async(UINT nCH, BYTE *apbDst, BYTE *apbSrc, UINT anNum);
+extern void BDmaMemCpy_rtos_flush(UINT nCH, BYTE *apbDst, BYTE *apbSrc, UINT anNum);
+extern void BDmaMemCpy_rtos_discard_flush(UINT nCH, BYTE *apbDst, BYTE *apbSrc, UINT anNum);
 extern void BDmaMemSet_isr(UINT nCH, BYTE *apbDst, BYTE abVal, UINT anNum);
 extern UINT BDmaMemSet_isr_async(UINT nCH, BYTE *apbDst, BYTE abVal, UINT anNum);
 extern void BDmaMemSet_rtos(UINT nCH, BYTE *apbDst, BYTE abVal, UINT anNum);
@@ -165,6 +167,7 @@ extern UINT EthRxFilterInsert(BYTE *addr);
 extern UINT EthRxFilterDelete(BYTE *addr);
 extern void EthRxFilterList(void);
 extern void EthRxSetBuffer(BYTE *addr, UINT rx_lmt);
+extern void EthRxSetAddrOffset(UINT rx_adrofs);
 extern void EthTxPacket(BYTE *addr, UINT Len);
 extern void EthRxTxClockDly(BYTE u8TXe, BYTE u8TXd, BYTE u8RXe, BYTE u8RXd);
 extern void EthRxTxInit(UINT type, UINT speed, UINT duplex);
@@ -189,6 +192,11 @@ extern void EthMacAddrCheck(BYTE *addr);
 extern void I2sInit(void);
 extern void I2sMstInit(UINT freq, UINT byte);
 extern void I2sSlvInit(void);
+extern void I2sSetTxEdn(UINT txedn);
+extern UINT I2sGetTxEdn(void);
+extern void I2sSetRxEdn(UINT rxedn);
+extern UINT I2sGetRxEdn(void);
+
 extern void I2sTxCfg(UINT tx_mode, UINT tx_cd, UINT tx_dw, UINT rd_byte, UINT rd_dw, UINT rd_len, UINT tx_lr);
 extern void I2sSetTxMode(UINT tx_mode);
 extern UINT I2sGetTxMode(void);
@@ -208,6 +216,25 @@ extern void I2sTxBaseAddr(BYTE *addr);
 extern UINT I2sTxPos(void);
 extern void I2sSetTxEn(ENX_SWITCH sw);
 extern ENX_SWITCH I2sGetTxEn(void);
+
+extern void I2sRxCfg(UINT rx_mode, UINT rx_cd, UINT rx_dw, UINT wr_byte, UINT wr_dw, UINT wr_len);
+extern void I2sSetRxMode(UINT rx_mode);
+extern UINT I2sGetRxMode(void);
+extern void I2sSetRxCodec(UINT rx_cd);
+extern UINT I2sGetRxCodec(void);
+extern void I2sSetRxDw(UINT rx_dw);
+extern UINT I2sGetRxDw(void);
+extern void I2sSetWrByte(UINT wr_byte);
+extern UINT I2sGetWrByte(void);
+extern void I2sSetWrDw(UINT wr_dw);
+extern UINT I2sGetWrDw(void);
+extern void I2sSetWrLen(UINT wr_len);
+extern UINT I2sGetWrLen(void);
+extern void I2sRxBaseAddr(BYTE *addr);
+extern UINT I2sRxPos(void);
+extern void I2sSetRxEn(ENX_SWITCH sw);
+extern ENX_SWITCH I2sGetRxEn(void);
+
 extern void I2sTxIrqCallback(irq_fn irqfn, void *arg);
 extern void I2sRxIrqCallback(irq_fn irqfn, void *arg);
 extern void I2sSetTxIrqEn(ENX_SWITCH sw);
@@ -262,6 +289,22 @@ extern UINT SdioCmdIsIrq(UINT nCH);
 extern UINT SdioDatIsIrq(UINT nCH);
 extern void IrqSdio(UINT nCH);
 extern void SdioRegShow(UINT nCH, UINT isDetail);
+
+extern void SdioCdInit(UINT nCH);
+extern UINT SdioCdDet(void);
+extern ENX_OKFAIL SdioCdInitProcess(void);
+extern void SdioCdClockDown(void);
+extern void SdioCdClockRestore(void);
+
+extern UINT SdioCdGetActive(void);
+extern UINT SdioCdGetErrCode(void);
+extern UINT SdioCdGetAUSize(void);
+extern void SdioCdGetName(char *buf);
+extern UINT SdioCdGetSectorCnt(void);
+extern UINT SdioCdGetSize(void);
+extern UINT SdioCdE(UINT start_sctor, UINT end_sctor);
+extern ENX_OKFAIL SdioCdRead(const BYTE *buff, UINT sector, UINT count);
+extern ENX_OKFAIL SdioCdWrite(const BYTE *buff, UINT sector, UINT count);
 
 extern void AdcInit(UINT Speed_Hz);
 extern void AdcOn(UINT nCH);

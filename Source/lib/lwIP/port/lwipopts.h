@@ -129,7 +129,7 @@ void sys_unlock_tcpip_core(void);
  *    4 byte alignment -> \#define MEM_ALIGNMENT 4
  *    2 byte alignment -> \#define MEM_ALIGNMENT 2
  */
-#define MEM_ALIGNMENT                   16 // bus-align(16) cache-align(64)
+#define MEM_ALIGNMENT                   64 // bus-align(16) cache-align(64)
 
 /**
  * MEM_SIZE: the size of the heap memory. If the application will send
@@ -1148,7 +1148,7 @@ void sys_unlock_tcpip_core(void);
  * The priority value itself is platform-dependent, but is passed to
  * sys_thread_new() when the thread is created.
  */
-#define TCPIP_THREAD_PRIO               LV6_TASK_PRIO
+#define TCPIP_THREAD_PRIO               LV7_TASK_PRIO
 
 /**
  * TCPIP_MBOX_SIZE: The mailbox size for the tcpip thread messages
@@ -1255,7 +1255,7 @@ void sys_unlock_tcpip_core(void);
  * The latter 2 can be invoked up by calling netconn_thread_init()/netconn_thread_cleanup().
  * Ports may call these for threads created with sys_thread_new().
  */
-#define LWIP_NETCONN_SEM_PER_THREAD     0
+#define LWIP_NETCONN_SEM_PER_THREAD     1
 
 /** LWIP_NETCONN_FULLDUPLEX==1: Enable code that allows reading from one thread,
  * writing from a 2nd thread and closing from a 3rd thread at the same time.

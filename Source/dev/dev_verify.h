@@ -34,4 +34,10 @@
 #endif
 #endif
 
+#if (AUDIO_CODEC!=AUDIO_CODEC_RAW)
+#if (PCM_FREQUENCY!=PCM_16BIT_8000HZ)
+#error "Audio frequency error! If you selected G.711 as your codec, set PCM_FREQUENCY to PCM_16BIT_8000HZ."
+#endif
+#endif
+
 #endif //__DEV_VERIFY_H__

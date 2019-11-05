@@ -25,7 +25,7 @@
 #ifdef __ETHERNET__
 
 // IP address
-#define	ETH_IPADDR						"192.168.53.195"	// Ip address(rel)
+#define	ETH_IPADDR						"192.168.50.100"	// Ip address(rel)
 #define	ETH_NETMASK						"255.255.0.0"		// Subnet mask
 #define	ETH_GWADDR						"192.168.0.1"		// Gateway
 
@@ -126,14 +126,16 @@
 #if (ENX_RTSP_use==1)
 #define RTSP_portnum					554
 
-#define RTSP_info_MAX					(2)			// RTSP User Count
+#define RTSP_info_MAX					(20)		// RTSP Max connect
+#define RTSP_play_MAX					(2)			// RTSP Max player
 
-#define H264URL							"h264"		// H264 CH.1
-#define HSUBURL 						"hsub"		// H264 CH.2
-#define H265_1URL						"h265"		// H265 CH.1
-#define H265_2URL						"h265_2"	// H265 CH.2
-#define JPEGURL							"jpeg"		// M-JPEG
-#define JSUBURL							"jsub"		// M-JPEG(SW)
+#define RTSP_STREAMURL					"stream"	// stm1, stm2, stm3, stm4, ....
+//#define H264URL						"h264"		// H264 CH.1
+//#define HSUBURL 						"hsub"		// H264 CH.2
+//#define H265_1URL						"h265"		// H265 CH.1
+//#define H265_2URL						"h265_2"	// H265 CH.2
+//#define JPEGURL						"jpeg"		// M-JPEG
+//#define JSUBURL						"jsub"		// M-JPEG(SW)
 //#define PLAYBACK						"sdcard"	// playback
 //#define PLAYBACKRETRY					"sdcard/video"	// playback
 

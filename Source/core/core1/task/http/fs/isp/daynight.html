@@ -1,0 +1,151 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+<title></title>
+<link rel="stylesheet" type="text/css" href="..\bootstrap.min.css">
+<link rel="stylesheet" type="text/css" href="..\style.css">
+<script type="text/javascript">
+<!--
+function SetFormDefaults()
+{
+//<!--#isp_tdn-->
+	document.form.i_dn_md.selectedIndex = DAYNIG_MODE;
+	document.form.i_dn_ir[DAYNIG_IRLED].checked = true;
+	document.form.i_dn_an.value = DAYNIG_LEDSAT;
+	document.form.i_dn_at.value = DAYNIG_THRES;
+	document.form.i_dn_am.value = DAYNIG_MARGIN;
+	document.form.i_dn_et.selectedIndex = DAYNIG_EXTERN;
+	document.form.i_dn_dn.value = DAYNIG_DNTHRES;
+	document.form.i_dn_nd.value = DAYNIG_NDTHRES;
+	document.form.i_dn_dl.selectedIndex = DAYNIG_DELAY;
+	
+	SetDayNightMode();
+}	
+
+function SetDayNightMode()
+{
+	switch(document.form.i_dn_md.selectedIndex)
+	{
+		case 0:
+			document.form.i_dn_ir[0].disabled = false;
+			document.form.i_dn_ir[1].disabled = false;
+			document.form.i_dn_an.disabled = false;
+			document.form.i_dn_at.disabled = false;
+			document.form.i_dn_am.disabled = false;
+			document.form.i_dn_et.disabled = true;
+			document.form.i_dn_dn.disabled = true;
+			document.form.i_dn_nd.disabled = true;
+			document.form.i_dn_dl.disabled = false;
+			break;
+		case 1:
+			document.form.i_dn_ir[0].disabled = true;
+			document.form.i_dn_ir[1].disabled = true;
+			document.form.i_dn_an.disabled = true;
+			document.form.i_dn_at.disabled = true;
+			document.form.i_dn_am.disabled = true;
+			document.form.i_dn_et.disabled = true;
+			document.form.i_dn_dn.disabled = true;
+			document.form.i_dn_nd.disabled = true;
+			document.form.i_dn_dl.disabled = true;
+			break;
+		case 2:
+			document.form.i_dn_ir[0].disabled = false;
+			document.form.i_dn_ir[1].disabled = false;
+			document.form.i_dn_an.disabled = false;
+			document.form.i_dn_at.disabled = true;
+			document.form.i_dn_am.disabled = true;
+			document.form.i_dn_et.disabled = true;
+			document.form.i_dn_dn.disabled = true;
+			document.form.i_dn_nd.disabled = true;
+			document.form.i_dn_dl.disabled = true;
+			break;
+		case 3:
+			document.form.i_dn_ir[0].disabled = false;
+			document.form.i_dn_ir[1].disabled = false;
+			document.form.i_dn_an.disabled = false;
+			document.form.i_dn_at.disabled = true;
+			document.form.i_dn_am.disabled = true;
+			document.form.i_dn_et.disabled = false;
+			document.form.i_dn_dn.disabled = false;
+			document.form.i_dn_nd.disabled = false;
+			document.form.i_dn_dl.disabled = false;
+			break;
+	}
+	SetIRLED();
+}
+
+function SetIRLED()
+{
+	if(document.form.i_dn_ir[0].checked || document.form.i_dn_md.selectedIndex == 1)
+		document.form.i_dn_an.disabled = true;
+	else
+		document.form.i_dn_an.disabled = false;
+}
+//-->
+</script>
+</head>
+
+<body onload="SetFormDefaults();">
+<form id="form" name="form" method="get" action="appispmu.cgi">
+	<div class="sub-title">
+		<input class="btn btn-default pull-right" name="btOK" type="submit" value="submit">
+		<h3>DAY &amp; NIGHT</h3>
+	</div>
+	<hr>
+	<div>
+		<label class="sub-label">Mode</label>
+		<select id="i_dn_md" name="i_dn_md" onchange="SetDayNightMode()">
+			<option value=0>AUTO</option>
+			<option value=1>COLOR</option>
+			<option value=2>BLACK &amp; WHITE</option>
+			<option value=3>EXTERN</option>
+		</select>
+	</div>
+	<hr>
+	<div>
+		<label class="sub-label">IR LED</label>
+		<label class="radio-inline"><input type="radio" name="i_dn_ir" value=0 onchange="SetIRLED()">OFF</label>
+		<label class="radio-inline"><input type="radio" name="i_dn_ir" value=1 onchange="SetIRLED()">ON</label>
+	</div>
+	<div>
+		<label class="sub-label">Anti-SAT.</label>
+		<input name="i_dn_an" type="text"> [0~20]
+	</div>
+	<hr>
+	<div>
+		<label class="sub-label">AGC thres</label>
+		<input name="i_dn_at" type="text"> [0~20]
+	</div>
+	<div>
+		<label class="sub-label">AGC margin</label>
+		<input name="i_dn_am" type="text"> [0~20]
+	</div>
+	<hr>
+	<div>
+		<label class="sub-label">Extern S/W</label>
+		<select id="i_dn_et" name="i_dn_et">
+			<option value=0>HIGH</option>
+			<option value=1>LOW</option>
+		</select>
+	</div>
+	<div>
+		<label class="sub-label">D&gt;N Thres</label>
+		<input name="i_dn_dn" type="text"> [0~20]
+	</div>
+	<div>
+		<label class="sub-label">D&lt;N Thres</label>
+		<input name="i_dn_nd" type="text"> [0~20]
+	</div>
+	<hr>
+	<div>
+		<label class="sub-label">Delay</label>
+		<select id="i_dn_dl" name="i_dn_dl">
+			<option value=0>LOW</option>
+			<option value=1>MIDDLE</option>
+			<option value=2>HIGH</option>
+		</select>
+	</div>
+</form>
+</body>
+</html>

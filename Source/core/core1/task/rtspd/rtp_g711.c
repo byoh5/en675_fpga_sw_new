@@ -49,6 +49,8 @@
 
 #ifdef __AUDIO__
 
+BYTE tempAudioBuf[2048];
+
 int rtspd_client_rtp_g711_main(rtsp_client *prcInfo)
 {
 	ENTER();
@@ -64,6 +66,7 @@ int rtspd_client_rtp_g711_main(rtsp_client *prcInfo)
 	}
 
 	rtp_session *rtpSession = &(prcInfo->rtp_ss[ENX_RTSP_STRTYPE_numAUDIO]);
+	rtsp_connect_info *rtspConnect = &(prcInfo->conn_info);
 	rtpSession->buf_idx = (rtpSession->buf_idx + 1) % 2;
 
 	UINT remaining = TCP_MSS;
@@ -100,7 +103,7 @@ int rtspd_client_rtp_g711_main(rtsp_client *prcInfo)
 				if (prcInfo->eTransport == ENX_RTSP_TRANSPORT_TCP || prcInfo->eTransport == ENX_RTSP_TRANSPORT_HTTP) {
 					rtspHead = (rthInterleaved *)send_buffer;
 					rtspHead->un8Magic = '$';
-					rtspHead->un8Channel = rtpSession->rtp_port;
+					rtspHead->un8Channel = rtspConnect->rtp_port[ENX_RTSP_STRTYPE_numAUDIO]; // TCP에서는 rtp_port는 Channel로 사용됨
 					rtspHead->un16Length = 0;
 					rtpSession->buf_len[rtpSession->buf_idx] = sizeof(rthInterleaved);
 				}
@@ -113,9 +116,9 @@ int rtspd_client_rtp_g711_main(rtsp_client *prcInfo)
 				rtpHead->un4CSRCcount = 0;
 				rtpHead->un1Markerbit = 0;
 				rtpHead->un7Payloadtype = rtpSession->payload_type;
-				rtpHead->un16Sequencenum = ++rtpSession->start_seq;
-				rtpHead->un32Timestamp = rtpSession->start_rtptime;
-				rtpHead->un32SSIdentifier = rtpSession->ssrc;
+				rtpHead->un16Sequencenum =  htons(++rtpSession->start_seq);
+				rtpHead->un32Timestamp = htonl(rtpSession->start_rtptime);
+				rtpHead->un32SSIdentifier = htonl(rtpSession->ssrc);
 				rtpSession->buf_len[rtpSession->buf_idx] += sizeof(rthRTPHeader);
 
 				remaining -= rtpSession->buf_len[rtpSession->buf_idx];
@@ -123,13 +126,24 @@ int rtspd_client_rtp_g711_main(rtsp_client *prcInfo)
 					remaining = g711left;
 				}
 
-				BDmaMemCpy_rtos(0, send_buffer + rtpSession->buf_len[rtpSession->buf_idx], base_offset, remaining);
+#if 1
+				BDmaMemCpy_rtos_flush(RTSPD_USE_DMA, send_buffer + rtpSession->buf_len[rtpSession->buf_idx], base_offset, remaining);
+				//memcpy(send_buffer + rtpSession->buf_len[rtpSession->buf_idx], base_offset, remaining);
+#else
+				BDmaMemCpy_rtos_flush(RTSPD_USE_DMA, tempAudioBuf, base_offset, remaining);
+				//for (int k = 0; k < remaining; k += 2) {
+					//BYTE temp = tempAudioBuf[k];
+					//tempAudioBuf[k] = tempAudioBuf[k+1];
+					//tempAudioBuf[k+1] = temp;
+				//}
+				BDmaMemCpy_rtos_flush(RTSPD_USE_DMA, send_buffer + rtpSession->buf_len[rtpSession->buf_idx], tempAudioBuf, remaining);
+#endif
 
 				rtpSession->rtp_pk.offset += remaining;
 				rtpSession->buf_len[rtpSession->buf_idx] += remaining;
 
 				if (prcInfo->eTransport == ENX_RTSP_TRANSPORT_TCP || prcInfo->eTransport == ENX_RTSP_TRANSPORT_HTTP) {
-					rtspHead->un16Length = rtpSession->buf_len[rtpSession->buf_idx] - sizeof(rthInterleaved);
+					rtspHead->un16Length = htons(rtpSession->buf_len[rtpSession->buf_idx] - sizeof(rthInterleaved));
 				}
 
 				if (rtpSession->rtp_pk.offset == rtpSession->rtp_pk.size) {

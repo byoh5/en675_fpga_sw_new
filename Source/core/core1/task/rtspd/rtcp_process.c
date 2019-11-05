@@ -35,8 +35,7 @@
 
 #include <sys/time.h> // gettimeofday
 
-#include "msg.h"
-#include "user.h"
+#include "enx_freertos.h"
 
 #include "rtspd.h"
 #include "rtcp_process.h"
@@ -91,8 +90,6 @@ int rtspd_client_rtcp_send_sr(rtsp_client *prcInfo, int media_type, BYTE *send_b
 			return -1;
 	}
 
-	rtp_session *prtp_ss = &(prcInfo->rtp_ss[media_type]);
-
 	rthInterleaved *rtspHead = NULL;
 
 	int buf_len = 0;
@@ -101,12 +98,19 @@ int rtspd_client_rtcp_send_sr(rtsp_client *prcInfo, int media_type, BYTE *send_b
 	if (prcInfo->eTransport == ENX_RTSP_TRANSPORT_TCP || prcInfo->eTransport == ENX_RTSP_TRANSPORT_HTTP) {
 		rtspHead = (rthInterleaved *)send_buffer;
 		rtspHead->un8Magic = '$';
-		rtspHead->un8Channel = prtp_ss->rtcp_port;
+		rtspHead->un8Channel = prcInfo->conn_info.rtcp_port[media_type];
 		rtspHead->un16Length = 28;
 		buf_len = sizeof(rthInterleaved);
 	}
 
 	// make SR(24byte)
+	if (prcInfo->rtp_ss == NULL) {
+		flprintf("rtp_ss NULL!!!!!\n");
+		while (1) {
+			vTaskDelay(1);
+		}
+	}
+	rtp_session *prtp_ss = &(prcInfo->rtp_ss[media_type]);
 	buf_len += rtspd_client_rtcp_make_sr(prtp_ss, send_buffer + buf_len);
 
 	LEAVE();

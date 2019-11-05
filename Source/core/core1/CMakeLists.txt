@@ -7,7 +7,11 @@ PROJECT ( EN675_LIB_CORE1 )
 # 소스 코드
 SET ( CORE1_HDRS
 	enx_stream.h
+	enx_record.h
 	enx_file.h
+	task/audtxrx/audtxrx.h
+	task/change/ipchange.h
+	task/change/videochange.h
 	task/ethloopback/ethloopback.h
 	task/shell/shell.h
 	task/shell/shell_cmd.h
@@ -36,6 +40,11 @@ SET ( CORE1_HDRS
 	task/rtspd/rtspd_process.h
 	task/sntpc/sntpc.h
 	task/http/httpd_structs.h
+	task/http/cgissi.h
+	task/http/cgissi_en675.h
+	task/http/fsaplist.h
+	task/http/fsfilelist.h
+	task/http/httpd_authorization.h
 	task/videnc/fmt_avienc.h
 	task/videnc/fmt_mp4enc.h
 	task/videnc/muxer_videnc.h
@@ -49,7 +58,11 @@ SET ( CORE1_HDRS
 SET ( CORE1_SRCS
 	main1.c
 	enx_stream.c
+	enx_record.c
 	enx_file.c
+	task/audtxrx/audtxrx.c
+	task/change/ipchange.c
+	task/change/videochange.c
 	task/ethloopback/ethloopback.c
 	task/shell/shell.c
 	task/shell/shell_cmd.c
@@ -80,15 +93,19 @@ SET ( CORE1_SRCS
 	task/rtspd/rtspd_process.c
 	task/http/altcp_proxyconnect.c
 	task/http/fs.c
-	task/http/fsdata.c
 	task/http/http_client.c
 	task/http/httpd.c
-#	task/videnc/fmt_avienc.c
-#	task/videnc/fmt_mp4enc.c
-#	task/videnc/muxer_videnc.c
-#	task/videnc/stream_buffering.c
-#	task/videnc/videnc_heap.c
-#	task/videnc/videnc_info.c
+	task/http/cgissi.c
+	task/http/cgissi_en675.c
+	task/http/fsaplist.c
+	task/http/fsfilelist.c
+	task/http/httpd_authorization.c
+	task/videnc/fmt_avienc.c
+	task/videnc/fmt_mp4enc.c
+	task/videnc/muxer_videnc.c
+	task/videnc/stream_buffering.c
+	task/videnc/videnc_heap.c
+	task/videnc/videnc_info.c
 	task/wifi/wifi.c
 	task/wifi/wifi_task.c
 )

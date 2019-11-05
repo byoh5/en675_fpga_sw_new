@@ -1,0 +1,169 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+<title></title>
+<link rel="stylesheet" type="text/css" href="..\bootstrap.min.css">
+<link rel="stylesheet" type="text/css" href="..\style.css">
+<script type="text/javascript">
+<!--
+//<!--#isp_mo-->
+
+function SetFormDefaults()
+{
+	document.form.i_m_mt[MOT_DET_WINDOW_SW].checked = true;
+	document.form.i_m_dt.value = MOT_DET_TONE;
+	document.form.i_m_mf[MOT_MDRECT_FILL].checked = true;
+	document.form.i_m_st.value = MOT_SENSITIVITY;
+	document.form.i_m_mo[MOT_MOTION_OSD].checked = true;
+	document.form.i_m_ta[MOT_TEXT_ALARM].checked = true;
+	document.form.i_m_so[MOT_SIGNAL_OUT].checked = true;
+	
+	for(i = 0 ; i < MOT_WINDOW_CNT ; i++)
+	{
+		var t_form = document.getElementById("form" + i);
+		t_form["i_m_wu_" + i][MOT_DET_ZDISP[i]].checked = true;
+		t_form["i_m_hp_" + i].value = MOT_DET_HP[i];
+		t_form["i_m_vp_" + i].value = MOT_DET_VP[i];
+		t_form["i_m_hs_" + i].value = MOT_DET_HS[i];
+		t_form["i_m_vs_" + i].value = MOT_DET_VS[i];
+	}
+
+	document.getElementById("i_m_hpa").innerHTML = MOT_IMD_XMAX;
+	document.getElementById("i_m_vpa").innerHTML = MOT_IMD_YMAX;
+	document.getElementById("i_m_hsa").innerHTML = MOT_IMD_XMAX;
+	document.getElementById("i_m_vsa").innerHTML = MOT_IMD_YMAX;
+
+	SetMotionOnOff();
+}
+
+function SetMotionOnOff()
+{
+	var mot_switch = document.form.i_m_mt[0].checked;
+	document.form.i_m_dt.disabled = mot_switch;
+	document.form.i_m_mf[0].disabled = mot_switch;
+	document.form.i_m_mf[1].disabled = mot_switch;
+	document.form.i_m_st.disabled = mot_switch;
+	document.form.i_m_mo[0].disabled = mot_switch;
+	document.form.i_m_mo[1].disabled = mot_switch;
+	document.form.i_m_ta[0].disabled = mot_switch;
+	document.form.i_m_ta[1].disabled = mot_switch;
+	document.form.i_m_so[0].disabled = mot_switch;
+	document.form.i_m_so[1].disabled = mot_switch;
+	for(i = 0 ; i < MOT_WINDOW_CNT ; i++)
+	{
+		var t_form = document.getElementById("form" + i);
+		t_form["i_m_wu_" + i][0].disabled = mot_switch;
+		t_form["i_m_wu_" + i][1].disabled = mot_switch;
+		t_form["i_m_hp_" + i].disabled = mot_switch;
+		t_form["i_m_vp_" + i].disabled = mot_switch;
+		t_form["i_m_hs_" + i].disabled = mot_switch;
+		t_form["i_m_vs_" + i].disabled = mot_switch;
+		t_form["btOK"].disabled = mot_switch;
+		if(mot_switch == false)
+		{
+			SetMotionSWMode(i);
+		}
+	}
+}
+
+function SetMotionSWMode(idx)
+{
+	var t_form = document.getElementById("form" + idx);
+	var mot_switch = t_form["i_m_wu_" + idx][0].checked;
+	t_form["i_m_hp_" + idx].disabled = mot_switch;
+	t_form["i_m_vp_" + idx].disabled = mot_switch;
+	t_form["i_m_hs_" + idx].disabled = mot_switch;
+	t_form["i_m_vs_" + idx].disabled = mot_switch;
+}
+//-->
+</script>
+</head>
+
+<body onload="SetFormDefaults();">
+<form id="form" name="form" method="get" action="appispmu.cgi">
+	<input class="btn btn-default pull-right" name="btOK" type="submit" value="submit">
+	<h3>MOTION</h3>
+	<hr>
+	<div>
+		<label class="sub-label">MOTION</label>
+		<label class="radio-inline"><input type="radio" name="i_m_mt" value=0 onclick="SetMotionOnOff()">OFF</label>
+		<label class="radio-inline"><input type="radio" name="i_m_mt" value=1 onclick="SetMotionOnOff()">ON</label>
+	</div>
+	<hr>
+	<div>
+		<label class="sub-label">DETECTION TONE</label>
+		<input name="i_m_dt" type="text"> [0~4]
+	</div>
+	<div>
+		<label class="sub-label">MDRECT FILL</label>
+		<label class="radio-inline"><input type="radio" name="i_m_mf" value=0>OFF</label>
+		<label class="radio-inline"><input type="radio" name="i_m_mf" value=1>ON</label>
+	</div>
+	<div>
+		<label class="sub-label">SENSITIVITY</label>
+		<input name="i_m_st" type="text"> [0~10]
+	</div>
+	<div>
+		<label class="sub-label">MOTION OSD</label>
+		<label class="radio-inline"><input type="radio" name="i_m_mo" value=0>OFF</label>
+		<label class="radio-inline"><input type="radio" name="i_m_mo" value=1>ON</label>
+	</div>
+	<div>
+		<label class="sub-label">TEXT ALARM</label>
+		<label class="radio-inline"><input type="radio" name="i_m_ta" value=0>OFF</label>
+		<label class="radio-inline"><input type="radio" name="i_m_ta" value=1>ON</label>
+	</div>
+	<div>
+		<label class="sub-label">SIGNAL OUT</label>
+		<label class="radio-inline"><input type="radio" name="i_m_so" value=0>OFF</label>
+		<label class="radio-inline"><input type="radio" name="i_m_so" value=1>ON</label>
+	</div>
+</form>
+<hr>
+<div>
+	<label class="sub-label">Motion Zone</label>
+<table class="table table-bordered" style="width: 500px;">
+	<colgroup>
+		<col style="width: 20px;text-align: center;">
+		<col style="width: 120px;text-align: center;">
+		<col style="width: 60px;text-align: center;">
+		<col style="width: 60px;text-align: center;">
+		<col style="width: 60px;text-align: center;">
+		<col style="width: 60px;text-align: center;">
+		<col style="text-align: center;">
+	</colgroup>
+	<tr>
+		<td> </td>
+		<td>Zone Disp</td>
+		<td>H-POS<br />[0~<label id="i_m_hpa"></label>]</td>
+		<td>V-POS<br />[0~<label id="i_m_vpa"></label>]</td>
+		<td>H-SIZE<br />[0~<label id="i_m_hsa"></label>]</td>
+		<td>V-SIZE<br />[0~<label id="i_m_vsa"></label>]</td>
+		<td>Submit</td>
+	</tr>
+<script type="text/javascript">
+<!--
+for (i = 0 ; i < MOT_WINDOW_CNT ; i++)
+{
+document.write("<form id=\"form"+i+"\" name=\"form"+i+"\" method=\"get\" action=\"appispmu.cgi\">");
+document.write("<tr>");
+document.write("	<td>"+i+"</td>");
+document.write("	<td>");
+document.write("		<label class=\"radio-inline\"><input type=\"radio\" name=\"i_m_wu_"+i+"\" value=0 onchange=SetMotionSWMode("+i+")>OFF</label>");
+document.write("		<label class=\"radio-inline\"><input type=\"radio\" name=\"i_m_wu_"+i+"\" value=1 onchange=SetMotionSWMode("+i+")>ON</label>");
+document.write("	</td>");
+document.write("	<td><input name=\"i_m_hp_"+i+"\" style=\"width: 40px;text-align: center;\" type=\"text\"></td>");
+document.write("	<td><input name=\"i_m_vp_"+i+"\" style=\"width: 40px;text-align: center;\" type=\"text\"></td>");
+document.write("	<td><input name=\"i_m_hs_"+i+"\" style=\"width: 40px;text-align: center;\" type=\"text\"></td>");
+document.write("	<td><input name=\"i_m_vs_"+i+"\" style=\"width: 40px;text-align: center;\" type=\"text\"></td>");
+document.write("	<td><input class=\"btn btn-default btn-xs\" name=\"btOK\" type=\"submit\" value=\"submit\"></td>");
+document.write("</tr>");
+document.write("</form>");
+}
+-->
+</script>
+</table>
+</div>
+</body>
+</html>

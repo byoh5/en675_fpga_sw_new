@@ -149,15 +149,15 @@ int rtspd_client_rtp_jpeg_main(rtsp_client *prcInfo)
 
 					// Quantization table Copy
 					jpgData = send_buffer + rtpSession->buf_len[rtpSession->buf_idx];
-					DmaMemCpy_ip(jpgData					, base_offset + JPG_numOffset_YQUNT, JPG_numQUNTSize); // Y quantization table
-					DmaMemCpy_ip(jpgData + JPG_numQUNTSize	, base_offset + JPG_numOffset_CQUNT, JPG_numQUNTSize); // C quantization table
+					BDmaMemCpy_rtos_flush(RTSPD_USE_DMA, jpgData					, base_offset + JPG_numOffset_YQUNT, JPG_numQUNTSize); // Y quantization table
+					BDmaMemCpy_rtos_flush(RTSPD_USE_DMA, jpgData + JPG_numQUNTSize	, base_offset + JPG_numOffset_CQUNT, JPG_numQUNTSize); // C quantization table
 					rtpSession->buf_len[rtpSession->buf_idx] += JPG_numYCQUNTSize;
 
 					remaining -= rtpSession->buf_len[rtpSession->buf_idx];
 					if ((jpegleft - JPG_numHeaderSize) < remaining) {
 						remaining = jpegleft - JPG_numHeaderSize;
 					}
-					DmaMemCpy_ip(jpgData + JPG_numYCQUNTSize, base_offset + JPG_numHeaderSize  , remaining);
+					BDmaMemCpy_rtos_flush(RTSPD_USE_DMA, jpgData + JPG_numYCQUNTSize, base_offset + JPG_numHeaderSize  , remaining);
 
 					rtpSession->rtp_pk.offset = JPG_numHeaderSize + remaining;
 					rtpSession->rtp_pk.data_offset += remaining + JPG_numYCQUNTSize;
@@ -168,7 +168,7 @@ int rtspd_client_rtp_jpeg_main(rtsp_client *prcInfo)
 						remaining = jpegleft;
 					}
 
-					DmaMemCpy_ip(send_buffer + rtpSession->buf_len[rtpSession->buf_idx], base_offset, remaining);
+					BDmaMemCpy_rtos_flush(RTSPD_USE_DMA, send_buffer + rtpSession->buf_len[rtpSession->buf_idx], base_offset, remaining);
 
 					rtpSession->rtp_pk.offset += remaining;
 					rtpSession->rtp_pk.data_offset += remaining;

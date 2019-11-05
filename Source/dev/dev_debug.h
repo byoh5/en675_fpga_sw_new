@@ -49,6 +49,10 @@
 #define DBG_ETHPHY_ERR			(ENX_DBG_ON)
 #define DBG_MDIO_LOG			(ENX_DBG_ON)
 
+#define DBG_I2C_LOG				(ENX_DBG_ON)
+#define DBG_GPIO_LOG			(ENX_DBG_ON)
+#define DGB_GPIO_ERR			(ENX_DBG_ON | ENX_DBG_HALT)
+#define DBG_ADC_LOG				(ENX_DBG_ON)
 
 //******************************************************************************
 // 2. Debug Log

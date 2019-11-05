@@ -728,24 +728,25 @@ done1:
 
 int UsrMakevidCmd(INT32S argc, char *argv[])
 {
-#if 0
 	if (argc != 2) {
-		printf("Error : ex) sdsave on   // 1: driver H.264 Stream write on\n");
-		printf("        ex) sdsave off  // 1: driver H.264 Stream write off\n");
-		printf("        ex) sdsave e    // 1: driver H.264 Stream write event\n");
+		printf("Error : ex) %s on   // Start normal recording on the SD card.\n", argv[0]);
+		printf("        ex) %s off  // Stop normal recording on SD card.\n", argv[0]);
+#if (FAT_SDSAVE_EVENT==1)
+		printf("        ex) %s e    // Start event recording on the SD card.\n", argv[0]);
+#endif
 		return 0;
 	}
 
 	if (strcmp("on", argv[1]) == 0) {
-		if (gtUser.bSdVidSave != DEF_ON) {
-			gtUser.bSdVidSave = DEF_ON;
+		if (gtUser.bSdVidSave != ENX_ON) {
+			gtUser.bSdVidSave = ENX_ON;
 			printf("SD SAVE ON\n");
 		} else {
 			printf("Error : Already SD Save ON\n");
 		}
 	} else if (strcmp("off", argv[1]) == 0) {
-		if (gtUser.bSdVidSave != DEF_OFF) {
-			gtUser.bSdVidSave = DEF_OFF;
+		if (gtUser.bSdVidSave != ENX_OFF) {
+			gtUser.bSdVidSave = ENX_OFF;
 			printf("SD SAVE OFF\n");
 		} else {
 			printf("Error : Already SD Save OFF\n");
@@ -760,9 +761,12 @@ int UsrMakevidCmd(INT32S argc, char *argv[])
 	}
 #endif
 	else {
+#if (FAT_SDSAVE_EVENT==1)
 		printf("Error : option 'on' or 'off' or 'e'\n");
-	}
+#else
+		printf("Error : option 'on' or 'off'\n");
 #endif
+	}
 	return 0;
 }
 #endif

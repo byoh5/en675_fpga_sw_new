@@ -31,7 +31,7 @@ void I2cInit(UINT nCH, UINT Speed_Hz)
 		case 8:	I2C8_PIN_INIT;	break;
 	}
 
-	printf("I2C%u Init - %uHz\n", nCH, MCK_FREQ / ((arrI2CCLK[nCH]->CLK_DIV + 1) * 8));
+	ENX_DEBUGF(DBG_I2C_LOG, "I2C%u Init - %uHz\n", nCH, MCK_FREQ / ((arrI2CCLK[nCH]->CLK_DIV + 1) * 8));
 }
 
 void I2cDeInit(UINT nCH)

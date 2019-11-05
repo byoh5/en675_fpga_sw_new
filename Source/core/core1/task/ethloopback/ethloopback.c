@@ -166,7 +166,7 @@ void EthloopbackTask(void *ctx)
 			vTaskDelay(1);
 		}
 
-		EthphyLoopbackMode();
+		EthphyLoopbackMode(ethlp.u32Speed, ethlp.u32Duplex);
 
 		EthRxIrqCallback(network_ethif_pkt_input_loopback_irq, &ethlp);
 		EthSetRxIrqEn(ENX_ON);
@@ -204,6 +204,16 @@ void EthloopbackTask(void *ctx)
 
 	ethlp.eRunMode = ePlk_off;
 	vTaskDelete(NULL);
+}
+
+void EthloopbackSetSpeed(UINT speed)
+{
+	ethlp.u32Speed = speed;
+}
+
+void EthloopbackSetDuplex(UINT duplex)
+{
+	ethlp.u32Duplex = duplex;
 }
 
 eEthphyLoopbackMode EthloopbackGetMode(void)

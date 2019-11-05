@@ -1,0 +1,79 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+<title></title>
+<link rel="stylesheet" type="text/css" href="..\bootstrap.min.css">
+<link rel="stylesheet" type="text/css" href="..\style.css">
+<script type="text/javascript">
+<!--
+function SetFormDefaults()
+{
+//<!--#isp_sy-->
+
+	document.form.i_s_cb[SYS_COLBAR].checked = true;
+	document.form.i_s_lg.selectedIndex = SYS_LANG;
+	document.form.i_s_ct.selectedIndex = SYS_TITLE_SW;
+	document.form.i_s_ti.value = SYS_TITLE;
+
+	SetTitle();
+}
+
+function SetTitle()
+{
+	if(document.form.i_s_ct.selectedIndex == 0)
+	{
+		document.form.i_s_ti.disabled = true;
+	}
+	else
+	{
+		document.form.i_s_ti.disabled = false;
+	}			
+}
+//-->
+</script>
+</head>
+
+<body onload="SetFormDefaults();">
+<form id="form" name="form" method="get" action="appispmu.cgi">
+	<div class="sub-title">
+		<input class="btn btn-default pull-right" name="btOK" type="submit" value="submit">
+		<h3>SYSTEM</h3>
+	</div>
+	<hr>
+	<div>
+		<label class="sub-label">Color bar</label>
+		<label class="radio-inline"><input type="radio" name="i_s_cb" value=0>OFF</label>
+		<label class="radio-inline"><input type="radio" name="i_s_cb" value=1>ON</label>
+	</div>
+	<div>
+		<label class="sub-label">Language</label>
+		<select id="i_s_lg" name="i_s_lg">
+			<option value=0>English</option>
+			<option value=1>Chinese</option>
+			<option value=2>Chinese[S]</option>
+			<option value=3>Japanese</option>
+			<option value=4>Korean</option>
+		</select>
+	</div>
+	<hr>
+	<div>
+		<label class="sub-label">Cam Title</label>
+		<select id="i_s_cs" name="i_s_ct" onchange="SetTitle()">
+			<option value=0>OFF</option>
+			<option value=1>Right up</option>
+			<option value=2>Left down</option>
+		</select>
+	</div>
+	<div>
+		<label class="sub-label"></label>
+		<input name="i_s_ti" type="text" maxlength=8>
+	</div>
+</form>
+	<hr>
+<form id="form1" name="form1" method="get" action="appispmu.cgi">
+	<label class="sub-label">Reset</label>
+	<input class="btn btn-default btn-xs" name="i_s_rs" type="submit" value="RESET">
+</form>
+</body>
+</html>

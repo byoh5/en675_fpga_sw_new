@@ -2857,9 +2857,16 @@ static FRESULT create_name (	/* FR_OK: successful, FR_INVALID_NAME: could not cr
 		if (di >= FF_MAX_LFN) return FR_INVALID_NAME;	/* Reject too long name */
 		lfn[di++] = wc;					/* Store the Unicode character */
 	}
-	while (*p == '/' || *p == '\\') p++;	/* Skip duplicated separators if exist */
-	*path = p;							/* Return pointer to the next segment */
-	cf = (wc < ' ') ? NS_LAST : 0;		/* Set last segment flag if end of the path */
+//	while (*p == '/' || *p == '\\') p++;	/* Skip duplicated separators if exist */ /* ff13c_p5.diff(19.08.30) */
+//	*path = p;							/* Return pointer to the next segment */ /* ff13c_p5.diff(19.08.30) */
+//	cf = (wc < ' ') ? NS_LAST : 0;		/* Set last segment flag if end of the path */ /* ff13c_p5.diff(19.08.30) */
+	if (wc < ' ') {				/* End of path? */ /* ff13c_p5.diff(19.08.30) */
+		cf = NS_LAST;			/* Set last segment flag */ /* ff13c_p5.diff(19.08.30) */
+	} else { /* ff13c_p5.diff(19.08.30) */
+		cf = 0;					/* Next segment follows */ /* ff13c_p5.diff(19.08.30) */
+		while (*p == '/' || *p == '\\') p++;	/* Skip duplicated separators if exist */ /* ff13c_p5.diff(19.08.30) */
+	} /* ff13c_p5.diff(19.08.30) */
+	*path = p;					/* Return pointer to the next segment */ /* ff13c_p5.diff(19.08.30) */
 
 #if FF_FS_RPATH != 0
 	if ((di == 1 && lfn[di - 1] == '.') ||
@@ -4171,9 +4178,10 @@ FRESULT f_getcwd (
 	TCHAR *tp = buff;
 #if FF_VOLUMES >= 2
 	UINT vl;
-#endif
+//#endif /* ff13c_p4.diff(19.04.13) */
 #if FF_STR_VOLUME_ID
 	const char *vp;
+#endif /* ff13c_p4.diff(19.04.13) */
 #endif
 	FILINFO fno;
 	DEF_NAMBUF

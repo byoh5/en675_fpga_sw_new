@@ -21,11 +21,12 @@
 				printf(str, ## args); \
 				printf("\r\n"); } while(0)
 # undef DHCPD_DEBUG
-# define DEBUG(level, str, args...) LOG(level, str, ## args)
+# define DHCPD_DEBUG(level, str, args...) LOG(level, str, ## args)
 # define DEBUGGING
 #else
 # define LOG(level, str, args...)	do {;} while(0)
-# define DEBUG(level, str, args...) do {;} while(0)
+//# define DEBUG(level, str, args...) do {;} while(0)
+# define DHCPD_DEBUG(level, str, args...) do {;} while(0)
 #endif
 
 #endif

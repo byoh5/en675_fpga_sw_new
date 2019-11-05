@@ -113,6 +113,7 @@
 #include <stdio.h>
 
 #if LWIP_TCP && LWIP_CALLBACK_API
+#include "cgissi.h"
 
 /** Minimum length for a valid HTTP/0.9 request: "GET /\r\n" -> 7 bytes */
 #define MIN_REQ_LEN   7
@@ -152,11 +153,11 @@ typedef struct {
 } default_filename;
 
 static const default_filename httpd_default_filenames[] = {
-  {"/index.shtml", 1 },
-  {"/index.ssi",   1 },
-  {"/index.shtm",  1 },
-  {"/index.html",  0 },
-  {"/index.htm",   0 }
+  {"/index.html",  1 },
+  {"/index.htm",   1 },
+/*{"/index.shtml", 1 },*/
+/*{"/index.ssi",   1 },*/
+/*{"/index.shtm",  1 } */
 };
 
 #define NUM_DEFAULT_FILENAMES LWIP_ARRAYSIZE(httpd_default_filenames)
@@ -237,6 +238,8 @@ struct http_ssi_tag_description {
 };
 
 #endif /* LWIP_HTTPD_SSI */
+
+const char *ghttpuri;
 
 struct http_state {
 #if LWIP_HTTPD_KILL_OLD_ON_CONNECTIONS_EXCEEDED
@@ -320,7 +323,7 @@ static void http_continue(void *connection);
 static tSSIHandler httpd_ssi_handler;
 #if !LWIP_HTTPD_SSI_RAW
 static int httpd_num_tags;
-static const char **httpd_tags;
+static const ConfigSSITags *httpd_tags;
 #endif /* !LWIP_HTTPD_SSI_RAW */
 
 /* Define the available tag lead-ins and corresponding lead-outs.
@@ -675,6 +678,42 @@ http_eof(struct altcp_pcb *pcb, struct http_state *hs)
 }
 
 #if LWIP_HTTPD_CGI || LWIP_HTTPD_CGI_SSI
+// Change two hex character to one hex value.
+char _q_x2c(char hex_up, char hex_low)
+{
+  char digit = 16 * (hex_up >= 'A' ? ((hex_up & 0xdf) - 'A') + 10 : (hex_up - '0'));
+  return digit += (hex_low >= 'A' ? ((hex_low & 0xdf) - 'A') + 10 : (hex_low - '0'));
+}
+
+size_t _q_urldecode(char *str)
+{
+  if (str == NULL) {
+    return 0;
+  }
+
+  char *pEncPt, *pBinPt = str;
+  for (pEncPt = str; *pEncPt != '\0'; pEncPt++) {
+    switch (*pEncPt) {
+      case '+': {
+        *pBinPt++ = ' ';
+        break;
+      }
+      case '%': {
+        *pBinPt++ = _q_x2c(*(pEncPt + 1), *(pEncPt + 2));
+        pEncPt += 2;
+        break;
+      }
+      default: {
+        *pBinPt++ = *pEncPt;
+        break;
+      }
+    }
+  }
+  *pBinPt = '\0';
+
+  return (pBinPt - str);
+}
+
 /**
  * Extract URI parameters from the parameter-part of an URI in the form
  * "test.cgi?x=y" @todo: better explanation!
@@ -735,6 +774,7 @@ extract_uri_parameters(struct http_state *hs, char *params)
     if (equals) {
       *equals = '\0';
       http_cgi_param_vals[loop] = equals + 1;
+      _q_urldecode(http_cgi_param_vals[loop]);
     } else {
       http_cgi_param_vals[loop] = NULL;
     }
@@ -791,10 +831,10 @@ get_tag_insert(struct http_state *hs)
     {
 #else /* LWIP_HTTPD_SSI_RAW */
     for (tag = 0; tag < httpd_num_tags; tag++) {
-      if (strcmp(ssi->tag_name, httpd_tags[tag]) == 0)
+      if (strcmp(ssi->tag_name, httpd_tags[tag].tag) == 0)
 #endif /* LWIP_HTTPD_SSI_RAW */
       {
-        ssi->tag_insert_len = httpd_ssi_handler(tag, ssi->tag_insert,
+        ssi->tag_insert_len = httpd_ssi_handler(httpd_tags[tag].index, ssi->tag_insert,
                                               LWIP_HTTPD_MAX_TAG_INSERT_LEN
 #if LWIP_HTTPD_SSI_MULTIPART
                                               , current_tag_part, &ssi->tag_part
@@ -1639,6 +1679,18 @@ http_find_error_file(struct http_state *hs, u16_t error_nr)
     uri1 = "/501.html";
     uri2 = "/501.htm";
     uri3 = "/501.shtml";
+  } else if (error_nr == 500) {
+    uri1 = "/500.html";
+    uri2 = "/500.htm";
+    uri3 = "/500.shtml";
+  } else if (error_nr == 415) {
+    uri1 = "/415.html";
+    uri2 = "/415.htm";
+    uri3 = "/415.shtml";
+  } else if (error_nr == 401) {
+    uri1 = "/401.html";
+    uri2 = "/401.htm";
+    uri3 = "/401.shtml";
   } else {
     /* 400 (bad request is the default) */
     uri1 = "/400.html";
@@ -2253,6 +2305,7 @@ http_find_file(struct http_state *hs, const char *uri, int is_09)
            * We found a CGI that handles this URI so extract the
            * parameters and call the handler.
            */
+          ghttpuri = uri;
           http_cgi_paramcount = extract_uri_parameters(hs, params);
           uri = httpd_cgis[i].pfnCGIHandler(i, http_cgi_paramcount, hs->params,
                                          hs->param_vals);
@@ -2515,6 +2568,7 @@ http_poll(void *arg, struct altcp_pcb *pcb)
 static err_t
 http_recv(void *arg, struct altcp_pcb *pcb, struct pbuf *p, err_t err)
 {
+  err_t parsed = ERR_ABRT;
   struct http_state *hs = (struct http_state *)arg;
   LWIP_DEBUGF(HTTPD_DEBUG | LWIP_DBG_TRACE, ("http_recv: pcb=%p pbuf=%p err=%s\n", (void *)pcb,
               (void *)p, lwip_strerr(err)));
@@ -2549,9 +2603,12 @@ http_recv(void *arg, struct altcp_pcb *pcb, struct pbuf *p, err_t err)
     /* reset idle counter when POST data is received */
     hs->retries = 0;
     /* this is data for a POST, pass the complete pbuf to the application */
-    http_post_rxpbuf(hs, p);
+    parsed = http_post_rxpbuf(hs, p);
     /* pbuf is passed to the application, don't free it! */
     if (hs->post_content_len_left == 0) {
+      if (parsed == ERR_VAL) {
+        http_init_file(hs, NULL, 0, "/415.html", 0, NULL);
+      }
       /* all data received, send response or close connection */
       http_send(pcb, hs);
     }
@@ -2560,7 +2617,7 @@ http_recv(void *arg, struct altcp_pcb *pcb, struct pbuf *p, err_t err)
 #endif /* LWIP_HTTPD_SUPPORT_POST */
   {
     if (hs->handle == NULL) {
-      err_t parsed = http_parse_request(p, hs, pcb);
+      parsed = http_parse_request(p, hs, pcb);
       LWIP_ASSERT("http_parse_request: unexpected return value", parsed == ERR_OK
                   || parsed == ERR_INPROGRESS || parsed == ERR_ARG || parsed == ERR_USE);
 #if LWIP_HTTPD_SUPPORT_REQUESTLIST
@@ -2686,6 +2743,13 @@ httpd_init(void)
 #else							// $CMT-hjlee-180928 -
   SYS_ARCH_UNPROTECT(lev);		// $CMT-hjlee-180928 -
 #endif							// $CMT-hjlee-180928 -
+
+#if LWIP_HTTPD_CGI
+  cgi_init();
+#endif
+#if LWIP_HTTPD_SSI
+  ssi_init();
+#endif
 }
 
 #if HTTPD_ENABLE_HTTPS
@@ -2717,7 +2781,7 @@ httpd_inits(struct altcp_tls_config *conf)
  * @param num_tags number of tags in the 'tags' array
  */
 void
-http_set_ssi_handler(tSSIHandler ssi_handler, const char **tags, int num_tags)
+http_set_ssi_handler(tSSIHandler ssi_handler, const ConfigSSITags *tags, int num_tags)
 {
   LWIP_DEBUGF(HTTPD_DEBUG, ("http_set_ssi_handler\n"));
 

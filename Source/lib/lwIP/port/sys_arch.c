@@ -58,14 +58,14 @@
  * Default is 0 and locks interrupts/scheduler for SYS_ARCH_PROTECT().
  */
 #ifndef LWIP_FREERTOS_SYS_ARCH_PROTECT_USES_MUTEX
-#define LWIP_FREERTOS_SYS_ARCH_PROTECT_USES_MUTEX     0
+#define LWIP_FREERTOS_SYS_ARCH_PROTECT_USES_MUTEX     1 // 0
 #endif
 
 /** Set this to 1 to include a sanity check that SYS_ARCH_PROTECT() and
  * SYS_ARCH_UNPROTECT() are called matching.
  */
 #ifndef LWIP_FREERTOS_SYS_ARCH_PROTECT_SANITY_CHECK
-#define LWIP_FREERTOS_SYS_ARCH_PROTECT_SANITY_CHECK   0
+#define LWIP_FREERTOS_SYS_ARCH_PROTECT_SANITY_CHECK   1 // 0
 #endif
 
 /** Set this to 1 to let sys_mbox_free check that queues are empty when freed */
@@ -140,7 +140,7 @@ sys_jiffies(void)
 }
 
 #if SYS_LIGHTWEIGHT_PROT
-#if 0
+#if 1
 sys_prot_t
 sys_arch_protect(void)
 {
@@ -233,9 +233,9 @@ sys_mutex_unlock(sys_mutex_t *mutex)
   BaseType_t ret;
   LWIP_ASSERT("mutex != NULL", mutex != NULL);
   LWIP_ASSERT("mutex->mut != NULL", mutex->mut != NULL);
-  printf("a");
+  //printf("a");
   ret = xSemaphoreGiveRecursive(mutex->mut);
-  printf("b");
+  //printf("b");
   LWIP_ASSERT("failed to give the mutex", ret == pdTRUE);
 }
 
@@ -268,6 +268,7 @@ sys_sem_new(sys_sem_t *sem, u8_t initial_count)
     return ERR_MEM;
   }
   SYS_STATS_INC_USED(sem);
+
 
   if(initial_count == 1) {
     BaseType_t ret = xSemaphoreGive(sem->sem);
@@ -505,6 +506,8 @@ sys_thread_new(const char *name, lwip_thread_fn thread, void *arg, int stacksize
 
 // -------------------------------- Socket/Netconn stuff ----------------------------------------
 #if LWIP_NETCONN_SEM_PER_THREAD
+
+
 #if configNUM_THREAD_LOCAL_STORAGE_POINTERS > 0
 
 sys_sem_t *
@@ -690,20 +693,27 @@ WORD my_chksum(const void *dataptr, WORD len)
 
 //	ULONG stime = BenchTimeStart();
 
+#if 1
 	BYTE *ptr;
 	WORD hw_chksum1 = 0;
 	hwflush_dcache_range_rtos((ULONG)dataptr, len);
 	if (((ULONG)dataptr) % 64 == 0) {
-		ptr = dataptr;
+		ptr = (BYTE *)dataptr;
 	} else {
 		ptr = chksumData;
 		BDmaMemCpy_rtos(0, chksumData, (BYTE *)dataptr, len);
 	}
 	hw_chksum1 = Checksum16((BYTE *)ptr, len);
-
+#else
+	BYTE *ptr = dataptr;
+	hwflush_dcache_range_rtos((ULONG)dataptr, len);
+	WORD hw_chksum1 = Checksum16((BYTE *)dataptr, len);
+#endif
 //	ULONG a_out = BenchTimeStop(stime);
 //	stime = BenchTimeStart();
-
+#if 1
+	return hw_chksum1;
+#else
 	WORD sw_chksum = lwip_standard_chksum(dataptr, len);
 
 //	ULONG b_out = BenchTimeStop(stime);
@@ -719,22 +729,21 @@ WORD my_chksum(const void *dataptr, WORD len)
 	}
 //	printf("%4u|H:%4luus|S:%4luus|\n", len, a_out, b_out);
 	return sw_chksum;
+#endif
 }
 
 void my_copy(void* dst, void* src, unsigned long len)
 {
-#if 0
-	DmaMemCpy_ip((BYTE*)dst, (BYTE*)src, (UINT)len);
-#ifdef CONFIG_DCACHE_ENABLE
-	invalidate_dcache_range((uint)dst, ((uint)dst)+len);  /* Maybe, we thick cache flush may bes not used. cache is write through */
-#endif
-#else
 //	printf("DST(0x%08X SRC(0x%08X) LEN(%8u)\n", dst, src, len);
 //	hwflush_dcache_range_rtos(src, len);
 //	hwflush_dcache_range_rtos(dst, len);
 //	BDmaMemCpy_rtos(0, dst, src, len);
 //	hwflush_dcache_range_rtos(dst, len);
-	memcpy(dst, src, len);
-//	hwflush_dcache_range_rtos(dst, len);
+	//memcpy(dst, src, len);
+#if 0
+	BDmaMemCpy_rtos_flush(0, dst, src, len);
+#else
+	BDmaMemCpy_rtos_discard_flush(0, dst, src, len);
 #endif
+//	hwflush_dcache_range_rtos(dst, len);
 }

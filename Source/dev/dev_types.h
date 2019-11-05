@@ -142,6 +142,9 @@ typedef enum {
 #define ENX_MEM_ALIGN_BUFFER(size)	(((size) + ENX_MEM_ALIGNMENT - 1))
 #define ENX_MEM_ALIGN(addr)			(((intptr_t)(addr) + ENX_MEM_ALIGNMENT - 1) & ~(intptr_t)(ENX_MEM_ALIGNMENT - 1))
 
+#define bitchange(bitCheckValue, bitLocation, setBit) (setBit ? (bitCheckValue | bitLocation) : (bitCheckValue & (~(bitLocation))))
+#define bitcheck(bitCheckValue, bitLocation) (bitCheckValue & bitLocation)
+
 #define num_loop(val, MAX)		{ ++(val); if((val)>=(MAX)){val = 0;} }
 #define cQueue_isfull(cQueue)	(((((cQueue)->tail+1) % (cQueue)->tot_num) == (cQueue)->head) ? ENX_OK : ENX_FAIL)
 #define cQueue_isempty(cQueue)	(((cQueue)->head == (cQueue)->tail) ? ENX_OK : ENX_FAIL)
@@ -167,6 +170,7 @@ typedef enum {
         const typeof( ((type *)0)->member ) *__mptr = (ptr); \
         (type *)( (char *)__mptr - offsetof(type,member) );})
 
+#define ATTR_MALIGN(x)	__attribute__((__aligned__(x)))
 #define ATTR_MALIGN64	__attribute__((__aligned__(64)))
 #define ATTR_MALIGN16	__attribute__((__aligned__(16)))
 #define ATTR_BIGENDIAN	__attribute__((__scalar_storage_order__("big-endian")))
@@ -458,6 +462,65 @@ typedef struct {
 } SFLScontrol;
 
 //******************************************************************************
+// I2S define
+//------------------------------------------------------------------------------
+typedef enum {
+	eI2sCodecPCM = 0,
+	eI2sCodecG711a = 2,
+	eI2sCodecG711u = 3
+} I2S_CODEC;
+
+typedef enum {
+	eI2sWidth8b = 0,
+	eI2sWidth16b = 1,
+	eI2sWidth24b = 2,
+	eI2sWidth32b = 3,
+} I2S_DATA_WIDTH;
+
+typedef enum {
+	eI2sReq128B,
+	eI2sReq256B,
+	eI2sReq512B,
+	eI2sReq1024B
+} I2S_REQ_B;
+
+typedef enum {
+	eI2sLoop128KB,
+	eI2sLoop256KB,
+	eI2sLoop512KB,
+	eI2sLoop1024KB
+} I2S_LOOP_KB;
+
+typedef enum {
+	eI2sWRDW8bit,
+	eI2sWRDW16bit,
+	eI2sWRDW24bit,
+	eI2sWRDW32bit
+} I2S_I2StoMEM_BIT; // WRDW
+
+typedef enum {
+	eI2sRXDW8bit,
+	eI2sRXDW16bit,
+	eI2sRXDW24bit,
+	eI2sRXDW32bit
+} I2S_RX_BIT; // RXDW
+
+typedef enum {
+	eI2sRDDW8bit,
+	eI2sRDDW16bit,
+	eI2sRDDW24bit,
+	eI2sRDDW32bit
+} I2S_MEMtoI2S_BIT; // RDDW
+
+typedef enum {
+	eI2sTXDW8bit,
+	eI2sTXDW16bit,
+	eI2sTXDW24bit,
+	eI2sTXDW32bit
+} I2S_TX_BIT; // TXDW
+
+
+//******************************************************************************
 // SDIO define
 //------------------------------------------------------------------------------
 typedef enum {
@@ -517,6 +580,23 @@ typedef enum {
 // Video/Audio Index define
 //------------------------------------------------------------------------------
 typedef enum {
+	e_vsVSource1,
+	e_vsVSource2,
+	e_vsVSource3,
+	e_vsVSource4,
+	e_vsEndorUnknown
+} eVideoSource;
+#define VIDEO_SOURCE_CNT e_vsEndorUnknown
+
+typedef enum {
+	e_vcVEncoder1,
+	e_vcVEncoder2,
+	e_vcVEncoder3,
+	e_vcEndorUnknown
+} eVideoChannel;
+#define VIDEO_CHANNEL_CNT e_vcEndorUnknown
+
+typedef enum {
 	eSTREAMMSG_H265I = 1,
 	eSTREAMMSG_H265P,
 	eSTREAMMSG_H264I,
@@ -527,20 +607,26 @@ typedef enum {
 } AVType;
 
 typedef enum {
-	e_res3840x2160,		// 16:9		UHD		8,294,400
-	e_res2560x2048,		// 5:4		QSXGA	5,242,880
-	e_res2560x1600,		// 16:10	WQVGA	4,096,000
-	e_res2560x1440,		// 16:9		WQHD	3,686,400
-	e_res2048x1536,		// 4:3		QXGA	3,145,728
-	e_res1920x1200,		// 8:5		WUXGA	2,304,000
-	e_res1920x1080,		// 16:9		FHD		2,073,600
-	e_res1280x720,		// 16:9		HD		  921,600
-	e_res800x600,		// 4:3		SVGA	  480,000
-	e_res704x480,		// 3:2		-		  337,920
-	e_res704x400,		// 16:9		-		  281,600
-	e_res640x480,		// 4:3		VGA		  307,200
-	e_res640x360,		// 16:9		-		  230,400
-	e_res320x240,		// 4:3		QVGA	   76,800
+	e_vcodecH265,
+	e_vcodecH264,
+	e_vcodecJPEG
+} VideoCodec;
+
+typedef enum {
+	e_res3840x2160,		// 16:9		UHD		8,294,400, 0
+	e_res2560x2048,		// 5:4		QSXGA	5,242,880, 1
+	e_res2560x1600,		// 16:10	WQVGA	4,096,000, 2
+	e_res2560x1440,		// 16:9		WQHD	3,686,400, 3
+	e_res2048x1536,		// 4:3		QXGA	3,145,728, 4
+	e_res1920x1200,		// 8:5		WUXGA	2,304,000, 5
+	e_res1920x1080,		// 16:9		FHD		2,073,600, 6
+	e_res1280x720,		// 16:9		HD		  921,600, 7
+	e_res800x600,		// 4:3		SVGA	  480,000, 8
+	e_res704x480,		// 3:2		-		  337,920, 9
+	e_res704x400,		// 16:9		-		  281,600, 10
+	e_res640x480,		// 4:3		VGA		  307,200, 11
+	e_res640x360,		// 16:9		-		  230,400, 12
+	e_res320x240,		// 4:3		QVGA	   76,800, 13
 	e_resEndorUnknown
 } VideoResolution;
 

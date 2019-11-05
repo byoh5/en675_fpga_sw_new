@@ -5,7 +5,7 @@
 
 #include <string.h>
 
-#include "debug.h"
+#include "dhcpd/debug.h"
 #include "dhcpd.h"
 #include "files.h"
 #include "options.h"

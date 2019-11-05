@@ -1,0 +1,164 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+<title></title>
+<link rel="stylesheet" type="text/css" href="..\bootstrap.min.css">
+<link rel="stylesheet" type="text/css" href="..\style.css">
+<script type="text/javascript">
+<!--
+
+//<!--#nw_wf_ap-->
+
+function SetWifiMode()
+{
+	document.form.n_w_a_sw[ap_switch].checked = true;
+	if(ap_switch == 0)	SetAP_Mode(true);		// ON
+	else								SetAP_Mode(false);	// OFF
+	document.form.n_w_a_id.value = ap_ssid;
+	document.form.n_w_a_ch.selectedIndex = ap_channel - 1;
+	document.form.n_w_a_mc.selectedIndex = ap_Maxstacount - 1;
+	document.form.n_w_a_au[ap_authentication].checked = true;
+	SetAP_Authentication(ap_authentication);
+	document.form.n_w_a_pw.value = ap_networkkey;
+	document.form.n_w_a_ip.value = ap_ip;
+	
+	if(ap_dhcpsw == 0)	SetDHCP_Mode(true);		// ON
+	else								SetDHCP_Mode(false);	// OFF
+	document.form.n_w_a_sa.value = ap_startaddress;
+	document.form.n_w_a_ea.value = ap_endaddress;
+	document.form.n_w_a_sn.value = ap_sn;
+	document.form.n_w_a_lt.value = ap_leasetime;
+
+	if(ap_fix_ssid == 1)
+		document.form.n_w_a_id.disabled = true;
+}
+
+function SetAP_Mode(Switch)
+{	// var Switch : true, false
+	if(ap_fix_ssid == 1)
+		document.form.n_w_a_id.disabled = true;
+	else
+		document.form.n_w_a_id.disabled = !Switch;
+	document.form.n_w_a_ch.disabled = !Switch;
+	document.form.n_w_a_mc.disabled = !Switch;
+	document.form.n_w_a_au[0].disabled = !Switch;
+	document.form.n_w_a_au[1].disabled = !Switch;
+	document.form.n_w_a_pw.disabled = !Switch;
+	if(Switch == 0)
+	{
+		document.form.n_w_a_sa.disabled = !Switch;
+		document.form.n_w_a_ea.disabled = !Switch;
+		document.form.n_w_a_sn.disabled = !Switch;
+		document.form.n_w_a_lt.disabled = !Switch;
+	}
+}
+
+function SetDHCP_Mode(Switch)
+{	// var Switch : true, false
+	document.form.n_w_a_sa.disabled = !Switch;
+	document.form.n_w_a_ea.disabled = !Switch;
+	document.form.n_w_a_sn.disabled = !Switch;
+	document.form.n_w_a_lt.disabled = !Switch;
+}
+
+function SetAP_Authentication(Switch)
+{
+	var targetObjJ = document.getElementById("ap_key");
+	if(Switch == 0)
+	{
+		targetObjJ.hidden = true;
+	}
+	else
+	{
+		targetObjJ.hidden = false;
+	}
+}
+
+-->
+</script>
+</head>
+<body onload="SetWifiMode();">
+<form id="form" name="form" method="get" action="appwifiap.cgi">
+	<div class="sub-title">
+		<input class="btn btn-default pull-right" name="btOK" type="submit" value="submit">
+		<h3>Wireless Access Point Mode Setting</h3>
+	</div>
+	<hr>
+	<div>
+		<label class="sub-label">Switch</label>
+		<label class="radio-inline"><input type="radio" name="n_w_a_sw" value=0 onclick="SetAP_Mode(true)">ON</label>
+		<label class="radio-inline"><input type="radio" name="n_w_a_sw" value=1 onclick="SetAP_Mode(false)">OFF</label>
+	</div>
+	<div>
+		<label class="sub-label">SSID</label>
+		<input name="n_w_a_id" type="text" maxlength=32>
+	</div>
+	<div>
+		<label class="sub-label">Channel</label>
+		<select name="n_w_a_ch">
+			<option value=1>CH.1 [2.412Ghz]</option>
+			<option value=2>CH.2 [2.417Ghz]</option>
+			<option value=3>CH.3 [2.422Ghz]</option>
+			<option value=4>CH.4 [2.427Ghz]</option>
+			<option value=5>CH.5 [2.432Ghz]</option>
+			<option value=6>CH.6 [2.437Ghz]</option>
+			<option value=7>CH.7 [2.442Ghz]</option>
+			<option value=8>CH.8 [2.447Ghz]</option>
+			<option value=9>CH.9 [2.452Ghz]</option>
+			<option value=10>CH.10 [2.457Ghz]</option>
+			<option value=11>CH.11 [2.462Ghz]</option>
+			<option value=12>CH.12 [2.467Ghz]</option>
+			<option value=13>CH.13 [2.472Ghz]</option>
+		</select>
+	</div>
+	<div>
+		<label class="sub-label">Max STA Count</label>
+		<select name="n_w_a_mc">
+			<option value=1>1</option>
+			<option value=2>2</option>
+			<option value=3>3</option>
+			<option value=4>4</option>
+			<option value=5>5</option>
+			<option value=6>6</option>
+			<option value=7>7</option>
+			<option value=8>8</option>
+			<option value=9>9</option>
+			<option value=10>10</option>
+		</select>
+	</div>
+	<div>
+		<label class="sub-label">Authentication</label>
+		<label class="radio-inline"><input type="radio" name="n_w_a_au" value=0 onclick="SetAP_Authentication(0)">Open</label>
+		<label class="radio-inline"><input type="radio" name="n_w_a_au" value=2 onclick="SetAP_Authentication(1)">WPA2-PSK</label>
+	</div>
+	<div id="ap_key">
+		<label class="sub-label">Network Key</label>
+		<input name="n_w_a_pw" type="text" maxlength=63>
+	</div>
+	<hr>
+	<div>
+		<label class="sub-label">IP Address</label>
+		<input name="n_w_a_ip" type="text" maxlength=32>
+	</div>
+	<div>
+		<label class="sub-label">Subnet Mask</label>
+		<input name="n_w_a_sn" type="text" maxlength=32>
+	</div>
+	<hr>
+	<h4>DHCP Server</h4>
+	<div>
+		<label class="sub-label">Start IP Address</label>
+		<input name="n_w_a_sa" type="text" maxlength=32>
+	</div>
+	<div>
+		<label class="sub-label">End IP Address</label>
+		<input name="n_w_a_ea" type="text" maxlength=32>
+	</div>
+	<div>
+		<label class="sub-label">Lease Time</label>
+		<input name="n_w_a_lt" maxlength=32>
+	</div>
+</form>
+</body>
+</html>

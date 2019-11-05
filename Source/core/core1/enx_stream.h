@@ -11,6 +11,8 @@
 // Extern
 //-------------------------------------------------------------------------------------------------
 // Function
+extern ENX_OKFAIL MsgStmPut(UINT addr, UINT size, UINT ts, UINT type);
+extern ENX_OKFAIL MsgStmGet(stream_info *getInfo);
 extern void IsrStreamdata(void *arg);
 
 //-------------------------------------------------------------------------------------------------

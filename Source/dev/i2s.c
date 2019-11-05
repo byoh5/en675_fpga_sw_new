@@ -29,6 +29,26 @@ void I2sSlvInit(void)
 	I2S_MODE = 0;
 }
 
+void I2sSetTxEdn(UINT txedn)
+{
+	I2S_TXEDN = txedn;
+}
+
+UINT I2sGetTxEdn(void)
+{
+	return I2S_TXEDN;
+}
+
+void I2sSetRxEdn(UINT rxedn)
+{
+	I2S_RXEDN = rxedn;
+}
+
+UINT I2sGetRxEdn(void)
+{
+	return I2S_RXEDN;
+}
+
 void I2sTxCfg(UINT tx_mode, UINT tx_cd, UINT tx_dw, UINT rd_byte, UINT rd_dw, UINT rd_len, UINT tx_lr)
 {
 	I2S_TXMODE	=	tx_mode	;
@@ -130,6 +150,95 @@ ENX_SWITCH I2sGetTxEn(void)
 	return I2S_TXEN;
 }
 
+void I2sRxCfg(UINT rx_mode, UINT rx_cd, UINT rx_dw, UINT wr_byte, UINT wr_dw, UINT wr_len)
+{
+	I2S_RXMODE	=	rx_mode	;
+	I2S_RXCODEC	=	rx_cd	;
+	I2S_RXDW	=	rx_dw	;
+	I2S_WRBYTE	=	wr_byte	;
+	I2S_WRDW	=	wr_dw	;
+	I2S_WRLEN	=	wr_len	;
+}
+
+void I2sSetRxMode(UINT rx_mode)
+{
+	I2S_RXMODE = rx_mode;
+}
+
+UINT I2sGetRxMode(void)
+{
+	return I2S_RXMODE;
+}
+
+void I2sSetRxCodec(UINT rx_cd)
+{
+	I2S_RXCODEC = rx_cd;
+}
+
+UINT I2sGetRxCodec(void)
+{
+	return I2S_RXCODEC;
+}
+
+void I2sSetRxDw(UINT rx_dw)
+{
+	I2S_RXDW = rx_dw;
+}
+
+UINT I2sGetRxDw(void)
+{
+	return I2S_RXDW;
+}
+void I2sSetWrByte(UINT wr_byte)
+{
+	I2S_WRBYTE = wr_byte;
+}
+
+UINT I2sGetWrByte(void)
+{
+	return I2S_WRBYTE;
+}
+
+void I2sSetWrDw(UINT wr_dw)
+{
+	I2S_WRDW = wr_dw;
+}
+
+UINT I2sGetWrDw(void)
+{
+	return I2S_WRDW;
+}
+
+void I2sSetWrLen(UINT wr_len)
+{
+	I2S_WRLEN = wr_len;
+}
+
+UINT I2sGetWrLen(void)
+{
+	return I2S_WRLEN;
+}
+
+void I2sRxBaseAddr(BYTE *addr)
+{
+	I2S_ADRW = (intptr_t)addr;
+}
+
+UINT I2sRxPos(void)
+{
+	return I2S_RX_ADDR;
+}
+
+void I2sSetRxEn(ENX_SWITCH sw)
+{
+	I2S_RXEN = sw;
+}
+
+ENX_SWITCH I2sGetRxEn(void)
+{
+	return I2S_RXEN;
+}
+
 void I2sTxIrqCallback(irq_fn irqfn, void *arg)
 {
 	arrI2STXIrq.irqfn = irqfn;
@@ -180,7 +289,7 @@ UINT I2sTxIsIrq(void)
 
 UINT I2sRxIsIrq(void)
 {
-	printf("%s (0x%02X)\n", __func__, I2S_IRQ);
+//	printf("%s (0x%02X)\n", __func__, I2S_IRQ);
 	return I2S_IRQ & 0x2;
 }
 
@@ -198,7 +307,7 @@ void IrqI2sTx(void)
 void IrqI2sRx(void)
 {
 	if (I2sRxIsIrq()) {
-		printf("I2sRx IRQ Get\n");
+//		printf("I2sRx IRQ Get\n");
 		if (arrI2SRXIrq.irqfn) {
 			arrI2SRXIrq.irqfn(arrI2SRXIrq.arg);
 		}

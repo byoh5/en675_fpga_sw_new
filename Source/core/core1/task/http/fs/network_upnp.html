@@ -1,0 +1,38 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+<title></title>
+<link rel="stylesheet" type="text/css" href="bootstrap.min.css">
+<link rel="stylesheet" type="text/css" href="style.css">
+<script type="text/javascript">
+<!--
+function SetFormDefaults()
+{
+//<!--#nw_upnp-->
+
+	document.form.n_u_id.value = uid;
+	document.form.n_u_name.value = uname;
+}
+//-->
+</script>
+
+</head>
+<body onload="SetFormDefaults();">
+<form id="form" name="form" method="get" action="appquery.cgi">
+	<div class="sub-title">
+		<input class="btn btn-default pull-right" style="width:100px" name="btOK" type="submit" value="submit">
+		<h3>UPnP Information</h3>
+	</div>
+	<hr>
+	<div>
+		<label class="sub-label">Device ID</label>
+		<input name="n_u_id" type="text">
+	</div>
+	<div>
+		<label class="sub-label">Camera Name</label>
+		<input name="n_u_name" type="text">
+	</div>
+</form>
+</body>
+</html>

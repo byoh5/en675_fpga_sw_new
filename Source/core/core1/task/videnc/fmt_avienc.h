@@ -102,13 +102,6 @@ typedef struct {
 	UINT un32maxtime;
 } t_avi_t;
 
-enum {
-	H264_STREAM = 0,	// Video
-	G711_STREAM = 1,	// Audio
-	TXTS_STREAM = 2,	// G-sensor, GPS, etc...
-	IDX1_ARRAY = 9		// index
-};
-
 #define FCC(ch1, ch2, ch3, ch4)	((DWORD)((ch1 << 24) | (ch2 << 16) | (ch3 << 8) | (ch4 << 0)))
 
 #define NUM32(ch4) ((((DWORD)(ch4) & 0xFF) << 24) |     \

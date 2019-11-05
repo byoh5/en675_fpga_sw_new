@@ -9,6 +9,7 @@
 
 extern void vMemoryHeapInit(void);
 extern void vMemoryHeapInfoPrint(void);
+extern uint32_t xPortGetTotalHeapSize(void);
 extern void vTaskInfoPrint(void);
 extern TaskHandle_t vTaskCreate(const char *name, TaskFunction_t thread, void *arg, int stacksize, int prio);
 

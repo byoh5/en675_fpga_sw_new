@@ -662,7 +662,7 @@ int cmd_test_sfls(int argc, char *argv[])
 			BYTE *p8WBase = (BYTE *)SFLS_BASE;
 			BYTE *p8eBase = p8WBase;
 
-			printf("binary copy: %ubyte\n", EN675_DDR_INIT_BIN_LEN);
+			printf("binary copy.: %ubyte\n", EN675_DDR_INIT_BIN_LEN);
 
 			for (int i = 0 ; i < EN675_DDR_INIT_BIN_LEN; i += 4096) {
 				SflsSectErase(((UINT)(intptr_t)p8eBase) + i, ENX_YES);

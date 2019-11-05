@@ -1,0 +1,273 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+<title></title>
+<link rel="stylesheet" type="text/css" href="..\bootstrap.min.css">
+<link rel="stylesheet" type="text/css" href="..\style.css">
+<script type="text/javascript" src="scanap.js"></script>
+<script type="text/javascript">
+<!--
+
+// sta_au : 0:open 1:psk 2:psk2 3:psk&psk2
+
+//<!--#nw_wf_st-->
+
+function SetWifiMode()
+{
+	document.form.n_w_s_sw[sta_switch].checked = true;
+	if(sta_switch == 1)
+	{
+		var targetObj = document.getElementById("sw_table");
+		targetObj.style.display = "none";
+		SetSTA_Mode(false);
+		return;
+	}
+
+	var targetObj = document.getElementById("n_w_s_li");
+	for(var i=0;i<aplist.length;i++)
+	{
+		optionAP = document.createElement("option");
+		optionAP.value = aplist[i].SSID;
+		optionAP.text = aplist[i].SSID + ' (Freq:' + aplist[i].FREQ/1000.0 + 'GHz, RSSI:' + aplist[i].RSSI + ')';
+
+		targetObj.options.add(optionAP, i);
+	}
+
+	document.form.n_w_s_li.selectedIndex = sta_ssidsel;
+	SetSTA_SSIDSelect(sta_ssidsel);
+
+//	document.form.n_w_s_id.value = sta_etcssid;
+//	document.form.n_w_s_pw.value = sta_pw;	// SetSTA_SSIDSelect
+	
+	document.form.n_w_dhcp[dhcp].checked = true;
+	document.form.n_w_ip.value = ip;
+	document.form.n_w_sn.value = nm;
+	document.form.n_w_gw.value = gw;
+	document.form.n_w_dns0.value = dn1;
+	document.form.n_w_dns1.value = dn2;
+	
+	if(sta_switch==0)
+		SetSTA_Mode(true);
+	else
+		SetSTA_Mode(false);
+		
+	if(dhcp==0)
+		SetTextBoxEabled(false);
+	else
+		SetTextBoxEabled(true);
+
+	switch(sta_state) {
+		case 1:
+			document.form.n_w_s_st.value = "Wi-Fi STA Init";
+			break;
+		case 3:
+			document.form.n_w_s_st.value = "Wi-Fi STA Start";
+			break;
+		case 4:
+			document.form.n_w_s_st.value = "Wi-Fi STA Connect wait";
+			break;
+		case 5:
+			document.form.n_w_s_st.value = "Wi-Fi STA Connect";
+			break;
+		case 6:
+			document.form.n_w_s_st.value = "Wi-Fi STA Disconnect";
+			break;
+		case 7:
+			document.form.n_w_s_st.value = "Wi-Fi STA AP-Scan";
+			break;
+		case 0x1000:
+			document.form.n_w_s_st.value = "WiFi STA Init Fail";
+			break;
+		case 0x1001:
+			document.form.n_w_s_st.value = "WiFi STA No AP";
+			break;
+		case 0x1002:
+			document.form.n_w_s_st.value = "WiFi STA Authentication Fail";
+			break;
+	}
+}
+
+function SetSTA_Mode(Switch)
+{	// var Switch : true, false
+	document.form.n_w_s_li.disabled = !Switch;
+//	document.form.n_w_s_id.disabled = !Switch;
+	document.form.n_w_s_pw.disabled = !Switch;
+	document.form.btScan.disabled = !Switch;
+	document.form.n_w_s_au.disabled = !Switch;
+	document.form.n_w_s_cn[0].disabled = !Switch;
+	document.form.n_w_s_cn[1].disabled = !Switch;
+	document.form.n_w_dhcp[0].disabled = !Switch;
+	document.form.n_w_dhcp[1].disabled = !Switch;
+
+	if(document.form.n_w_dhcp[1].checked == true || Switch == false)
+	{
+		SetTextBoxEabled(Switch);
+	}
+	if(Switch == false)
+	{
+		document.form.n_w_dhcp[1].checked = true;
+	}
+}
+
+function SetSTA_SSIDSelect(Switch)
+{
+	var ssidsel_au;
+	var targetObj = document.getElementById("n_w_s_au");
+	while(targetObj.options.length > 0)
+		targetObj.options.remove(0);
+
+	if((aplist.length > 0) && (aplist[Switch].FLAG.length > 0))
+	{
+		document.form.n_w_s_pw.disabled = false;
+		document.form.n_w_s_au.disabled = false;
+		for(var i=0;i<aplist[Switch].FLAG.length;i++)
+		{
+			optionAu = document.createElement("option");
+			optionAu.text = aplist[Switch].FLAG[i];
+
+			if(optionAu.text.indexOf("WPA-") > -1)
+				optionAu.value = 1;
+			else if(optionAu.text.indexOf("WPA2-") > -1)
+				optionAu.value = 2;
+			else
+				optionAu.value = 0;
+			
+			if(Switch == sta_ssidsel)
+				ssidsel_au = aplist[Switch].FLAG[i];
+			
+			targetObj.options.add(optionAu, i);
+		}
+		document.form.n_w_s_au.selectedIndex = 0;
+	}
+	else
+	{
+		optionAu = document.createElement("option");
+		optionAu.value = 0;
+		optionAu.text = "OPEN";
+		targetObj.options.add(optionAu, 0);
+
+		document.form.n_w_s_au.selectedIndex = 0;
+		document.form.n_w_s_pw.disabled = true;
+	}
+
+	if(sta_ssidsel == Switch)	// 최초 선택한 SSID와 같으면
+	{
+		if(document.form.n_w_s_pw.disabled == false)
+		{
+			document.form.n_w_s_pw.value = sta_pw;
+			//ssidsel_au <= WPA2-PSK-CCMP 와 같은 형식의 string
+			//sta_au;		<= 1, 2, 3중 값 1개, 0은 오지않는다.
+			
+			for(var i=0;i<aplist[Switch].FLAG.length;i++)
+			{
+				var straucmp = targetObj.options[i].text;
+				if(straucmp.indexOf("WPA-") > -1)
+				{
+					if(sta_au == 1)
+						document.form.n_w_s_au.selectedIndex = i;
+				}
+				else if(straucmp.indexOf("WPA2-") > -1)
+				{
+					if(sta_au == 2)
+						document.form.n_w_s_au.selectedIndex = i;	
+				}
+			}
+		}
+		document.form.n_w_s_cn[sta_ssidcon].checked = true;	// 상태값 읽어서 해야할 필요 있음, 실제 해당 SSID가 선택만 되고 접속 안되었을 경우가 있을 수 있다.
+	}
+	else
+	{
+		document.form.n_w_s_pw.value = "";
+		document.form.n_w_s_cn[1].checked = true;
+	}
+}
+
+function GetAPScan()
+{
+	//window.open("appwifi.cgi?apscan=1","test","target=\"main\"");
+	location = "wifi_scan.html"
+}
+
+function SetTextBoxEabled(Switch)
+{
+	document.form.n_w_ip.disabled = !Switch;
+	document.form.n_w_sn.disabled = !Switch;
+	document.form.n_w_gw.disabled = !Switch;
+	document.form.n_w_dns0.disabled = !Switch;
+	document.form.n_w_dns1.disabled = !Switch;
+}
+
+-->
+</script>
+</head>
+
+<body onload="SetWifiMode();">
+
+<form id="form" name="form" method="get" action="appwifista.cgi">
+	<div class="sub-title">
+		<input class="btn btn-default pull-right" name="btOK" type="submit" value="submit">
+		<h3>Wireless Station Mode Setting</h3>
+	</div>
+	<hr>
+	<div>
+		<label class="sub-label">Switch</label>
+		<label class="radio-inline"><input type="radio" name="n_w_s_sw" value=0 onclick="if(sta_switch==0) SetSTA_Mode(true);">ON</label>
+		<label class="radio-inline"><input type="radio" name="n_w_s_sw" value=1 onclick="SetSTA_Mode(false);">OFF</label>
+	</div>
+<div style="width: 100%" id="sw_table" name="sw_table">
+	<div id ="scanap"></div>
+	<div>
+		<label class="sub-label">SSID List</label>
+		<select id="n_w_s_li" name="n_w_s_li" type="text" onchange="SetSTA_SSIDSelect(this.selectedIndex);">
+		</select>
+		<input class="btn btn-default btn-xs" name="btScan" type="button" value="Scan" onclick="GetAPScan();">
+	</div>
+	<div>
+		<label class="sub-label">Authentication</label>
+		<select id="n_w_s_au" name="n_w_s_au" type="text">
+		</select>			
+	</div>
+	<div>
+		<label class="sub-label">Password</label>
+		<input name="n_w_s_pw" type="text" maxlength=63>
+	</div>
+	<div>
+		<label class="sub-label">Connect</label>
+		<label class="radio-inline"><input type="radio" name="n_w_s_cn" value=0>Connect</label>
+		<label class="radio-inline"><input type="radio" name="n_w_s_cn" value=1>Disconnect</label>
+	</div>
+	<div>
+		<label class="sub-label">State</label>
+		<input name="n_w_s_st" type="text" readonly>
+	</div>
+	<hr>
+	<div>
+		<label class="sub-label">Use DHCP Client</label>
+		<label class="radio-inline"><input name="n_w_dhcp" type="radio" value=0 onclick="SetTextBoxEabled(false)">ON</label>
+		<label class="radio-inline"><input name="n_w_dhcp" type="radio" value=1 onclick="SetTextBoxEabled(true)">OFF</label>
+	</div>
+	<div>
+		<label class="sub-label">IP Address</label>
+		<input name="n_w_ip" type="text">
+	</div>
+	<div>
+		<label class="sub-label">Subnet Mask</label>
+		<input name="n_w_sn" type="text">
+	</div>
+	<div>
+		<label class="sub-label">Default Gateway</label>
+		<input name="n_w_gw" type="text">
+	</div>
+	<div>
+		<label class="sub-label">Primary DNS Server</label>
+		<input name="n_w_dns0" type="text">
+	</div>
+	<div>
+		<label class="sub-label">Secondary DNS Server</label>
+		<input name="n_w_dns1" type="text">
+	</div>
+</div>
+</form>
+</body>
+</html>

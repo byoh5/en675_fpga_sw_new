@@ -77,7 +77,7 @@ typedef struct {
 	char now_name[80];					// file name
 	uint32 filesize;					// file size
 
-	sbuf_t sbuf;						// H.264, G.711, etc. stream queue
+	sbuf_t sbuf;						// H.264/5, G.711, etc. stream queue
 
 	ULONG stime;						// start time of video encoding
 #if (VIDENC_STRING_FILENAME==1)
@@ -89,9 +89,9 @@ typedef struct {
 	UINT file_max_count;
 
 #if (VIDEO_SAVE_AVI==1)
-	t_avi_t vidinfo;					// H.264 FPS, Frame Size, FIle Size, etc...
+	t_avi_t vidinfo;					// H.264/5 FPS, Frame Size, FIle Size, etc...
 #else
-	t_mp4_t vidinfo;					// H.264 FPS, Frame Size, FIle Size, etc...
+	t_mp4_t vidinfo;					// H.264/5 FPS, Frame Size, FIle Size, etc...
 #endif
 	t_block_t datablock;				// addr, size, flags
 
@@ -154,6 +154,7 @@ extern void muxer_videnc_stop(int var);
 extern int muxer_videnc_state(int var);
 extern void muxer_videnc_all_stop(void);
 extern t_videnc_t *muxsr_videnc_get_t_videnc_t(void);
+extern void muxer_videnc_set_vcodec(int RecType, eVideoChannel vs);
 extern void muxer_videnc_process(t_videnc_t *pvid, t_videnc_totalbuf_t *buffer);
 
 extern void muxer_jpegstill_process(void *ctx);

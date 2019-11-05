@@ -48,19 +48,18 @@
 
 extern rtsp_server rsInfo;
 
-ENX_OKFAIL rtp_queue_init(rtp_queue *prqbuf, UINT tot_num)
+ENX_OKFAIL rtp_queue_init(rtp_queue **prqbuf, UINT tot_num)
 {
-	memset(prqbuf, 0, sizeof(rtp_queue));
-
-	prqbuf->data = (rtp_queue_data *)pvPortMalloc(sizeof(rtp_queue_data) * tot_num);
-	if (prqbuf->data != NULL) {
-//		prqbuf->head = 0;
-//		prqbuf->tail = 0;
-		prqbuf->tot_num = tot_num;
-		return ENX_OK;
-	} else {
-		return ENX_FAIL;
+	*prqbuf = (rtp_queue *)pvPortCalloc(1, sizeof(rtp_queue));
+	if (*prqbuf != NULL) {
+		_Rprintf("MALLOC RTP Queue : 0x%08X\n", *prqbuf);
+		(*prqbuf)->data = (rtp_queue_data *)pvPortCalloc(tot_num, sizeof(rtp_queue_data));
+		if ((*prqbuf)->data != NULL) {
+			(*prqbuf)->tot_num = tot_num;
+			return ENX_OK;
+		}
 	}
+	return ENX_FAIL;
 }
 
 ENX_OKFAIL rtp_queue_put(rtp_queue *prqbuf, rtp_queue_data *prefdata)
@@ -69,19 +68,23 @@ ENX_OKFAIL rtp_queue_put(rtp_queue *prqbuf, rtp_queue_data *prefdata)
 
 // 	flprintf("addr(0x%08X) size(%8d) flag(%d) ts(%5d)\n", prefdata->addr, prefdata->size, prefdata->flags, prefdata->ts);
 
-	if(cQueue_isfull(prqbuf) == ENX_OK) {
+	if (cQueue_isfull(prqbuf) == ENX_OK) {
 		flprintf("full!\n");
 	}
+	// else
+	{
+		rtp_queue_data *pdata = &(prqbuf->data[prqbuf->tail]);
+		pdata->addr = prefdata->addr;
+		pdata->size = prefdata->size;
+		pdata->flags = prefdata->flags;
+		pdata->ts = prefdata->ts;
 
-	rtp_queue_data *pdata = &(prqbuf->data[prqbuf->tail]);
-	pdata->addr = prefdata->addr;
-	pdata->size = prefdata->size;
-	pdata->flags = prefdata->flags;
-	pdata->ts = prefdata->ts;
+		num_loop(prqbuf->tail, prqbuf->tot_num);
 
-	num_loop(prqbuf->tail, prqbuf->tot_num);
+	//	printf("P:%9u-%2d/%2d\n", *mtime, prqbuf->head, prqbuf->tail);
 
-	bRes = ENX_OK;
+		bRes = ENX_OK;
+	}
 
 	return bRes;
 }
@@ -104,6 +107,9 @@ ENX_OKFAIL rtp_queue_get(rtp_queue *prqbuf, rtp_queue_data *pdata)
 
 		portEXIT_CRITICAL();
 	}
+
+//	printf("G:%9u-%2d/%2d-%s\n", *mtime, prqbuf->head, prqbuf->tail, bRes == ENX_OK ? "Get" : ".");
+
 	return bRes;
 }
 
@@ -143,20 +149,31 @@ ENX_OKFAIL rtp_queue_freebuffer(rtp_queue *prqbuf)
 	return bRes;
 }
 
-ENX_OKFAIL rtp_queue_free(rtp_queue *prqbuf)
+ENX_OKFAIL rtp_queue_free(rtp_queue **prqbuf)
 {
 	BYTE bRes = ENX_FAIL;
 
 	portENTER_CRITICAL();
-
-	prqbuf->head = 0;
-	prqbuf->tail = 0;
-	prqbuf->tot_num = 0;
-	if (prqbuf->data) {
-		vPortFree(prqbuf->data);
+	flprintf("\n");
+	if (*prqbuf != NULL) {
+		_Rprintf("FREE RTP Queue : 0x%08X\n", *prqbuf);
+		flprintf("\n");
+		(*prqbuf)->head = 0;
+		flprintf("\n");
+		(*prqbuf)->tail = 0;
+		flprintf("\n");
+		(*prqbuf)->tot_num = 0;
+		flprintf("\n");
+		if ((*prqbuf)->data != NULL) {
+			flprintf("\n");
+			vPortFree((*prqbuf)->data);
+			flprintf("\n");
+		}
+		flprintf("\n");
+		vPortFree(*prqbuf);
+		*prqbuf = NULL;
+		flprintf("\n");
 	}
-
-	memset(prqbuf, 0, sizeof(rtp_queue));
 
 	bRes = ENX_OK;
 

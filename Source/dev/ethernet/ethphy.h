@@ -34,6 +34,7 @@ typedef struct {
 // Function
 extern UINT EthphySetting(void);				// submodule
 extern UINT EthphyLinkCheck(void);				// submodule
+extern void EthphyLinkView(void);				// submodule
 extern void EthphyAutoNeg(ENX_SWITCH onoff);	// submodule
 
 extern UINT EthphyReset(void);					// ethphy.c
@@ -84,9 +85,12 @@ typedef struct {
 	UINT u32Loop;
 	eEthphyLoopbackMode eRunMode;
 	eEthphyLoopbackRes eRes;
+
+	UINT u32Speed;
+	UINT u32Duplex;
 } EthLoopbackGp;
 
-extern void EthphyLoopbackMode(void);
+extern void EthphyLoopbackMode(UINT speed, UINT duplex);
 #endif
 
 

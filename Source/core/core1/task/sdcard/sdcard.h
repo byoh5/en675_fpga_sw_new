@@ -21,6 +21,8 @@ enum {
 // Extern
 //-------------------------------------------------------------------------------------------------
 // Function
+extern int SDcardGetFormatState(void);
+extern void SDcardSetFormat(void);
 extern void SdcardTask(void *pvParameters);
 extern int getSDState(void);
 extern void getSDGBSizeT(char *buf);

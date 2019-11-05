@@ -10,8 +10,4 @@
 
 void _init_bss_section(void);
 
-
-
-
-
 #endif /* BOOT_H_ */

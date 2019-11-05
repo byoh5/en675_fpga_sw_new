@@ -2,15 +2,14 @@
  * options.c -- DHCP server option packet tools 
  * Rewrite by Russ Dill <Russ.Dill@asu.edu> July 2001
  */
- 
+
+#include "dev.h"
+#include "enx_freertos.h"
+
 #include <stdio.h>
 #include <string.h>
-#ifdef DEF_CPU1
-#include "FreeRTOS.h"
-#else
-#include <malloc.h>
-#endif
-#include "debug.h"
+
+#include "dhcpd/debug.h"
 #include "dhcpd.h"
 #include "files.h"
 #include "options.h"
@@ -145,7 +144,7 @@ int add_option_string(unsigned char *optionptr, unsigned char *string)
 		LOG(LOG_ERR, "Option 0x%02x did not fit into the packet!", string[OPT_CODE]);
 		return 0;
 	}
-	DEBUG(LOG_INFO, "adding option 0x%02x", string[OPT_CODE]);
+	DHCPD_DEBUG(LOG_INFO, "adding option 0x%02x", string[OPT_CODE]);
 	memcpy(optionptr + end, string, string[OPT_LEN] + 2);
 	optionptr[end + string[OPT_LEN] + 2] = DHCP_END;
 	return string[OPT_LEN] + 2;
@@ -172,7 +171,7 @@ int add_simple_option(unsigned char *optionptr, unsigned char code, u32_t data)
 		}
 		
 	if (!length) {
-		DEBUG(LOG_ERR, "Could not add option 0x%02x", code);
+		DHCPD_DEBUG(LOG_ERR, "Could not add option 0x%02x", code);
 		return 0;
 	}
 	
@@ -207,7 +206,7 @@ void attach_option(struct option_set **opt_list, struct dhcp_option *option, cha
 
 	/* add it to an existing option */
 	if ((existing = find_option(*opt_list, option->code))) {
-		DEBUG(LOG_INFO, "Attaching option %s to existing member of list", option->name);
+		DHCPD_DEBUG(LOG_INFO, "Attaching option %s to existing member of list", option->name);
 		if (option->flags & OPTION_LIST) {
 			if (existing->data[OPT_LEN] + length <= 255) {
 				existing->data = pvPortRealloc(existing->data, 
@@ -217,7 +216,7 @@ void attach_option(struct option_set **opt_list, struct dhcp_option *option, cha
 			} /* else, ignore the data, we could put this in a second option in the future */
 		} /* else, ignore the new data */
 	} else {
-		DEBUG(LOG_INFO, "Attaching option %s to list", option->name);
+		DHCPD_DEBUG(LOG_INFO, "Attaching option %s to list", option->name);
 		
 		/* make a new option */
 		new = pvPortMalloc(sizeof(struct option_set));

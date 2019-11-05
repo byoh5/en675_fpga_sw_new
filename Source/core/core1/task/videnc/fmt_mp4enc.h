@@ -71,8 +71,8 @@ typedef struct {
 	int i_width;
 	int i_height;
 	int f_fps;
+	eVideoChannel v_type;		// H.264/5
 
-	UINT type;
 	UINT un32vidicount;	// video i-frame count
 	UINT un32vidscount;	// video total frame count
 	UINT un32audscount;	// audio total frame count
@@ -84,22 +84,28 @@ typedef struct {
 	UINT un32totalmax;
 	UINT un32maxtime;
 
+	uint16 vps_size;
 	uint16 sps_size;
 	uint16 pps_size;
-	char sps_data[16];
+	char vps_data[32];
+	char sps_data[64];
 	char pps_data[8];
 
 	UINT mdat_size;
 } t_mp4_t;
 
-enum {
-	H264_STREAM = 0,
-	G711_STREAM = 1,
-	TXTS_STREAM = 2,
-	IDX1_ARRAY = 9
-};
-
+#if 1
+#define vidswapSB32(x)	((((x) & (DWORD)0x000000ffUL) << 24) | \
+						 (((x) & (DWORD)0x0000ff00UL) <<  8) | \
+						 (((x) & (DWORD)0x00ff0000UL) >>  8) | \
+						 (((x) & (DWORD)0xff000000UL) >> 24))
+#define vidswapSB16(x)	((WORD)((((x) & (WORD)0x00ffU) << 8) | (((x) & (WORD)0xff00U) >> 8)))
+#define FCC(ch1, ch2, ch3, ch4)	((DWORD)((ch4 << 24) | (ch3 << 16) | (ch2 << 8) | (ch1 << 0)))
+#else
+#define vidswapSB32(x)	x
+#define vidswapSB16(x)	x
 #define FCC(ch1, ch2, ch3, ch4)	((DWORD)((ch1 << 24) | (ch2 << 16) | (ch3 << 8) | (ch4 << 0)))
+#endif
 
 typedef DWORD FOURCC;
 
@@ -205,6 +211,78 @@ typedef struct {
 		WORD	wPreDefined2;
 	} __attribute__ ((packed)) mhData;
 } __attribute__ ((packed)) MP4_AVC1_BOX;
+
+#if 0
+	unsigned int(8) configurationVersion = 1;
+	unsigned int(2) general_profile_space;
+	unsigned int(1) general_tier_flag;
+	unsigned int(5) general_profile_idc;
+	unsigned int(32) general_profile_compatibility_flags;
+	unsigned int(48) general_constraint_indicator_flags;
+	unsigned int(8) general_level_idc;
+	bit(4) reserved = ‘1111’b;
+	unsigned int(12) min_spatial_segmentation_idc;
+	bit(6) reserved = ‘111111’b;
+	unsigned int(2) parallelismType;
+	bit(6) reserved = ‘111111’b;
+	unsigned int(2) chroma_format_idc;
+	bit(5) reserved = ‘11111’b;
+	unsigned int(3) bit_depth_luma_minus8;
+	bit(5) reserved = ‘11111’b;
+	unsigned int(3) bit_depth_chroma_minus8;
+	bit(16) avgFrameRate;
+	bit(2) constantFrameRate;
+	bit(3) numTemporalLayers;
+	bit(1) temporalIdNested;
+	unsigned int(2) lengthSizeMinusOne;
+	unsigned int(8) numOfArrays;
+	for (j=0; j < numOfArrays; j++) {
+		bit(1) array_completeness;
+		unsigned int(1) reserved = 0;
+		unsigned int(6) NAL_unit_type;
+		unsigned int(16) numNalus;
+		for (i=0; i< numNalus; i++) {
+			unsigned int(16) nalUnitLength;
+			bit(8*nalUnitLength) nalUnit;
+		}
+	}
+#endif
+typedef struct {
+	FCC_CB_t fcccb;						// 값은 'hvcC' 가 아니면 안된다.
+	struct {
+		BYTE	bConfigureationVersion;
+		BYTE	bGeneralProfile;		// profile_space(2), tier_flag(1), profile_idc(1)
+		BYTE	bGeneralProfileCompatibilityFlags[4];
+		BYTE	bGeneralConstraintIndicatorFlags[6];
+		BYTE	bGeneralLevelIdc;
+		WORD	wMinSpatialSegmentationIdc;	// 0xF000 | min_spatial_segmentation_idc
+		BYTE	bParallelismType;			// 0xFC   | parallelismType
+		BYTE	bChromaFormatIdc;			// 0xFC   | chroma_format_idc
+		BYTE	bBitDepthLumaMinus8;		// 0xF8   | bit_depth_luma_minus8
+		BYTE	bBitDepthChromaMinus8;		// 0xF8   | bit_depth_chroma_minus8
+		WORD	wAvgFrameRate;
+		BYTE	bTemporal;					// constantFrameRate(2), numTemporalLayers(3), temporalIdNested(1), lengthSizeMinusOne(2)
+		BYTE	bNumOfArrays;
+	} __attribute__ ((packed)) mhData;
+} __attribute__ ((packed)) MP4_HEVC_CONFIGURATION_BOX;
+
+typedef struct {
+	FCC_CB_t fcccb;						// 값은 'hev1' 가 아니면 안된다. avc1과 동일한 구조로 보인다(추정)
+	struct {
+		BYTE	bReserved[6];
+		WORD	wDataRefIndex;
+		DWORD	dwPreDefined[4];
+		WORD	wWidth;
+		WORD	wHeight;
+		DWORD	dwHorizResolution;
+		DWORD	dwVertiResolution;
+		DWORD	dwDatasize;
+		WORD	wFrameCount;
+		DWORD	dwCompressorName[8];
+		WORD	wDepth;
+		WORD	wPreDefined2;
+	} __attribute__ ((packed)) mhData;
+} __attribute__ ((packed)) MP4_HVC1_BOX;
 
 typedef struct {
 	FCC_CB_t fcccb;						// 값은 'twos' 가 아니면 안된다.

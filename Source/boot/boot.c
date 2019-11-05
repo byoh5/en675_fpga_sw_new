@@ -6,6 +6,8 @@
  */
 #include <stdint.h>
 
+#include "dev.h"
+
 const unsigned int _bss_s;
 const unsigned int _bss_e;
 
@@ -19,4 +21,14 @@ void _init_bss_section(void)
 
 	return;
 }
+
+void _init_ddr_area(void)
+{
+	char *pDst = (char*)(intptr_t)(_bss_e);
+	if( pDst == 0) return;
+	int n = 0x80800000 - _bss_e;
+	int i;
+	for(i=0; i<n; i++) *pDst++ = 0;
+}
+
 

@@ -10,7 +10,7 @@ void GpioInit(void)
 		arrGPIOIrq[i].irqfn = NULL;
 		arrGPIOIrq[i].arg = NULL;
 	}
-	printf("GPIO Init\n");
+	ENX_DEBUGF(DBG_GPIO_LOG, "GPIO Init\n");
 }
 
 void GpioSetEdge(UINT nCH, GPIO_EDGE edge)
@@ -96,7 +96,7 @@ UINT GpioIsIrq(UINT nCH)
 void IrqGpio(UINT nCH)
 {
 	if (GpioIsIrq(nCH)) {
-		_printf("GPIO%d IRQ Get\n", nCH);
+		ENX_DEBUGF(DBG_GPIO_LOG, "GPIO%d IRQ Get\n", nCH);
 		if (arrGPIOIrq[nCH].irqfn) {
 			arrGPIOIrq[nCH].irqfn(arrGPIOIrq[nCH].arg);
 		}

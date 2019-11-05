@@ -17,11 +17,6 @@ msgq_stream_t gptMsgStmInfo = {
 	.tot_num = MSG_STREAM_NUM,
 };
 #endif
-#if (LOAD_FS_SDCARD==1)
-msgq_record_t gptMsgRecInfo = {
-	.tot_num = MSG_RECORD_NUM,
-};
-#endif
 
 static int stmrecmsg_lock;
 
@@ -36,7 +31,7 @@ ENX_OKFAIL MsgStmPut(UINT addr, UINT size, UINT ts, UINT type)
 	if (gptMsgShare.TIME != old_time) {
 		old_time = gptMsgShare.TIME;
 		if (drop_count != 0) {
-			printf("%u items for streaming are dropped.\r\n", drop_count);
+			printf("%u items for streaming are dropped.\n", drop_count);
 			drop_count = 0;
 		}
 	}

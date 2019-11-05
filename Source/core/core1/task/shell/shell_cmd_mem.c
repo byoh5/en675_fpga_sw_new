@@ -166,7 +166,7 @@ static void DmaTestTask(void *ctx)
 
 				if (dmaitem.cMode == 'B') {
 					//portMEMORY_BARRIER();
-					hwflush_dcache_range((ULONG)parrDst, u32RelTestSize);
+					//hwflush_dcache_range((ULONG)parrDst, u32RelTestSize);
 					//asm volatile ("fence rw,rw");
 					//asm volatile ("fence w,r");
 				}
@@ -519,6 +519,12 @@ int cmd_test_memset(int argc, char *argv[])
 		size = atoi(argv[1]);
 		pos = 0;
 	}
+
+	for (int i = 0; i < size; i++) {
+		src_base[i] = rand();
+		dst_base[i] = rand();
+	}
+
 	pos += ENX_MEM_ALIGN_SIZE(size);
 	printf("Memcpy Speed Test (Base: 0x%08X->0x%08X, Size:%lu)\n", (UINT)(intptr_t)src_base, (UINT)(intptr_t)dst_base, size);
 
@@ -529,9 +535,9 @@ int cmd_test_memset(int argc, char *argv[])
 	ULONG b = *mtime;
 	hwflush_dcache_range((ulong)dst_base, size);
 	ULONG b_1 = *mtime;
-	BDmaMemCpy_isr(0, dst_base, src_base, size);
+	hwflush_dcache_range((ulong)src_base, size);
 	ULONG b_2 = *mtime;
-	hwflush_dcache_range((ulong)dst_base, size);
+	BDmaMemCpy_isr(0, dst_base, src_base, size);
 	ULONG c = *mtime;
 	CDmaMemCpy_isr(0, dst_base, src_base, size);
 	ULONG d = *mtime;
@@ -545,11 +551,11 @@ int cmd_test_memset(int argc, char *argv[])
 	printf(" hwflush 2: %10u - %8ums\n", c - b_2, (c - b_2) / 500);
 	printf("CDmaMemCpy: %10u - %8ums\n", d - c, (d - c) / 500);
 #endif
-	mem_cel_time("memcpy",     a, b);
+	mem_cel_time("memcpy", a, b);
 	mem_cel_time("BDmaMemCpy", b, c);
-	mem_cel_time(" - hwflush 1", b, b_1);
-	mem_cel_time(" - dmacpy",    b_1, b_2);
-	mem_cel_time(" - hwflush 2", b_2, c);
+	mem_cel_time(" - hwflush src", b, b_1);
+	mem_cel_time(" - hwflush dst", b_1, b_2);
+	mem_cel_time(" - dmacpy", b_2, c);
 	mem_cel_time("CDmaMemCpy", c, d);
 
 #else

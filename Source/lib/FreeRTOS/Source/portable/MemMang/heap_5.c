@@ -69,6 +69,7 @@
  */
 #include <stdlib.h>
 #include <string.h> // memset
+#include "dev.h"
 
 /* Defining MPU_WRAPPERS_INCLUDED_FROM_API_FILE prevents task.h from redefining
 all the API functions to use the MPU wrappers.  That should only be done when
@@ -262,6 +263,9 @@ void *pvReturn = NULL;
 		else
 		{
 			mtCOVERAGE_TEST_MARKER();
+			if (xWantedSize >= 256*1024) {
+				_Yprintf("Malloc %ubyte\n", xWantedSize);
+			}
 		}
 	}
 	#endif

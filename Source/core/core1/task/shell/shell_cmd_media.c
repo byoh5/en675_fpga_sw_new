@@ -10,6 +10,11 @@
 #include "enx_freertos.h"
 #include "enx_lwip.h"
 
+#include "enx_stream.h"
+#include "enx_record.h"
+
+#include "muxer_videnc.h"
+
 #include "shell_cmd_media.h"
 
 const char *sTestVideoCmd[] = {"Test Video",                    (char*)0};
@@ -42,27 +47,40 @@ const char *sTestVideoCmd[] = {"Test Video",                    (char*)0};
 #define TEST_VIDEO_TIMER_TRIG	1666
 #define TEST_VIDEO_TIMER_HZ		(MCK_FREQ/((TEST_VIDEO_TIMER_LMT+1)*2)/TEST_VIDEO_TIMER_DIV)
 
-stream_info vid_info[60];
+#define stream_count 120
+stream_info vid_info[stream_count];
+
+extern volatile int rtp_step;
 
 static void testVideoTimer_irq(void *ctx)
 {
 	static int i = 0;
+	static int j = 0;
 
 	if (MsgStmPut(vid_info[i].addr, vid_info[i].size, vid_info[i].ts, vid_info[i].type) == ENX_OK) {
 		IsrStreamdata(ctx);
 		i++;
 	} else {
-		printf("%s Drop\n", __func__);
+		printf("%s(STM) Drop\n", __func__);
 	}
-	//IsrRecorddata(ctx);
-
-	if (i == 60) {
+	if (i == stream_count) {
 		i = 0;
+	}
+
+	if (MsgRecPut(vid_info[j].addr, vid_info[j].size, vid_info[j].ts, vid_info[j].type) == ENX_OK) {
+		IsrRecorddata(ctx);
+		j++;
+	} else {
+		printf("%s(REC) Drop\n", __func__);
+	}
+	if (j == stream_count) {
+		j = 0;
 	}
 }
 
 int cmd_test_video(int argc, char *argv[])
 {
+	static int init = 0;
 	if (strcmp("init", argv[1]) == 0) {
 		BYTE *pvidbuf = (BYTE *)VID_HEADER;
 		BYTE nal_start[4] = {0,0,0,1};
@@ -128,7 +146,7 @@ int cmd_test_video(int argc, char *argv[])
 					pvidbuf += 4;
 					i++;
 				} else {
-					printf("%s %2d, 0x%02X, SEK: %d\n", __func__, i, nalvalue, pvidbuf - VID_HEADER);
+					printf("%s %2d, 0x%02X, SEK: %ld\n", __func__, i, nalvalue, pvidbuf - VID_HEADER);
 				}
 #endif
 			} else {
@@ -136,12 +154,33 @@ int cmd_test_video(int argc, char *argv[])
 			}
 		}
 		printf("done: %lubyte\n", total);
+		init = 1;
 	} else if (strcmp("start", argv[1]) == 0) {
+		if (init == 0) {
+			char *arg[2] = {"video", "init"};
+			cmd_test_video(2, arg);
+		}
 		TimerSetFreq(TEST_VIDEO_TIMER_CH, TEST_VIDEO_TIMER_DIV, TEST_VIDEO_TIMER_LMT, TEST_VIDEO_TIMER_TRIG);
 		TimerIrqCallback(TEST_VIDEO_TIMER_CH, testVideoTimer_irq, NULL);
 		TimerSetIrqEn(TEST_VIDEO_TIMER_CH, ENX_ON);
 		printf("Start Video Timer: %uHz\n", TEST_VIDEO_TIMER_HZ);
 		TimerStart(TEST_VIDEO_TIMER_CH);
+
+#if (VID_CODEC==0)
+		gtUser.vcVideo[e_vcVEncoder1].eCodec = e_vcodecH264;
+		muxer_videnc_set_vcodec(eRecNormal, e_vcVEncoder1);
+#if (FAT_SDSAVE_EVENT==1)
+		muxer_videnc_set_vcodec(eRecEvent, e_vcVEncoder1);
+#endif
+#else
+		gtUser.vcVideo[e_vcVEncoder1].eCodec = e_vcodecH265;
+		muxer_videnc_set_vcodec(eRecNormal, e_vcVEncoder1);
+#if (FAT_SDSAVE_EVENT==1)
+		muxer_videnc_set_vcodec(eRecEvent, e_vcVEncoder1);
+#endif
+#endif
+	} else if (strcmp("check", argv[1]) == 0) {
+		printf("last number: %d\n", rtp_step);
 	}
 	return 0;
 }

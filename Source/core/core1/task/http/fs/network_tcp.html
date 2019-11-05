@@ -1,0 +1,130 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+<title></title>
+<link rel="stylesheet" type="text/css" href="bootstrap.min.css">
+<link rel="stylesheet" type="text/css" href="style.css">
+<script type="text/javascript">
+<!--
+function SetFormDefaults()
+{
+//<!--#nw_tcp-->
+
+	document.form2.n_t_mac0.value = leadingZeros(mac0.toString(16), 2);
+	document.form2.n_t_mac1.value = leadingZeros(mac1.toString(16), 2);
+	document.form2.n_t_mac2.value = leadingZeros(mac2.toString(16), 2);
+	document.form2.n_t_mac3.value = leadingZeros(mac3.toString(16), 2);
+	document.form2.n_t_mac4.value = leadingZeros(mac4.toString(16), 2);
+	document.form2.n_t_mac5.value = leadingZeros(mac5.toString(16), 2);
+
+	document.form1.n_t_ip.value = ip;
+	document.form1.n_t_sn.value = nm;
+	document.form1.n_t_gw.value = gw;
+	document.form1.n_t_dns0.value = dn1;
+	document.form1.n_t_dns1.value = dn2;
+	document.form1.n_t_dhcp[dhcp].checked = true;	// dhcp값이 0이면 on, 1이면 off
+	SetTextBoxEnabled();
+}
+
+function leadingZeros(n, digits)
+{
+  var zero = '';
+  n = n.toString();
+
+  if (n.length < digits) {
+    for (i = 0; i < digits - n.length; i++)
+      zero += '0';
+  }
+  return zero + n;
+}
+
+function HexCheck()
+{
+	if(window.event)
+		nKey = event.keyCode;
+	else if(e.which)	// Netscape/Firefox/Opera
+		nKey = event.which;
+
+	if((keynum == TAB_CODE)
+	    || (keynum == DEL_CODE) 
+	    || (keynum == BS_CODE) )
+	{
+		if(obj[0].value.length == 0 && event.keyCode == BS_CODE)
+		{
+			obj=document.getElementsByName(prefix+previdx);
+			if(obj[0]) obj[0].focus();
+		}
+		return 1;
+	}
+
+	if((nKey == 8) || (nKey == 9) || (nKey == 46) || ((nKey >= 48) && (nKey <= 57)) || ((nKey >= 65) && (nKey <= 70)) || ((nKey >= 97) && (nKey <= 102)))
+		return true;
+	return false;
+}
+
+function SetTextBoxEnabled()
+{
+	netsw = document.form1.n_t_dhcp[1].checked;
+	document.form1.n_t_ip.disabled = netsw;
+	document.form1.n_t_sn.disabled = netsw;
+	document.form1.n_t_gw.disabled = netsw;
+	document.form1.n_t_dns0.disabled = netsw;
+	document.form1.n_t_dns1.disabled = netsw;
+}
+//-->
+</script>
+
+<!--<base target="_parent">-->
+
+</head>
+<body onload="SetFormDefaults();">
+<form id="form1" name="form1" method="get" action="appquery.cgi">
+	<div class="sub-title">
+		<input class="btn btn-default pull-right" style="width:100px" name="btOk" type="submit" value="submit" onclick="btOk=1;">
+		<h3>Network Information</h3>
+	</div>
+	<hr>
+	<div>
+		<label class="sub-label">IP Address</label>
+		<input name="n_t_ip" type="text">
+	</div>
+	<div>
+		<label class="sub-label">Subnet Mask</label>
+		<input name="n_t_sn" type="text">
+	</div>
+	<div>
+		<label class="sub-label">Default Gateway</label>
+		<input name="n_t_gw" type="text">
+	</div>
+	<div>
+		<label class="sub-label">Primary DNS Server</label>
+		<input name="n_t_dns0" type="text">
+	</div>
+	<div>
+		<label class="sub-label">Secondary DNS Server</label>
+		<input name="n_t_dns1" type="text">
+	</div>
+	<div>
+		<label class="sub-label">Use DHCP</label>
+		<label class="radio-inline"><input name="n_t_dhcp"type="radio" value=0 onclick="SetTextBoxEnabled()"> UNUSE</label>
+		<label class="radio-inline"><input name="n_t_dhcp"type="radio" value=1 onclick="SetTextBoxEnabled()"> USE</label>
+	</div>
+</form>
+<hr>
+<form id="form2" name="form2" method="get" action="appquery.cgi">
+	<div>
+		<input class="btn btn-default pull-right" style="width:100px" name="btOk" type="submit" value="submit" onclick="btOk=1;">
+	</div>
+	<div>
+		<label class="sub-label">Mac Address</label>
+		<input name="n_t_mac0" type="text" style="width: 30px;text-align: center;" maxlength=2 onkeydown="return HexCheck();"> -
+		<input name="n_t_mac1" type="text" style="width: 30px;text-align: center;" maxlength=2 onkeydown="return HexCheck();"> -
+		<input name="n_t_mac2" type="text" style="width: 30px;text-align: center;" maxlength=2 onkeydown="return HexCheck();"> -
+		<input name="n_t_mac3" type="text" style="width: 30px;text-align: center;" maxlength=2 onkeydown="return HexCheck();"> -
+		<input name="n_t_mac4" type="text" style="width: 30px;text-align: center;" maxlength=2 onkeydown="return HexCheck();"> -
+		<input name="n_t_mac5" type="text" style="width: 30px;text-align: center;" maxlength=2 onkeydown="return HexCheck();">
+	</div>
+</form>
+</body>
+</html>

@@ -19,7 +19,7 @@ void AdcInit(UINT Speed_Hz)
 	}
 	ADC_EN = 1;
 
-	printf("ADC Init - %uHz\n", MCK_FREQ / ((ADC_CLK_LMT + 1) * 2));
+	ENX_DEBUGF(DBG_ADC_LOG, "ADC Init - %uHz\n", MCK_FREQ / ((ADC_CLK_LMT + 1) * 2));
 }
 
 void AdcOn(UINT nCH)

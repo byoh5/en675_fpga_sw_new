@@ -4,15 +4,37 @@
 #include "dev.h"
 #include "wifi_cfg.h"
 
-typedef struct{
+typedef struct {
+	ENX_SWITCH bSwitch;				//  4Byte
+	char strName[32];				// 32Byte
+	VideoResolution	eResolution;	//  4Byte
+	SHORT nFps;						//	2Byte
+} VideoSource;						// 44Byte
+
+#if 0
+typedef struct {
+	INT nVSourceIdx;				//  4Byte, VideoSource index, Enable
+
+	// channel¤· memory buffer
+	// channel
+} VideoEncoder;
+#endif
+
+#define STREAM_URL_LENGTH			16
+
+typedef struct {
+	INT nVSourceIdx;				//  4Byte, VideoSource index, Enable
+	//INT nVEncoderIdx;				//  4Byte, VideoEncoder index, Enable
+	char strStmUrl[STREAM_URL_LENGTH];	// 16Byte
+	VideoCodec eCodec;				//	4Byte
 	VideoResolution	eResolution;	//  4Byte
 	VideoBitRateMode eBRMode;		//	4Byte
 	VideoBitRateIdx eBitRate;		//	4Byte
 	H264ProfileMode eProfileMode;	//  4Byte, H.264 only
 	UINT nIDRFrame;					//  4Byte, H.265/H.264, max
-	WORD nFps;						//	2Byte, max 240?
-	WORD nQuality;					//  2Byte, 0 ~ 51, 0 ~ 99
-} VideoInfo;						// 24Byte
+	WORD nFps;						//	2Byte
+	WORD nQuality;					//  2Byte, (H.265/H.264)0 ~ 51, (JPEG)0 ~ 99
+} VideoChannel;						// 32Byte
 
 // Board global information
 typedef struct {
@@ -37,9 +59,7 @@ typedef struct {
 	UINT			nTimeSummer;			// fixed! System - Date - use Summer Time
 	TimeZone		nTimeZone;				// fixed! System - Date - TimeZone
 
-	VideoInfo		viH265;					//
-	VideoInfo		viH264;					//
-	VideoInfo		viJPEG;					//
+	VideoChannel	vcVideo[VIDEO_CHANNEL_CNT];// stream1(H.264 or H.265), stream2(H.264 or H.265), stream3(JPEG)
 
 
 
@@ -50,6 +70,7 @@ typedef struct {
 
 #if (LOAD_FS_SDCARD==1)
 	ENX_SWITCH		bSdVidSave;
+	//UINT			nSDVidRecNum;
 #else
 	ENX_SWITCH		_dummy_bSdVidSave;
 #endif
@@ -68,6 +89,12 @@ typedef struct {
 
 #if defined(__NETWORK__)
 typedef struct {
+	char strUserID[16];
+	char hashUserPW[36];
+} UserLoginData;
+#define USER_MAX_COUNT	5
+
+typedef struct {
 	UINT			u32IpAddr;				// Network - IP Address
 	UINT			u32NetMask;				// Network - Netmask Address
 	UINT			u32Gateway;				// Network - Gateway Address
@@ -77,6 +104,8 @@ typedef struct {
 } NetifAddress;
 
 typedef struct {
+	UserLoginData	uldInfo[USER_MAX_COUNT];
+
 	NetifAddress	naEthernet;
 //	NetifAddress	naWifiuap;
 //	NetifAddress	naWifista;
@@ -137,10 +166,18 @@ typedef enum {
 // Extern
 //-------------------------------------------------------------------------------------------------
 // Function
+extern UINT getDateID(void);
+extern BYTE UserAreaCmd(sfls_cmd cmd, sfls_fixed_area index);
 
+extern void UserPasswordSet(UserLoginData *user, char *pw);
+extern int UserPasswordVerify(char *id, BYTE *hashUserPw);
+extern int UserPasswordCheck(char *id, char *pw);
 
 //-------------------------------------------------------------------------------------------------
 // Variable
+extern VideoSource gvsVideo[VIDEO_SOURCE_CNT];
+
+// sfls save/load data
 extern volatile tSystem gtSystem;
 #ifndef DEF_BOOT
 extern volatile tUser gtUser;
@@ -163,6 +200,5 @@ typedef struct {
 #define ResolutionInfoLength e_resEndorUnknown
 
 extern const ResolutionInfo listResolution[ResolutionInfoLength];
-
 
 #endif //__USER_H__

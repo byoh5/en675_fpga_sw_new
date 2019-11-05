@@ -28,29 +28,63 @@ static const char *const g_psHTTPHeaderStrings[] = {
   "Connection: keep-alive\r\nContent-Length: ",
   "Server: "HTTPD_SERVER_AGENT"\r\n",
   "\r\n<html><body><h2>404: The requested file cannot be found.</h2></body></html>\r\n"
+  , "HTTP/1.0 500 Internal Server Error\r\n"
+  , "HTTP/1.0 415 Unsupported Media Type\r\n"
 #if LWIP_HTTPD_SUPPORT_11_KEEPALIVE
   , "Connection: keep-alive\r\nContent-Length: 77\r\n\r\n<html><body><h2>404: The requested file cannot be found.</h2></body></html>\r\n"
+#endif
+#if LWIP_HTTPD_SUPPORT_AUTHORIZATION
+#if (LWIP_HTTPD_SUPPORT_AUTHORIZATION==LWIP_HTTPD_AUTH_BASIC)
+  , "HTTP/1.1 401 Unauthorized\r\nWWW-Authenticate: Basic realm=\""HTTPD_SERVER_AGENT"\"\r\n"
+#elif (LWIP_HTTPD_SUPPORT_AUTHORIZATION==LWIP_HTTPD_AUTH_DIGEST)
+  , "HTTP/1.1 401 Unauthorized\r\nWWW-Authenticate: Digest realm=\""HTTPD_SERVER_AGENT"\", nonce=\"CjPk9mRqNuT25eRkajM09uTl9nM09uTl9nMz5OX25PZz==\",qop=\"auth,auth-int\",opaque=\"5ccc069c403ebaf9f0171e9517f40e41\",algorithm=MD5\r\n"
+//  , "HTTP/1.1 401 Unauthorized\r\nWWW-Authenticate: Digest realm=\""DEVICE_SYSTEM_REALM"\", nonce=\"7ypf/xlj9XXwfDPEoM4URrv/xwf94BcCAzFZH4GiTo0v\",qop=\"auth,auth-int\",opaque=\"FQhe/qaU925kfnzjCev0ciny7QMkPqMAFRtzCUYo5tdS\",algorithm=SHA-256\r\n"
+//  , "HTTP/1.1 401 Unauthorized\r\nWWW-Authenticate: Digest realm=\"http-auth@example.org\",qop=\"auth, auth-int\",algorithm=SHA-256,nonce=\"7ypf/xlj9XXwfDPEoM4URrv/xwf94BcCAzFZH4GiTo0v\",opaque=\"FQhe/qaU925kfnzjCev0ciny7QMkPqMAFRtzCUYo5tdS\"\r\nWWW-Authenticate: Digest realm=\"http-auth@example.org\",qop=\"auth, auth-int\",algorithm=MD5,nonce=\"7ypf/xlj9XXwfDPEoM4URrv/xwf94BcCAzFZH4GiTo0v\",opaque=\"FQhe/qaU925kfnzjCev0ciny7QMkPqMAFRtzCUYo5tdS\"\r\n"
+//	, "HTTP/1.1 401 Unauthorized\r\nWWW-Authenticate: Digest realm=\"http-auth@example.org\",qop=\"auth, auth-int\",algorithm=SHA-256,nonce=\"7ypf/xlj9XXwfDPEoM4URrv/xwf94BcCAzFZH4GiTo0v\",opaque=\"FQhe/qaU925kfnzjCev0ciny7QMkPqMAFRtzCUYo5tdS\"\r\n"
+//  , "HTTP/1.1 401 Unauthorized\r\nWWW-Authenticate: Digest realm=\"http-auth@example.org\",qop=\"auth, auth-int\",algorithm=MD5,nonce=\"7ypf/xlj9XXwfDPEoM4URrv/xwf94BcCAzFZH4GiTo0v\",opaque=\"FQhe/qaU925kfnzjCev0ciny7QMkPqMAFRtzCUYo5tdS\"\r\n"
+#endif
+#endif
+#if LWIP_HTTPD_SUPPORT_11_RANGE
+  , "HTTP/1.1 206 Partial Content\r\n"
+  , "Content-Range: bytes "
+  , "Cache-Control: public, max-age=3600\r\nLast-Modified: "
+  , "Accept-Ranges: bytes\r\nETag: "
+  , "HTTP/1.1 416 Range Not Satisfiable\r\n"
 #endif
 };
 
 /* Indexes into the g_psHTTPHeaderStrings array */
-#define HTTP_HDR_OK             0 /* 200 OK */
-#define HTTP_HDR_NOT_FOUND      1 /* 404 File not found */
-#define HTTP_HDR_BAD_REQUEST    2 /* 400 Bad request */
-#define HTTP_HDR_NOT_IMPL       3 /* 501 Not Implemented */
-#define HTTP_HDR_OK_11          4 /* 200 OK */
-#define HTTP_HDR_NOT_FOUND_11   5 /* 404 File not found */
-#define HTTP_HDR_BAD_REQUEST_11 6 /* 400 Bad request */
-#define HTTP_HDR_NOT_IMPL_11    7 /* 501 Not Implemented */
-#define HTTP_HDR_CONTENT_LENGTH 8 /* Content-Length: (HTTP 1.0)*/
-#define HTTP_HDR_CONN_CLOSE     9 /* Connection: Close (HTTP 1.1) */
-#define HTTP_HDR_CONN_KEEPALIVE 10 /* Connection: keep-alive (HTTP 1.1) */
-#define HTTP_HDR_KEEPALIVE_LEN  11 /* Connection: keep-alive + Content-Length: (HTTP 1.1)*/
-#define HTTP_HDR_SERVER         12 /* Server: HTTPD_SERVER_AGENT */
-#define DEFAULT_404_HTML        13 /* default 404 body */
+enum {
+  HTTP_HDR_OK,					/*  0 200 OK */
+  HTTP_HDR_NOT_FOUND,			/*  1 404 File not found */
+  HTTP_HDR_BAD_REQUEST,			/*  2 400 Bad request */
+  HTTP_HDR_NOT_IMPL,			/*  3 501 Not Implemented */
+  HTTP_HDR_OK_11,				/*  4 200 OK */
+  HTTP_HDR_NOT_FOUND_11,		/*  5 404 File not found */
+  HTTP_HDR_BAD_REQUEST_11,		/*  6 400 Bad request */
+  HTTP_HDR_NOT_IMPL_11,			/*  7 501 Not Implemented */
+  HTTP_HDR_CONTENT_LENGTH,		/*  8 Content-Length: (HTTP 1.0)*/
+  HTTP_HDR_CONN_CLOSE,			/*  9 Connection: Close (HTTP 1.1) */
+  HTTP_HDR_CONN_KEEPALIVE,		/* 10 Connection: keep-alive (HTTP 1.1) */
+  HTTP_HDR_KEEPALIVE_LEN,		/* 11 Connection: keep-alive + Content-Length: (HTTP 1.1)*/
+  HTTP_HDR_SERVER,				/* 12 Server: HTTPD_SERVER_AGENT */
+  DEFAULT_404_HTML,				/* 13 default 404 body */
+  HTTP_HDR_SERVER_ERROR,		/* 14 500 Internal Server Error */
+  HTTP_HDR_UNSUPPORTED_MT		/* 15 415 Unsupported Media Type */
 #if LWIP_HTTPD_SUPPORT_11_KEEPALIVE
-#define DEFAULT_404_HTML_PERSISTENT 14 /* default 404 body, but including Connection: keep-alive */
+  ,DEFAULT_404_HTML_PERSISTENT	/* 1x default 404 body, but including Connection: keep-alive */
 #endif
+#if LWIP_HTTPD_SUPPORT_AUTHORIZATION
+  ,HTTP_HDR_UNAUTHORIZED		/* 1x 401 Unauthorized */
+#endif
+#if LWIP_HTTPD_SUPPORT_11_RANGE
+  ,HTTP_HDR_PARTIAL_CONTENT		/* 1x 206 Partial Content */
+  ,HTTP_HDR_CONTENT_RANGE		/* 1x Content-Range: bytes */
+  ,HTTP_HDR_LAST_MODIFIED		/* 1x Cache-Control: public, max-age=3600 + Last-Modified: */
+  ,HTTP_HDR_ETAG                /* 1x Accept-Ranges: bytes + ETag: */
+  ,HTTP_HDR_RANGE_NOT_SATISFIABLE /* 1x 416 Range Not Satisfiable */
+#endif
+};
 
 #define HTTP_CONTENT_TYPE(contenttype) "Content-Type: "contenttype"\r\n\r\n"
 #define HTTP_CONTENT_TYPE_ENCODING(contenttype, encoding) "Content-Type: "contenttype"\r\nContent-Encoding: "encoding"\r\n\r\n"
@@ -62,7 +96,9 @@ static const char *const g_psHTTPHeaderStrings[] = {
 #define HTTP_HDR_JPG            HTTP_CONTENT_TYPE("image/jpeg")
 #define HTTP_HDR_BMP            HTTP_CONTENT_TYPE("image/bmp")
 #define HTTP_HDR_ICO            HTTP_CONTENT_TYPE("image/x-icon")
+#define HTTP_HDR_BIN            HTTP_CONTENT_TYPE("application/octet-stream\r\nContent-disposition: attachment;")
 #define HTTP_HDR_APP            HTTP_CONTENT_TYPE("application/octet-stream")
+#define HTTP_HDR_VIDEO_MP4      HTTP_CONTENT_TYPE("video/mp4")
 #define HTTP_HDR_JS             HTTP_CONTENT_TYPE("application/javascript")
 #define HTTP_HDR_RA             HTTP_CONTENT_TYPE("application/javascript")
 #define HTTP_HDR_CSS            HTTP_CONTENT_TYPE("text/css")
@@ -91,7 +127,9 @@ static const tHTTPHeader g_psHTTPHeaders[] = {
   { "jpg",  HTTP_HDR_JPG},
   { "bmp",  HTTP_HDR_BMP},
   { "ico",  HTTP_HDR_ICO},
-  { "class", HTTP_HDR_APP},
+  { "avi",  HTTP_HDR_BIN},
+  { "mp4",  HTTP_HDR_BIN}, // HTTP_HDR_VIDEO_MP4
+  { "class",HTTP_HDR_APP},
   { "cls",  HTTP_HDR_APP},
   { "js",   HTTP_HDR_JS},
   { "ram",  HTTP_HDR_RA},
@@ -115,7 +153,7 @@ static const tHTTPHeader g_psHTTPHeaders[] = {
 
 #if LWIP_HTTPD_SSI
 static const char *const g_pcSSIExtensions[] = {
-  ".shtml", ".shtm", ".ssi", ".xml", ".json"
+  ".html", ".htm", ".shtml", ".shtm", ".ssi", ".xml", ".json"
 };
 #define NUM_SHTML_EXTENSIONS LWIP_ARRAYSIZE(g_pcSSIExtensions)
 #endif /* LWIP_HTTPD_SSI */

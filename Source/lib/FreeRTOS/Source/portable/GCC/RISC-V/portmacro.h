@@ -75,7 +75,7 @@ not need to be guarded with a critical section. */
 /* Architecture specifics. */
 #define portSTACK_GROWTH			( -1 )
 #define portTICK_PERIOD_MS			( ( TickType_t ) 1000 / configTICK_RATE_HZ )
-#define portBYTE_ALIGNMENT	16
+#define portBYTE_ALIGNMENT	64
 /*-----------------------------------------------------------*/
 
 /*-----------------------------------------------------------*/
@@ -83,16 +83,16 @@ not need to be guarded with a critical section. */
 /*-----------------------------------------------------------*/
 //ecall macro used to store argument in a3
 #define ECALL(arg) ({			\
-	register uintptr_t a7 asm ("a7") = (uintptr_t)(arg);	\
+	register uintptr_t reg asm ("t6") = (uintptr_t)(arg);	\
 	asm volatile ("ecall"					\
-		      : "+r" (a7)				\
+		      : "+r" (reg)				\
 		      : 	\
 		      : "memory");				\
-	a7;							\
+	reg;							\
 })
 
 /* Scheduler utilities. */
-#define ECALL_YIELD_CMD 0xE675
+#define ECALL_YIELD_CMD 0x675
 extern void vTaskSwitchContext( void );
 #define portYIELD() ECALL(ECALL_YIELD_CMD);
 #define portEND_SWITCHING_ISR( xSwitchRequired ) if( xSwitchRequired ) vTaskSwitchContext()

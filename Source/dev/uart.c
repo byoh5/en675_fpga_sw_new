@@ -71,7 +71,10 @@ void UartDeinit(UINT nCH)
 
 void UartTx(UINT nCH, char data)
 {
-	while (arrUART[nCH]->TX_FULL || arrUART[nCH]->TX_IRQ_EN);
+	// while (arrUART[nCH]->TX_FULL || arrUART[nCH]->TX_IRQ_EN);
+	while (arrUART[nCH]->TX_FULL) {
+		WaitXms(1);
+	}
 	arrUARTTX[nCH]->TX_DAT = data;
 }
 

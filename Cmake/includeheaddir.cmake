@@ -37,6 +37,8 @@ INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/Source/lib/wifi_sd8782/wpa_supplicant)
 
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/Source/core/shared)
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/Source/core/core1)
+INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/Source/core/core1/task/audtxrx)
+INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/Source/core/core1/task/change)
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/Source/core/core1/task/ethloopback)
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/Source/core/core1/task/shell)
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/Source/core/core1/task/ledblink)

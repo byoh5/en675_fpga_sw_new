@@ -14,6 +14,8 @@
 #endif
 
 #if (LOAD_FS_SDCARD==1)
+#include "sdio_cd.h"
+
 #include "muxer_videnc.h"
 #include "videnc_info.h"
 #if (VIDEO_SAVE_AVI==1)
@@ -30,6 +32,14 @@
 #else
 	#define tprintf(fmt, args...) do {} while(0);
 #endif
+
+enum {
+	H264_STREAM = 0,	// Video
+	H265_STREAM = 1,	// Video
+	G711_STREAM = 2,	// Audio
+	TXTS_STREAM = 3,	// G-sensor, GPS, etc...
+	IDX1_ARRAY = 9		// index
+};
 
 t_videnc_totalbuf_t gVidencBuffer;
 t_videnc_t gVidenc[eRecEnd];
@@ -125,6 +135,11 @@ void muxer_videnc_all_stop(void)
 t_videnc_t *muxsr_videnc_get_t_videnc_t(void)
 {
 	return enc_ing;
+}
+
+void muxer_videnc_set_vcodec(int RecType, eVideoChannel vs)
+{
+	gVidenc[RecType].vidinfo.v_type = vs;
 }
 
 void muxer_videnc_Buffering(u32 addr, u32 size, u32 flag, u32 type)
@@ -243,7 +258,8 @@ void muxer_videnc_bufferadd(t_videnc_t *pvid, t_videnc_totalbuf_t *buffer, uint8
 		if((UINT)size >= left)	wb = left;
 		else					wb = size;
 
-		BDmaMemCpy_rtos_async(0, (BYTE *)buffer->buf, (BYTE *)data, wb);
+		//BDmaMemCpy_rtos_async(0, (BYTE *)buffer->buf, (BYTE *)data, wb);
+		BDmaMemCpy_rtos_flush(0, (BYTE *)buffer->buf, (BYTE *)data, wb);
 		buffer->length += wb;
 		buffer->buf    += wb;
 		pvid->filesize += wb;
@@ -264,11 +280,12 @@ void muxer_videnc_bufferadd(t_videnc_t *pvid, t_videnc_totalbuf_t *buffer, uint8
 
 BYTE *muxer_videnc_makevidheader(t_videnc_t *pvid, t_videnc_totalbuf_t *buffer)
 {
+	VideoResolution vr = gtUser.vcVideo[pvid->vidinfo.v_type].eResolution;
 	switch (pvid->state) {
 		case VIDENC_OPEN:
 			pvid->vidinfo.f_fps = muxer_videnc_change_savetime(NULL, buffer, 1);
-			pvid->vidinfo.i_width =	listResolution[gtUser.viH264.eResolution].nWidth;
-			pvid->vidinfo.i_height = listResolution[gtUser.viH264.eResolution].nHeight;
+			pvid->vidinfo.i_width =	listResolution[vr].nWidth;
+			pvid->vidinfo.i_height = listResolution[vr].nHeight;
 			pvid->vidinfo.un32vidicount = 0;
 			pvid->vidinfo.un32vidscount = 0;
 			pvid->vidinfo.un32audscount = 0;
@@ -495,7 +512,7 @@ void muxer_videnc_write_process(t_videnc_t *pvid, t_videnc_totalbuf_t *buffer, i
 	{
 		muxer_videnc_bufferadd(pvid, buffer, (uint8 *)pvid->datablock.addr, VID_ALIGN(pvid->datablock.size));
 	}
-#else // MP4는 현재 영상만 지원
+#else
 	if (type == H264_STREAM) {
 		// H.264 NAL start Remake
 		BYTE *k = (BYTE *)pvid->datablock.addr;
@@ -525,21 +542,21 @@ void muxer_videnc_write_process(t_videnc_t *pvid, t_videnc_totalbuf_t *buffer, i
 				}
 			}
 
-			UINT size_info = sps_size;
+			UINT size_info = vidswapSB32(sps_size);
 			muxer_videnc_bufferadd(pvid, buffer, (uint8 *)&size_info, sizeof(size_info));
-			muxer_videnc_bufferadd(pvid, buffer, (uint8 *)sps_start, size_info);
-			size_info = pps_size;
+			muxer_videnc_bufferadd(pvid, buffer, (uint8 *)sps_start, sps_size);
+			size_info = vidswapSB32(pps_size);
 			muxer_videnc_bufferadd(pvid, buffer, (uint8 *)&size_info, sizeof(size_info));
-			muxer_videnc_bufferadd(pvid, buffer, (uint8 *)pps_start, size_info);
-			size_info = ifr_size;
+			muxer_videnc_bufferadd(pvid, buffer, (uint8 *)pps_start, pps_size);
+			size_info = vidswapSB32(ifr_size);
 			muxer_videnc_bufferadd(pvid, buffer, (uint8 *)&size_info, sizeof(size_info));
-			muxer_videnc_bufferadd(pvid, buffer, (uint8 *)ifr_start, size_info);
+			muxer_videnc_bufferadd(pvid, buffer, (uint8 *)ifr_start, ifr_size);
 
 			/* Write Header _ STSS / STSZ / STCO __FrameDataSize And ChunkOffset */
-			buffer->Vstbl.stss[buffer->Vstbl.stss_len++] = pvid->vidinfo.un32vidscount;
-			buffer->Vstbl.stsz[buffer->Vstbl.stsz_len++] = sps_size + pps_size + ifr_size + 12;
-			buffer->Vstbl.stco[buffer->Vstbl.stco_len++] = pvid->vidinfo.mdat_size + buffer->hdr_size;
-			pvid->vidinfo.mdat_size += (sps_size + pps_size + ifr_size + 12);
+			buffer->Vstbl.stss[buffer->Vstbl.stss_len++] = vidswapSB32(pvid->vidinfo.un32vidscount);
+			buffer->Vstbl.stsz[buffer->Vstbl.stsz_len++] = vidswapSB32(sps_size + pps_size + ifr_size + (sizeof(size_info) * 3));
+			buffer->Vstbl.stco[buffer->Vstbl.stco_len++] = vidswapSB32(pvid->vidinfo.mdat_size + buffer->hdr_size);
+			pvid->vidinfo.mdat_size += (sps_size + pps_size + ifr_size + (sizeof(size_info) * 3));
 
 			// MP4 Header SPS/PPS
 			if (pvid->state == VIDENC_FIRST_NEXT) {
@@ -561,21 +578,110 @@ void muxer_videnc_write_process(t_videnc_t *pvid, t_videnc_totalbuf_t *buffer, i
 				pfr_size = pfr_size - (pfr_start - k);
 			}
 
-			UINT size_info = pfr_size;
+			UINT size_info = vidswapSB32(pfr_size);
 			muxer_videnc_bufferadd(pvid, buffer, (uint8 *)&size_info, sizeof(size_info));
-			muxer_videnc_bufferadd(pvid, buffer, (uint8 *)pfr_start, size_info);
+			muxer_videnc_bufferadd(pvid, buffer, (uint8 *)pfr_start, pfr_size);
 
 			/* Write Header _ STSZ / STCO __FrameDataSize And ChunkOffset */
-			buffer->Vstbl.stsz[buffer->Vstbl.stsz_len++] = pfr_size + 4;
-			buffer->Vstbl.stco[buffer->Vstbl.stco_len++] = pvid->vidinfo.mdat_size + buffer->hdr_size;
-			pvid->vidinfo.mdat_size += (pfr_size + 4);
+			buffer->Vstbl.stsz[buffer->Vstbl.stsz_len++] = vidswapSB32(pfr_size + (sizeof(size_info) * 1));
+			buffer->Vstbl.stco[buffer->Vstbl.stco_len++] = vidswapSB32(pvid->vidinfo.mdat_size + buffer->hdr_size);
+			pvid->vidinfo.mdat_size += (pfr_size + (sizeof(size_info) * 1));
+		}
+	} else 	if (type == H265_STREAM) {
+		// H.265 NAL start Remake
+		BYTE *k = (BYTE *)pvid->datablock.addr;
+		BYTE nal_start[3] = {0x00, 0x00, 0x01};
+		// I Frame
+		if (pvid->datablock.flags) {
+			// Search VPS/SPS/PPS/I nal start
+			UINT vps_size = 0, sps_size = 0, pps_size = 0, ifr_size = pvid->datablock.size;
+			BYTE *ifr_start = NULL;
+			BYTE *pps_start = NULL;
+			BYTE *sps_start = NULL;
+			BYTE *vps_start = enx_memstr(k, 32, nal_start, 3);
+			if (vps_start) {
+				sps_start = enx_memstr(vps_start, 64, nal_start, 3);
+				if (sps_start) {
+					vps_size = sps_start - vps_start - 3;
+					while (vps_start[vps_size-1] == 0x00) {
+						vps_size--;
+					}
+					pps_start = enx_memstr(sps_start, 128, nal_start, 3);
+					if (pps_start) {
+						sps_size = pps_start - sps_start - 3;
+						while (sps_start[sps_size-1] == 0x00) {
+							sps_size--;
+						}
+						ifr_start = enx_memstr(pps_start, 16, nal_start, 3);
+						if (ifr_start) {
+							pps_size = ifr_start - pps_start - 3;
+							while (pps_start[pps_size-1] == 0x00) {
+								pps_size--;
+							}
+							ifr_size = pvid->datablock.size - (ifr_start - k);
+						}
+					}
+				}
+			}
+
+			UINT size_info = vidswapSB32(vps_size);
+			muxer_videnc_bufferadd(pvid, buffer, (uint8 *)&size_info, sizeof(size_info));
+			muxer_videnc_bufferadd(pvid, buffer, (uint8 *)vps_start, vps_size);
+			size_info = vidswapSB32(sps_size);
+			muxer_videnc_bufferadd(pvid, buffer, (uint8 *)&size_info, sizeof(size_info));
+			muxer_videnc_bufferadd(pvid, buffer, (uint8 *)sps_start, sps_size);
+			size_info = vidswapSB32(pps_size);
+			muxer_videnc_bufferadd(pvid, buffer, (uint8 *)&size_info, sizeof(size_info));
+			muxer_videnc_bufferadd(pvid, buffer, (uint8 *)pps_start, pps_size);
+			size_info = vidswapSB32(ifr_size);
+			muxer_videnc_bufferadd(pvid, buffer, (uint8 *)&size_info, sizeof(size_info));
+			muxer_videnc_bufferadd(pvid, buffer, (uint8 *)ifr_start, ifr_size);
+
+			/* Write Header _ STSS / STSZ / STCO __FrameDataSize And ChunkOffset */
+			buffer->Vstbl.stss[buffer->Vstbl.stss_len++] = vidswapSB32(pvid->vidinfo.un32vidscount);
+			buffer->Vstbl.stsz[buffer->Vstbl.stsz_len++] = vidswapSB32(vps_size + sps_size + pps_size + ifr_size + (sizeof(size_info) * 4));
+			buffer->Vstbl.stco[buffer->Vstbl.stco_len++] = vidswapSB32(pvid->vidinfo.mdat_size + buffer->hdr_size);
+			pvid->vidinfo.mdat_size += (vps_size + sps_size + pps_size + ifr_size + (sizeof(size_info) * 4));
+
+			// MP4 Header SPS/PPS
+			if (pvid->state == VIDENC_FIRST_NEXT) {
+				UINT i;
+				t_mp4_t *mp4info = &(pvid->vidinfo);
+				mp4info->vps_size = vps_size;
+				for (i = 0; i < mp4info->vps_size; i++) {
+					mp4info->vps_data[i] = vps_start[i];
+				}
+				mp4info->sps_size = sps_size;
+				for (i = 0; i < mp4info->sps_size; i++) {
+					mp4info->sps_data[i] = sps_start[i];
+				}
+				mp4info->pps_size = pps_size;
+				for (i = 0; i < mp4info->pps_size; i++) {
+					mp4info->pps_data[i] = pps_start[i];
+				}
+			}
+		} else { // P Frame
+			UINT pfr_size = pvid->datablock.size;
+			BYTE *pfr_start = enx_memstr(k, 32, nal_start, 3);
+			if (pfr_start) {
+				pfr_size = pfr_size - (pfr_start - k);
+			}
+
+			UINT size_info = vidswapSB32(pfr_size);
+			muxer_videnc_bufferadd(pvid, buffer, (uint8 *)&size_info, sizeof(size_info));
+			muxer_videnc_bufferadd(pvid, buffer, (uint8 *)pfr_start, pfr_size);
+
+			/* Write Header _ STSZ / STCO __FrameDataSize And ChunkOffset */
+			buffer->Vstbl.stsz[buffer->Vstbl.stsz_len++] = vidswapSB32(pfr_size + (sizeof(size_info) * 1));
+			buffer->Vstbl.stco[buffer->Vstbl.stco_len++] = vidswapSB32(pvid->vidinfo.mdat_size + buffer->hdr_size);
+			pvid->vidinfo.mdat_size += (pfr_size + (sizeof(size_info) * 1));
 		}
 	} else if (type == G711_STREAM) {
 		muxer_videnc_bufferadd(pvid, buffer, (uint8 *)pvid->datablock.addr, pvid->datablock.size);
 
 		/* Write Header _ STSZ / STCO __FrameDataSize And ChunkOffset */
 		buffer->Astbl.stsz_len++; // audio는 size정보를 넣지 않고 count만 한다. size는 고정형으로 사용함.
-		buffer->Astbl.stco[buffer->Astbl.stco_len++] = pvid->vidinfo.mdat_size + buffer->hdr_size;
+		buffer->Astbl.stco[buffer->Astbl.stco_len++] = vidswapSB32(pvid->vidinfo.mdat_size + buffer->hdr_size);
 		pvid->vidinfo.mdat_size += pvid->datablock.size;
 	}
 #endif
@@ -597,13 +703,17 @@ void muxer_videnc_write(t_videnc_t *pvid, t_videnc_totalbuf_t *buffer)
 		int type = -1;
 		switch (pvid->datablock.type) {
 			case eSTREAMMSG_H264I:
-				(pvid->vidinfo.un32vidicount)++;
+				(pvid->vidinfo.un32vidicount)++; // @suppress("No break at end of case")
 			case eSTREAMMSG_H264P:
 				(pvid->vidinfo.un32vidscount)++;
 				type = H264_STREAM;
 				break;
 			case eSTREAMMSG_H265I:
+				(pvid->vidinfo.un32vidicount)++; // @suppress("No break at end of case")
 			case eSTREAMMSG_H265P:
+				(pvid->vidinfo.un32vidscount)++;
+				type = H265_STREAM;
+				break;
 			case eSTREAMMSG_JPEG:
 				break;
 			case eSTREAMMSG_AUDIO:
@@ -706,7 +816,11 @@ int muxer_videnc_change_savetime(t_videnc_t *pvid, t_videnc_totalbuf_t *buffer, 
 {
 	int fpsval, fpsidx = 2;
 #if 1
-	fpsval = gtUser.viH264.nFps;
+	if (pvid == NULL) {
+		fpsval = 30;
+	} else {
+		fpsval = gtUser.vcVideo[pvid->vidinfo.v_type].nFps;
+	}
 #else
 	switch (gptMsgShare.VIDEO_FPS) {
 		case 60:	fpsidx = 0;		break;
@@ -716,15 +830,18 @@ int muxer_videnc_change_savetime(t_videnc_t *pvid, t_videnc_totalbuf_t *buffer, 
 		case 15:	fpsidx = 4;		break;
 		case 12:	fpsidx = 5;		break;
 	}
-	fpsval = nFPSvalue[fpsidx][gtUser.viH264.nFps];
+	fpsval = nFPSvalue[fpsidx][gtUser.vcVideo[pvid->vidinfo.v_type].nFps];
 #endif
 	if (fpsval != nVidenc_Fps_old) {
 		nVidenc_Fps_old = fpsval;
-
+#if (FAT_SDSAVE_AUD==1)
 #if (AUDIO_CODEC==AUDIO_CODEC_RAW)
-		UINT audio_fps = PCM8K_RecordingHz;
+		UINT audio_fps = PCM_RecordingHz;
 #else
 		UINT audio_fps = G711_RecordingHz;
+#endif
+#else
+		UINT audio_fps = 0;
 #endif
 		UINT txts_fps = 0;
 
@@ -762,10 +879,10 @@ void muxer_videnc_process(t_videnc_t *pvid, t_videnc_totalbuf_t *buffer)
 #endif
 			enc_ing = pvid;
 			if(muxer_videnc_idle(pvid, buffer) == 0)
-				break;
+				break; // @suppress("No break at end of case")
 		case VIDENC_FIRST: // first_video로 data align을 맞추고(1이 리턴)
 			if(muxer_videnc_frist_video(pvid, buffer) == 0)
-				break;
+				break; // @suppress("No break at end of case")
 		case VIDENC_FIRST_NEXT:
 			if (nVidenc_Mode_now != nVidenc_Mode_old) { // 현재 인코딩 영상이 이전과 다른 것이라면 1s 버리기
 				muxer_videnc_nextI_video(pvid, buffer);
@@ -774,7 +891,7 @@ void muxer_videnc_process(t_videnc_t *pvid, t_videnc_totalbuf_t *buffer)
 				// 현재 인코딩 영상이 이전과 같은 것이라면 녹화 시작
 				muxer_videnc_write(pvid, buffer);
 				pvid->state = VIDENC_WRITE;
-			}
+			} // @suppress("No break at end of case")
 		case VIDENC_WRITE: // => VIDENC_WRITE loop => VIDENC_CLOSE call
 //			dprintf("VIDENC_WRITE call\n");
 			if (gtUser.bSdVidSave == ENX_ON
@@ -799,7 +916,7 @@ void muxer_videnc_process(t_videnc_t *pvid, t_videnc_totalbuf_t *buffer)
 				}
 
 				while (sbuf_peek(&pvid->sbuf, &(pvid->datablock.addr), &(pvid->datablock.size), &(pvid->datablock.flags), &(pvid->datablock.type)) == ENX_OK) {
-					if ((pvid->datablock.type == eSTREAMMSG_H264I) && (pvid->vidinfo.un32vidscount >= pvid->vidinfo.un32vidsmax)) {
+					if ((pvid->datablock.type == eSTREAMMSG_H264I || pvid->datablock.type == eSTREAMMSG_H265I) && (pvid->vidinfo.un32vidscount >= pvid->vidinfo.un32vidsmax)) {
 						pvid->state = VIDENC_CLOSE;
 						muxer_videnc_close(pvid, buffer);
 					} else if (sbuf_get(&pvid->sbuf, &(pvid->datablock.addr), &(pvid->datablock.size), &(pvid->datablock.flags), &(pvid->datablock.type)) == ENX_OK) {
@@ -839,40 +956,8 @@ void muxer_videnc_process(t_videnc_t *pvid, t_videnc_totalbuf_t *buffer)
 	}
 }
 
-void IsrRecorddata(void *arg)
+void muxer_videnc_semgive(void)
 {
-#if 0
-	stream_info info;
-	while (MsgRecGet(&info) == ENX_OK) {
-		switch (info.type) {
-			case eSTREAMMSG_H264I:
-				muxer_videnc_Buffering(info.addr, info.size, 1, info.type);
-				break;
-			case eSTREAMMSG_H264P:
-#if (FAT_SDSAVE_AUD==1)
-			case eSTREAMMSG_AUDIO:
-#endif
-#if (NUM_STREAM_TXTS==1)
-			case eSTREAMMSG_TXTS:
-#endif
-				muxer_videnc_Buffering(info.addr, info.size, 0, info.type);
-				break;
-#if (FAT_SDSAVE_AUD!=1)
-			case eSTREAMMSG_AUDIO:
-#endif
-#if (NUM_STREAM_TXTS!=1)
-			case eSTREAMMSG_TXTS:
-#endif
-			case eSTREAMMSG_H2642I:
-			case eSTREAMMSG_H2642P:
-			case eSTREAMMSG_JPEG:
-				break;
-			default:
-				printf("unknown r-type(%d)\n", info.type);
-				break;
-		}
-	}
-#endif
 	if(bufSem == NULL) // not ready!
 		return;
 
@@ -881,8 +966,6 @@ void IsrRecorddata(void *arg)
 	if (xHigherPriorityTaskWoken) {
 		gbXsrTaskSwitchNeeded = 1;	// Task switch required?
 	}
-
-	UNUSED(arg);
 }
 
 void muxer_videnc_init(void)
@@ -1040,6 +1123,8 @@ void muxer_init_buffering(void)
 
 void muxer_videnc_task(void* pvParameters)
 {
+	muxer_init_buffering();
+
 	nVidenc_Mode_now = 0;
 	nVidenc_Mode_old = -1;
 

@@ -30,7 +30,7 @@
 #include "lwip/inet_chksum.h"
 
 #include "packet.h"
-#include "debug.h"
+#include "dhcpd/debug.h"
 #include "dhcpd.h"
 #include "options.h"
 #include "leases.h"
@@ -161,7 +161,7 @@ int raw_packet(struct dhcpd *pdhcpd, u32_t source_ip, int src_port,
     }
 
 err:
-    DEBUG(LOG_ERR, "TX pbuf_header ... error");
+    DHCPD_DEBUG(LOG_ERR, "TX pbuf_header ... error");
     if(q)
         pbuf_free(q);
     return -1; 
@@ -171,7 +171,7 @@ err:
 /* send a packet to giaddr using the kernel ip stack */
 static int send_packet_to_relay(struct dhcpMessage *payload)
 {
-    DEBUG(LOG_INFO, "Forwarding packet to relay");
+    DHCPD_DEBUG(LOG_INFO, "Forwarding packet to relay");
 	printf("%s(%d) : Forwarding packet to relay\n", __func__, __LINE__);
 //  return kernel_packet(payload, server_config.server, SERVER_PORT,
 //          payload->giaddr, SERVER_PORT);
@@ -193,19 +193,19 @@ static int send_packet_to_client(struct dhcpd *pdhcpd, int force_broadcast)
     u32_t ciaddr;
     
     if (force_broadcast) {
-      DEBUG(LOG_INFO, "broadcasting packet to client (NAK)");
+      DHCPD_DEBUG(LOG_INFO, "broadcasting packet to client (NAK)");
       ciaddr = INADDR_BROADCAST;
       chaddr = MAC_BCAST_ADDR;
     } else if (payload->ciaddr) {
-      DEBUG(LOG_INFO, "unicasting packet to client ciaddr");
+      DHCPD_DEBUG(LOG_INFO, "unicasting packet to client ciaddr");
       ciaddr = payload->ciaddr;
       chaddr = payload->chaddr;
     } else if (ntohs(payload->flags) & BROADCAST_FLAG) {
-      DEBUG(LOG_INFO, "broadcasting packet to client (requested)");
+      DHCPD_DEBUG(LOG_INFO, "broadcasting packet to client (requested)");
       ciaddr = INADDR_BROADCAST;
       chaddr = MAC_BCAST_ADDR;
     } else {
-      DEBUG(LOG_INFO, "unicasting packet to client yiaddr");
+      DHCPD_DEBUG(LOG_INFO, "unicasting packet to client yiaddr");
       ciaddr = payload->yiaddr;
       chaddr = payload->chaddr;
     }
@@ -334,7 +334,7 @@ int sendNAK(struct dhcpd *pdhcpd, struct dhcpMessage *oldpacket)
     struct dhcpMessage *packet;
     init_packet(pdhcpd, oldpacket, DHCPNAK);
     packet = pdhcpd->msg_out;
-    DEBUG(LOG_INFO, "sending NAK");
+    DHCPD_DEBUG(LOG_INFO, "sending NAK");
     return send_packet(pdhcpd, 1);
 }
 

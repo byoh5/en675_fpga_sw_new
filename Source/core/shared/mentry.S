@@ -71,8 +71,21 @@ trap_firmware:
 
 	csrr	a0, mcause
 	csrr	a1, mepc
-	mv		a2, sp
-	call	trap_from_machine_mode
+	csrr	a2, mhartid
+	mv		a3, sp
+
+fw_test_if_asynchronous:
+	srli	t0, a0, 0x3f					/* MSB of mcause is 1 if handing an asynchronous interrupt - shift to LSB to clear other bits. */
+	bne		t0, x0, fw_handle_asynchronous	/* Branch past interrupt handing if not synchronous. */
+
+fw_handle_synchronous:
+	call	trap_from_machine_mode_sync
+	jal		fw_processed_source
+
+fw_handle_asynchronous:
+	call	trap_from_machine_mode_async
+
+fw_processed_source:
 	csrw	mepc, a0
 
 	/* Remain in M-mode after mret */

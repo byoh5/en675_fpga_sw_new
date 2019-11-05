@@ -46,7 +46,7 @@ typedef struct {
 	rtp_queue_data *data;
 } rtp_queue;
 
-extern ENX_OKFAIL rtp_queue_init(rtp_queue *prqbuf, UINT tot_num);
+extern ENX_OKFAIL rtp_queue_init(rtp_queue **prqbuf, UINT tot_num);
 
 extern ENX_OKFAIL rtp_queue_put(rtp_queue *prqbuf, rtp_queue_data *prefdata);
 
@@ -56,6 +56,6 @@ extern ENX_OKFAIL rtp_queue_peek(rtp_queue *prqbuf, rtp_queue_data *pdata);
 
 extern ENX_OKFAIL rtp_queue_freebuffer(rtp_queue *prqbuf);
 
-extern ENX_OKFAIL rtp_queue_free(rtp_queue *prqbuf);
+extern ENX_OKFAIL rtp_queue_free(rtp_queue **prqbuf);
 
 #endif

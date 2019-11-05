@@ -76,7 +76,9 @@
 .global freertos_risc_v_trap_handler
 .global pxPortInitialiseStack
 .extern pxCurrentTCB
-.extern trap_from_machine_mode_freertos
+//.extern trap_from_machine_mode_freertos
+.extern trap_from_machine_mode_freertos_sync
+.extern trap_from_machine_mode_freertos_async
 
 /*-----------------------------------------------------------*/
 
@@ -121,7 +123,8 @@ freertos_risc_v_trap_handler:
 
 	csrr	a0, mcause
 	csrr	a1, mepc
-	mv		a2, sp
+	csrr	a2, mhartid
+	mv		a3, sp
 
 test_if_asynchronous:
 	srli	t0, a0, 0x3f					/* MSB of mcause is 1 if handing an asynchronous interrupt - shift to LSB to clear other bits. */
@@ -129,11 +132,15 @@ test_if_asynchronous:
 
 handle_synchronous:
 	addi	a1, a1, 4						/* Synchronous so updated exception return address to the instruction after the instruction that generated the exeption. */
+	STORE	a1, 0( sp )						/* So save exception return address. */
+	LOAD	sp, xISRStackTop				/* Switch to ISR stack before function call. */
+	jal		trap_from_machine_mode_freertos_sync
+	jal		processed_source
 
 handle_asynchronous:
 	STORE	a1, 0( sp )						/* So save exception return address. */
 	LOAD	sp, xISRStackTop				/* Switch to ISR stack before function call. */
-	jal		trap_from_machine_mode_freertos
+	jal		trap_from_machine_mode_freertos_async
 
 processed_source:
 	LOAD	t1, pxCurrentTCB				/* Load pxCurrentTCB. */

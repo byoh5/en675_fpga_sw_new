@@ -1,0 +1,72 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+<title></title>
+<link rel="stylesheet" type="text/css" href="bootstrap.min.css">
+<link rel="stylesheet" type="text/css" href="style.css">
+<style type="text/css">
+#js-progress {
+	width: 50%;
+	height: 20px;
+	position: relative;
+	border: 1px solid #ccc;
+}
+#js-bar {
+	width: 10px;
+	height: 100%;
+	position: absolute;
+	background-color: blue;
+}
+</style>
+
+<script type="text/javascript">
+<!--
+function redirect()
+{
+    document.location = "sdcard_formating.html";
+}
+
+function ok_referrer()
+{
+    document.location = "sdcard_setup.html";
+}
+
+function SetFormDefaults()
+{
+	sdfmt = 0;
+//<!--#sd_form-->
+
+	if(sdfmt == 0)
+	{
+		alert("SDcard format complete!");
+		setTimeout("ok_referrer()", 100);
+	}
+	else if(sdfmt == 1)
+	{
+		setTimeout("redirect()", 1000);
+	}
+	else if(sdfmt == -1)
+	{
+		alert("SDcard format fail!");
+		setTimeout("ok_referrer()", 100);
+	}
+}
+//-->
+</script>
+
+</head>
+<body onload="SetFormDefaults();">
+<form id="form" name="form">
+	<div class="sub-title">
+		<h3>SDcard Setup</h3>
+	</div>
+	<hr>
+	<table style="width: 100%">
+		<tr>
+			<td style="width:170px">SDcard formating...</td>
+		</tr>
+	</table>
+</form>
+</body>
+</html>

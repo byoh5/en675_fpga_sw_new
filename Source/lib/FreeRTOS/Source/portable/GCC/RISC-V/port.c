@@ -195,6 +195,11 @@ void vMemoryHeapInfoPrint(void)
 	_printf("                      Used : %lu%%\n", 100 - (nPortGetFreeHeapSize * 100) / uiTotalHeapMemorySize);
 #endif
 }
+
+uint32_t xPortGetTotalHeapSize(void)
+{
+	return uiTotalHeapMemorySize;
+}
 /*-----------------------------------------------------------*/
 
 
@@ -217,7 +222,7 @@ void vTaskInfoPrint(void)
 	printf(" TaskID  Task      State   Priority  Remained/Stack    RunTimeCounter  Percentage\n");
 	printf("----------------------------------------------------------------------------------\n");
 	for (UBaseType_t i = 0; i < uxTask; i++) {
-		printf(" %-6lu %-8s %-9s    %lu/%lu    %4lu/0x%08X   %14lu      %-lu%%\n",
+		printf(" %-6lu %-8s %-9s    %lu/%lu    %4lu/0x%08X   %14u      %-lu%%\n",
 				etiList[i].xTaskNumber,
 				etiList[i].pcTaskName,
 				task_state[etiList[i].eCurrentState],

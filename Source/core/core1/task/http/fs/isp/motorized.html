@@ -1,0 +1,101 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+<title></title>
+<link rel="stylesheet" type="text/css" href="..\bootstrap.min.css">
+<link rel="stylesheet" type="text/css" href="..\style.css">
+<script type="text/javascript">
+<!--
+function SetFormDefaults()
+{
+//<!--#isp_2mot-->
+
+	document.form.i_2_kd[TMT_KEY].checked = true;
+	document.form.i_2_mv.value = TMT_VALUE;
+	document.form.i_2_md[TMT_MODE].checked = true;
+	document.form.i_2_sc[TMT_SYNC].checked = true;
+	document.form3.i_2_zta.value = TMT_ZTA;
+	document.form3.i_2_zsp.value = TMT_ZSP;
+	document.form3.i_2_zep.value = TMT_ZEP;
+	document.form3.i_2_fta.value = TMT_FTA;
+	document.form3.i_2_fsp.value = TMT_FSP;
+	document.form3.i_2_fep.value = TMT_FEP;
+}
+//-->
+</script>
+
+
+</head>
+<body onload="SetFormDefaults();">
+<form id="form" name="form" method="get" action="appispmu.cgi">
+	<div class="sub-title">
+		<input class="btn btn-default pull-right" name="btOK" type="submit" value="submit">
+		<h3>Motorized</h3>
+	</div>
+	<hr>
+	<div>
+		<label class="sub-label">Key direction</label>
+		<label class="radio-inline"><input type="radio" name="i_2_kd" value=0>None</label>
+		<label class="radio-inline"><input type="radio" name="i_2_kd" value=1>Tele</label>
+		<label class="radio-inline"><input type="radio" name="i_2_kd" value=2>Wide</label>
+		<label class="radio-inline"><input type="radio" name="i_2_kd" value=3>Near</label>
+		<label class="radio-inline"><input type="radio" name="i_2_kd" value=4>Far</label>
+	</div>	
+	<div>
+		<label class="sub-label"> Moving Value</label>
+		<input name="i_2_mv" type="text"> <0~255>
+	</div>
+	<hr>
+	<div>
+		<label class="sub-label">AF Mode</label>
+		<label class="radio-inline"><input type="radio" name="i_2_md" value=0>ONESHOT</label>
+		<label class="radio-inline"><input type="radio" name="i_2_md" value=1>MANUAL</label>
+	</div>
+	<div>
+		<label class="sub-label">D&N FILTER</label>
+		<label class="radio-inline"><input type="radio" name="i_2_sc" value=0>SYNC OFF</label>
+		<label class="radio-inline"><input type="radio" name="i_2_sc" value=1>SYNC ON</label>
+	</div>
+</form>
+<form id="form2" name="form2" method="get" action="appispmu.cgi">
+	<div>
+		<label class="sub-label">Initial</label>
+		<input class="btn btn-default btn-xs" name="i_2_in" type="submit" value="ON">
+	</div>
+</form>
+<form id="form3" name="form3" method="get" action="appispmu.cgi">
+	<div class="sub-title">
+		<input class="btn btn-default pull-right" name="btOK" type="submit" value="submit">
+	</div>
+	<hr>
+	<h4>Zoom area</h4>
+	<div>
+		<label class="sub-label"> Total area</label>
+		<input name="i_2_zta" type="text"> <0~255>
+	</div>		
+	<div>
+		<label class="sub-label"> Start pos</label>
+		<input name="i_2_zsp" type="text"> <0~255>
+	<div>
+	<div>
+		<label class="sub-label"> End pos</label>
+		<input name="i_2_zep" type="text"> <0~255>
+	<div>
+	<hr>
+	<h4>Focus area</h4>
+	<div>
+		<label class="sub-label"> Total area</label>
+		<input name="i_2_fta" type="text"> <0~255>
+	</div>		
+	<div>
+		<label class="sub-label"> Start pos</label>
+		<input name="i_2_fsp" type="text"> <0~255>
+	<div>
+	<div>
+		<label class="sub-label"> End pos</label>
+		<input name="i_2_fep" type="text"> <0~255>
+	<div>
+</form>
+</body>
+</html>

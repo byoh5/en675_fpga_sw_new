@@ -39,7 +39,7 @@ void SdioInit(UINT nCH, UINT Speed_Hz)
 	arrSDIOReg0[nCH]->MODE = 1; // 0:Slave, 1:Master
 	arrSDIOReg0[nCH]->IOMODE = 0; // 0:Card 1:IO
 
-	printf("SD%u[%d/%d/%d]", nCH, arrSDIOReg13[nCH]->CMD53_FN, arrSDIOReg13[nCH]->CMD53_BM, arrSDIOReg13[nCH]->CMD53_OP);
+	//printf("SD%u[%d/%d/%d]", nCH, arrSDIOReg13[nCH]->CMD53_FN, arrSDIOReg13[nCH]->CMD53_BM, arrSDIOReg13[nCH]->CMD53_OP);
 	//arrSDIOReg13[nCH]->CMD53_FN = 0;
 	//arrSDIOReg13[nCH]->CMD53_BM = 0;
 	//arrSDIOReg13[nCH]->CMD53_OP = 0;

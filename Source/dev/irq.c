@@ -139,8 +139,41 @@ void enx_exirq_source1(void)
 	IRQ_ISP_PRINTF("\n");
 }
 
+/*
+_regs_ BF_11(
+UINT CDC : 1 ,
+UINT _rev0 : 22,
+UINT CDMA3 : 1 ,				0x100	8
+UINT CDMA2 : 1 ,				0x 80	7
+UINT CDMA1 : 1 ,				0x 40	6
+UINT CDMA0 : 1 ,				0x 20	5
+UINT BDMA3 : 1 ,				0x 10	4
+UINT BDMA2 : 1 ,				0x  8	3
+UINT BDMA1 : 1 ,				0x  4	2
+UINT BDMA0 : 1 ,				0x  2	1
+UINT H265 : 1 ) _rege_ _IRQ_1; 	0x  1	0
+#define IRQ_CDC _bm(_IRQ_1,REG_BASE_IRQ, (1<<3),CDC) // 1 Bit, 1'h0, R
+*/
+
+void (*exirq_source2_item[9])(UINT) = {
+		NULL, IrqBDma, IrqBDma, IrqBDma, IrqBDma, IrqCDma, IrqCDma, IrqCDma, IrqCDma // H.265 IRQ 발생시 null 참조로 시스템 die
+};
+UINT exirq_source2_argv[9] = {0, 0, 1, 2, 3, 0, 1, 2, 3};
+
 void enx_exirq_source2(void)
 {
+#if 1
+	UINT getirq = _am(_IRQ_1, REG_BASE_IRQ, (1<<3));
+	if (getirq) {
+		for (int i = 0; i < 9; i++) {
+			if((getirq >> i) & 0x1) {
+				exirq_source2_item[i](exirq_source2_argv[i]);
+			}
+		}
+	} else {
+		printf("0x%08X\n", getirq);
+	}
+#else
 	if (IRQ_CDC) {
 		if (IRQ_BDMA0){IrqBDma(0);}
 		if (IRQ_BDMA1){IrqBDma(1);}
@@ -154,6 +187,7 @@ void enx_exirq_source2(void)
 	} else {
 		printf("%u - %u/%u/%u/%u/%u/%u/%u/%u\n", IRQ_CDC, IRQ_BDMA0, IRQ_BDMA1, IRQ_BDMA2, IRQ_BDMA3, IRQ_CDMA0, IRQ_CDMA1, IRQ_CDMA2, IRQ_CDMA3);
 	}
+#endif
 }
 
 void enx_exirq_source3(void)
@@ -440,6 +474,7 @@ void IrqStatus(void)
 	printf("======================================================\n");
 }
 #endif
+extern volatile int rtp_step;
 extern void network_ethif_check_buffer(void);
 static void __attribute__((noreturn)) bad_trap(uintptr_t mcause, uintptr_t mepc, uintptr_t regs[32])
 {
@@ -461,7 +496,10 @@ static void __attribute__((noreturn)) bad_trap(uintptr_t mcause, uintptr_t mepc,
 	default:						printf("Reserved(%d)\n", mcause);				break;
 	}
 
+	uint64 cpu_id = read_csr(mhartid);
+	printf("cpuid       : %lu\n", cpu_id);
 	printf("uptime      : %lus\n", gptMsgShare.UPTIME);
+	printf("RTP error step: %d\n", rtp_step);
 
 	static const char* regnames[] = {
 		"ra", "t0", "t1", "t2",
@@ -501,10 +539,92 @@ void enx_timerirq_next(void)
     }
 }
 
+void (*exirq_source[9])(void) = {
+	NULL, enx_exirq_source1, enx_exirq_source2, enx_exirq_source3, enx_exirq_source4, enx_exirq_source5, enx_exirq_source6, enx_exirq_source7, enx_exirq_source8
+};
+
 #ifdef __FREERTOS__
-void trap_from_machine_mode_freertos(uintptr_t mcause, uintptr_t mepc, uintptr_t regs[32])
+#if 1
+void trap_from_machine_mode_freertos_sync(uintptr_t mcause, uintptr_t mepc, uint64 cpuid, uintptr_t regs[32])
 {
-	uint64 cpuid = read_csr(mhartid);
+	switch(mcause) {
+	case CAUSE_USER_ECALL:
+	case CAUSE_SUPERVISOR_ECALL:
+	case CAUSE_MACHINE_ECALL:
+		if (regs[28] == ECALL_YIELD_CMD) {
+			vTaskSwitchContext();
+		} else {
+			regs[7] = do_syscall(regs[7], regs[8], regs[9], regs[10], regs[11], regs[12], regs[14]);
+		}
+		break;
+
+	default:
+		printf("Task name: [%s]\n", pcTaskGetName(NULL));
+		bad_trap(mcause, mepc, regs);
+		break;
+	}
+}
+
+void trap_from_machine_mode_freertos_async(uintptr_t mcause, uintptr_t mepc, uint64 cpuid, uintptr_t regs[32])
+{
+	uint64 cpuidx = cpuid * 2;
+#if 1
+    //	800372a2:	55fd                	li	a1,-1
+    //	800372a4:	8185                	srli	a1,a1,0x1
+    //	800372a6:	8de9                	and	a1,a1,a0
+	mcause = (mcause << 1) >> 1;
+#else
+	//	800372a2:	55fd                	li	a1,-1
+	//	800372a4:	15fe                	slli	a1,a1,0x3f
+	//	800372a6:	95aa                	add	a1,a1,a0
+	mcause -= 0x8000000000000000;
+#endif
+	switch (mcause) {
+	case IRQ_M_TIMER:
+		vPortSysTickHandler();
+		break;
+
+	case IRQ_M_EXT:
+		gbXsrTaskSwitchNeeded = 0;
+		for (int i = 0; i < 2; i++) {
+			volatile unsigned int source = *iClaimCompliet[cpuidx+i]; // Get Claim IRQ
+			if (source == 0 || source > 8) {
+				continue;
+			}
+#if 0 // Test용 log
+			else if (IRQ_ETH_RX == 0 && IRQ_CDC == 0 && IRQ_I2S_TX == 0 && IRQ_I2S_RX == 0 && SDIO1_IO_IRQ == 0 && IRQ_TIMER8 == 0) {
+				printf("CPU%u-OS-IRQ%d (%d/%c)\n", cpuid, source, (cpuidx+i), (cpuidx+i)%2==0 ? 'M':'S');
+			}
+#endif
+#if 1
+			exirq_source[source]();
+#else
+			switch (source) {
+			case 1:	enx_exirq_source1();	break;
+			case 2:	enx_exirq_source2();	break;
+			case 3:	enx_exirq_source3();	break;
+			case 4:	enx_exirq_source4();	break;
+			case 5:	enx_exirq_source5();	break;
+			case 6:	enx_exirq_source6();	break;
+			case 7:	enx_exirq_source7();	break;
+			case 8:	enx_exirq_source8();	break;
+			default: printf("Err irq\n");	break;
+			}
+#endif
+			*iClaimCompliet[cpuidx+i] = source;	// Set Complete IRQ
+		}
+		portYIELD_FROM_ISR(gbXsrTaskSwitchNeeded);
+		break;
+
+	default:
+		printf("IRQ.1 0x%lX\n", mcause);
+		break;
+	}
+}
+#else
+void trap_from_machine_mode_freertos(uintptr_t mcause, uintptr_t mepc, uint64 cpuid, uintptr_t regs[32])
+{
+	uint64 cpuidx = cpuid * 2;
 	if ((mcause & 0x8000000000000000) != 0x0) {
 		mcause -= 0x8000000000000000;
 		switch (mcause) {
@@ -514,13 +634,16 @@ void trap_from_machine_mode_freertos(uintptr_t mcause, uintptr_t mepc, uintptr_t
 
 		case IRQ_M_EXT:
 			gbXsrTaskSwitchNeeded = 0;
-			for (int i = 0; i < 8; i++) {
-				volatile unsigned int source = *iClaimCompliet[i]; // Get Claim IRQ
-				if (source == 0) {
+			for (int i = 0; i < 2; i++) {
+				volatile unsigned int source = *iClaimCompliet[cpuidx+i]; // Get Claim IRQ
+				if (source == 0 || source > 8) {
 					continue;
-				} else if (IRQ_ETH_RX == 0 && IRQ_CDC == 0 && IRQ_I2S_TX == 0 && SDIO1_IO_IRQ == 0 && IRQ_TIMER8 == 0) {
-					printf("CPU%u-OS-IRQ%d (%d/%c)\n", cpuid, source, i, i%2==0 ? 'M':'S');
+				} else if (IRQ_ETH_RX == 0 && IRQ_CDC == 0 && IRQ_I2S_TX == 0 && IRQ_I2S_RX == 0 && SDIO1_IO_IRQ == 0 && IRQ_TIMER8 == 0) {
+					printf("CPU%u-OS-IRQ%d (%d/%c)\n", cpuid, source, (cpuidx+i), (cpuidx+i)%2==0 ? 'M':'S');
 				}
+#if 1
+				exirq_source[source]();
+#else
 				switch (source) {
 				case 1:	enx_exirq_source1();	break;
 				case 2:	enx_exirq_source2();	break;
@@ -532,7 +655,8 @@ void trap_from_machine_mode_freertos(uintptr_t mcause, uintptr_t mepc, uintptr_t
 				case 8:	enx_exirq_source8();	break;
 				default: printf("Err irq\n");	break;
 				}
-				*iClaimCompliet[i] = source;	// Set Complete IRQ
+#endif
+				*iClaimCompliet[cpuidx+i] = source;	// Set Complete IRQ
 			}
 			portYIELD_FROM_ISR(gbXsrTaskSwitchNeeded);
 			break;
@@ -546,7 +670,7 @@ void trap_from_machine_mode_freertos(uintptr_t mcause, uintptr_t mepc, uintptr_t
 		case CAUSE_USER_ECALL:
 		case CAUSE_SUPERVISOR_ECALL:
 		case CAUSE_MACHINE_ECALL:
-			if (regs[14] == ECALL_YIELD_CMD) {
+			if (regs[28] == ECALL_YIELD_CMD) {
 				vTaskSwitchContext();
 			} else {
 				regs[7] = do_syscall(regs[7], regs[8], regs[9], regs[10], regs[11], regs[12], regs[14]);
@@ -554,16 +678,67 @@ void trap_from_machine_mode_freertos(uintptr_t mcause, uintptr_t mepc, uintptr_t
 			break;
 
 		default:
+			printf("Task name: [%s]\n", pcTaskGetName(NULL));
 			bad_trap(mcause, mepc, regs);
 			break;
 		}
 	}
 }
 #endif
+#endif
 
-uintptr_t trap_from_machine_mode(uintptr_t mcause, uintptr_t mepc, uintptr_t regs[32])
+#if 1
+uintptr_t trap_from_machine_mode_sync(uintptr_t mcause, uintptr_t mepc, uint64 cpuid, uintptr_t regs[32])
 {
-	uint64 cpuid = read_csr(mhartid);
+	switch(mcause) {
+	case CAUSE_USER_ECALL:
+	case CAUSE_SUPERVISOR_ECALL:
+	case CAUSE_MACHINE_ECALL:
+		regs[10] = do_syscall(regs[10], regs[11], regs[12], regs[13], regs[14], regs[15], regs[17]);
+		break;
+
+	default:
+		bad_trap(mcause, mepc, regs);
+		break;
+	}
+	return mepc + 4;
+}
+
+uintptr_t trap_from_machine_mode_async(uintptr_t mcause, uintptr_t mepc, uint64 cpuid, uintptr_t regs[32])
+{
+	uint64 cpuidx = cpuid * 2;
+	mcause -= 0x8000000000000000;
+	switch (mcause) {
+	case IRQ_M_TIMER:
+		enx_timerirq_next();
+		break;
+
+	case IRQ_M_EXT:
+		for (int i = 0; i < 2; i++) {
+			volatile unsigned int source = *iClaimCompliet[cpuidx+i]; // Get Claim IRQ
+			if (source == 0 || source > 8) {
+				continue;
+			}
+#if 1 // Test용 log
+			else if (source != 1 && source != 6) {
+				printf("CPU%u-FW-IRQ%d (%d/%c)\n", cpuid, source, (cpuidx+i), (cpuidx+i)%2==0 ? 'M':'S');
+			}
+#endif
+			exirq_source[source]();
+			*iClaimCompliet[cpuidx+i] = source; // Set Complete IRQ
+		}
+		break;
+
+	default:
+		printf("IRQ.1 0x%lX\n", mcause);
+		break;
+	}
+	return mepc;
+}
+#else
+uintptr_t trap_from_machine_mode(uintptr_t mcause, uintptr_t mepc, uint64 cpuid, uintptr_t regs[32])
+{
+	uint64 cpuidx = cpuid * 2;
 	if ((mcause & 0x8000000000000000) != 0x0) {
 		mcause -= 0x8000000000000000;
 		switch (mcause) {
@@ -572,13 +747,16 @@ uintptr_t trap_from_machine_mode(uintptr_t mcause, uintptr_t mepc, uintptr_t reg
 			break;
 
 		case IRQ_M_EXT:
-			for (int i = 0; i < 8; i++) {
-				volatile unsigned int source = *iClaimCompliet[i]; // Get Claim IRQ
-				if (source == 0) {
+			for (int i = 0; i < 2; i++) {
+				volatile unsigned int source = *iClaimCompliet[cpuidx+i]; // Get Claim IRQ
+				if (source == 0 || source > 8) {
 					continue;
 				} else if (source != 1 && source != 6) {
-					printf("CPU%u-FW-IRQ%d (%d/%c)\n", cpuid, source, i, i%2==0 ? 'M':'S');
+					printf("CPU%u-FW-IRQ%d (%d/%c)\n", cpuid, source, (cpuidx+i), (cpuidx+i)%2==0 ? 'M':'S');
 				}
+#if 1
+				exirq_source[source]();
+#else
 				switch (source) {
 				case 1:	enx_exirq_source1();	break;
 				case 2:	enx_exirq_source2();	break;
@@ -590,7 +768,8 @@ uintptr_t trap_from_machine_mode(uintptr_t mcause, uintptr_t mepc, uintptr_t reg
 				case 8:	enx_exirq_source8();	break;
 				default: printf("Err irq\n");	break;
 				}
-				*iClaimCompliet[i] = source; // Set Complete IRQ
+#endif
+				*iClaimCompliet[cpuidx+i] = source; // Set Complete IRQ
 			}
 			break;
 
@@ -614,6 +793,7 @@ uintptr_t trap_from_machine_mode(uintptr_t mcause, uintptr_t mepc, uintptr_t reg
 		return mepc + 4;
 	}
 }
+#endif
 
 static void enx_externalirq_perl(eIRQ_GROUP_INDEX perlIdx, uint64 onoff, uint64 type)
 {
@@ -623,7 +803,7 @@ static void enx_externalirq_perl(eIRQ_GROUP_INDEX perlIdx, uint64 onoff, uint64 
 	}
 
 	if (onoff) {
-		*iPrioBase[perlIdx] = 1;
+		*iPrioBase[perlIdx] = 1; // 1 ~ 7
 	} else {
 		*iPrioBase[perlIdx] = 0;
 	}

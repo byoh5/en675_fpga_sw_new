@@ -5,21 +5,23 @@ CMAKE_MINIMUM_REQUIRED ( VERSION 3.13.2 )
 PROJECT ( EN675_Bootloader C ASM )
 
 # 傅农 扼捞宏矾府 (-l)
-LINK_LIBRARIES( freertos )
+# LINK_LIBRARIES( dev )
 
 # 傅农 可记 眠啊
 SET ( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -T ${CMAKE_CURRENT_SOURCE_DIR}/exbl.lds")
 
 # 家胶 内靛
+SET ( BOOTLOADER_HDRS
+	boot.h
+	exbl.h
+)
+
 SET ( BOOTLOADER_SRCS
-	uart.c
-	print.c
 	boot.c
 	exbl.c
+	main.c
 	mentry.S
 )
 
-# 角青颇老 积己
-#ADD_DEPENDENCIES ( ${EN675_BOOT} freertos )
-ADD_EXECUTABLE ( ${EN675_BOOT} ${BOOTLOADER_SRCS} )
-target_link_libraries ( ${EN675_BOOT} freertos )
+# 官捞呈府 积己
+ADD_EXECUTABLE ( ${EN675_BOOT} ${BOOTLOADER_SRCS} ${BOOTLOADER_HDRS} exbl.lds )

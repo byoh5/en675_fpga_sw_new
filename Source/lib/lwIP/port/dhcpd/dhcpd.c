@@ -6,12 +6,10 @@
 #include "enx_freertos.h"
 #include "enx_lwip.h"
 
-#include "debug.h"
+#include "dhcpd/debug.h"
 #include "dhcpd.h"
 #include "options.h"
 #include "files.h"
-#include "leases.h"
-#include "packet.h"
 #include "serverpacket.h"
 
 #include "networkif.h"
@@ -36,7 +34,7 @@ int dhcpd_handle_packet(struct dhcpd *pdhcpd, struct dhcpMessage *packet)
     u32 server_id_align, requested_align;
     
     if ((state = get_option(packet, DHCP_MESSAGE_TYPE)) == NULL) {
-        DEBUG(LOG_ERR, "couldn't get option from packet, ignoring");
+        DHCPD_DEBUG(LOG_ERR, "couldn't get option from packet, ignoring");
         goto err;
     }   
     
@@ -47,13 +45,13 @@ int dhcpd_handle_packet(struct dhcpd *pdhcpd, struct dhcpMessage *packet)
     switch(state[0])
     {
         case DHCPDISCOVER:                                                     
-            DEBUG(LOG_INFO,"received DISCOVER");        
+            DHCPD_DEBUG(LOG_INFO,"received DISCOVER");
             if (sendOffer(pdhcpd, packet) < 0) 
                 LOG(LOG_ERR, "send OFFER failed");
             break;
             
         case DHCPREQUEST:
-            DEBUG(LOG_INFO, "received REQUEST");
+            DHCPD_DEBUG(LOG_INFO, "received REQUEST");
             requested = get_option(packet, DHCP_REQUESTED_IP);
             server_id = get_option(packet, DHCP_SERVER_ID);
             
@@ -65,7 +63,7 @@ int dhcpd_handle_packet(struct dhcpd *pdhcpd, struct dhcpMessage *packet)
                 if (server_id) 
                 {
                     /* SELECTING State */
-                    DEBUG(LOG_INFO, "server_id = %08x", ntohl(server_id_align));
+                    DHCPD_DEBUG(LOG_INFO, "server_id = %08x", ntohl(server_id_align));
                     if (server_id_align == server_config.server && requested && 
                         requested_align == lease->yiaddr) 
                     {
@@ -127,7 +125,7 @@ int dhcpd_handle_packet(struct dhcpd *pdhcpd, struct dhcpMessage *packet)
             break; 
 
         case DHCPDECLINE:
-            DEBUG(LOG_INFO,"received DECLINE");
+            DHCPD_DEBUG(LOG_INFO,"received DECLINE");
 			if (lease) 
 			{
 				memset(lease->chaddr, 0, 16);
@@ -136,12 +134,12 @@ int dhcpd_handle_packet(struct dhcpd *pdhcpd, struct dhcpMessage *packet)
             break;
 
         case DHCPRELEASE:
-            DEBUG(LOG_INFO,"received RELEASE");
+            DHCPD_DEBUG(LOG_INFO,"received RELEASE");
 			if (lease) lease->expires = timeoffset(0);//time(0)
 			break;
 
         case DHCPINFORM:
-			DEBUG(LOG_INFO,"received INFORM");
+			DHCPD_DEBUG(LOG_INFO,"received INFORM");
 			send_inform(pdhcpd,packet);
             break;
         default :
@@ -178,13 +176,13 @@ dhcpd_recv_cb(void *priv, struct udp_pcb *pcb, struct pbuf *p,
     /* if msg is too short, */
     if(p->len < offsetof(struct dhcpMessage,options))
     {
-        DEBUG(LOG_INFO,"Message truncated (length was %d)\n",p->len);
+        DHCPD_DEBUG(LOG_INFO,"Message truncated (length was %d)\n",p->len);
         goto err;
     }
     
     if(dhcpd_pkt->op != BOOTREQUEST)
     {
-        DEBUG(LOG_ERR, "dhcpd request %d can't be processed\n", dhcpd_pkt->op);
+        DHCPD_DEBUG(LOG_ERR, "dhcpd request %d can't be processed\n", dhcpd_pkt->op);
         goto err;
     }
     
@@ -225,7 +223,7 @@ dhcpd_start(struct netif *netif)
     
     dhcpd = pvPortCalloc(1,sizeof(struct dhcpd));
     if (dhcpd == NULL) {
-        DEBUG(LOG_ERR, "DHCPD [-]: could not allocate memory for dhcpd\n");
+        DHCPD_DEBUG(LOG_ERR, "DHCPD [-]: could not allocate memory for dhcpd\n");
         return -1;
     }
     dhcpd->netif = netif;
@@ -233,7 +231,7 @@ dhcpd_start(struct netif *netif)
     dhcpd->upcb = udp_new();
     
     if (dhcpd->upcb == NULL) {
-        DEBUG(LOG_ERR, "DHCPD [%p]: could not allocate pcb\n", dhcpd);
+        DHCPD_DEBUG(LOG_ERR, "DHCPD [%p]: could not allocate pcb\n", dhcpd);
         return -1;
     }
 

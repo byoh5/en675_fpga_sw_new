@@ -197,13 +197,17 @@ void EthphyAutoNeg(ENX_SWITCH onoff)
 	WORD wANAR = 0, wBCR = 0;
 
 	if (onoff == ENX_ON) {
-#if 1 // (ETH_MAC_PAUSE)
 		MdioRead(ethphy_info.addr, ETHPHY_ANAR_ADR, &wANAR);	// Auto-Negotiation Advertisement: Read
+#if 1 // (ETH_MAC_PAUSE)
 		wANAR |= ETHPHY_ANAR_SY_PAUSE;							// Auto-Negotiation Advertisement: Enable symmetric pause
 		wANAR &= ~ETHPHY_ANAR_ASY_PAUSE;						// Auto-Negotiation Advertisement: Disable asymmetric pause
+#endif
+		wANAR |= ETHPHY_ANAR_100FULL;
+		wANAR |= ETHPHY_ANAR_100HALF;
+		wANAR |= ETHPHY_ANAR_10FULL;
+		wANAR |= ETHPHY_ANAR_10HALF;
 		EthphyRegView(ETHPHY_ANAR_ADR, wANAR);
 		MdioWrite(ethphy_info.addr, ETHPHY_ANAR_ADR, wANAR);	// Auto-Negotiation Advertisement: Write
-#endif
 
 		wBCR |= ETHPHY_BCR_AUTONEG_EN; 							// Basic Control: Enable auto-negotiation process
 		wBCR |= ETHPHY_BCR_RST_AUTONEG;							// Basic Control: Restart auto-negotiation process
@@ -300,19 +304,86 @@ UINT EthphyLinkCheck(void)
 	}
 }
 
-#if (ETHPHY_LOOPBACK_TEST==1)
-void EthphyLoopbackMode(void)
+
+void EthphyLinkView(void)
 {
+	const char *strMsg = "Detect Link Speed(%uMbps) %s Duplex\n";
+
+	WORD getData;
+	MdioRead(ethphy_info.addr, ETHPHY_PHYC1R_ADR, &getData); // Read the PHY Control 1 Register.
+
+	printf("NetNIC Link ");
+	if (getData & ETHPHY_PC1R_LINK_STATUS) { // Link-Up
+		printf("Up ");
+		switch (getData & ETHPHY_PC1R_OPERATION_MI) {
+		case 0x0:
+			printf("Still in auto-negotiation\n");
+			break;
+		case 0x1:
+			printf(strMsg, 10, "Half");
+			break;
+		case 0x2:
+			printf(strMsg, 100, "Half");
+			break;
+		case 0x5:
+			printf(strMsg, 10, "Full");
+			break;
+		case 0x6:
+			printf(strMsg, 100, "Full");
+			break;
+		default:
+			printf("Unknown Speed & Duplex (%u)\n", getData & ETHPHY_PC1R_OPERATION_MI);
+			break;
+		}
+	} else { // Link-Down
+		printf("Down\n");
+	}
+
+	if (getData & ETHPHY_PC1R_ENABLE_PAUSE) {
+		printf("Flow control capable\n");
+	} else {
+		printf("No flow control capability\n");
+	}
+}
+
+#if (ETHPHY_LOOPBACK_TEST==1)
+void EthphyLoopbackMode(UINT speed, UINT duplex)
+{
+	const char *strErr = "You entered an incorrect \"%s\".(speed:%u, duplex:%u)\n";
+
 	printf("Ethernet PHY Loopback Mode\n");
 
 	// Set ethernet PHY : disable interrupt
 	MdioWrite(ethphy_info.addr, ETHPHY_ICSR_ADR, 0);
 
-	// Set ethernet PHY : loopback mode, Speed(100Mbps), Full-duplex
-	MdioWrite(ethphy_info.addr, ETHPHY_BCR_ADR, ETHPHY_BCR_LOOPBACK | ETHPHY_BCR_SPEED | ETHPHY_BCR_FULLDPLX);
+	// Set ethernet PHY : loopback mode, Speed(10/100Mbps), Full/Half-duplex
+	WORD wBCR = ETHPHY_BCR_LOOPBACK;
+	switch (speed) {
+	case ETHPHY_SPD_100:
+		wBCR |= ETHPHY_BCR_SPEED;
+		break;
+	case ETHPHY_SPD_10:
+		break;
+	default:
+		printf(strErr, "speed", speed, duplex);
+		return;
+	}
+
+	switch (duplex) {
+	case ETHPHY_DUPLEX_HALF:
+		break;
+	case ETHPHY_DUPLEX_FULL:
+		wBCR |= ETHPHY_BCR_FULLDPLX;
+		break;
+	default:
+		printf(strErr, "duplex mode", speed, duplex);
+		return;
+	}
+
+	MdioWrite(ethphy_info.addr, ETHPHY_BCR_ADR, wBCR);
 	ethphy_info.type = ETHPHY_TYPE_VAL;
-	ethphy_info.speed = ETHPHY_SPD_VAL;
-	ethphy_info.duplex = ETHPHY_DUPLEX_FULL;
+	ethphy_info.speed = speed;
+	ethphy_info.duplex = duplex;
 
 	printf("  Type(%d), Speed(%d), Duplex(%d)\n", ethphy_info.type, ethphy_info.speed, ethphy_info.duplex);
 

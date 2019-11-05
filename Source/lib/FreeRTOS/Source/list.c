@@ -166,12 +166,27 @@ const TickType_t xValueOfInsertion = pxNewListItem->xItemValue;
 	( pxList->uxNumberOfItems )++;
 }
 /*-----------------------------------------------------------*/
-
+#include "task.h" // test code(vTaskDelay, pcTaskGetName)
 UBaseType_t uxListRemove( ListItem_t * const pxItemToRemove )
 {
 /* The list item knows which list it is in.  Obtain the list from the list
 item. */
-List_t * const pxList = pxItemToRemove->pxContainer;
+
+	if ((intptr_t)pxItemToRemove < 0x80000000) {
+		es_printf("ERROR!!!! pxItemToRemove(0x%08lX)\n", (intptr_t)pxItemToRemove);
+		vTaskDelay(1);
+		es_printf("          Task:[%s]\n", pcTaskGetName(NULL));
+		while(1)
+			vTaskDelay(1);
+	}
+	List_t * const pxList = pxItemToRemove->pxContainer;
+	if (pxList == NULL) {
+		es_printf("ERROR!!!! pxList is NULL, pxItemToRemove(0x%08lX)\n", (intptr_t)pxItemToRemove);
+		vTaskDelay(1);
+		es_printf("          Task:[%s]\n", pcTaskGetName(NULL));
+		while(1)
+			vTaskDelay(1);
+	}
 
 	pxItemToRemove->pxNext->pxPrevious = pxItemToRemove->pxPrevious;
 	pxItemToRemove->pxPrevious->pxNext = pxItemToRemove->pxNext;
