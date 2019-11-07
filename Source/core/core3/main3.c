@@ -3,6 +3,14 @@
 
 void main_3(int cpu_id)
 {
+#if 0
+	write_csr(mip, 0);
+	set_csr(mie, MIP_MSIP);
+	set_csr(mstatus, MSTATUS_MIE);
+
+	__asm__ __volatile__ ("wfi");
+#endif
+	SYS_REG0 = 0;
 	while(SYS_REG0 == 0x0) {} // Wait for CPU0 to be ready.
 
 	while (1) {

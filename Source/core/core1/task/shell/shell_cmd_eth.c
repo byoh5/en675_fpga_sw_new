@@ -37,6 +37,7 @@ static EthTestBuffer Eth_data;
 #if (ETH_SHELL_TEST==1)
 int eth_test_task_sw;
 int eth_test_task_txtck;
+int eth_test_task_count;
 int eth_test_size = 1514;
 //ISRD BYTE u8SBuf[2048];
 //BYTE u8Buffer2[4096] = {1,2,3,4,5};
@@ -61,6 +62,11 @@ static UINT eth_tx_test(BYTE *u8BufferAlign, ULONG *count)
 			printf("2");
 		}
 		(*count)++;
+		if (eth_test_task_count != -1) {
+			if (eth_test_task_count == (*count)) {
+				break;
+			}
+		}
 	}
 #if 0
 	set_csr(mie, MIP_MTIP);
@@ -186,7 +192,7 @@ void eth_rx_state(void)
 	printf("== RX Clock & Delay =========\n");
 	printf("ETH_RX_RCKEDGE	(rx e  ) : %u\n", ETH_RX_RCKEDGE);
 	printf("ETH_RX_RCKDLY	(rx rck) : %u\n", ETH_RX_RCKDLY);
-	printf("ETH_RX_RMII     (rx rmi) : %u\n", ETH_RX_RMII10);
+	printf("ETH_RX_RMII10   (rx rmi) : %u\n", ETH_RX_RMII10);
 	printf("== RX buffer =================\n");
 	printf("ETH_RX_ADR      (rx adr) : 0x%08X\n", ETH_RX_ADR);
 	printf("ETH_RX_QOS      (rx qos) : %u\n", ETH_RX_QOS);
@@ -247,7 +253,7 @@ void eth_tx_state(void)
 	printf("ETH_TX_COLCHK   (tx co ) : %u\n", ETH_TX_COLCHK);
 	printf("ETH_TX_COLSEL   (tx oen) : %u\n", ETH_TX_COLEN);
 	printf("ETH_TX_COLSEL   (tx os ) : %u\n", ETH_TX_COLSEL);
-	printf("ETH_TX_RMII     (tx rmi) : %u\n", ETH_TX_RMII10);
+	printf("ETH_TX_RMII10   (tx rmi) : %u\n", ETH_TX_RMII10);
 	printf("ETH_TX_EMPTY             : %u\n", ETH_TX_EMPTY);
 	printf("ETH_TX_FULL              : %u\n", ETH_TX_FULL);
 	printf("== TX buffer ==============\n");
@@ -430,8 +436,15 @@ int cmd_test_eth(int argc, char *argv[])
 				else
 #endif
 				else if (strcmp(argv[2], "start") == 0) {
+					eth_test_task_count = -1;
 					if (argc == 4) {
-						eth_test_task_txtck = 1;
+						int loopcnt = atoi(argv[3]);
+						if (loopcnt > 0) {
+							eth_test_task_count = loopcnt;
+							eth_test_task_txtck = 0;
+						} else {
+							eth_test_task_txtck = 1;
+						}
 					} else {
 						eth_test_task_txtck = 0;
 					}
@@ -619,19 +632,25 @@ int cmd_test_eth(int argc, char *argv[])
 		}
 #endif
 #if (ETHPHY_LOOPBACK_TEST==1)
-		else if (argc == 4 && strcmp(argv[1], "lbm") == 0) {
-			UINT nSpeed = atoi(argv[2]);
-			UINT nDuplex = atoi(argv[3]);
-			if (nSpeed != 10 && nSpeed != 100 && nSpeed != 1000 && nDuplex != 1 && nDuplex != 2) {
-				printf("Speed/nDuplex Error(spd:%d/dup:%d)\n", nSpeed, nDuplex);
-			} else {
-				EthloopbackSetSpeed(nSpeed);
-				EthloopbackSetDuplex(nDuplex);
-				if (EthloopbackGetMode() == ePlk_off) {
-					vTaskCreate("eth_lb", EthloopbackTask, NULL, LV3_STACK_SIZE, LV5_TASK_PRIO);
+		else if (strcmp(argv[1], "lbm") == 0) {
+			if (argc == 3 && strcmp(argv[2], "off") == 0) {
+				EthloopbackSetMode(ePlk_off);
+			} else if (argc == 4) {
+				UINT nSpeed = atoi(argv[2]);
+				UINT nDuplex = atoi(argv[3]);
+				if (nSpeed != 10 && nSpeed != 100 && nSpeed != 1000 && nDuplex != 1 && nDuplex != 2) {
+					printf("Speed/nDuplex Error(spd:%d/dup:%d)\n", nSpeed, nDuplex);
 				} else {
-					printf("Ethernet loopback mode is ready.\n");
+					if (EthloopbackGetMode() == ePlk_off) {
+						EthloopbackSetSpeed(nSpeed);
+						EthloopbackSetDuplex(nDuplex);
+						vTaskCreate("eth_lb", EthloopbackTask, NULL, LV3_STACK_SIZE, LV5_TASK_PRIO);
+					} else {
+						printf("Ethernet loopback mode is ready.\n");
+					}
 				}
+			} else {
+				Shell_Unknown();
 			}
 		} else if (argc == 3 && strcmp(argv[1], "lbt") == 0) {
 			if (EthloopbackGetMode() == ePlk_ready) {
@@ -654,6 +673,37 @@ int cmd_test_eth(int argc, char *argv[])
 			} else {
 				printf("Ethernet loopback mode is not ready.\n");
 			}
+		} else if (argc == 2 && strcmp(argv[1], "crc") == 0) {
+			BYTE test[1500];
+			for (int i = 0; i < 1500; i++) {
+				test[i] = i;
+			}
+			hexDump("test", test, 1500);
+extern UINT crcCompute(const BYTE *buf, size_t size);
+
+			UINT crcget = crcCompute(test, 1500);
+			printf("CRC1: 0x%08X\n", crcget);
+
+			test[0x20] = 0;
+			test[0x21] = 0;
+			test[0x22] = 0;
+			test[0x23] = 0;
+			test[0x24] = 0;
+			test[0x25] = 0;
+			test[0x26] = 0;
+			test[0x27] = 0;
+			test[0x28] = 0;
+			test[0x29] = 0;
+			test[0x2a] = 0;
+			test[0x2b] = 0;
+			test[0x2c] = 0;
+			test[0x2d] = 0;
+			test[0x2e] = 0;
+			test[0x30] = 0;
+			test[0x31] = 0;
+
+			crcget = crcCompute(test, 1500);
+			printf("CRC2: 0x%08X\n", crcget);
 		}
 #endif
 		else

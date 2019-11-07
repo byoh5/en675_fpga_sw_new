@@ -1,5 +1,7 @@
 #include "dev.h"
+#ifdef __FREERTOS__
 #include "enx_freertos.h"
+#endif
 #if 1
 
 #define SWAP_BYTES_IN_WORD(w) (((w) & 0xff) << 8) | (((w) & 0xff00) >> 8)

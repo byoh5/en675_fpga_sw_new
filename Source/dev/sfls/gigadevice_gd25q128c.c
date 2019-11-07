@@ -113,7 +113,7 @@ void SflsGd25q128c_ChipErase(UINT addr)
 	SflsGd25q128c_Erase(SFLS_E_ALL, addr);
 }
 
-SFLScontrol *SflsGetControl(void)
+SFLScontrol *SflsGd25q128c_GetControl(void)
 {
 	return &sfls_gd25q128c;
 }

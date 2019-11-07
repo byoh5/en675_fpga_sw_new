@@ -2,6 +2,7 @@
 
 void main_2(int cpu_id)
 {
+	SYS_REG0 = 0;
 	while(SYS_REG0 == 0x0) {} // Wait for CPU0 to be ready.
 
 	while (1) {

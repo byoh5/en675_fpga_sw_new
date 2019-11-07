@@ -156,7 +156,7 @@ typedef enum {
 
 #define ISRT0		//__attribute__((section(".ispmtext")))
 #define ISRT		//__attribute__((section(".ispmtext")))
-#define ISRD		__attribute__((section(".ispmdata")))
+#define ISRD		//__attribute__((section(".ispmdata")))
 
 /**
  * container_of - cast a member of a structure out to the containing structure

@@ -25,9 +25,9 @@
 #ifdef __ETHERNET__
 
 // IP address
-#define	ETH_IPADDR						"192.168.50.100"	// Ip address(rel)
-#define	ETH_NETMASK						"255.255.0.0"		// Subnet mask
-#define	ETH_GWADDR						"192.168.0.1"		// Gateway
+#define	ETH_IPADDR						"192.169.10.195"	// Ip address(rel)
+#define	ETH_NETMASK						"255.255.255.0"		// Subnet mask
+#define	ETH_GWADDR						"192.169.10.1"		// Gateway
 
 #define ETHPHY_AUTONEG					1			// 0 : No use
 													//*1 : Ethernet PHY auto negotiation

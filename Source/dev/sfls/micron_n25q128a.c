@@ -198,7 +198,7 @@ void SflsN25q128a_ChipErase(UINT addr)
 	SflsN25q128a_Erase(SFLS_E_ALL, addr);
 }
 
-SFLScontrol *SflsGetControl(void)
+SFLScontrol *SflsN25q128a_GetControl(void)
 {
 	return &sfls_n25q128a;
 }

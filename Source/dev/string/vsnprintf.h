@@ -36,5 +36,4 @@ extern int es_snprintf(char *buf, size_t size, const char *format, ...);
 #define _Cprintf(format, args...) color_printf(TTY_COLOR_CYAN, format, ## args)
 #define _Wprintf(format, args...) color_printf(TTY_COLOR_WHITE, format, ## args)
 
-
 #endif /* __VSNPRINTF_H__ */

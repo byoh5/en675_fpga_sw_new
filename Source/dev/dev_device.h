@@ -25,37 +25,37 @@
 #define __SFLS_EON__
 #define __SFLS_16MB__
 #endif
-#if 0
+#if 1
 #define __SFLS_EN25QH256__
 #define __SFLS_EON__
 #define __SFLS_32MB__
 #endif
-#if 0
+#if 1
 #define __SFLS_W25Q64__
 #define __SFLS_WINBOND__
 #define __SFLS_8MB__
 #endif
-#if 0
+#if 1
 #define __SFLS_MX25L12835F__
 #define __SFLS_MACRONIX__
 #define __SFLS_16MB__
 #endif
-#if 0
+#if 1
 #define __SFLS_N25Q128A__
 #define __SFLS_MICRON__
 #define __SFLS_16MB__
 #endif
-#if 0
+#if 1
 #define __SFLS_GD25Q128C__
 #define __SFLS_GIGADEVICE__
 #define __SFLS_16MB__
 #endif
-#if 0
+#if 1
 #define __SFLS_IS25LP064__
 #define __SFLS_ISSI__
 #define __SFLS_8MB__
 #endif
-#if 0
+#if 1
 #define __SFLS_IS25LP128__
 #define __SFLS_ISSI__
 #define __SFLS_16MB__

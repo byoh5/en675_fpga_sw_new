@@ -17,18 +17,52 @@
 #include "bits.h"
 #include "asm.h"
 
-  .data
-  .align 6
-  WORD_ENTRY(_bss_s   )
-  WORD_ENTRY(_bss_e   )
-  WORD_ENTRY(heap_start)
-  WORD_ENTRY(heap_end)
+	.data
+	.align 6
+	WORD_ENTRY(heap_start)
+	WORD_ENTRY(heap_end)
 
-  .option norvc
-  .section .text.init,"ax",@progbits
-  .globl	reset_vector
-  .globl	trap_firmware
+	.option norvc
+	.section .text.init,"ax",@progbits
+	.globl	reset_vector
+	.globl	trap_firmware
 
+	.align 5
+// LMA information
+	WORD_ENTRY(_lma_size		)
+	WORD_ENTRY(_lma_start		)		// reserved
+	WORD_ENTRY(_reset_lma_s		)
+	WORD_ENTRY(_reset_lma_e		)
+	WORD_ENTRY(_text_lma_s		)
+	WORD_ENTRY(_text_lma_e		)
+	WORD_ENTRY(_ispm_text_lma_s	)
+	WORD_ENTRY(_ispm_text_lma_e	)
+	WORD_ENTRY(_ispm_data_lma_s	)
+	WORD_ENTRY(_ispm_data_lma_e	)
+	WORD_ENTRY(_rodata_lma_s	)
+	WORD_ENTRY(_rodata_lma_e	)
+	WORD_ENTRY(_data_lma_s		)
+	WORD_ENTRY(_data_lma_e		)
+
+// VMA information
+	WORD_ENTRY(_reset_s     	)
+	WORD_ENTRY(_reset_e     	)
+	WORD_ENTRY(_text_s      	)
+	WORD_ENTRY(_text_e      	)
+	WORD_ENTRY(_ispm_text_s 	)
+	WORD_ENTRY(_ispm_text_e 	)
+	WORD_ENTRY(_ispm_data_s 	)
+	WORD_ENTRY(_ispm_data_e 	)
+	WORD_ENTRY(_rodata_s      	)
+	WORD_ENTRY(_rodata_e      	)
+	WORD_ENTRY(_data_s      	)
+	WORD_ENTRY(_data_e      	)
+	WORD_ENTRY(_bss_s       	)
+	WORD_ENTRY(_bss_e       	)
+	WORD_ENTRY(_stack_s       	)
+	WORD_ENTRY(_stack_e       	)
+
+	.align 8
 reset_vector:
 	j		do_reset
 
@@ -188,7 +222,7 @@ init_next:
   #la sp, stacks + RISCV_PGSIZE - MENTRY_FRAME_SIZE + 0x2D140
   #li sp, 0xA003C000
   #li sp, 0xA00FC000
-  li sp, 0xA0000000 + (1*1024*1024) - (RISCV_PGSIZE * MAX_HARTS)
+  li sp, 0xA0000000 + (256*1024) - (RISCV_PGSIZE * MAX_HARTS)
   csrr a0, mhartid
   slli a2, a0, RISCV_PGSHIFT
   add sp, sp, a2
@@ -259,7 +293,10 @@ fill_block:
 fb_end:
 	ret
 
+//******************************************************************************
+// Code BSS:
+//------------------------------------------------------------------------------
 	.bss
 	.align RISCV_PGSHIFT
-#stacks:
-#	.skip RISCV_PGSIZE * MAX_HARTS
+stacks:
+	.skip RISCV_PGSIZE * MAX_HARTS

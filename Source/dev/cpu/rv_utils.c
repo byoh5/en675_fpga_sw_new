@@ -12,8 +12,9 @@
 //	0.1	190215		ygkim		first designed
 // -----------------------------------------------------------------------------
 #include "dev.h"
+#ifdef __FREERTOS__
 #include "enx_freertos.h"
-
+#endif
 #include <sys/time.h>
 
 extern void hwflush_dcache_line(uint);

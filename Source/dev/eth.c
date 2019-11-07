@@ -155,12 +155,12 @@ void EthTxPacket(BYTE *addr, UINT Len)
 	ETH_TX_ADR = (intptr_t)addr;
 	ETH_TX_LEN = Len;
 	while (ETH_TX_FULL) {
-#if 0
+#if 1
 		if (ETH_TX_PAUSE) {
 			printf("p");
 		}
 #endif
-#if 0
+#if 1
 #if 0
 #if 0
 #if 0
@@ -250,7 +250,12 @@ void EthRxTxInit(UINT type, UINT speed, UINT duplex)
 		// Edge & Delay
 		// eth lbm
 		// eth lbt 1000
-#if 1 // 191018(J)
+#if 1	// 191105(j)
+		ETH_TX_CLKEDGE = 1;
+		ETH_TX_TCKDLY = 0x1;
+		ETH_RX_RCKEDGE = 1;
+		ETH_RX_RCKDLY = 0x4;
+#elif 1 // 191018(J)
 		switch (duplex) {
 		case ETHPHY_DUPLEX_HALF:
 			ETH_TX_CLKEDGE = 1;		// no test

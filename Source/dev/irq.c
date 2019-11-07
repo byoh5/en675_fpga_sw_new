@@ -1,8 +1,11 @@
 #include "dev.h"
 #include "syscall.h"
 
+#ifdef __FREERTOS__
 #include "enx_freertos.h"
+#endif
 
+volatile uint32* cpu_msip =   (uint32*)(CLINT_BASE + 0x0);
 volatile uint64* mtime =      (uint64*)(CLINT_BASE + 0xbff8);
 volatile uint64* timecmp =    (uint64*)(CLINT_BASE + 0x4000);
 
@@ -690,6 +693,7 @@ void trap_from_machine_mode_freertos(uintptr_t mcause, uintptr_t mepc, uint64 cp
 #if 1
 uintptr_t trap_from_machine_mode_sync(uintptr_t mcause, uintptr_t mepc, uint64 cpuid, uintptr_t regs[32])
 {
+	printf("sync CPUid(%d)\n", read_csr(mhartid));
 	switch(mcause) {
 	case CAUSE_USER_ECALL:
 	case CAUSE_SUPERVISOR_ECALL:
@@ -706,9 +710,22 @@ uintptr_t trap_from_machine_mode_sync(uintptr_t mcause, uintptr_t mepc, uint64 c
 
 uintptr_t trap_from_machine_mode_async(uintptr_t mcause, uintptr_t mepc, uint64 cpuid, uintptr_t regs[32])
 {
+	uint64 csrval, csrval2;
 	uint64 cpuidx = cpuid * 2;
 	mcause -= 0x8000000000000000;
 	switch (mcause) {
+#if 0
+	case IRQ_M_SOFT:
+		csrval = read_csr(mip);
+		clear_csr(mie, MIP_MSIP);
+		clear_csr(mip, MIP_MSIP);
+		csrval2 = read_csr(mip);
+		printf("cpuid(%d) cpuidx(%d) mepc(0x%08X) mip(0x%08X->0x%08X)\n", cpuid, cpuidx, mepc, csrval, csrval2);
+		set_csr(mie, MIP_MSIP);
+		write_csr(mip, 0);
+		return mepc;
+		break;
+#endif
 	case IRQ_M_TIMER:
 		enx_timerirq_next();
 		break;
@@ -847,4 +864,10 @@ void enx_externalirq_init(void)
 	enx_externalirq_perl(eigiI2C, ENX_ON, 0);			// Enable I2C Interrupts
 	enx_externalirq_perl(eigiGPIO, ENX_ON, 0);			// Enable GPIO Interrupts
 	enx_externalirq_perl(eigiTIMER, ENX_ON, 0);			// Enable TIMER Interrupts
+}
+
+void enx_wake_cpu(int cpu_id)
+{
+	printf("MSIP: %d/%d/%d/%d\n", cpu_msip[0], cpu_msip[1], cpu_msip[2], cpu_msip[3]);
+	cpu_msip[cpu_id] = 1;
 }

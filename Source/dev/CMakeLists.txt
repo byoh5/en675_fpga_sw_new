@@ -12,6 +12,7 @@ CONFIGURE_FILE ( dev_device.h.cmake.in ${CMAKE_CURRENT_SOURCE_DIR}/dev_device.h)
 SET ( DEV_HDRS
 	cfg_filesystem.h
 	cfg_media.h
+	cfg_memory.h
 	cfg_network.h
 	dev.h
 	dev_model.h

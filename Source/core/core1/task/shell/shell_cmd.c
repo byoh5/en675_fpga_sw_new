@@ -604,9 +604,11 @@ int UsrCmd_j(int argc, char *argv[])
 	//set_csr(mie, MIP_MTIP|MIP_MEIP);
 	//clear_csr(mie, MIP_MTIP|MIP_MEIP);
 
-	TimerSetFreq(8, 250, 1000000000, 500000000);
-	TimerSetPWMEn(8, ENX_ON);
-	TimerStart(8);
+	enx_wake_cpu(3);
+
+	//TimerSetFreq(8, 250, 1000000000, 500000000);
+	//TimerSetPWMEn(8, ENX_ON);
+	//TimerStart(8);
 
 #if 0
 	WdtInit(10000);

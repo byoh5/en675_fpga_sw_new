@@ -9,6 +9,7 @@
 extern void enx_timerirq_next(void);
 extern void enx_timerirq_init(void);
 extern void enx_externalirq_init(void);
+extern void enx_wake_cpu(int cpu_id);
 
 // Device driver ///////////////////////////////////////////////////////////////
 
@@ -25,7 +26,12 @@ extern void SflsChipErase(ENX_YN sync);
 extern UINT SflsGetUsrreq(void);
 extern void SflsWriteReg(BYTE wrdata, BYTE len, BYTE iomode);
 extern UINT SflsReadReg(BYTE cmd, BYTE iomode, BYTE gap);
-extern SFLScontrol *SflsGetControl(void);
+extern SFLScontrol *SflsEn25qh128a_GetControl(void);
+extern SFLScontrol *SflsEn25qh256_GetControl(void);
+extern SFLScontrol *SflsGd25q128c_GetControl(void);
+extern SFLScontrol *SflsIs25lp128_GetControl(void);
+extern SFLScontrol *SflsN25q128a_GetControl(void);
+extern SFLScontrol *SflsW25q64_GetControl(void);
 extern void SflsRegShow(ENX_YN isDetail);
 
 extern void GpioInit(void);

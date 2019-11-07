@@ -123,7 +123,7 @@ void SflsIs25lp128_ChipErase(UINT addr)
 	SflsIs25lp128_Erase(SFLS_E_ALL, addr);
 }
 
-SFLScontrol *SflsGetControl(void)
+SFLScontrol *SflsIs25lp128_GetControl(void)
 {
 	return &sfls_is25lp128;
 }

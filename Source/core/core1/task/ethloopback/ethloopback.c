@@ -170,35 +170,36 @@ void EthloopbackTask(void *ctx)
 
 		EthRxIrqCallback(network_ethif_pkt_input_loopback_irq, &ethlp);
 		EthSetRxIrqEn(ENX_ON);
+
+		do {
+			printf("Ready!\n");
+			ethlp.eRunMode = ePlk_ready;
+			while (ethlp.eRunMode == ePlk_ready) {
+				vTaskDelay(100);
+			}
+
+			switch (ethlp.eRunMode) {
+			case ePlk_single:
+				EthSetRxEn(ENX_ON);
+				lpRes = EthphyLoopbackTest(&ethlp);
+				printf("The test is complete(%d).\n", lpRes);
+				break;
+			case ePlk_auto:
+				EthSetRxEn(ENX_ON);
+				EthLoopbackAuto(&ethlp);
+				printf("The test is complete.\n");
+				break;
+			case ePlk_off:
+				printf("Ethernet Loopback Test: kill\n");
+				break;
+			default:
+				printf("Invalid mode selected.\n");
+				break;
+			}
+		} while (ethlp.eRunMode != ePlk_off);
 	} else {
 		printf("Ethernet Loopback Test: Malloc fail\n");
-		EthloopbackFree(&ethlp);
-		vTaskDelete(NULL);
 	}
-
-	do {
-		printf("Ready!\n");
-		ethlp.eRunMode = ePlk_ready;
-		while (ethlp.eRunMode == ePlk_ready) {
-			vTaskDelay(100);
-		}
-
-		switch (ethlp.eRunMode) {
-		case ePlk_single:
-			EthSetRxEn(ENX_ON);
-			lpRes = EthphyLoopbackTest(&ethlp);
-			printf("The test is complete(%d).\n", lpRes);
-			break;
-		case ePlk_auto:
-			EthSetRxEn(ENX_ON);
-			EthLoopbackAuto(&ethlp);
-			printf("The test is complete.\n");
-			break;
-		default:
-			printf("Invalid mode selected.\n");
-			break;
-		}
-	} while (ethlp.eRunMode != ePlk_off);
 
 	EthloopbackFree(&ethlp);
 

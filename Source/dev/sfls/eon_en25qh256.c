@@ -113,7 +113,7 @@ void SflsEn25qh256_ChipErase(UINT addr)
 	SflsEn25qh256_Erase(SFLS_E_ALL, addr);
 }
 
-SFLScontrol *SflsGetControl(void)
+SFLScontrol *SflsEn25qh256_GetControl(void)
 {
 	return &sfls_en25qh256;
 }

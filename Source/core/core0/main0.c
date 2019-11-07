@@ -57,7 +57,6 @@ void enx_peri_init(void)
 
 	printf("%s", TTY_COLOR_RESET);
 
-	SflsGetinfo();
 	SflsInit();
 
 #if USE_I2C0
@@ -545,8 +544,6 @@ void enx_pmp_init(void)
 
 void main_0(int cpu_id)
 {
-//	printf("mtime: 0x%08X\n", mtime);
-
 	*mtime = 0; // timer init
 
 	//main_ddr_init();

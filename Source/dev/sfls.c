@@ -1,69 +1,16 @@
 #include "dev.h"
 #include "sfls_model.h"
 
-#if 0
-#define SFLS_ID _bm(_SFLS_0,REG_BASE_SFLS, (0<<3),SFLS_ID) // 24 Bit, 24'h0, R
-#define SFLS_ID_VAL _bm(_SFLS_0,REG_BASE_SFLS, (0<<3),SFLS_ID_VAL) // 1 Bit, 1'h0, R
-
-#define SFLS_BUS_CMD_RD _bm(_SFLS_1,REG_BASE_SFLS, (1<<3),BUS_CMD_RD) // 8 Bit, 8'h03, RW
-#define SFLS_BUS_CMD_WR _bm(_SFLS_1,REG_BASE_SFLS, (1<<3),BUS_CMD_WR) // 8 Bit, 8'h02, RW
-#define SFLS_BUS_CMD_WREN _bm(_SFLS_1,REG_BASE_SFLS, (1<<3),BUS_CMD_WREN) // 8 Bit, 8'h06, RW
-#define SFLS_BUS_CMD_RDREG _bm(_SFLS_1,REG_BASE_SFLS, (1<<3),BUS_CMD_RDREG) // 8 Bit, 8'h05, RW
-
-#define SFLS_BUS_RD_CMD_MODE _bm(_SFLS_2,REG_BASE_SFLS, (2<<3),BUS_RD_CMD_MODE) // 2 Bit, 2'h0, RW
-#define SFLS_BUS_RD_ADR_MODE _bm(_SFLS_2,REG_BASE_SFLS, (2<<3),BUS_RD_ADR_MODE) // 2 Bit, 2'h0, RW
-#define SFLS_BUS_RD_DAT_MODE _bm(_SFLS_2,REG_BASE_SFLS, (2<<3),BUS_RD_DAT_MODE) // 2 Bit, 2'h0, RW
-#define SFLS_BUS_WR_CMD_MODE _bm(_SFLS_2,REG_BASE_SFLS, (2<<3),BUS_WR_CMD_MODE) // 2 Bit, 2'h0, RW
-#define SFLS_BUS_WR_ADR_MODE _bm(_SFLS_2,REG_BASE_SFLS, (2<<3),BUS_WR_ADR_MODE) // 2 Bit, 2'h0, RW
-#define SFLS_BUS_WR_DAT_MODE _bm(_SFLS_2,REG_BASE_SFLS, (2<<3),BUS_WR_DAT_MODE) // 2 Bit, 2'h0, RW
-#define SFLS_BUS_WREN_CMD_MODE _bm(_SFLS_2,REG_BASE_SFLS, (2<<3),BUS_WREN_CMD_MODE) // 2 Bit, 2'h0, RW
-#define SFLS_BUS_RDREG_CMD_MODE _bm(_SFLS_2,REG_BASE_SFLS, (2<<3),BUS_RDREG_CMD_MODE) // 2 Bit, 2'h0, RW
-#define SFLS_BUS_RDREG_DAT_MODE _bm(_SFLS_2,REG_BASE_SFLS, (2<<3),BUS_RDREG_DAT_MODE) // 2 Bit, 2'h0, RW
-#define SFLS_BUS_ADR_EXT _bm(_SFLS_2,REG_BASE_SFLS, (2<<3),BUS_ADR_EXT) // 1 Bit, 1'h0, RW
-#define SFLS_BUS_GAP_EN      _bm(_SFLS_2,REG_BASE_SFLS, (2<<3),BUS_GAP_EN     ) // 1 Bit, 1'h0, RW
-#define SFLS_BUS_GAP         _bm(_SFLS_2,REG_BASE_SFLS, (2<<3),BUS_GAP        ) // 4 Bit, 4'h0, RW
-
-#define SFLS_USR_CMD_RDREG _bm(_SFLS_3,REG_BASE_SFLS, (3<<3),USR_CMD_RDREG) // 8 Bit, 8'h05, RW
-#define SFLS_USR_RDREG_CMD_MODE _bm(_SFLS_3,REG_BASE_SFLS, (3<<3),USR_RDREG_CMD_MODE) // 2 Bit, 2'h0, RW
-#define SFLS_USR_RDREG_DAT_MODE _bm(_SFLS_3,REG_BASE_SFLS, (3<<3),USR_RDREG_DAT_MODE) // 2 Bit, 2'h0, RW
-
-#define SFLS_USR_CMD_MODE _bm(_SFLS_4,REG_BASE_SFLS, (4<<3),USR_CMD_MODE) // 2 Bit, 2'h0, RW
-#define SFLS_USR_ADR_MODE    _bm(_SFLS_4,REG_BASE_SFLS, (4<<3),USR_ADR_MODE   ) // 2 Bit, 2'h0, RW
-#define SFLS_USR_DAT_MODE    _bm(_SFLS_4,REG_BASE_SFLS, (4<<3),USR_DAT_MODE   ) // 2 Bit, 2'h0, RW
-#define SFLS_USR_ADR_EN      _bm(_SFLS_4,REG_BASE_SFLS, (4<<3),USR_ADR_EN     ) // 1 Bit, 1'h0, RW
-#define SFLS_USR_GAP_EN      _bm(_SFLS_4,REG_BASE_SFLS, (4<<3),USR_GAP_EN     ) // 1 Bit, 1'h0, RW
-#define SFLS_USR_RD_EN _bm(_SFLS_4,REG_BASE_SFLS, (4<<3),USR_RD_EN) // 1 Bit, 1'h0, RW
-#define SFLS_USR_WR_EN _bm(_SFLS_4,REG_BASE_SFLS, (4<<3),USR_WR_EN) // 1 Bit, 1'h0, RW
-#define SFLS_USR_GAP _bm(_SFLS_4,REG_BASE_SFLS, (4<<3),USR_GAP) // 4 Bit, 4'h0, RW
-#define SFLS_USR_LEN _bm(_SFLS_4,REG_BASE_SFLS, (4<<3),USR_LEN) // 2 Bit, 2'h0, RW
-#define SFLS_USR_ADR_EXT _bm(_SFLS_4,REG_BASE_SFLS, (4<<3),USR_ADR_EXT) // 1 Bit, 1'h0, RW
-#define SFLS_USR_BUSY_EN _bm(_SFLS_4,REG_BASE_SFLS, (4<<3),USR_BUSY_EN) // 1 Bit, 1'h0, RW
-#define SFLS_USR_RDLTC _bm(_SFLS_4,REG_BASE_SFLS, (4<<3),USR_RDLTC) // 2 Bit, 2'h1, RW
-#define SFLS_USR_CMD _bm(_SFLS_4,REG_BASE_SFLS, (4<<3),USR_CMD) // 8 Bit, 8'h0, RW
-
-#define SFLS_USR_ADR _bm(_SFLS_5,REG_BASE_SFLS, (5<<3),USR_ADR) // 32 Bit, 32'h0, RW
-#define SFLS_USR_RDDAT _bm(_SFLS_6,REG_BASE_SFLS, (6<<3),USR_RDDAT) // 32 Bit, 32'h0, RW
-
-#define SFLS_USR_WRDAT _bm(_SFLS_7,REG_BASE_SFLS, (7<<3),USR_WRDAT) // 32 Bit, 32'h0, RW
-
-#define SFLS_IO_RDLTC _bm(_SFLS_8,REG_BASE_SFLS, (8<<3),IO_RDLTC) // 2 Bit, 2'h1, RW
-#define SFLS_IO_CLKDIV _bm(_SFLS_8,REG_BASE_SFLS, (8<<3),IO_CLKDIV) // 4 Bit, 4'hF, RW
-#define SFLS_IO_CS_GAP _bm(_SFLS_8,REG_BASE_SFLS, (8<<3),IO_CS_GAP) // 3 Bit, 3'h7, RW
-#define SFLS_USRBUS_REQ _bm(_SFLS_8,REG_BASE_SFLS, (8<<3),USRBUS_REQ) // 1 Bit, 1'h0, RW
-#define SFLS_BUS_REQ _bm(_SFLS_8,REG_BASE_SFLS, (8<<3),BUS_REQ) // 1 Bit, 1'h0, RW
-#define SFLS_USR_REQ _bm(_SFLS_8,REG_BASE_SFLS, (8<<3),USR_REQ) // 1 Bit, 1'h0, RW
-
-static BYTE SflsMode = 2;
-
-#endif
-
-SFLScontrol *sfls_master;
+SFLScontrol *sfls_master = NULL;
 
 void SflsInit(void)
 {
 	while (!SFLS_ID_VAL);
 
-	sfls_master = SflsGetControl();
+	SflsGetinfo();
+	if (sfls_master == NULL) {
+		return;
+	}
 
 	SFLS_IO_CLKDIV = 1;
 
@@ -114,7 +61,6 @@ void SflsInit(void)
 UINT SflsGetinfo(void)
 {
 	printf("%c: SFLS_ID Get[0x%08X]\n", SFLS_ID_VAL == 1 ? 'O' : 'X', SFLS_ID);
-
 	BYTE u8Manid = SFLS_ID >> 16 & 0xff;
 	BYTE u8Type = SFLS_ID >> 8 & 0xff;
 	BYTE u8Capa = SFLS_ID & 0xff;
@@ -122,22 +68,22 @@ UINT SflsGetinfo(void)
 
 	switch (u8Manid) {
 	case 0x1C: // EON
-		SflsModelEON(u8Type, u8Capa);
+		sfls_master = SflsModelEON(u8Type, u8Capa);
 		break;
 	case 0x20: // Micron
-		SflsModelMicron(u8Type, u8Capa);
+		sfls_master = SflsModelMicron(u8Type, u8Capa);
 		break;
 	case 0x9D: // ISSI
-		SflsModelISSI(u8Type, u8Capa);
+		sfls_master = SflsModelISSI(u8Type, u8Capa);
 		break;
 	case 0x9F: // Macronix
-		SflsModelMacronix(u8Type, u8Capa);
+		sfls_master = SflsModelMacronix(u8Type, u8Capa);
 		break;
 	case 0xC8: // GigaDevice
-		SflsModelGigaDevice(u8Type, u8Capa);
+		sfls_master = SflsModelGigaDevice(u8Type, u8Capa);
 		break;
 	case 0xEF: // Winbond
-		SflsModelWinbond(u8Type, u8Capa);
+		sfls_master = SflsModelWinbond(u8Type, u8Capa);
 		break;
 	case 0xFF:
 		printf("SFLS No connection.\n");
