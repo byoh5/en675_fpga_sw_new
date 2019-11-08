@@ -441,20 +441,28 @@ int color_printf(char *color, const char *format, ...)
 	int len = vsnprintf_(buf, PRINTFBUF_SIZE, format, args);
 	va_end(args);
 
+#ifndef __ECM_STRING__
 	while (*color) {
 		UartTx(DEBUG_UART_NUM, *color++);
 	}
+#endif
 
+#ifdef __ECM_STRING__
+	UartTxStrEx(DEBUG_UART_NUM, buf, 0, len, 0);
+#else
 	pbuf = buf;
 	while (*pbuf) {
 		if (*pbuf == '\n') UartTx(DEBUG_UART_NUM, '\r');
 		UartTx(DEBUG_UART_NUM, *pbuf++);
 	}
+#endif
 
+#ifndef __ECM_STRING__
 	char *color_rst = TTY_COLOR_RESET;
 	while (*color_rst) {
 		UartTx(DEBUG_UART_NUM, *color_rst++);
 	}
+#endif
 
 	return len;
 }

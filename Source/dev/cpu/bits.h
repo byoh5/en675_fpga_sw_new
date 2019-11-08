@@ -9,7 +9,8 @@
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
-#define CLAMP(a, lo, hi) MIN(MAX(a, lo), hi)
+//#define CLAMP(a, lo, hi) MIN(MAX(a, lo), hi)							// (a > lo ? a : lo) < hi ? (a > lo ? a : lo) : hi
+#define CLAMP(a, lo, hi) ((a) < (lo) ? (lo) : (a) > (hi) ? (hi) : (a))	// MIN(MAX(a, lo), hi) 보다 코드 감소
 
 #define EXTRACT_FIELD(val, which) (((val) & (which)) / ((which) & ~((which)-1)))
 #define INSERT_FIELD(val, which, fieldval) (((val) & ~(which)) | ((fieldval) * ((which) & ~((which)-1))))

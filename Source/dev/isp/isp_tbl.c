@@ -1,7 +1,14 @@
 #include "dev.h"
 
-#ifdef __SENSOR__
+UINT FPS_VDI = model_Sens_Fps;
+UINT FPS_VDO = model_Sens_Fps;
 
+#ifndef __SENSOR__
+
+void ISRT0 SetSens(WORD awAddr, BYTE abData) { }
+void ISRT0 SetSensBurst(WORD awAddr, BYTE* apbData, BYTE abLength) { }
+
+#else
 
 #define	SENSOR_SONY_I2C_CA		0x34
 //#define	SENSOR_SONY_I2C_CA		0x20
@@ -13,11 +20,10 @@
 	//#define SENSOR_OMNI_I2C_CA		0x20		//	GPIO1 is High
 #endif
 
-
 void Isp_VLOCKO_init(void)
 {
 	VIRQO_EN_Tw(1);
-	CLI_VLOCKO_Tw(1);
+	//CLI_VLOCKO_Tw(1);		// TODO KSH> 컴파일 문제?
 }
 
 void Wait_VLOCKO(void)
@@ -56,6 +62,31 @@ void ISRT0 SetSensTwi(BYTE abDevaddr, WORD awAddr, BYTE abData)
 	SI2C_CODE(SENS_WRITE_NOACK2, I2cWrite(SENSOR_I2C_CH,(awAddr>>8)&0xff, 0,0))
 	SI2C_CODE(SENS_WRITE_NOACK2, I2cWrite(SENSOR_I2C_CH,(awAddr>>0)&0xff, 0,0))
 	SI2C_CODE(SENS_WRITE_NOACK3, I2cWrite(SENSOR_I2C_CH,abData, 1,0))
+
+	return;
+
+	SI2C_END
+
+#elif (model_Sens_Ctrl==1)
+	#error if use TWI for sensor control, Please set "USE_SPI0 0, USE_I2C0 3, I2C0_SPEED 400000" in "peripheral.cmake"
+#endif
+}
+
+void ISRT0 SetSensTwiBurst(BYTE abDevaddr, WORD awAddr, BYTE* apbData, BYTE abLength) // Prevent for optimization
+{
+#if (USE_I2C0==3) && (USE_SPI0==0)
+	//if(gbSensorOff) return;
+	UINT i=0;
+
+	SI2C_STA
+
+	SI2C_WAIT(SENS_WRITE_NODEV1, I2cWrite(SENSOR_I2C_CH,abDevaddr,0,0))
+	SI2C_CODE(SENS_WRITE_NOACK2, I2cWrite(SENSOR_I2C_CH,(awAddr>>8)&0xff, 0,0))
+	SI2C_CODE(SENS_WRITE_NOACK2, I2cWrite(SENSOR_I2C_CH,(awAddr>>0)&0xff, 0,0))
+
+	for(i=0; i<abLength; i++) {
+		SI2C_CODE(SENS_WRITE_NOACK4, I2cWrite(SENSOR_I2C_CH, apbData[i], ((i+1)==abLength),0))
+	}
 
 	return;
 
@@ -109,7 +140,7 @@ BYTE ISRT0 GetSens(WORD awAddr)
 #if model_Sony
 void ISRT0 SetSensSpi_Sony(BYTE ID, BYTE Adr, BYTE Dat)
 {
-  #if (USE_SPI0==2) && (SPI0_BIT==24) && (USE_I2C0==0)
+  #if (USE_SPI0==2) && (USE_I2C0==0) && (SPI0_BIT==24)
 	BYTE SpiDat[] = {0,0,0,0};
 
 	SpiDat[2] = ID;
@@ -118,6 +149,29 @@ void ISRT0 SetSensSpi_Sony(BYTE ID, BYTE Adr, BYTE Dat)
 	SpiSetCs(SENSOR_SPI_CH,0);
 	SpiWrite(SENSOR_SPI_CH,SpiDat);
 	SpiSetCs(SENSOR_SPI_CH,1);
+
+  #elif (model_Sens_Ctrl==0)
+	#error if use SPI for sensor control, Please set "USE_I2C0 0, USE_SPI0 2, SPI0_SPEED 1500000, SPI0_BIT 24, SPI0_LSB 1" in "peripheral.cmake"
+  #endif
+}
+
+void SetSensSpiBurst_Sony(BYTE abID, BYTE abAddr, BYTE* abData, BYTE abLength)
+{
+  #if (USE_SPI0==2) && (USE_I2C0==0) && (SPI0_BIT==24)
+	UINT i=0;
+
+	SpiSetWs(SENSOR_SPI_CH, 8);
+
+	SpiSetCs(SENSOR_SPI_CH, 0);
+
+	SpiWrite(SENSOR_SPI_CH, &abID);
+	SpiWrite(SENSOR_SPI_CH, &abAddr);
+
+	for(i=0; i<abLength; i++) SpiWrite(SENSOR_SPI_CH, abData+i);
+
+	SpiSetCs(SENSOR_SPI_CH, 1);
+
+	SpiSetWs(SENSOR_SPI_CH, SPI0_BIT);
 
   #elif (model_Sens_Ctrl==0)
 	#error if use SPI for sensor control, Please set "USE_I2C0 0, USE_SPI0 2, SPI0_SPEED 1500000, SPI0_BIT 24, SPI0_LSB 1" in "peripheral.cmake"
@@ -149,6 +203,17 @@ void ISRT0 SetSens(WORD awAddr, BYTE abData)
 #endif
 }
 
+void ISRT0 SetSensBurst(WORD awAddr, BYTE* apbData, BYTE abLength) // Prevent for optimization
+{
+#if model_Sens_Ctrl == 1
+	SetSensTwiBurst(SENSOR_SONY_I2C_CA, awAddr, apbData, abLength);
+#else
+	const BYTE bSpiIDt = (awAddr>>8)&0xff;
+	const BYTE bSpiID = (SENS_SONY_ID2_TWI <= bSpiIDt && bSpiIDt <= SENS_SONY_ID6_TWI) ? (bSpiIDt - SENS_SONY_ID2_TWI) + SENS_SONY_ID2 : bSpiIDt;
+	SetSensSpiBurst_Sony(bSpiID, awAddr&0xff, apbData, abLength);
+#endif
+}
+
 BYTE ISRT0 GetSens(WORD awAddr)
 {
 #if model_Sens_Ctrl == 1
@@ -159,170 +224,6 @@ BYTE ISRT0 GetSens(WORD awAddr)
 }
 #endif
 
-#if 0
-#if model_Sens==SENS_OV2718
-void OV2718_Init(void)
-{
-	IspSDesPowerOn();
-	IspSensorPowerOn(SENS_13M);
-
-	IspSDesConfig(0, 1);
-	Isp_SDesDelay(7, 0, 0, 0, 0);
-	IspSDesPosition();
-
-	Isp_SYNC_CODE(0xfff, 0x000, 0x000, 0x000, 0x800, 0xab0, 0,0,0,0,0,0);
-
-	InitSensRun();
-
-	Isp_PreClk_Config(ISP_CLK_74M);			//	Isp Pre Module Clock
-	Isp_PostClk_Config(ISP_CLK_74M);		//	Isp Post Module Clock
-	IspPreSyncConfig(1, 0xe, 0, 0x13, 0x8, 1, 1, 0, 0);
-	IspPostSyncConfig(3);
-
-	ASYNC_DSYNCw(1);
-}
-#endif
-
-#if model_Sens==SENS_IMX291
-void IMX291_Init(void)
-{
-	IspSDesPowerOn();
-#if	(model_Sens_Fps==60)
-	IspSensorPowerOn(SENS_74M);			//	Sensor Clock
-#else
-	IspSensorPowerOn(SENS_37M);			//	Sensor Clock
-#endif
-
-	IspSDesConfig(1, 1);
-	Isp_SDesDelay(2,0,0,0,0);
-	IspSDesPosition();
-
-	Isp_SYNC_CODE(0xfff, 0x000, 0x000, 0x000, 0x800, 0xab0, 0,0,0,0,0,0);
-
-	InitSensRun();
-
-#if	(model_Sens_Fps==60)
-	Isp_PreClk_Config(ISP_CLK_148M);		//	Isp Pre Module Clock
-#else
-	Isp_PreClk_Config(ISP_CLK_74M);			//	Isp Pre Module Clock
-#endif
-	Isp_PostClk_Config(ISP_CLK_74M);		//	Isp Post Module Clock
-	IspPreSyncConfig(0, 0xa, 0xc, 0x15, 6, 0, 0, 0, 0);
-	IspPostSyncConfig(1);
-}
-#endif
-
-#if model_Sens==SENS_OS08A10
-void OS08A10_Init(void)
-{
-	IspSDesPowerOn();
-	IspSensorPowerOn(SENS_27M);				//	27MHz
-
-	IspSDesConfig(1, 0);
-	Isp_SDesDelay(2, 0, 0, 0, 0);
-	IspSDesPosition();
-
-	Isp_SYNC_CODE(0xfff, 0x000, 0x000, 0x000, 0x200, 0x280, 0,0,0,0,0,0);
-
-	InitSensRun();
-
-	Isp_PreClk_Config(ISP_CLK_74M);			//	Isp Pre Module Clock
-	Isp_PostClk_Config(ISP_CLK_74M);		//	Isp Post Module Clock
-	IspPreSyncConfig(1, 0xa, 0xc, 0x15, 6, 0, 0, 0, 1);
-	IspPostSyncConfig(1);
-}
-#endif
-
-#if model_Sens==SENS_IMX225
-void IMX225_Init(void)
-{
-	IspSDesPowerOn(2);						// MipiClkPhase
-	IspSensorPowerOn(SENS_27M);					//	Sensor Clock
-
-	IspSDesConfig(MIPI_10BIT, 7, NO_USE_CHECK);
-	Isp_SDesDelay(2, 0, 0, 0, 0);			//	20190503 : main_asic_61_ISP_R5.bit
-	IspSDesPosition();
-
-	Isp_SYNC_CODE(0, 1, 0x2, 0x3, 0xb8, 0xf30, 0, 0x2000, 0x2b, 0x3, 0, 3);	// 0x2b : Long Packet Line Start - Raw 10Bit
-
-	InitSensRun();
-
-	Isp_PreClk_Config(ISP_CLK_74M);			//	Isp Pre Module Clock
-	Isp_PostClk_Config(ISP_CLK_74M);		//	Isp Post Module Clock
-	IspPreSyncConfig(1, 0xb0, 0xc, 0x8, 4, 0, 1, 0, 1);
-	IspPostSyncConfig(2);
-}
-#endif
-
-#if	model_Sens==SENS_IMX335
-
-void IMX335_Init(void)
-{
-	IspSDesPowerOn(2);						// MipiClkPhase
-	IspSensorPowerOn(SENS_13M);					//	Sensor Clock
-
-	IspSDesConfig(MIPI_12BIT, 7, NO_USE_CHECK);
-	Isp_SDesDelay(2, 0, 0, 0, 0);			//	20190503 : main_asic_61_ISP_R5.bit
-	IspSDesPosition();
-
-	Isp_SYNC_CODE(0, 1, 0x2, 0x3, 0xb8, 0xf30, 0, 0x2000, 0x2c, 0x3, 0, 3);	// 0x2c : Long Packet Line Start - Raw 12Bit
-
-	InitSensRun();
-
-	Isp_PreClk_Config(ISP_CLK_74M);			//	Isp Pre Module Clock
-	Isp_PostClk_Config(ISP_CLK_74M);		//	Isp Post Module Clock
-	IspPreSyncConfig(1, 0xb0, 0xc, 0x8, 4, 1, 1, 0, 1);
-	IspPostSyncConfig(2);
-}
-
-#endif
-
-#if model_Sens==SENS_IMX274
-void IMX274_Init()
-{
-	IspSDesPowerOn(0);						// MipiClkPhase
-	IspSensorPowerOn(SENS_13M);					//	Sensor Clock	-	15p
-
-	IspSDesConfig(MIPI_12BIT, 7, NO_USE_CHECK);
-	Isp_SDesDelay(6, 0, 0, 0, 0);
-	IspSDesPosition();
-
-	Isp_SYNC_CODE(0, 1, 0x2, 0x3, 0xb8, 0xf30, 0, 0x2000, 0x2c, 0x3, 0, 3);	// 0x2c : Long Packet Line Start - Raw 12Bit
-
-	InitSensRun();
-
-	Isp_PreClk_Config(ISP_CLK_74M);			//	Isp Pre Module Clock
-	Isp_PostClk_Config(ISP_CLK_74M);		//	Isp Post Module Clock
-	IspPreSyncConfig(1, 0xa, 0xc, 0x15, 6, 0, 0, 0, 1);
-	IspPostSyncConfig(1);
-}
-#endif
-
-#if model_Sens==SENS_OV4689
-void OV4689_Init(void)
-{
-	IspSDesPowerOn(2);						// MipiClkPhase
-#if	(model_Sens_Fps==15)
-	IspSensorPowerOn(SENS_13M);		// 13.5MHz
-#elif (model_Sens_Fps==30)
-	IspSensorPowerOn(SENS_27M);		// 27MHz
-#endif
-
-	IspSDesConfig(MIPI_10BIT, 8, USE_WCL_CHECK);
-	Isp_SDesDelay(4, 0, 0, 0, 0);	//	20190503 : main_asic_crazy_ISP_R5_HDMI_DDR_Auto_Align
-	IspSDesPosition();
-
-	Isp_SYNC_CODE(0, 1, 0x2, 0x3, 0xb8, 0xd20, 0, 0x2000, 0x2b, 0x3, 0, 0xd20);
-
-	InitSensRun();
-
-	Isp_PreClk_Config(ISP_CLK_74M);			//	Isp Pre Module Clock
-	Isp_PostClk_Config(ISP_CLK_74M);		//	Isp Post Module Clock
-	IspPreSyncConfig(1, 0xb0, 0xc, 0x8, 4, 1, 1, 0, 1);
-	IspPostSyncConfig(1);
-}
-#endif
-#endif
 
 //	LCD Function
 
@@ -880,17 +781,19 @@ void JPG_Decoding(UINT jpg_adr)
 
 void Isp_Ddr_Cong(void)
 {
-	#define ISP_DDR_10BIT_SIZE	(((PO_HW*PO_VW)*10)>>(3+4))
+	#define ISP_DDR_4BIT_SIZE	(((RP(PO_HW)*RP(PO_VW))<<2)>>(3+4))
+	#define ISP_DDR_8BIT_SIZE	(((RP(PO_HW)*RP(PO_VW))<<3)>>(3+4))
+	#define ISP_DDR_10BIT_SIZE	(((RP(PO_HW)*RP(PO_VW))*10)>>(3+4))
 	#define ISP_DDR_ENC_SIZE	(((720/*960*/*576)<<4)>>(3+4))	// 960도 지원되나 외부 Clk 필요
 
 	#define DDR_BASE_ISP_WDR	(DDR_BASE_ISP+0x000000)
 	#define DDR_BASE_ISP_FRC0	(DDR_BASE_ISP_WDR +ISP_DDR_10BIT_SIZE)
 	#define DDR_BASE_ISP_FRC1	(DDR_BASE_ISP_FRC0+ISP_DDR_10BIT_SIZE)
-	#define DDR_BASE_ISP_FRC2	(DDR_BASE_ISP_FRC1+ISP_DDR_10BIT_SIZE)
-	#define DDR_BASE_ISP_FRC3	(DDR_BASE_ISP_FRC2+ISP_DDR_10BIT_SIZE)
-	#define DDR_BASE_ISP_FRC4	(DDR_BASE_ISP_FRC3+ISP_DDR_10BIT_SIZE)
+	//#define DDR_BASE_ISP_FRC2	(DDR_BASE_ISP_FRC1+ISP_DDR_10BIT_SIZE)
+	//#define DDR_BASE_ISP_FRC3	(DDR_BASE_ISP_FRC2+ISP_DDR_10BIT_SIZE)
+	//#define DDR_BASE_ISP_FRC4	(DDR_BASE_ISP_FRC3+ISP_DDR_10BIT_SIZE)
 
-	#define DDR_BASE_ISP_ENC0	(DDR_BASE_ISP_FRC4+ISP_DDR_10BIT_SIZE)
+	#define DDR_BASE_ISP_ENC0	(DDR_BASE_ISP_FRC1/*DDR_BASE_ISP_FRC4*/+ISP_DDR_10BIT_SIZE)
 	#define DDR_BASE_ISP_ENC1	(DDR_BASE_ISP_ENC0+ISP_DDR_ENC_SIZE)
 	#define DDR_BASE_ISP_ENC2	(DDR_BASE_ISP_ENC1+ISP_DDR_ENC_SIZE)
 	#define DDR_BASE_ISP_ENC3	(DDR_BASE_ISP_ENC2+ISP_DDR_ENC_SIZE)
@@ -898,36 +801,64 @@ void Isp_Ddr_Cong(void)
 	WDR_ADR_LEw(DDR_BASE_ISP_WDR);
 	FRC_ADR0w(DDR_BASE_ISP_FRC0);
 	FRC_ADR1w(DDR_BASE_ISP_FRC1);
-	FRC_ADR2w(DDR_BASE_ISP_FRC2);
-	FRC_ADR3w(DDR_BASE_ISP_FRC3);
-	FRC_ADR4w(DDR_BASE_ISP_FRC4);
+	//FRC_ADR2w(DDR_BASE_ISP_FRC2);
+	//FRC_ADR3w(DDR_BASE_ISP_FRC3);
+	//FRC_ADR4w(DDR_BASE_ISP_FRC4);
 
 	ENC_ADR0w(DDR_BASE_ISP_ENC0);
 	ENC_ADR1w(DDR_BASE_ISP_ENC1);
 	ENC_ADR2w(DDR_BASE_ISP_ENC2);
 	ENC_ADR3w(DDR_BASE_ISP_ENC3);
 
-#if 1
+#if 0
 	IM_YADR0w(DDR_BASE_ISP+0x134000);
 	IM_CADR0w(DDR_BASE_ISP+0x174000);
+
 	IM_YADR1_P0w(DDR_BASE_ISP+0x194000);
 	IM_CADR1_P0w(DDR_BASE_ISP+0x1b4000);
 	IM_YADR1_P1w(DDR_BASE_ISP+0x1c4000);
 	IM_CADR1_P1w(DDR_BASE_ISP+0x1e4000);
 	IM_YADR1_P2w(DDR_BASE_ISP+0x1f4000);
 	IM_CADR1_P2w(DDR_BASE_ISP+0x214000);
-	IM_YADR2_P0w(DDR_BASE_ISP+0x224000);
-	IM_CADR2_P0w(DDR_BASE_ISP+0x244000);
-	IM_YADR2_P1w(DDR_BASE_ISP+0x254000);
-	IM_CADR2_P1w(DDR_BASE_ISP+0x274000);
-	IM_YADR2_P2w(DDR_BASE_ISP+0x284000);
-	IM_CADR2_P2w(DDR_BASE_ISP+0x2a4000);
-	IM_YADR3_P0w(DDR_BASE_ISP+0x2b4000);
-	IM_CADR3_P0w(DDR_BASE_ISP+0x2d4000);
-	IM_YADR3_P1w(DDR_BASE_ISP+0x2e4000);
-	IM_CADR3_P1w(DDR_BASE_ISP+0x304000);
-	IM_YADR3_P2w(DDR_BASE_ISP+0x314000);
-	IM_CADR3_P2w(DDR_BASE_ISP+0x334000);
+#endif
+
+#ifdef USE_DIG_CH2
+	#define DDR_BASE_ISP_IM_Y2_PO	(DDR_BASE_ISP_ENC3+ISP_DDR_ENC_SIZE)
+	#define DDR_BASE_ISP_IM_C2_PO	(DDR_BASE_ISP_IM_Y2_PO+ISP_DDR_8BIT_SIZE)
+	#define DDR_BASE_ISP_IM_Y2_P1	(DDR_BASE_ISP_IM_C2_PO+ISP_DDR_4BIT_SIZE)
+	#define DDR_BASE_ISP_IM_C2_P1	(DDR_BASE_ISP_IM_Y2_P1+ISP_DDR_8BIT_SIZE)
+	#define DDR_BASE_ISP_IM_Y2_P2	(DDR_BASE_ISP_IM_C2_P1+ISP_DDR_4BIT_SIZE)
+	#define DDR_BASE_ISP_IM_C2_P2	(DDR_BASE_ISP_IM_Y2_P2+ISP_DDR_8BIT_SIZE)
+
+	IM_YADR2_P0w(DDR_BASE_ISP_IM_Y2_PO);
+	IM_CADR2_P0w(DDR_BASE_ISP_IM_C2_PO);
+	IM_YADR2_P1w(DDR_BASE_ISP_IM_Y2_P1);
+	IM_CADR2_P1w(DDR_BASE_ISP_IM_C2_P1);
+	IM_YADR2_P2w(DDR_BASE_ISP_IM_Y2_P2);
+	IM_CADR2_P2w(DDR_BASE_ISP_IM_C2_P2);
+#endif
+
+#ifdef USE_DIG_CH3
+  #ifdef USE_DIG_CH2
+	#define DDR_BASE_ISP_IM_Y3_PO	(DDR_BASE_ISP_IM_C2_P2+ISP_DDR_4BIT_SIZE)
+  #else
+	#define DDR_BASE_ISP_IM_Y3_PO	(DDR_BASE_ISP_ENC3+ISP_DDR_ENC_SIZE)
+  #endif
+	#define DDR_BASE_ISP_IM_C3_PO	(DDR_BASE_ISP_IM_Y3_PO+ISP_DDR_8BIT_SIZE)
+	#define DDR_BASE_ISP_IM_Y3_P1	(DDR_BASE_ISP_IM_C3_PO+ISP_DDR_4BIT_SIZE)
+	#define DDR_BASE_ISP_IM_C3_P1	(DDR_BASE_ISP_IM_Y3_P1+ISP_DDR_8BIT_SIZE)
+	#define DDR_BASE_ISP_IM_Y3_P2	(DDR_BASE_ISP_IM_C3_P1+ISP_DDR_4BIT_SIZE)
+	#define DDR_BASE_ISP_IM_C3_P2	(DDR_BASE_ISP_IM_Y3_P2+ISP_DDR_8BIT_SIZE)
+
+	IM_YADR3_P0w(DDR_BASE_ISP_IM_Y3_PO);
+	IM_CADR3_P0w(DDR_BASE_ISP_IM_C3_PO);
+	IM_YADR3_P1w(DDR_BASE_ISP_IM_Y3_P1);
+	IM_CADR3_P1w(DDR_BASE_ISP_IM_C3_P1);
+	IM_YADR3_P2w(DDR_BASE_ISP_IM_Y3_P2);
+	IM_CADR3_P2w(DDR_BASE_ISP_IM_C3_P2);
+#endif
+
+#if 0
 	IM_YADR4_P0w(DDR_BASE_ISP+0x344000);
 	IM_CADR4_P0w(DDR_BASE_ISP+0x364000);
 	IM_YADR4_P1w(DDR_BASE_ISP+0x374000);

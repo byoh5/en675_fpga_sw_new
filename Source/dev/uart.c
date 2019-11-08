@@ -11,7 +11,9 @@ ISRD static tIhnd arrUARTTXIrq[UART_CNT];
 
 void UartInit(UINT nCH, UINT Speed_Hz)
 {
-	arrUART[nCH]->CLK_DIV = (MCK_FREQ / (Speed_Hz << 4)) - 1;
+	//arrUART[nCH]->CLK_DIV = (MCK_FREQ / (Speed_Hz << 4)) - 1;
+	arrUART[nCH]->CLK_DIV = ((MCK_FREQ+(Speed_Hz<<3)) / (Speed_Hz<<4)) - 1;
+
 	arrUART[nCH]->TX_TYPE = 0; // 0:open-drain 1:push-pull
 	arrUART[nCH]->STOP_BIT = 0; // 0:1bit 1:2bit
 	arrUART[nCH]->PARITY_EN = 0; // 0:off 1:on
@@ -71,10 +73,13 @@ void UartDeinit(UINT nCH)
 
 void UartTx(UINT nCH, char data)
 {
-	// while (arrUART[nCH]->TX_FULL || arrUART[nCH]->TX_IRQ_EN);
+#if 1	// 191107 ksh
+	while (arrUART[nCH]->TX_FULL || arrUART[nCH]->TX_IRQ_EN);
+#else
 	while (arrUART[nCH]->TX_FULL) {
 		WaitXms(1);
 	}
+#endif
 	arrUARTTX[nCH]->TX_DAT = data;
 }
 

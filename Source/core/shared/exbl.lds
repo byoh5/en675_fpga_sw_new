@@ -53,33 +53,8 @@ SECTIONS
   __text_lma_s = LOADADDR(.text);
   __text_lma_e = ( (LOADADDR(.text) + SIZEOF(.text) + 63) & ~ (64-1) );
 
-  .ispm_text : AT ( (LOADADDR (.text) + SIZEOF(.text) + 63) & ~ (64-1))
-  {
-    . = ALIGN(64);
-    __ispm_text_s = .;
-    *(.ispmtext)
-    *(.ispm_text_dummy)
-    . = ALIGN(64);
-    __ispm_text_e = .;
-  } > SRAM
-
-  __ispm_text_lma_s = LOADADDR(.ispm_text);
-  __ispm_text_lma_e = ( (LOADADDR(.ispm_text) + SIZEOF(.ispm_text) + 63) & ~ (64-1) );
-
-  .ispm_data : AT ( (LOADADDR (.ispm_text) + SIZEOF(.ispm_text) + 63) & ~ (64-1))
-  {
-    . = ALIGN(64);
-    __ispm_data_s = .;
-    *(.ispmdata)
-    . = ALIGN(64);
-    __ispm_data_e = .;
-  } > SRAM
-
-  __ispm_data_lma_s = LOADADDR(.ispm_data);
-  __ispm_data_lma_e = ( (LOADADDR(.ispm_data) + SIZEOF(.ispm_data) + 63) & ~ (64-1) );
-
   /* rodata: Read-only data */
-  .rodata : AT ( (LOADADDR (.ispm_data) + SIZEOF(.ispm_data) + 63) & ~ (64-1))
+  .rodata : AT ( (LOADADDR (.text) + SIZEOF(.text) + 63) & ~ (64-1))
   {
     . = ALIGN(64);
     __rodata_s = .;
@@ -142,6 +117,39 @@ SECTIONS
   _edata = .;
 
   /*--------------------------------------------------------------------*/
+  /* Initialized sram text/data segment                                 */
+  /*--------------------------------------------------------------------*/
+
+  . = ALIGN(64);
+
+  .ispm_text : AT ( (LOADADDR (.data) + SIZEOF(.data) + 63) & ~ (64-1))
+  {
+    . = ALIGN(64);
+    __ispm_text_s = .;
+    *(.ispmtext)
+    *(.ispm_text_dummy)
+    . = ALIGN(64);
+    __ispm_text_e = .;
+  } > SRAM
+
+  __ispm_text_lma_s = LOADADDR(.ispm_text);
+  __ispm_text_lma_e = ( (LOADADDR(.ispm_text) + SIZEOF(.ispm_text) + 63) & ~ (64-1) );
+
+  .ispm_data : AT ( (LOADADDR (.ispm_text) + SIZEOF(.ispm_text) + 63) & ~ (64-1))
+  {
+    . = ALIGN(64);
+    __ispm_data_s = .;
+    *(.ispmdata)
+    . = ALIGN(64);
+    __ispm_data_e = .;
+  } > SRAM
+
+  __ispm_data_lma_s = LOADADDR(.ispm_data);
+  __ispm_data_lma_e = ( (LOADADDR(.ispm_data) + SIZEOF(.ispm_data) + 63) & ~ (64-1) );
+
+  . = ALIGN(64);
+
+  /*--------------------------------------------------------------------*/
   /* Uninitialized data segment                                         */
   /*--------------------------------------------------------------------*/
 
@@ -186,7 +194,7 @@ SECTIONS
     *(.payload)
   }
 
-  __lma_size = ( (LOADADDR(.data) + SIZEOF(.data) + 63) & ~ (64-1) ) - LOADADDR(.reset);
+  __lma_size = ( (LOADADDR(.ispm_data) + SIZEOF(.ispm_data) + 63) & ~ (64-1) ) - LOADADDR(.reset);
   __lma_start = 0;	/* reserved */
 
   _end = .;

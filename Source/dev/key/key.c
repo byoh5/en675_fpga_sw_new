@@ -115,12 +115,12 @@ void KeyScan(void)
 	DebugDisp(((gbMnDebugFnc==5)), , "PTPKey_V", 13, 24, gbPTZKeyVal)
 	DebugDisp(((gbMnDebugFnc==5)), , "pKEY    ", 14, 24, pKEY)
 
-	gbSKeyVal =	(nADC_KEY<(((UINT)UP(UpADC_LEVEL_C)+(UINT)UP(UpADC_LEVEL_U))>>1)) ? KEY_VAL_C :		// Center
-				(nADC_KEY<(((UINT)UP(UpADC_LEVEL_U)+(UINT)UP(UpADC_LEVEL_D))>>1)) ? KEY_VAL_U :		// Up
-				(nADC_KEY<(((UINT)UP(UpADC_LEVEL_D)+(UINT)UP(UpADC_LEVEL_L))>>1)) ? KEY_VAL_D :		// Down
-				(nADC_KEY<(((UINT)UP(UpADC_LEVEL_L)+(UINT)UP(UpADC_LEVEL_R))>>1)) ? KEY_VAL_L : 	// Left
-//					(nADC_KEY<(((UINT)UP(UpADC_LEVEL_R)+             0x000001ff)>>1)) ? KEY_VAL_R : 0;	// Right
-				(nADC_KEY<(((UINT)UP(UpADC_LEVEL_R)+             0x000003ff)>>1)) ? KEY_VAL_R : 0;	// Right
+	gbSKeyVal =	(nADC_KEY<(((UINT)UP(ADC_LEVEL_C)+(UINT)UP(ADC_LEVEL_U))>>1)) ? KEY_VAL_C :		// Center
+				(nADC_KEY<(((UINT)UP(ADC_LEVEL_U)+(UINT)UP(ADC_LEVEL_D))>>1)) ? KEY_VAL_U :		// Up
+				(nADC_KEY<(((UINT)UP(ADC_LEVEL_D)+(UINT)UP(ADC_LEVEL_L))>>1)) ? KEY_VAL_D :		// Down
+				(nADC_KEY<(((UINT)UP(ADC_LEVEL_L)+(UINT)UP(ADC_LEVEL_R))>>1)) ? KEY_VAL_L : 	// Left
+//					(nADC_KEY<(((UINT)UP(ADC_LEVEL_R)+             0x000001ff)>>1)) ? KEY_VAL_R : 0;	// Right
+				(nADC_KEY<(((UINT)UP(ADC_LEVEL_R)+             0x000003ff)>>1)) ? KEY_VAL_R : 0;	// Right
 
 	static BYTE bSKeyVal1d = 0;
 	if(bSKeyVal1d != gbSKeyVal) {
@@ -128,7 +128,7 @@ void KeyScan(void)
 		gbSKeyVal = 0;
 	}
 
-	KeyCht(gbSKeyVal, &gtSKey, (1<<UP(UpAD_CHT_BIT))-1);
+	KeyCht(gbSKeyVal, &gtSKey, (1<<UP(AD_CHT_BIT))-1);
 	KeyRpt(&gtSKey, AD_KEY_RPTF, AD_KEY_RPTT);
 #endif
 
@@ -225,7 +225,7 @@ void KeyScan(void)
 #if 1//model_WDR_ROI
 void KeyAccLevel(int *aiKeyAdd)
 {
-	#define FR			FPS_VDO/*30*/		// Frame pre sec
+	#define FR			IF_FUNC_FPS/*30*/		// Frame pre sec
 
 	//KEY Accumulator Level
 	#define KEY_ACC_LV0		1

@@ -15,37 +15,38 @@ STRING1(e,					_B,"\xa6");
 STRING1(PERCENT,			_B,"%");
 STRING5(NOT_USED,			_B,"NOT_USED",			_B,"NOT_USED",					_B,"NOT_USED",					_W,_P(270,271,18,272,14),								_B,_P(113,184,209));
 STRING1(ENTER_d_RETURN,		_B,"ENTER - RETURN");
+STRING1(MENU_IS_NOT_AVAILABLE,	_B,"MENU IS NOT AVAILABLE");
 /* !! - DON'T ERASE - !!*/
 
 STRING5(ON, 				_B,"ON",				_B,_P(100),						_B,_P(100),						_B,_P(26,194),											_B,_P(184,209));
 STRING5(ONe,				_B,"ON\xa6",			_B,_P(100,0xa6),				_B,_P(100,0xa6),				_B,_P(26,194,166),										_B,_P(184,209,166));
 STRING5(ONp,				_B,"ON\xa0",			_B,_P(100,0xa0),				_B,_P(100,0xa0),				_B,_P(26,194,160),										_B,_P(184,209,160));
 STRING5(OFF,				_B,"OFF",				_W,_P(259),						_W,_P(259),						_B,_P(26,122),											_B,_P(113,184,209));
-STRING5(LOW,				_B,"LOW",				_B,_P(208), 				_B,_P(208),								_B,_P(197),							_B,_P(26,212));
-STRING5(MIDDLE, 			_B,"MIDDLE",			_B,_P(222), 				_B,_P(222),								_B,_P(198),							_B,_P(229,15));
-STRING5(HIGH,				_B,"HIGH",				_B,_P(28),					_B,_P(28),								_B,_P(199),							_B,_P(29,212));
+STRING5(LOW,				_B,"LOW",				_B,_P(208), 					_B,_P(208),						_B,_P(197),												_B,_P(26,212));
+STRING5(MIDDLE, 			_B,"MIDDLE",			_B,_P(222), 					_B,_P(222),						_B,_P(198),												_B,_P(229,15));
+STRING5(HIGH,				_B,"HIGH",				_B,_P(28),						_B,_P(28),						_B,_P(199),												_B,_P(29,212));
 
 STRING5(MENU,				_B,"MENU",				_B,_P(14,15),					_B,_P(14,15),					_B,_P(132,118,186,195),									_B,_P(110,30));
 //STRING5(LENS,				_B,"\x04 LENS",			_B,_P(4,' ',16,17), 			_B,_P(4,' ',16,17),				_B,_P(4,' ',192,194,109),								_B,_P(4,' ',103,230));
 STRING5(EXPOSURE,			_B,"\x05 EXPOSURE",		_B,_P(5,' ',24, 20),			_B,_P(5,' ',24, 20),			_B,_P(5,' ',212,207),									_B,_P(5,' ',28,236,225,223));
-//STRING5(BACKLIGHT,			_B,"\x06 BACKLIGHT",	_B,_P(6,' ',25,20,26,27),		_B,_P(6,' ',25,20,26,27),		_B,_P(6,' ',211,207,216,217),							_B,_P(6,' ',204,21));
-//STRING5(DAYnNIGHT,			_B,"\x07 DAY&NIGHT",	_B,_P(7,' ',204,'&',186),		_B,_P(7,' ',204,'&',186),		_B,_P(7,' ',115,24,'&',117,24,112),						_B,_P(7,' ',227,201,15,112,93,188,223));
+STRING5(BACKLIGHT,			_B,"\x06 BACKLIGHT",	_B,_P(6,' ',25,20,26,27),		_B,_P(6,' ',25,20,26,27),		_B,_P(6,' ',211,207,216,217),							_B,_P(6,' ',204,21));
+STRING5(DAYnNIGHT,			_B,"\x07 DAY&NIGHT",	_B,_P(7,' ',204,'&',186),		_B,_P(7,' ',204,'&',186),		_B,_P(7,' ',115,24,'&',117,24,112),						_B,_P(7,' ',227,201,15,112,93,188,223));
 STRING5(DAY,				_B,"DAY",				_B,_P(204),						_B,_P(204),						_B,_P(115,24),											_B,_P(227,15));
 STRING5(NIGHT,				_B,"NIGHT",				_B,_P(186),						_B,_P(186),						_B,_P(117,24,112),										_B,_P(201,15));
 //STRING5(WHITE_BAL,		_B,"\x08 WHITE BAL",	_B,_P(8,' ',59,241,245),		_B,_P(8,' ',59,241,245),		_B,_P(8,' ',123,23,24,112,124,189,194,106),				_B,_P(8,' ',252,213,246,120,101,194));
 STRING5(COLORm,				_B,"\x08 COLOR",		_B,_P(8,' ',228,125), 			_B,_P(8,' ',228,125),			_B,_P(8,' ',30,189,195),								_B,_P(8,' ',239,100));
-//STRING5(DNR,				_B,"\x09 DNR",			_B,_P(9,' ',253,220),			_B,_P(9,' ',253,220),			_B,_P(9,' ',115,108,110,191,120,24,109,245,246),		_B,_P(9,' ', 28,213,230,224,18));
-STRING5(DNR,				_B,"DNR",				_B,_P(253,220),					_B,_P(253,220),					_B,_P(115,108,110,191,120,24,109,245,246),				_B,_P(28,213,230,224,18));
+STRING5(DNR,				_B,"\x09 DNR",			_B,_P(9,' ',253,220),			_B,_P(9,' ',253,220),			_B,_P(9,' ',115,108,110,191,120,24,109,245,246),		_B,_P(9,' ', 28,213,230,224,18));
+//STRING5(DNR,				_B,"DNR",				_B,_P(253,220),					_B,_P(253,220),					_B,_P(115,108,110,191,120,24,109,245,246),				_B,_P(28,213,230,224,18));
 STRING5(IMAGE,				_B,"\x0a IMAGE",		_B,_P(10,' ',190,123),			_B,_P(10,' ',190,123),			_B,_P(10,' ',24,132,195,108),							_B,_P(10,' ',205,185,138,223));
-//STRING5(MOTION, 			_B,"\x0b MOTION",		_B,_P(11,' ',195,201,213,231),	_B,_P(11,' ',195,201,213,231),	_B,_P(11 ,' ',184,195,105,187,194),						_B,_P(11 ,' ',210,232,215,16,231));
+STRING5(MOTION, 			_B,"\x0b MOTION",		_B,_P(11,' ',195,201,213,231),	_B,_P(11,' ',195,201,213,231),	_B,_P(11 ,' ',184,195,105,187,194),						_B,_P(11 ,' ',210,232,215,16,231));
 //STRING1(DIS,				_B,"\x03 DIS");
 STRING5(SYSTEM, 			_B,"\x0c SYSTEM", 		_B,_P(12,' ',218,236),			_B,_P(12,' ',218,236),			_B,_P(12,' ',105,106,111,131),							_B,_P(12,' ',195,194,243));
 STRING5(EXIT,				_B,"\x0d EXIT",			_B,_P(13,' ',107,100),			_B,_P(13,' ',107,100),			_B,_P(13,' ',251,252),									_B,_P(13,' ',226,107));
 STRING5(nEXIT,				_B,"EXIT",				_B,_P(107,100),					_B,_P(107,100),					_B,_P(251,252),											_B,_P(226,107));
 STRING5(RETURN, 			_B,"RETURN",			_B,_P(111,249), 				_B,_P(111,249),					_B,_P(202,22),											_B,_P(139,22));
 
-//STRING5(ALC,				_B,"ALC",				_B,_P(18,19,20,21), 			_B,_P(18,19,20,21),				_B,_P(205,206,207,208,209,210),							_B,_P(225,108,17,112,93));
-//STRING5(ELC,				_B,"ELC",				_B,_P(22,23,20,21), 			_B,_P(22,23,20,21),				_B,_P(203,204,207,208,209,210),							_B,_P(191,241,112,93));
+STRING5(ALC,				_B,"ALC",				_B,_P(18,19,20,21), 			_B,_P(18,19,20,21),				_B,_P(205,206,207,208,209,210),							_B,_P(225,108,17,112,93));
+STRING5(ELC,				_B,"ELC",				_B,_P(22,23,20,21), 			_B,_P(22,23,20,21),				_B,_P(203,204,207,208,209,210),							_B,_P(191,241,112,93));
 //STRING5(ALCe,				_B,"ALC\xa6",			_B,_P(18,19,20,21,166), 		_B,_P(18,19,20,21,166),			_B,_P(205,206,207,208,209,210,166),						_B,_P(225,108,17,112,93,166));
 //STRING5(ELCe,				_B,"ELC\xa6",			_B,_P(22,23,20,21,166), 		_B,_P(22,23,20,21,166),			_B,_P(203,204,207,208,209,210,166),						_B,_P(191,241,112,93,166));
 
@@ -92,78 +93,94 @@ STRING5(MANUALe,			_B,"MANUAL\xa6",		_B,_P(131,19,166),				_B,_P(131,19,166),			
 //STRING1(SHUT_25600, 		_B,"1/25600");
 //STRING1(SHUT_51200, 		_B,"1/51200");
 
-//STRING5(SENS_UP,			_B,"SENS-UP",			_B,_P(216,209,105), 			_B,_P(216,209,105),				_B,_P(107,194,106,23,113,128),							_W,_P(267,194,270));
-//STRING1(X2, 				_B,"X2");
-//STRING1(X4, 				_B,"X4");
-//STRING1(X8,					_B,"X8");
-//STRING1(X16,				_B,"X16");
-//STRING1(X32,				_B,"X32");
-//STRING1(X64,				_B,"X64");
+STRING5(SENS_UP,			_B,"SENS-UP",			_B,_P(216,209,105), 			_B,_P(216,209,105),				_B,_P(107,194,106,23,113,128),							_W,_P(267,194,270));
+STRING1(X2, 				_B,"X2");
+STRING1(X4, 				_B,"X4");
+STRING1(X8,					_B,"X8");
+STRING1(X16,				_B,"X16");
+STRING1(X32,				_B,"X32");
+STRING1(X64,				_B,"X64");
 //STRING5(AGC,				_B,"AGC",				_B,_P(18,19,224,202),			_B,_P(18,19,224,202),			_B,_P(26,195,112,103,24,194,100,194,112,193,195,191),	_B,_P(19,214));
 
-//STRING5(HLCe,				_B,"HLC\xa6",			_B,_P(28,29,30,42,166), 		_B,_P(28,29,30,42,166),			_B,_P(121,24,189,24,112,216,217,166),					_W,_P(204,21,279,262,166));
-//STRING5(BLCe,				_B,"BLC\xa6",			_B,_P(25,20,118,124,166),		_B,_P(25,20,118,124,166),		_B,_P(124,113,31,189,24,112,216,217,166),				_B,_P(204,21,138,223,166));
-//STRING5(WDRe,				_B,"WDR\xa6",			_B,_P(242,19,235,166),			_B,_P(242,19,235,166),			_B,"WDR\xa6",											_B,_P(21,204,204,21,138,223,166));
+STRING5(HLCe,				_B,"HLC\xa6",			_B,_P(28,29,30,42,166), 		_B,_P(28,29,30,42,166),			_B,_P(121,24,189,24,112,216,217,166),					_W,_P(204,21,279,262,166));
+STRING5(BLCe,				_B,"BLC\xa6",			_B,_P(25,20,118,124,166),		_B,_P(25,20,118,124,166),		_B,_P(124,113,31,189,24,112,216,217,166),				_B,_P(204,21,138,223,166));
+STRING5(WDRe,				_B,"WDR\xa6",			_B,_P(242,19,235,166),			_B,_P(242,19,235,166),			_B,"WDR\xa6",											_B,_P(21,204,204,21,138,223,166));
 
-//STRING5(HLC,				_B,"HLC",				_B,_P(28,29,30,42), 			_B,_P(28,29,30,42),				_B,_P(121,24,189,24,112,216,217),						_W,_P(204,21,279,262));
-//STRING5(BLC,				_B,"BLC",				_B,_P(25,20,118,124),			_B,_P(25,20,118,124),			_B,_P(124,113,31,189,24,112,216,217),					_B,_P(204,21,138,223));
+STRING5(HLC,				_B,"HLC",				_B,_P(28,29,30,42), 			_B,_P(28,29,30,42),				_B,_P(121,24,189,24,112,216,217),						_W,_P(204,21,279,262));
+STRING5(BLC,				_B,"BLC",				_B,_P(25,20,118,124),			_B,_P(25,20,118,124),			_B,_P(124,113,31,189,24,112,216,217),					_B,_P(204,21,138,223));
 STRING5(WDR,				_B,"WDR",				_B,_P(242,19,235),				_B,_P(242,19,235),				_B,"WDR",												_B,_P(21,204,204, 21,138,223));
 
-//STRING5(LEVEL,				_B,"LEVEL", 			_B,_P(102,33),					_B,_P(102,33),					_B,_P(192,125,191),										_B,_P(102,137));
-//STRING5(COLOR,				_B,"COLOR", 			_B,_P(228,125), 				_B,_P(228,125),					_B,_P(30,189,195),										_B,_P(239,100));
-//STRING5(WHT,				_B,"WHT",				_W,_P(269),						_W,_P(269),						_W,_P(260),												_W,_P(285,269));
-//STRING5(YEL,				_B,"YEL",				_W,_P(293),						_W,_P(293),						_B,_P(24,25,193,195),									_W,_P(28,263));
-//STRING5(CYN,				_B,"CYN",				_W,_P(288),						_W,_P(288),						_B,_P(105,23,194),										_W,_P(272,186));
-//STRING5(GRN,				_B,"GRN",				_W,_P(266),						_W,_P(266),						_W,_P(261),												_W,_P(235,264));
-//STRING5(MAG,				_B,"MAG",				_W,_P(278),						_W,_P(278),						_W,_P(129,262,194,110),									_W,_P(217,286));
-//STRING5(RED,				_B,"RED",				_B,_P(247),						_B,_P(247),						_B,_P(200),												_W,_P(266,255));
-//STRING5(BLU,				_B,"BLU",				_W,_P(265),						_W,_P(265),						_B,_P(201),												_W,_P(283,263));
-//STRING5(BLK,				_B,"BLK",				_B,_P(158),						_B,_P(158),						_W,_P(259),												_W,_P(256,223));
-//STRING5(CUSTOMIZE,			_B,"CUSTOMIZE",			_W,_P(18,23,282),				_W,_P(18,23,282),				_B,_P(30,106,110,129,24,109),							_B,_P(184,209,217));
-//STRING5(HPOS,				_B,"H-POS", 			_B,_P(136,241,100,137), 		_B,_P(136,241,100,137),			_B,_P(220,221,224,225),									_B,_P(14,105,211,237));
-//STRING5(VPOS,				_B,"V-POS", 			_B,_P(130,225,100,137), 		_B,_P(130,225,100,137),			_B,_P(222,223,224,225),									_B,_P(189,105,211,237));
-//STRING5(HSIZE,				_B,"H-SIZE",			_B,_P(136,241,28,99),			_B,_P(136,241,28,99),			_B,_P(220,221,104,24,109),								_B,_P(14,105,240,24));
-//STRING5(VSIZE,				_B,"V-SIZE",			_B,_P(130,225,97,99),			_B,_P(130,225,97,99),			_B,_P(222,223,104,24,109),								_B,_P(189,105,240,24));
+STRING5(LEVEL,				_B,"LEVEL", 			_B,_P(102,33),					_B,_P(102,33),					_B,_P(192,125,191),										_B,_P(102,137));
+STRING5(COLOR,				_B,"COLOR", 			_B,_P(228,125), 				_B,_P(228,125),					_B,_P(30,189,195),										_B,_P(239,100));
+STRING5(WHT,				_B,"WHT",				_W,_P(269),						_W,_P(269),						_W,_P(260),												_W,_P(285,269));
+STRING5(YEL,				_B,"YEL",				_W,_P(293),						_W,_P(293),						_B,_P(24,25,193,195),									_W,_P(28,263));
+STRING5(CYN,				_B,"CYN",				_W,_P(288),						_W,_P(288),						_B,_P(105,23,194),										_W,_P(272,186));
+STRING5(GRN,				_B,"GRN",				_W,_P(266),						_W,_P(266),						_W,_P(261),												_W,_P(235,264));
+STRING5(MAG,				_B,"MAG",				_W,_P(278),						_W,_P(278),						_W,_P(129,262,194,110),									_W,_P(217,286));
+STRING5(RED,				_B,"RED",				_B,_P(247),						_B,_P(247),						_B,_P(200),												_W,_P(266,255));
+STRING5(BLU,				_B,"BLU",				_W,_P(265),						_W,_P(265),						_B,_P(201),												_W,_P(283,263));
+STRING5(BLK,				_B,"BLK",				_B,_P(158),						_B,_P(158),						_W,_P(259),												_W,_P(256,223));
+STRING5(CUSTOMIZE,			_B,"CUSTOMIZE",			_W,_P(18,23,282),				_W,_P(18,23,282),				_B,_P(30,106,110,129,24,109),							_B,_P(184,209,217));
+STRING5(HPOS,				_B,"H-POS", 			_B,_P(136,241,100,137), 		_B,_P(136,241,100,137),			_B,_P(220,221,224,225),									_B,_P(14,105,211,237));
+STRING5(VPOS,				_B,"V-POS", 			_B,_P(130,225,100,137), 		_B,_P(130,225,100,137),			_B,_P(222,223,224,225),									_B,_P(189,105,211,237));
+STRING5(HSIZE,				_B,"H-SIZE",			_B,_P(136,241,28,99),			_B,_P(136,241,28,99),			_B,_P(220,221,104,24,109),								_B,_P(14,105,240,24));
+STRING5(VSIZE,				_B,"V-SIZE",			_B,_P(130,225,97,99),			_B,_P(130,225,97,99),			_B,_P(222,223,104,24,109),								_B,_P(189,105,240,24));
 STRING5(AUTOext,			_B,"AUTOext",			_B,_P(18,19,'(',203,')'),		_B,_P(18,19,'(',203,')'),		_B,_P(26,195,112,'2'),									_B,_P(217, 92,253,219));
 STRING5(PRESETp,			_B,"PRESET\xa0",		_B,_P(22,23,160),				_B,_P(22,23,160),				_B,_P(188,194,128,113,105,186,160),						_B,_P(250,108,190,160));
 STRING5(PUSHING,			_B,"PUSHING",			_B,"PUSHING",					_B,"PUSHING",					_W,_P(307,308),											_W,_P(293,294));
-//STRING5(MODE,				_B,"MODE",				_B,_P(109,140),					_B,_P(109,140),					_B,_P(184,195,116),										_B,_P(112,93));
-//STRING5(WEIGHT, 			_B,"WEIGHT",			_B,_P(102,33),					_B,_P(102,33),					_B,_P(192,125,191),										_B,_P(14,229,237));
+STRING5(MODE,				_B,"MODE",				_B,_P(109,140),					_B,_P(109,140),					_B,_P(184,195,116),										_B,_P(112,93));
+STRING5(WEIGHT, 			_B,"WEIGHT",			_B,_P(102,33),					_B,_P(102,33),					_B,_P(192,125,191),										_B,_P(14,229,237));
 STRING5(RGAIN,				_B,"R-GAIN",			_B,_P('R','-',224,202), 		_B,_P('R','-',224,202),			_B,_P(200,192,125,191),									_B,_P(220,186));
 STRING5(BGAIN,				_B,"B-GAIN",			_B,_P('B','-',224,202), 		_B,_P('B','-',224,202),			_B,_P(201,192,125,191),									_B,_P(234,186));
 //STRING5(SHARPNESS,			_B,"SHARPNESS", 		_B,_P(191,106),					_B,_P(191,106),					_B,_P(105,185,195,128,119,106),							_B,_P(187,111,91));
-//STRING5(GAMMA,				_B,"GAMMA", 			_B,"GAMMA", 					_B,"GAMMA",						_B,_P(101,194,129),										_B,_P(16,109));
-//STRING5(AUTO_GAMMA,			_B,"AUTO GAMMA", 		_B,"\x12\x13 GAMMA", 			_B,"\x12\x13 GAMMA",			_B,_P(26,195,112,' ',101,194,129),						_B,_P(217,92,' ',16,109));
-//STRING1(GAMMA_045,			_B,"0.45");
-//STRING1(GAMMA_050,			_B,"0.5");
-//STRING1(GAMMA_055,			_B,"0.55");
-//STRING1(GAMMA_060,			_B,"0.6");
-//STRING1(GAMMA_065,			_B,"0.65");
-//STRING1(GAMMA_070,			_B,"0.7");
-//STRING1(GAMMA_075,			_B,"0.75");
+STRING5(GAMMA,				_B,"GAMMA", 			_B,"GAMMA", 					_B,"GAMMA",						_B,_P(101,194,129),										_B,_P(16,109));
+STRING5(AUTO_GAMMA,			_B,"AUTO GAMMA", 		_B,"\x12\x13 GAMMA", 			_B,"\x12\x13 GAMMA",			_B,_P(26,195,112,' ',101,194,129),						_B,_P(217,92,' ',16,109));
+STRING1(GAMMA_045,			_B,"0.45");
+STRING1(GAMMA_050,			_B,"0.5");
+STRING1(GAMMA_055,			_B,"0.55");
+STRING1(GAMMA_060,			_B,"0.6");
+STRING1(GAMMA_065,			_B,"0.65");
+STRING1(GAMMA_070,			_B,"0.7");
+STRING1(GAMMA_075,			_B,"0.75");
 
-STRING1(R_GAIN,		_B,"R-GAIN");	// 2017419 - WHL : CBB TEST
-STRING1(G_GAIN,		_B,"G-GAIN");
-STRING1(B_GAIN,		_B,"B-GAIN");
+STRING1(R_GAIN,				_B,"R-GAIN");	// 2017419 - WHL : CBB TEST
+STRING1(G_GAIN,				_B,"G-GAIN");
+STRING1(B_GAIN,				_B,"B-GAIN");
 
-//STRING1(R_HUE,		_B,"Rp-HUE");
-//STRING1(G_HUE,		_B,"Rn-HUE");
-//STRING1(B_HUE,		_B,"Bp-HUE");
-//STRING1(Y_HUE,		_B,"Bn-HUE");
-//STRING1(HUE_CHROMA_CTRL ,		_B,"HUE&CHROMA");
-//STRING1(Bn_CHROMA,		 _B,"Bn-CHROMA");
-//STRING1(Bp_CHROMA,		 _B,"Bp_CHROMA");
-//STRING1(Rn_CHROMA,		 _B,"Rn_CHROMA");
-//STRING1(Rp_CHROMA,		 _B,"Rp_CHROMA");
+STRING1(NEW,				_B,"NEW");
+STRING1(OLD,				_B,"OLD");
+
+STRING1(YEL_REDdGRN,		_B,"YEL RED-GRN");
+STRING1(YEL_GAIN,			_B,"YEL GAIN");
+STRING1(RED_YELdBLU,		_B,"RED YEL-BLU");
+STRING1(RED_GAIN,			_B,"RED GAIN");
+STRING1(BLU_GRNdRED,		_B,"BLU GRN-RED");
+STRING1(BLU_GAIN,			_B,"BLU GAIN");
+STRING1(GRN_BLUdYEL,		_B,"GRN BLU-YEL");
+STRING1(GRN_GAIN,			_B,"GRN GAIN");
+
+STRING1(HUEnCHROMA,			_B,"HUE&CHROMA");
+STRING1(REDnBLUE,			_B,"RED&BLUE");
+STRING1(BLUEnGREEN,			_B,"BLUE&GREEN");
+STRING1(GREENnYELLOW,		_B,"GREEN&YELLOW");
+STRING1(YELLOWnRED,			_B,"YELLOW&RED");
+STRING1(YELLOWdBLUE,		_B,"YELLOW-BLUE");
+STRING1(GREENdRED,			_B,"GREEN-RED");
+STRING1(BLUEdYELLOW,		_B,"BLUE-YELLOW");
+STRING1(REDdGREEN,			_B,"RED-GREEN");
+STRING1(GAIN_RED,			_B,"GAIN RED");
+STRING1(GAIN_BLUE,			_B,"GAIN BLUE");
+STRING1(GAIN_GREEN,			_B,"GAIN GREEN");
+STRING1(GAIN_YELLOW,		_B,"GAIN YELLOW");
 
 //STRING5(COLORGAIN,			_B,"COLOR GAIN",		_B,_P(228,125,36,99),			_B,_P(228,125,36,99),			_B,_P(233,234),											_B,_P(233,91));
-//STRING5(MIRROR, 			_B,"MIRROR",			_B,_P(16,123),					_B,_P(16,123),					_B,_P(130,189,195),										_B,_P(193,247,116,221));
+STRING5(MIRROR, 			_B,"MIRROR",			_B,_P(16,123),					_B,_P(16,123),					_B,_P(130,189,195),										_B,_P(193,247,116,221));
 STRING5(FLIP,				_B,"FLIP",				_B,_P(115,210), 				_B,_P(115,210),					_B,_P(122,190,113,128),									_B,_P(193,232,116,221));
 //	STRING5(DZOOM,			_B,"D-ZOOM",			_B,_P(132,206,112,94),			_B,_P(132,206,112,94),			_B,_P(115,108,110,191,109,195,131),						_B,_P(94,231,242,228));
 //STRING5(DWDR,				_B,"ACE",				_B,_P(132,195,97,19,235),		_B,_P(132,195,97,19,235),		_B,_P(100,194,112,189,106,112,216,217),					_B,_P(31,141,138,223));
 //STRING5(DEFOG,				_B,"DEFOG",				_W,_P(255,27,256,257),			_W,_P(255,27,256,257),			_W,_P(279,216,217),										_B,_P(199,17,224,18));
 //STRING5(SHADING,			_B,"SHADING",			_B,_P(199,190,96,248),			_B,_P(199,190,96,248),			_B,_P(105,29,195,115,27,194,102,216,217),				_B,_P(103,230,212,205,138,223));
-//STRING5(PRIVACY,			_B,"PRIVACY",			_B,_P(198,122),					_B,_P(198,122),					_B,_P(128,189,24,124,105,195),							_B,_P(250,97,213,121,195));
+STRING5(PRIVACY,			_B,"PRIVACY",			_B,_P(198,122),					_B,_P(198,122),					_B,_P(128,189,24,124,105,195),							_B,_P(250,97,213,121,195));
 //STRING3(BOX,				_B,"BOX",				_B,"BOX",						_B,"BOX");
 //STRING3(POLYGON,			_B,"POLYGON",			_B,"POLYGON",					_B,"POLYGON");
 //STRING3(POS0X,				_B,"POS0-X",			_B,"POS0-X",					_B,"POS0-X");
@@ -174,26 +191,26 @@ STRING5(FLIP,				_B,"FLIP",				_B,_P(115,210), 				_B,_P(115,210),					_B,_P(122
 //STRING3(POS2Y,				_B,"POS2-Y",			_B,"POS2-Y",					_B,"POS2-Y");
 //STRING3(POS3X,				_B,"POS3-X",			_B,"POS3-X",					_B,"POS3-X");
 //STRING3(POS3Y,				_B,"POS3-Y",			_B,"POS3-Y",					_B,"POS3-Y");
-//STRING5(BnWe,				_B,"B&W\xa6",			_B,_P(158,59,166),				_B,_P(158,59,166),				_W,_P(260,259),								_B,_P(254,119,166));
+STRING5(BnWe,				_B,"B&W\xa6",			_B,_P(158,59,166),				_B,_P(158,59,166),				_W,_P(260,259),								_B,_P(254,119,166));
 
-//STRING5(EXTERNe, 			_B,"EXTERN\xa6",		_B,_P(193,120,113,31,166),		_B,_P(193,120,113,31,166),		_B,_P(230,231,166),							_B,_P(208,140,216,104,166));
+STRING5(EXTERNe, 			_B,"EXTERN\xa6",		_B,_P(193,120,113,31,166),		_B,_P(193,120,113,31,166),		_B,_P(230,231,166),							_B,_P(208,140,216,104,166));
 //
 //STRING5(IR_LED, 			_B,"IR LED",			_B,_P(247,193,103), 			_B,_P(247,193,103),				_W,_P(200,230,263,264,265),					_W,_P(220,208,187,21,275));
 //STRING5(ANTI_SAT,			_B,"ANTI-SAT.", 		_W,_P(268,24), 					_W,_P(268,24),					_W,_P(266,267,268,269),						_B,_P(248,252,118,231));
 //STRING5(AGC_THRES,			_B,"AGC THRES", 		_B,_P(108,215,233), 			_B,_P(108,215,233),				_B,_P('A','G','C',18,15,14,235),			_W,_P('A','G','C',' ',257,258,188,223));
 //STRING5(AGC_MARGIN, 		_B,"AGC MARGIN",		_B,_P(194,226), 				_B,_P(194,226),					_B,_P('A','G','C',129,195,108,194),			_W,_P('A','G','C',' ',257,258,271,265));
 //STRING5(DELAY,				_B,"DELAY", 			_B,_P(189,192), 				_B,_P(189,192),					_B,_P(226,227,236,237,238,241),				_W,_P(221,287,195,15,188,223));
-//STRING5(ZONENUM,			_B,"ZONE NUM",			_B,_P(187,188,240,246), 		_B,_P(187,188,240,246),			_B,_P(25,190,23,117,194,124),				_B,_P(205,204,122,251));
-//STRING5(ZONEDISP,			_B,"ZONE DISP", 		_B,_P(187,188,243,138), 		_B,_P(187,188,243,138),			_B,_P(25,190,23,247,248),					_B,_P(205,204,249,195));
+STRING5(ZONENUM,			_B,"ZONE NUM",			_B,_P(187,188,240,246), 		_B,_P(187,188,240,246),			_B,_P(25,190,23,117,194,124),				_B,_P(205,204,122,251));
+STRING5(ZONEDISP,			_B,"ZONE DISP", 		_B,_P(187,188,243,138), 		_B,_P(187,188,243,138),			_B,_P(25,190,23,247,248),					_B,_P(205,204,249,195));
 
-//STRING5(PRV_MASKMOD,		_B,"MASK MODE",			_W,_P(270,291,109,140),			_W,_P(270,291,109,140),			_B,_P(129,106,31,184,195,116),				_B,_P(109,194,240,112,93));	// 2015112 - WHL
-//STRING5(PRV_FORMAT,			_B,"FORMAT",			_B,_P(101,140),					_B,_P(101,140),					_B,_P(122,28,129,113,112),					_W,_P(288,259));
-//STRING5(PRV_FILL,			_B,"FILL",				_W,_P(283,290),					_W,_P(283,290),					_W,_P(239,280,281),							_B,_P(233,210));
+STRING5(PRV_MASKMOD,		_B,"MASK MODE",			_W,_P(270,291,109,140),			_W,_P(270,291,109,140),			_B,_P(129,106,31,184,195,116),				_B,_P(109,194,240,112,93));	// 2015112 - WHL
+STRING5(PRV_FORMAT,			_B,"FORMAT",			_B,_P(101,140),					_B,_P(101,140),					_B,_P(122,28,129,113,112),					_W,_P(288,259));
+STRING5(PRV_FILL,			_B,"FILL",				_W,_P(283,290),					_W,_P(283,290),					_W,_P(239,280,281),							_B,_P(233,210));
 
-//STRING5(YLEVEL, 			_B,"Y LEVEL",			_B,_P(187,188, 29, 99), 				_B,_P(187,188, 29, 99),					_B,_P('Y',192,125,191),			_B,_P('Y',' ',102,137));
-//STRING5(CBLEVEL,			_B,"CB LEVEL",			_B,_P(187,188,125,228,'(','Y',')'),		_B,_P(187,188,125,228,'(','Y',')'),		_B,_P('B',192,125,191),			_B,_P('C','B',' ',102,137));
-//STRING5(CRLEVEL,			_B,"CR LEVEL",			_B,_P(187,188,125,228,'(','U',')'),		_B,_P(187,188,125,228,'(','U',')'),		_B,_P('R',192,125,191),			_B,_P('C','R',' ',102,137));
-//STRING5(TRANS,				_B,"TRANS", 			_W,_P(256,261,99), 						_W,_P(256,261,99),						_W,_P(282,196,234),				_B,_P(245,111,91));
+STRING5(YLEVEL, 			_B,"Y LEVEL",			_B,_P(187,188, 29, 99), 				_B,_P(187,188, 29, 99),					_B,_P('Y',192,125,191),			_B,_P('Y',' ',102,137));
+STRING5(CBLEVEL,			_B,"CB LEVEL",			_B,_P(187,188,125,228,'(','Y',')'),		_B,_P(187,188,125,228,'(','Y',')'),		_B,_P('B',192,125,191),			_B,_P('C','B',' ',102,137));
+STRING5(CRLEVEL,			_B,"CR LEVEL",			_B,_P(187,188,125,228,'(','U',')'),		_B,_P(187,188,125,228,'(','U',')'),		_B,_P('R',192,125,191),			_B,_P('C','R',' ',102,137));
+STRING5(TRANS,				_B,"TRANS", 			_W,_P(256,261,99), 						_W,_P(256,261,99),						_W,_P(282,196,234),				_B,_P(245,111,91));
 //STRING5(COM,				_B,"COM.",				_B,_P(238,141), 						_B,_P(238,141),							_B,_P(213,215),					_B,_P(244,196));
 //STRING5(CAMID,				_B,"CAM ID",			_B,_P(127,123, 34,' ','I','D'), 		_B,_P(127,123, 34,' ','I','D'),			_B,_P(30,132,189,'I','D'),		_B,_P(238,110, 97,' ','I','D'));
 //STRING5(BAUDRATE,			_B,"BAUDRATE",			_B,_P(128,129), 						_B,_P(128,129),							_B,_P(126,195,192,195,112),		_B,_P(192,91));
@@ -215,48 +232,49 @@ STRING5(FLIP,				_B,"FLIP",				_B,_P(115,210), 				_B,_P(115,210),					_B,_P(122
 //STRING1(1080_60p,			_B,"1080_60p");
 //STRING1(720_25p,			_B,"720_25p");
 //STRING1(720_30p,			_B,"720_30p");
-//STRING5(FREQ,				_B,"FREQ",				_B,_P(121,129),							_B,_P(121,129),				_W,_P(292,293,294),					_W,_P(227,283,193));
-//STRING1(50HZ,				_B,"50HZ");
-//STRING1(60HZ,				_B,"60HZ");
+STRING5(FREQ,				_B,"FREQ",				_B,_P(121,129),					_B,_P(121,129),					_W,_P(292,293,294),										_W,_P(227,283,193));
+STRING1(50HZ,				_B,"50HZ");
+STRING1(60HZ,				_B,"60HZ");
 STRING5(COLOR_BAR,			_B,"COLOR BAR", 		_W,_P(277,125,262), 			_W,_P(277,125,262),				_B,_P(30,189,195,124,195),								_B,_P(239,100,115));
-STRING5(LANGUAGE,			_B,"LANGUAGE",			_B,_P(250,251), 						_B,_P(250,251),				_B,_P(253,254),						_B,_P(203,202));
+STRING5(LANGUAGE,			_B,"LANGUAGE",			_B,_P(250,251), 				_B,_P(250,251),					_B,_P(253,254),											_B,_P(203,202));
 STRING1(ENG,				_B,"ENG");
 STRING1(CHN,				_B,"CHN");
 STRING1(CHNs,				_B,"CHN(S)");
 STRING1(JPN,				_B,"JPN");
 STRING1(KOR,				_B,"KOR");
 STRING5(RESET,				_B,"RESET", 			_B,_P(223,232), 				_B,_P(223,232),					_B,_P(190,107,113,112),									_B,_P(235, 24,252));
-STRING3(SETUP,				_B,"SETUP", 			_B,_P(111,249), 				_B,_P(111,249));
-//STRING3(SHADINGDET, 		_B,"SHADING_DET",		_B,"SHADING_DET",			_B,"SHADING_DET");
+STRING3(SETUP,				_B,"\x0c SETUP", 		_B,_P(12,' ',111,249), 			_B,_P(12,' ',111,249));
+//STRING3(SHADINGDET, 		_B,"SHADING_DET",		_B,"SHADING_DET",				_B,"SHADING_DET");
 STRING3(CAM_VERSION, 		_B,"CAM VERSION",		_B,_P(239,119),					_B,_P(239,119));
 STRING5(CAM_TITLE,			_B,"CAM TITLE", 		_B,"CAM TITLE", 				_B,"CAM TITLE",					_B,_P(30,132,189,110,24,112,191),						_W,_P(238,110,97,281,213,282));
 STRING1(UPsDN_d_CHAR_SELECT,_B,"U"" , ""D"" - CHAR SELECT");
 STRING1(LEsRI_d_POSITION, 	_B,"L"" , ""R"" - POSITION");
 STRING1(TLx8,				_B,_P(163,163,163,163,163,163,163,163));
 
-//STRING5(DET_WINDOW,			_B,"DET WINDOW",		_W,_P(264,231,187,188),		_W,_P(264,231,187,188),					_W,_P(283,284,255,256,286,229),		_B,_P(16,231,205,204,188,223));
-//STRING5(SENSITIVITY,		_B,"SENSITIVITY",		_B,_P(252,99),				_B,_P(252,99),							_B,_P(232,234),						_B,_P(16,91));
-//STRING5(DET_H_POS,			_B,"DET H-POS", 		_B,_P(136,241,100,137), 	_B,_P(136,241,100,137),					_B,_P(220,221,224,225),				_B,_P(14,105,211,237));
-//STRING5(DET_V_POS,			_B,"DET V-POS", 		_B,_P(130,225,100,137), 	_B,_P(130,225,100,137),					_B,_P(222,223,224,225),				_B,_P(189,105,211,237));
-//STRING5(DET_H_SIZE,			_B,"DET H-SIZE",		_B,_P(136,241,28,99),		_B,_P(136,241,28,99),					_B,_P(220,221,104,24,109),			_B,_P(14,105,240,24));
-//STRING5(DET_V_SIZE,			_B,"DET V-SIZE",		_B,_P(130,225,97,99),		_B,_P(130,225,97,99),					_B,_P(222,223,104,24,109),			_B,_P(189,105,240,24));
-//STRING5(MOTION_OSD,			_B,"MOTION OSD",		_B,_P(207,117,'O','S','D'),	_B,_P(207,117,'O','S','D'),				_W,_P(287,288,'O','S','D'),			_W,_P(257,138,' ','O','S','D'));
-//STRING5(TEXT_ALARM,			_B,"TEXT ALARM",		_W,_P(267,206,284,138),		_W,_P(267,206,284,138),					_W,_P(289,290,23,189,131),			_W,_P(260,217,200,99));
-//STRING5(SIGNAL_OUT,			_B,"SIGNAL OUT",		_W,_P(276,246,275,289),		_W,_P(276,246,275,289),					_W,_P(215,291,249,250),				_B,_P(196,251,236,104));
-
-//STRING5(WINDOWUSE,			_B,"WINDOW USE",		_W,_P(287,260,294,295),				_W,_P(287,260,294,295),				_W,_P(206,15,270,271),				_B,_P(210,232,215,184,209));			//	14.07.14 lgh
-//STRING5(WINDOWZONE,			_B,"WINDOW ZONE",		_W,_P(287,260,187,188),				_W,_P(287,260,187,188),				_W,_P(206,15,283,284,255,256),		_B,_P(210,232,215,16,231,205,204));		//	14.07.14 lgh
-//STRING5(DET_TONE,			_B,"DET TONE",			_W,_P(264,231,187,188,125),			_W,_P(264,231,187,188,125),			_W,_P(283,284,255,256,239),			_B,_P(16,231,205,204,186,225));		//	15.03.24 lgh
-//STRING5(MDRECT_FILL,		_B,"MDRECT FILL",		_W,_P(264,231,187,188,283,290),		_W,_P(264,231,187,188,283,290),		_W,_P(283,284,255,256,280,281),		_B,_P(16,231,205,204,233,210));		//	15.03.24 lgh
+STRING5(DET_WINDOW,			_B,"DET WINDOW",		_W,_P(264,231,187,188),		_W,_P(264,231,187,188),					_W,_P(283,284,255,256,286,229),		_B,_P(16,231,205,204,188,223));
+STRING5(SENSITIVITY,		_B,"SENSITIVITY",		_B,_P(252,99),				_B,_P(252,99),							_B,_P(232,234),						_B,_P(16,91));
+STRING5(DET_H_POS,			_B,"DET H-POS", 		_B,_P(136,241,100,137), 	_B,_P(136,241,100,137),					_B,_P(220,221,224,225),				_B,_P(14,105,211,237));
+STRING5(DET_V_POS,			_B,"DET V-POS", 		_B,_P(130,225,100,137), 	_B,_P(130,225,100,137),					_B,_P(222,223,224,225),				_B,_P(189,105,211,237));
+STRING5(DET_H_SIZE,			_B,"DET H-SIZE",		_B,_P(136,241,28,99),		_B,_P(136,241,28,99),					_B,_P(220,221,104,24,109),			_B,_P(14,105,240,24));
+STRING5(DET_V_SIZE,			_B,"DET V-SIZE",		_B,_P(130,225,97,99),		_B,_P(130,225,97,99),					_B,_P(222,223,104,24,109),			_B,_P(189,105,240,24));
+STRING5(MOTION_OSD,			_B,"MOTION OSD",		_B,_P(207,117,'O','S','D'),	_B,_P(207,117,'O','S','D'),				_W,_P(287,288,'O','S','D'),			_W,_P(257,138,' ','O','S','D'));
+STRING5(TEXT_ALARM,			_B,"TEXT ALARM",		_W,_P(267,206,284,138),		_W,_P(267,206,284,138),					_W,_P(289,290,23,189,131),			_W,_P(260,217,200,99));
+STRING5(SIGNAL_OUT,			_B,"SIGNAL OUT",		_W,_P(276,246,275,289),		_W,_P(276,246,275,289),					_W,_P(215,291,249,250),				_B,_P(196,251,236,104));
+STRING5(DETp_MOTION, 		_B,"DET. MOTION",		_B,_P(195,201,213,231),		_B,_P(195,201,213,231),					_B,_P(184,195,105,187,194),			_B,_P(210,232,215,16,231));
+STRING1(CAMp_MOVING,		_B,"CAM. MOVING");
+STRING1(BRIGHT_CHGp, 		_B,"BRIGHT CHG.");
+STRING5(WINDOWUSE,			_B,"WINDOW USE",		_W,_P(287,260,294,295),				_W,_P(287,260,294,295),				_W,_P(206,15,270,271),				_B,_P(210,232,215,184,209));			//	14.07.14 lgh
+STRING5(WINDOWZONE,			_B,"WINDOW ZONE",		_W,_P(287,260,187,188),				_W,_P(287,260,187,188),				_W,_P(206,15,283,284,255,256),		_B,_P(210,232,215,16,231,205,204));		//	14.07.14 lgh
+STRING5(DET_TONE,			_B,"DET TONE",			_W,_P(264,231,187,188,125),			_W,_P(264,231,187,188,125),			_W,_P(283,284,255,256,239),			_B,_P(16,231,205,204,186,225));		//	15.03.24 lgh
+STRING5(MDRECT_FILL,		_B,"MDRECT FILL",		_W,_P(264,231,187,188,283,290),		_W,_P(264,231,187,188,283,290),		_W,_P(283,284,255,256,280,281),		_B,_P(16,231,205,204,233,210));		//	15.03.24 lgh
 
 #if model_WDR_ROI
 STRING1(ROI_WDRe, 			_B,"ROI\xa6");
 STRING1(ROI_WDR, 			_B,"ROI");
 #endif
-//STRING5(nIRIS,				_B,"IRIS",				_B,_P(20,21),					_B,_P(20,21),					_B,_P(23,24,190,106),						_B,_P(198,213,108,194));
+STRING5(nIRIS,				_B,"IRIS",				_B,_P(20,21),					_B,_P(20,21),					_B,_P(23,24,190,106),						_B,_P(198,213,108,194));
 //STRING5(IRIS,				_B,"\x04 IRIS",			_B,_P(4,' ',20,21),				_B,_P(4,' ',20,21),				_B,_P(4,' ',23,24,190,106),					_B,_P(4,' ',198,213,108,194));
 //STRING1(IRISCAL,			_B,"IRIS CALB");
-//STRING5(FOCUS_ADJ,			_B,"\x01 FOCUS ADJ",	_W,_P(1,' ',258,212,263,131),	_W,_P(1,' ',258,212,263,131),	_B,_P(1,' ',122,28,195,30,106,209,210),		_B,_P(1,' ',235,222,225,223));
 
 STRING1(nDEBUG,				_B,"DEBUG");
 STRING1(FUNCTION,			_B,"FUNCTION");
@@ -318,11 +336,11 @@ STRING1(FONT_TEST,			_B,"FONT TEST");
 
 STRING1(DEVELOPER,			_B,"DEVELOPER");
 //STRING1(WDR_ADJUST,			_B,"WDR ADJUST");
-//STRING1(Ap_BRIGHT_L,		_B,"A. BRIGHT L");
-//STRING1(Ap_BRIGHT_S,		_B,"A. BRIGHT S");
-//STRING1(Dp_BRIGHT,			_B,"D. BRIGHT");
-//STRING1(Dp_CONTRAST,		_B,"D. CONTRAST");
-//STRING1(DEFAULT,			_B,"DEFAULT");
+STRING1(Ap_BRIGHT_L,		_B,"A. BRIGHT L");
+STRING1(Ap_BRIGHT_S,		_B,"A. BRIGHT S");
+STRING1(Dp_BRIGHT,			_B,"D. BRIGHT");
+STRING1(Dp_CONTRAST,		_B,"D. CONTRAST");
+STRING1(DEFAULT,			_B,"DEFAULT");
 
 //STRING1(SMALL_EDGE,			_B,"SMALL EDGE");
 //STRING1(BIG_EDGE,			_B,"BIG EDGE");
@@ -353,14 +371,18 @@ STRING1(E_TYPE,				_B,"E-TYPE");
 STRING1(F_TYPE,				_B,"F-TYPE");
 //STRING1(ALWAYS,				_B,"ALWAYS");
 //STRING1(DAY_ONLY,			_B,"DAY ONLY");
-//STRING1(CENTER,				_B,"CENTER");
-//STRING1(SPOT,				_B,"SPOT");
+STRING1(CENTER,				_B,"CENTER");
+STRING1(SPOT,				_B,"SPOT");
 
 //STRING5(nBACKLIGHT,			_B,"BACKLIGHT",			_B,_P(25,20,26,27),					_B,_P(25,20,26,27),					_B,_P(211,207,216,217),				_B,_P(204,21));
 //STRING5(AE_SPEED,			_B,"AE SPEED", 			_B,_P('A','E',' ',22,23,234,110),	_B,_P('A','E',' ',22,23,234,110),	_B,_P('A','E',' ',106,127,195,116),	_B,_P('A','E',' ',192,91));
 //STRING5(LOWe,				_B,"LOW\xa6",			_B,_P(208,0xa6), 					_B,_P(208,0xa6),					_B,_P(197,0xa6),					_B,_P(26,212,0xa6));
 //STRING5(MIDDLEe, 			_B,"MIDDLE\xa6",		_B,_P(222,0xa6), 					_B,_P(222,0xa6),					_B,_P(198,0xa6),					_B,_P(229,15,0xa6));
 //STRING5(HIGHe,				_B,"HIGH\xa6",			_B,_P(28,0xa6),						_B,_P(28,0xa6),						_B,_P(199,0xa6),					_B,_P(29,212,0xa6));
+
+STRING1(DNR_3D,				_B,"3D-DNR");
+STRING1(DNR_2D,				_B,"2D-DNR");
+
 
 //#if 0 // Error Check
 //-------------------------------------------------------------------------------------------------
@@ -380,7 +402,7 @@ STRING1(F_TYPE,				_B,"F-TYPE");
 // Two Moter
 #if(model_Lens==1)
 #if 1
-//STRING1(MOTORIZED,			_B,"\x01 MOTORIZED");
+STRING1(MOTORIZED,			_B,"\x01 MOTORIZED");
 //STRING1(AF_MODE,			_B,"AF MODE");
 //STRING1(ONESHOTp,			_B,"ONESHOT\xa0");
 //STRING1(DnN_FILTER,			_B,"D&N FILTER");
@@ -389,7 +411,7 @@ STRING1(F_TYPE,				_B,"F-TYPE");
 //STRING1(INITIAL,			_B,"INITIAL");
 
 //STRING1(MAF_AUTO_TRACE,		_B,"AUTO TRACE");
-//STRING1(MOTOR_SETUP,		_B,"\x01 MAF SETUP");
+STRING1(MOTOR_SETUP,		_B,"\x01 MAF SETUP");
 //STRING1(MAF_DEVMODE,		_B,"DEV MODE");
 //STRING1(MAF_TESTMODE,		_B,"TEST MODE");
 //STRING1(MAF_ZOOM_AREA,		_B,"ZOOM AREA");
@@ -417,6 +439,8 @@ STRING1(F_TYPE,				_B,"F-TYPE");
 //STRING5(ONEPUSHAF,			_B,"ONEPUSHAF",		_B,"ONEPUSHAF",						_B,"ONEPUSHAF",						_B,_P(188,194,128,113,105,186,195,'A','F'),		_W,_P(121,291,92,292,217,92,235,222));
 //STRING5(SyncTDN,			_B,"SYNC TDN",		_B,"SYNC TDN",						_B,"SYNC TDN",						_B,_P(115,195,117,24,112,242,243),				_B,_P(227,201,15,92,24));
 #endif
+#else
+STRING5(FOCUS_ADJ,			_B,"\x01 FOCUS ADJ",	_W,_P(1,' ',258,212,263,131),	_W,_P(1,' ',258,212,263,131),	_B,_P(1,' ',122,28,195,30,106,209,210),		_B,_P(1,' ',235,222,225,223));
 #endif
 
 #if (IMAGE_INPUT_MODE==1)
@@ -428,7 +452,7 @@ STRING1(F_TYPE,				_B,"F-TYPE");
 //STRING1(WARNINGTEST1,		_B,"\x07\x08\x09\x0a\x0b");
 //STRING1(WARNINGTEST2,		_B,_P(7,8,9,10,11));
 
-//STRING5(OUTPUTSET,			_B,"\x02 OUTPUT SET",	_B,_P(0x02,' ',139,121,229,230),	_B,_P(0x02,' ',139,121,229,230),	_B,_P(0x02,' ',249,250,184,195,116),	_B,_P(0x02,' ',236,104,188,223));
+STRING5(OUTPUTSET,			_B,"\x02 OUTPUT SET",	_B,_P(0x02,' ',139,121,229,230),	_B,_P(0x02,' ',139,121,229,230),	_B,_P(0x02,' ',249,250,184,195,116),	_B,_P(0x02,' ',236,104,188,223));
 
 //STRING5(25P_NORMAL,			_B,"25P NORMAL",		_B,"25P NORMAL",					_B,"25P NORMAL",					_B,"25P NORMAL",						_B,_P('2','5','P'));
 //STRING5(12P_WDR,			_B,"12P WDR",			_B,"12P WDR",						_B,"12P WDR",						_B,"12P WDR",							_B,_P('1','2','P',' ',204,21,138,223));
@@ -456,7 +480,7 @@ STRING1(F_TYPE,				_B,"F-TYPE");
 
 
 #define __ISP_MENU_STR__
-#include "isp_par_tbl.h"
+#include "isp_user_parameter.h"
 #undef __ISP_MENU_STR__
 
 

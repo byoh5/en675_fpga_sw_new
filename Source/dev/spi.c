@@ -9,9 +9,7 @@ ISRD static tIhnd arrSPIIrq[SPI_CNT];
 
 void SpiInit(UINT nCH, UINT Speed_Hz, BYTE nBIT, BYTE isLSB)
 {
-	arrSPI[nCH]->WS =	(BIT==8 ) ? 0 :		// SPI word size / 0:8bit, 1:16bit, 2:24bit, 3:32bit
-						(BIT==16) ? 1 :
-						(BIT==24) ? 2 : 3 ;
+	SpiSetWs(nCH, nBIT);
 
 	arrSPI[nCH]->BIT_MODE = isLSB;			// SPI bit direction / 0:MSB First, 1:LSB First
 
@@ -70,6 +68,13 @@ void SpiDeinit(UINT nCH)
 		case 7:	SPI7_PIN_DEINIT;	break;
 		case 8:	SPI8_PIN_DEINIT;	break;
 	}
+}
+
+void SpiSetWs(UINT nCH, BYTE nBIT)
+{
+	arrSPI[nCH]->WS =	(nBIT==8 ) ? 0 :		// SPI word size / 0:8bit, 1:16bit, 2:24bit, 3:32bit
+						(nBIT==16) ? 1 :
+						(nBIT==24) ? 2 : 3 ;
 }
 
 void SpiSetCs(UINT nCH, ENX_HL hl)

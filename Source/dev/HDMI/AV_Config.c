@@ -1015,13 +1015,13 @@ BYTE SetAVI_InfoFrames(void)
 //////////////////////////////////////////////////////////////////////////////
 BYTE SetAudioInfoFrames(byte ChannelCount, byte CodingType, byte SS, byte Fs, byte SpeakerConfig)
 {
-    byte B_Data[SIZE_AUDIO_INFOFRAME];  // 14
+    byte B_Data[SIZE_AUDIO_INFOFRAME+1];  // 14
     byte i;
 //    byte TmpVal = 0;
 
     _printf(">>SetAudioInfoFrames()\n");
 
-    for (i = 0; i < SIZE_AUDIO_INFOFRAME; i++)
+    for (i = 0; i < SIZE_AUDIO_INFOFRAME + 1; i++)
         B_Data[i] = 0;
 
     B_Data[0] = EN_AUDIO_INFOFRAMES;        // 0xC2

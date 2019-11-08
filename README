@@ -16,8 +16,6 @@ CPU0, 1, 2, 3은 source/core폴더에서 core0, core1, core2, core3의 main_.c �
 CPU1에서 freeRTOS가 작동중입니다. DDR BSS영역 뒤의 4MByte 영역을 RTOS Heap 영역으로 사용합니다.
 만약 freeRTOS를 사용하지 않는다면 Cmake/device.cmake의 USE_FREERTOS 부분을 찾아 0으로 수정하시면 됩니다.
 
-PMP병합
-
 
 이클립스 구성
 ---------

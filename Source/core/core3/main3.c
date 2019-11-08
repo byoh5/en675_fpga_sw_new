@@ -15,8 +15,12 @@ void main_3(int cpu_id)
 
 	while (1) {
 		if (SYS_REG0 == 0xC) {
+#ifdef __USE_LED1__
 			GpioSetOut(GPIO_LED1, GPIO_OUT_LOW);
+#endif
+#ifdef __USE_LED2__
 			GpioSetOut(GPIO_LED2, GPIO_OUT_LOW);
+#endif
 			//_printf("%d:%lu\r\n", cpu_id, *mtime);
 			WaitXms(100);
 			SYS_REG0 = 0xA;

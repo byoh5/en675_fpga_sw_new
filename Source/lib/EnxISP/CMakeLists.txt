@@ -19,6 +19,10 @@ SET ( ENXISP_SRCS
 	EN675_SENS_OV4689.c
 	EN675_SENS_OS08A10.c
 	isp_lib_main.c
+	isp_lib_ae_adv.c
+	isp_lib_awb.c
+	isp_lib_defog.c
+	isp_lib_imd.c
 )
 
 # 라이브러리 생성

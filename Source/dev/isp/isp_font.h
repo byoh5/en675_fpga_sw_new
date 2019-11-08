@@ -50,30 +50,36 @@ extern UINT gnFontXw;
 extern UINT gnFontYw;
 extern UINT gnFontXwMax[3];
 extern UINT gnFontYwMax[3];
-extern char gbStr[16+1];
+extern char gbStr[33/*16*/+1];	// 33 : for FontBin()
 
 extern void FontInit(UINT HOfs, UINT VOfs, BOOL IsBord, UINT FontHw);
 extern void FontSetColor(UINT FontColor0, UINT FontColor1, UINT FontColor2, UINT FontColor3);
 extern void FontSetSize(UINT FontSize, UINT FontAreaSet, UINT BordMod);
-extern void FontSetArea(UINT BigFontMaxW, UINT BigFontMaxH, UINT SmallFontMaxW, UINT SmallFontMaxH);
 extern void FontClrAll(BYTE Alpha, BYTE Color);
 extern void FontCharInit(const UINT anFont[][12], UINT Ea);
 extern void FontEx(UINT anPosY, UINT anPosX, BYTE Alpha, BYTE Color, UINT anLen);
-extern void FontStrEx(UINT anPosY, UINT anPosX, BYTE Alpha, BYTE Color, const char* cStr, UINT anLen);
-extern void FontStr(UINT anPosY, UINT anPosX, const char* cStr, UINT anLen);
+extern void FontCharEx(UINT anPosY, UINT anPosX, BYTE Alpha, BYTE Color, char cChar);
+extern UINT FontStrEx(UINT anPosY, UINT anPosX, BYTE Alpha, BYTE Color, const char* cStr, UINT anLen);
+extern UINT FontStr(UINT anPosY, UINT anPosX, const char* cStr, UINT anLen);
 extern void FontClr(UINT anPosY, UINT anPosX, UINT anLen);
 extern void FontClrStr(UINT anPosY, UINT anPosX, const char* cStr, UINT anStrLen, UINT anClrLen);
 extern void FontClrLine(UINT anPosY);
 extern void FontClrChar(UINT anPosY, UINT anPosX);
+extern void FontBin(const UINT anPosY, const UINT anPosX, const UINT anVal, UINT anLen);
 extern void FontHex(const UINT anPosY, const UINT anPosX, const UINT anVal, UINT anLen);
 extern void FontDec(const UINT anPosY, const UINT anPosX, const int aiVal, UINT anLen, const BYTE abFill);
+extern void FontHexEx(const UINT anPosY, const UINT anPosX, const BYTE Alpha, const BYTE Color, const int aiVal, UINT anLen);
 extern void FontDecEx(const UINT anPosY, const UINT anPosX, const BYTE Alpha, const BYTE Color, const int aiVal, UINT anLen, const BYTE abFill);
+extern void FontStrDec(const BYTE abOn, const UINT anPosY, const UINT anPosX, BYTE StrColor, const char* cStr, const BYTE ValColor, const int aiVal, UINT anValLen, const BYTE abFill);
+extern void FontStrHex(const BYTE abOn, const UINT anPosY, const UINT anPosX, BYTE StrColor, const char* cStr, const BYTE ValColor, const int aiVal, UINT anValLen);
+extern void FontStrDecUnit(const BYTE abOn, const UINT anPosY, const UINT anPosX, BYTE StrColor, const char* cStr, const BYTE ValColor, const int aiVal, UINT anValLen, const char* cStrUnit);
 #if model_CharMax == 1
 extern UINT strlenW(const EXCH* apbStr);
 extern void FontStrW(UINT anPosY, UINT anPosX, const EXCH* cStr, UINT anLen);
 extern void FontClrStrW(UINT anPosY, UINT anPosX, const EXCH* cStr, UINT anStrLen, UINT anClrLen);
 #endif
 
+extern void uint2strb(char* apbStr, UINT anVal, UINT anLen);
 extern void uint2strh(char* apbStr, UINT anVal, UINT anLen);
 extern UINT uint2str(char* apbStr, UINT anVal, UINT anLen);
 extern void int2str(char* apbStr, int aiVal, UINT anLen, const BYTE abFill);

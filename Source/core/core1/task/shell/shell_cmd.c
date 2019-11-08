@@ -656,42 +656,48 @@ extern void DdrTestProcess(void);
 
 int cmd_info(int argc, char *argv[])
 {
-	_Gprintf("H/W info ===================================\n");
-	printf("MCK Clock             : %ukHz\n", MCK_FREQ / 1000);
-	printf("CPU Clock             : %ukHz\n", CPU_FREQ / 1000);
-	printf("ISP Clock             : %ukHz\n", 0);
+	if (argc == 2 && strcmp(argv[1], "binary") == 0) {
+		unsigned int *pBinary = (unsigned int*)0x80000000;
+		tCodeMemInfo *pCodeMemInfo = (tCodeMemInfo *)pBinary;	// Get code memory information
+		PRINT_CODE_MEM_INFO("Core", 0);
+	} else {
+		_Gprintf("H/W info ===================================\n");
+		printf("MCK Clock             : %ukHz\n", MCK_FREQ / 1000);
+		printf("CPU Clock             : %ukHz\n", CPU_FREQ / 1000);
+		printf("ISP Clock             : %ukHz\n", 0);
 
-	UINT arrMark[5];
-	arrMark[0] = SYS_MARK0;
-	arrMark[1] = SYS_MARK1;
-	arrMark[2] = SYS_MARK2;
-	arrMark[3] = SYS_MARK3;
-	arrMark[4] = SYS_MARK4;
-	char *strName = (char *)arrMark;
-	printf("Model name            : [");
-	for (int i = 0; i < sizeof(arrMark); i++) {
-		printf("%c", strName[i]);
+		UINT arrMark[5];
+		arrMark[0] = SYS_MARK0;
+		arrMark[1] = SYS_MARK1;
+		arrMark[2] = SYS_MARK2;
+		arrMark[3] = SYS_MARK3;
+		arrMark[4] = SYS_MARK4;
+		char *strName = (char *)arrMark;
+		printf("Model name            : [");
+		for (int i = 0; i < sizeof(arrMark); i++) {
+			printf("%c", strName[i]);
+		}
+		printf("]\n");
+		printf("Model date            : %04X-%02X-%02X %02X:%02X:%02X\n", SYS_RTL_YEAR, SYS_RTL_MONTH, SYS_RTL_DAY, SYS_RTL_HOUR, SYS_RTL_MINUTE, SYS_RTL_SECOND);
+
+		_Gprintf("S/W info ===================================\n");
+		printf("Firmware compile date : %s %s\n", __DATE__, __TIME__);
+		printf("EN675 Firmware Ver    : %X.%X.%X\n", EN675_FW_VERSION_MAJOR, EN675_FW_VERSION_MINOR, EN675_FW_VERSION_PATCH);
+		printf("freeRTOS Ver          : %s\n", FreeRTOSVer);
+	#ifdef __NETWORK__
+		 printf("lwIP Ver              : %s\n", LWIP_VERSION_STRING);
+	#endif
+	#ifdef __FILESYSTEM__
+		 printf("FatFS Ver             : %u.%u%c patch%u\n", FATFS_VERSION_MAJOR, FATFS_VERSION_MINOR, FATFS_VERSION_REVISION, FATFS_VERSION_RC);
+	#endif
+
+		_Gprintf("Status info ================================\n");
+		size_t dc = rdcycle();
+		size_t di = rdinstret();
+		printf("cycles                : %ld\n", dc);
+		printf("instructions          : %ld\n", di);
+		printf("CPI                   : %lu.%lu%lu\n", dc/di, 10UL*dc/di % 10, (100UL*dc + di/2)/di % 10);
 	}
-	printf("]\n");
-	printf("Model date            : %04X-%02X-%02X %02X:%02X:%02X\n", SYS_RTL_YEAR, SYS_RTL_MONTH, SYS_RTL_DAY, SYS_RTL_HOUR, SYS_RTL_MINUTE, SYS_RTL_SECOND);
-
-	_Gprintf("S/W info ===================================\n");
-	printf("Firmware compile date : %s %s\n", __DATE__, __TIME__);
-	printf("EN675 Firmware Ver    : %X.%X.%X\n", EN675_FW_VERSION_MAJOR, EN675_FW_VERSION_MINOR, EN675_FW_VERSION_PATCH);
-	printf("freeRTOS Ver          : %s\n", FreeRTOSVer);
-#ifdef __NETWORK__
-	 printf("lwIP Ver              : %s\n", LWIP_VERSION_STRING);
-#endif
-#ifdef __FILESYSTEM__
-	 printf("FatFS Ver             : %u.%u%c patch%u\n", FATFS_VERSION_MAJOR, FATFS_VERSION_MINOR, FATFS_VERSION_REVISION, FATFS_VERSION_RC);
-#endif
-
-	_Gprintf("Status info ================================\n");
-	size_t dc = rdcycle();
-	size_t di = rdinstret();
-	printf("cycles                : %ld\n", dc);
-	printf("instructions          : %ld\n", di);
-	printf("CPI                   : %lu.%lu%lu\n", dc/di, 10UL*dc/di % 10, (100UL*dc + di/2)/di % 10);
 
 	return 0;
 	UNUSED(argc);

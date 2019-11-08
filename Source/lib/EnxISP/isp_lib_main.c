@@ -74,13 +74,13 @@ void LibUpTest(void)
 	#define DISP_TIME_Y		10
 	#define DISP_TIME_X		0
 
-	UP(UpBrightness)++;
+	UP(Brightness)++;
 	PAR1F++;
 
 	FontStrEx(DISP_TIME_Y, DISP_TIME_X, NO_ALPHA, MN_GREEN, "UpBrt", 5);
-	FontHex(DISP_TIME_Y, DISP_TIME_X+6, UP(UpBrightness), sizeof(UP(UpBrightness))<<1);
+	FontHex(DISP_TIME_Y, DISP_TIME_X+6, UP(Brightness), sizeof(UP(Brightness))<<1);
 	FontStrEx(DISP_TIME_Y+1, DISP_TIME_X, NO_ALPHA, MN_GREEN, "UpCBa", 5);
-	FontHex(DISP_TIME_Y+1, DISP_TIME_X+6, UP(UpColorBar), sizeof(UP(UpColorBar))<<1);
+	FontHex(DISP_TIME_Y+1, DISP_TIME_X+6, UP(ColorBar), sizeof(UP(ColorBar))<<1);
 	FontStrEx(DISP_TIME_Y+2, DISP_TIME_X, NO_ALPHA, MN_GREEN, "UpP1F", 5);
 	FontHex(DISP_TIME_Y+2, DISP_TIME_X+6, PAR1F, sizeof(PAR1F)<<1);
 }

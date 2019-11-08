@@ -94,16 +94,34 @@ static volatile unsigned int *iClaimCompliet[8] = {
 };
 
 #define IRQ_ISP_PRINTF(...)	//printf(__VA_ARGS__)
-volatile UINT gnVoIrqCnt = 0;
+UINT gnVoIrqCnt = 0;
+UINT gnViIrqCnt = 0;
+UINT gnVDI_4FPS = 0;
+UINT gnVDI_CHG = 2;
 
 void enx_exirq_source1(void)
 {
 	if (IRQ_ISP) {
 		IRQ_ISP_PRINTF("IRQ_ISP:");
-		if (IRQ_ISP0){CLI_VLOCKIw(1);}
+		if (IRQ_ISP0){CLI_VLOCKIw(1);
+
+			static ULONG pre_time = 0;
+			const ULONG cur_time = rdcycle();
+			const ULONG dep = (pre_time < cur_time) ? cur_time - pre_time : (0xFFFFFFFFFFFFFFFF - pre_time) + cur_time + 1;
+
+			if(gnVDI_CHG || dep > (4008*(CPU_FREQ/1000))) {	// 4000 = 4sec, 8 = 8ms : 60fps일 경우 최악 조건에서 IRQ 처리 함수 진입 시간이 1회 1~31ms, 2회 17~47ms 이 될 수 있으며 판정 불가능, 판정이 가능한 최대 조건은 1회 9~23 ms, 2회 25~39 이므로 24(=16+8)로 판단해야 함
+				pre_time = cur_time;
+				if(gnVDI_CHG)	gnVDI_CHG--;
+				else			gnVDI_4FPS = gnViIrqCnt;
+				gnViIrqCnt = 0;
+			}
+			else gnViIrqCnt++;
+
+			//printf("VI:%d\r\n", gnViIrqCnt);
+		}
 		if (IRQ_ISP1){CLI_VLOCKWw(1);}
 		if (IRQ_ISP2){CLI_VLOCKOw(1); gnVoIrqCnt++;
-			//if(!(gnVoIrqCnt%(FPS_VDO*5))) _printf("VLOCKO_IRQ %d!!!\n", gnVoIrqCnt/FPS_VDO);	// TODO ◆ KSH VLOCKO IRQ test
+			//if(!(gnVoIrqCnt%(FPS_VDO*5))) _printf("VLOCKO_IRQ %d!!!\n", gnVoIrqCnt/FPS_VDO);	// TODO KSH ◆ VLOCKO IRQ test
 			//else if(!(gnVoIrqCnt%FPS_VDO)) _printf_irq("VLOCKO_IRQ %d\n", gnVoIrqCnt/FPS_VDO);
 			IRQ_ISP_PRINTF("VLOCKO_IRQ\n");
 		}
@@ -693,7 +711,7 @@ void trap_from_machine_mode_freertos(uintptr_t mcause, uintptr_t mepc, uint64 cp
 #if 1
 uintptr_t trap_from_machine_mode_sync(uintptr_t mcause, uintptr_t mepc, uint64 cpuid, uintptr_t regs[32])
 {
-	printf("sync CPUid(%d)\n", read_csr(mhartid));
+//	printf("sync CPUid(%d)\n", read_csr(mhartid));
 	switch(mcause) {
 	case CAUSE_USER_ECALL:
 	case CAUSE_SUPERVISOR_ECALL:
@@ -710,12 +728,13 @@ uintptr_t trap_from_machine_mode_sync(uintptr_t mcause, uintptr_t mepc, uint64 c
 
 uintptr_t trap_from_machine_mode_async(uintptr_t mcause, uintptr_t mepc, uint64 cpuid, uintptr_t regs[32])
 {
-	uint64 csrval, csrval2;
 	uint64 cpuidx = cpuid * 2;
 	mcause -= 0x8000000000000000;
 	switch (mcause) {
 #if 0
 	case IRQ_M_SOFT:
+		{
+		uint64 csrval, csrval2;
 		csrval = read_csr(mip);
 		clear_csr(mie, MIP_MSIP);
 		clear_csr(mip, MIP_MSIP);
@@ -724,7 +743,7 @@ uintptr_t trap_from_machine_mode_async(uintptr_t mcause, uintptr_t mepc, uint64 
 		set_csr(mie, MIP_MSIP);
 		write_csr(mip, 0);
 		return mepc;
-		break;
+		}
 #endif
 	case IRQ_M_TIMER:
 		enx_timerirq_next();
@@ -839,7 +858,15 @@ void enx_timerirq_init(void)
 	set_csr(mie, MIP_MTIP);								// Enable the Machine-Timer bit in MIE
 }
 
-void enx_externalirq_init(void)
+void enx_externalirq_init_cpu0(void)
+{
+	set_csr(mie, MIP_MEIP);								// Enable External Interrupts
+	set_csr(mstatus, MSTATUS_MIE);						// Machine Interrupt Enable
+
+	enx_externalirq_perl(eigiUART, ENX_ON, 0);			// Enable UART Interrupts
+}
+
+void enx_externalirq_init_cpu1(void)
 {
 	set_csr(mie, MIP_MEIP);								// Enable External Interrupts
 	set_csr(mstatus, MSTATUS_MIE);						// Machine Interrupt Enable
@@ -859,7 +886,7 @@ void enx_externalirq_init(void)
 	enx_externalirq_perl(eigiSHA, ENX_ON, 0);			// Enable SHA Interrupts
 	enx_externalirq_perl(eigiCHKSUM, ENX_ON, 0);		// Enable CHKSUM Interrupts
 	enx_externalirq_perl(eigiBUS, ENX_ON, 0);			// Enable BUS Interrupts
-	enx_externalirq_perl(eigiUART, ENX_ON, 0);			// Enable UART Interrupts
+//	enx_externalirq_perl(eigiUART, ENX_ON, 0);			// Enable UART Interrupts
 	enx_externalirq_perl(eigiSPI, ENX_ON, 0);			// Enable SPI Interrupts
 	enx_externalirq_perl(eigiI2C, ENX_ON, 0);			// Enable I2C Interrupts
 	enx_externalirq_perl(eigiGPIO, ENX_ON, 0);			// Enable GPIO Interrupts

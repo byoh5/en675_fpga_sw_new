@@ -251,7 +251,7 @@ BYTE GetDDC_Access (byte* SysCtrlRegVal)
 	byte DDCReqTimeout = T_DDC_ACCESS;
 	byte TPI_ControlImage;
 
-	_printf((">>GetDDC_Access()\n"),0,0);
+	_printf(">>GetDDC_Access()\r\n");
 
 	sysCtrl = ReadByteTPI (TPI_SYSTEM_CONTROL_DATA_REG);			// Read and store original value. Will be passed into ReleaseDDC()
 	*SysCtrlRegVal = sysCtrl;
@@ -299,7 +299,7 @@ BYTE ReleaseDDC(byte SysCtrlRegVal)
 	byte DDCReqTimeout = T_DDC_ACCESS;
 	byte TPI_ControlImage;
 
-	_printf((">>ReleaseDDC()\n"),0,0);
+	_printf(">>ReleaseDDC()\r\n");
 
 	SysCtrlRegVal &= ~BITS_2_1;					// Just to be sure bits [2:1] are 0 before it is written
 
@@ -341,7 +341,7 @@ BYTE ReleaseDDC(byte SysCtrlRegVal)
 #ifdef READKSV
 void ReadBlockHDCP(byte TPI_Offset, word NBytes, byte * pData)
 {
-	_printf((">>ReadBlockHDCP()\n"),0,0);
+	_printf(">>ReadBlockHDCP()\r\n");
     I2C_ReadBlock(HDCP_SLAVE_ADDR, TPI_Offset, pData, NBytes);
 }
 #endif

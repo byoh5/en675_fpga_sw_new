@@ -108,13 +108,13 @@
 #define ETHPHY_GPIO_RST	54
 #define ETHPHY_GPIO_IRQ	53
 #define ETHPHY_MDIO_ADR	1
-#if 0
+#if 1
 #define __ETHPHY_KSZ8081MNX__
 #define ETHPHY_TYPE_VAL 2
 #define ETHPHY_SPD_VAL 100
 #define ETHPHY_DUPLEX_VAL 2
 #endif // __ETHPHY_KSZ8081MNX__
-#if 1
+#if 0
 #define __ETHPHY_KSZ8081RNB__
 #define ETHPHY_TYPE_VAL 3
 #define ETHPHY_SPD_VAL 100
@@ -139,6 +139,20 @@
 #define AUDIO_TLV320AIC3206_I2C_CA 0x30
 #endif
 #endif // __AUDIO__
+
+#if 0
+#define __USE_IRIS_PWM__
+#define TIMER_PWM_IRIS	38
+#endif // __USE_IRIS_PWM__
+
+#if 0
+#define __USE_IR_LED_LPWM__
+#endif // __USE_IR_LED_LPWM__
+
+#if 0
+#define __USE_IR_LED_GPIO__
+#define GPIO_IR_LED	55
+#endif // __USE_IR_LED_GPIO__
 
 #if 1
 #define __USE_LED0__

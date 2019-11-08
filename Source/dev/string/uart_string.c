@@ -2,8 +2,6 @@
 
 #if USE_UART0 | USE_UART1 | USE_UART2 | USE_UART3 | USE_UART4 | USE_UART5 | USE_UART6 | USE_UART7 | USE_UART8
 
-#include "uart_string.h"
-
 #include <string.h>		// strlen()
 
 #if 1
@@ -96,8 +94,8 @@
 //-------------------------------------------------------------------------------------------------
 // Snatch logic address (Regulate with logic address .CAUTION)
 #define	BASE_SENS			0x4000		// 0x300 ea 		sensor control
-#define BASE_EN331			0x5000
-#define BASE_EEPROM			0x6000
+#define BASE_EN331			0x6000
+#define BASE_EEPROM			0x7000
 #define BASE_MICOM_PAR		0x8000
 
 
@@ -150,7 +148,7 @@ BYTE	gbParOn = 0x0;
 //BYTE gbWinChar = 0;													// Window character
 union uFLOAT gnTxGrp[GRP_NUMBER] = { {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0} };	// Graphic data
 
-#if 0
+#if USE_UP_PAR == 0
 UINT gnRxPar[32] = {
 					0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,	// Parameter data (Regulate with logic address .CAUTION)
 					0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
@@ -577,16 +575,26 @@ void UartRxAddr(const int aiWrite)
 
 	SET_ADDR(BASE_MICOM_PAR, BASE_MICOM_PAR + 0x20,	// Micom Para : 0x8000 ~ 0x8020
 		// User Parameter Custom Write Code
+	#if USE_UP_PAR == 0
+		//gnRxPar[wAddr] = gnRxData;
+
 		//gnRxPar[wAddr] = (/*PL_STA < wAddr &&*/ wAddr < 0x1F/*PL_END*/) ? hex2dec(gnRxData) : gnRxData ;
-		//gnRxPar[wAddr] = hex2dec(gnRxData);
+		gnRxPar[wAddr] = hex2dec(gnRxData);
+	#else
 		const UINT nUpIdx = UPi(UpPAR00)+(wAddr<<2);
 		SetByte(gbUsrParTbl+nUpIdx, 4, hex2dec(gnRxData));
 		UsrParChg(nUpIdx);
+	#endif
 		,
 		// User Parameter Custom Read Code
+	#if USE_UP_PAR == 0
 		//UINT nRxParOut = (/*PL_STA < wAddr &&*/ wAddr < 0x1F/*PL_END*/) ? dec2hex(gnRxPar[wAddr]) : gnRxPar[wAddr] ;
-		UINT nRxParOut = dec2hex(GetByte(gbUsrParTbl+UPi(UpPAR00)+(wAddr<<2), 4)/*gnRxPar[wAddr]*/);
+		UINT nRxParOut = dec2hex(gnRxPar[wAddr]);
+	#else
+		UINT nRxParOut = dec2hex(GetByte(gbUsrParTbl+UPi(UpPAR00)+(wAddr<<2), 4));
+	#endif
 		,
+		//gnRxPar[wAddr])
 		nRxParOut)
 
 }
@@ -682,7 +690,27 @@ void Comm(void)
 			SetCase(PC_CMD_EEPR, bIn==PC_ETX, UartTxParRead();
 					, 0);
 
-
+#ifdef __ECM_STRING__
+//...............................................
+// Console process : Send CPU1
+			case PC_CMD_STR:
+				if (gptMsgShell.index != 0 && bIn == PC_ETX) {
+					gptMsgShell.index = 0;
+					num_loop(gptMsgShell.tail, gptMsgShell.tot_num);
+//					CPU_SHARED1 |= eIP1_SHELL_RX;
+//					CPU_IRQ1 = 1;
+					SetEnd();
+				} else {
+					if (gptMsgShell.index == MSG_SHELL_MAXLEN) {
+						UartTxStrHexCh(DEBUG_UART_NUM, "OverIn", bIn, 2);
+						gptMsgShell.arg[gptMsgShell.tail][0]--;
+					} else {
+						gptMsgShell.arg[gptMsgShell.tail][gptMsgShell.index] = bIn;
+						gptMsgShell.index++;
+					}
+				}
+				break;
+#endif
 err_proc:
 			default :
 				UartTxErr();

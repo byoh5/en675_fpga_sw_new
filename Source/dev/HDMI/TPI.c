@@ -127,7 +127,7 @@ static byte cbusRevID;
 BYTE TPI_Init(void)
 {
 //		int i = 0;
-	_printf((">>TPI_Init()\r\n"),0,0);
+	_printf(">>TPI_Init()\r\n");
 
 	txPowerState = TX_POWER_STATE_D0;				// Chip powers up in D2 mode, but init to D0 for testing prupose.
 
@@ -238,7 +238,7 @@ static void GoToD3 (void)
 
 void HotPlugService (void)
 {
-	_printf((">>HotPlugService()\r\n"),0,0);
+	_printf(">>HotPlugService()\r\n");
 
 	DisableInterrupts(0xFF);
 
@@ -267,7 +267,7 @@ void HotPlugService (void)
 		if (HDCP_AksvValid == TRUE)
 		{
 			// AV MUTE
-			_printf (("TMDS -> Enabled (Video Muted)\r\n"),0,0);
+			_printf("TMDS -> Enabled (Video Muted)\r\n");
 			ReadModifyWriteTPI(TPI_SYSTEM_CONTROL_DATA_REG, LINK_INTEGRITY_MODE_MASK | TMDS_OUTPUT_CONTROL_MASK
 					| AV_MUTE_MASK, LINK_INTEGRITY_DYNAMIC | TMDS_OUTPUT_CONTROL_ACTIVE | AV_MUTE_MUTED);
 			tmdsPoweredUp = TRUE;
@@ -279,7 +279,7 @@ void HotPlugService (void)
 	else
 #endif
 	{
-		_printf (("TMDS -> Enabled\r\n"),0,0);
+		_printf("TMDS -> Enabled\r\n");
 		ReadModifyWriteTPI(TPI_SYSTEM_CONTROL_DATA_REG, LINK_INTEGRITY_MODE_MASK | TMDS_OUTPUT_CONTROL_MASK | AV_MUTE_MASK, LINK_INTEGRITY_DYNAMIC | TMDS_OUTPUT_CONTROL_ACTIVE | AV_MUTE_NORMAL);
 		EnableInterrupts(HOT_PLUG_EVENT | RX_SENSE_EVENT | AUDIO_ERROR_EVENT | V_READY_EVENT);
 	}
@@ -345,7 +345,7 @@ static BYTE StartTPI(void)
 	byte devRID = 0x00;
  	word wID = 0x0000;
 
- 	_printf((">>StartTPI()\r\n"),0,0);
+ 	_printf(">>StartTPI()\r\n");
 
 	WriteByteTPI(TPI_ENABLE, 0x00);           			 // Write "0" to 72:C7 to start HW TPI mode 1-1
     DelayMS(100);
@@ -358,20 +358,20 @@ static BYTE StartTPI(void)
 
     devID = ReadByteTPI(TPI_DEVICE_ID);					// 1-2
 
- 	_printf("ID : ", wID, 8);
+ 	_printf("ID : %d\r\n", wID);
 
-	_printf("Device ID : ",devID,8);
+	_printf("Device ID : %d\r\n",devID);
 
 	devRID = ReadByteTPI(TPI_DEVICE_REV_ID);
-	_printf("Dev Pro Rev ID : ",devRID,8);
+	_printf("Dev Pro Rev ID : %d\r\n",devRID);
 
     if (devID == SiI_DEVICE_ID)
 	{
-		_printf (SiI_DEVICE_STRING,0,0);
+		_printf(SiI_DEVICE_STRING);
 		return TRUE;
 	}
 
-    _printf ("Unsupported TX\r\n",0,0);
+    _printf("Unsupported TX\r\n");
     return FALSE;
 }
 
@@ -394,7 +394,7 @@ static BYTE StartTPI(void)
 //////////////////////////////////////////////////////////////////////////////
 BYTE EnableInterrupts(byte Interrupt_Pattern)
 {
-    TPI_TRACE_PRINT((">>EnableInterrupts()\r\n"));
+    TPI_TRACE_PRINT(">>EnableInterrupts()\r\n");
     ReadSetWriteTPI(TPI_INTERRUPT_ENABLE_REG, Interrupt_Pattern);
 
 #if defined SiI9232_OR_SiI9236
@@ -423,7 +423,7 @@ BYTE EnableInterrupts(byte Interrupt_Pattern)
 //////////////////////////////////////////////////////////////////////////////
 static BYTE DisableInterrupts(byte Interrupt_Pattern)
 {
- 	_printf((">>DisableInterrupts()\r\n"),0,0);
+ 	_printf(">>DisableInterrupts()\r\n");
  	ReadClearWriteTPI(TPI_INTERRUPT_ENABLE_REG, Interrupt_Pattern);
 
  	return TRUE;
@@ -510,7 +510,7 @@ static void TxPowerStateD0 (void)
 {
 
 	ReadModifyWriteTPI(TPI_DEVICE_POWER_STATE_CTRL_REG, TX_POWER_STATE_MASK, TX_POWER_STATE_D0);
-	_printf(("TX Power State D0\r\n"),0,0);
+	_printf("TX Power State D0\r\n");
 	txPowerState = TX_POWER_STATE_D0;
 }
 
@@ -530,7 +530,7 @@ static void TxPowerStateD2 (void)
 	ReadModifyWriteIndexedRegister(INDEXED_PAGE_1, 0x3D, BIT_0, 0x00);
 #endif
 
-	_printf(("TX Power State D2\r\n"),0,0);
+	_printf("TX Power State D2\r\n");
 	txPowerState = TX_POWER_STATE_D0;
 }
 
@@ -538,7 +538,7 @@ static void TxPowerStateD2 (void)
 void EnableTMDS (void)
 {
 
-    _printf(("TMDS -> Enabled\r\n"),0,0);
+    _printf("TMDS -> Enabled\r\n");
     ReadModifyWriteTPI(TPI_SYSTEM_CONTROL_DATA_REG, TMDS_OUTPUT_CONTROL_MASK, TMDS_OUTPUT_CONTROL_ACTIVE);
     tmdsPoweredUp = TRUE;
 }
@@ -547,7 +547,7 @@ void EnableTMDS (void)
 void DisableTMDS (void)
 {
 
-    _printf(("TMDS -> Disabled\r\n"),0,0);
+    _printf("TMDS -> Disabled\r\n");
 
     // AV MUTE
     ReadModifyWriteTPI(TPI_SYSTEM_CONTROL_DATA_REG, TMDS_OUTPUT_CONTROL_MASK |
@@ -559,7 +559,7 @@ void DisableTMDS (void)
 #ifdef DEV_SUPPORT_HDCP
 void RestartHDCP (void)
 {
-	_printf (("HDCP -> Restart\r\n"),0,0);
+	_printf("HDCP -> Restart\r\n");
 
 	DisableTMDS();
 	HDCP_Off();
@@ -605,7 +605,7 @@ void TPI_Poll (void)
 		if (InterruptStatusImage & HOT_PLUG_EVENT)
 		{
 
-			_printf (("HPD  ->\r\n"),0,0);
+			_printf("HPD  ->\r\n");
 
 			ReadSetWriteTPI(TPI_INTERRUPT_ENABLE_REG, HOT_PLUG_EVENT); 				// Enable HPD interrupt bit
 
@@ -666,7 +666,7 @@ void TPI_Poll (void)
 
 		if (/*(tmdsPoweredUp == TRUE) && */(gbVideoChg == TRUE))
 		{
-			_printf(("TP -> Video Mode...\r\n"),0,0);
+			_printf("TP -> Video Mode...\r\n");
 			DisableTMDS();
 
 #ifdef DEV_SUPPORT_HDCP
@@ -686,7 +686,7 @@ void TPI_Poll (void)
 
 static void OnHdmiCableConnected(void)
 {
-	_printf (("HDMI Connected\r\n"),0,0);
+	_printf("HDMI Connected\r\n");
 
 	// No need to call TPI_Init here unless TX has been powered down on cable removal.
 	TPI_Init();
@@ -711,12 +711,12 @@ static void OnHdmiCableConnected(void)
 
 	if (IsHDMI_Sink())              // select output mode (HDMI/DVI) according to sink capabilty
 	{
-		_printf (("HDMI Sink Detected\r\n"),0,0);
+		_printf("HDMI Sink Detected\r\n");
 		ReadModifyWriteTPI(TPI_SYSTEM_CONTROL_DATA_REG, OUTPUT_MODE_MASK, OUTPUT_MODE_HDMI);
 	}
 	else
 	{
-		_printf (("DVI Sink Detected\r\n"),0,0);
+		_printf("DVI Sink Detected\r\n");
 		ReadModifyWriteTPI(TPI_SYSTEM_CONTROL_DATA_REG, OUTPUT_MODE_MASK, OUTPUT_MODE_DVI);
 	}
 }
@@ -725,7 +725,7 @@ static void OnHdmiCableConnected(void)
 static void OnHdmiCableDisconnected(void)
 {
 
-	_printf (("HDMI Disconnected\r\n"),0,0);
+	_printf("HDMI Disconnected\r\n");
 
 	hdmiCableConnected = FALSE;
 
@@ -744,7 +744,7 @@ static void OnHdmiCableDisconnected(void)
 static void OnDownstreamRxPoweredDown(void)
 {
 
-	_printf (("DSRX -> Powered Down\r\n"),0,0);
+	_printf("DSRX -> Powered Down\r\n");
 	dsRxPoweredUp = FALSE;
 
 #ifdef DEV_SUPPORT_HDCP
@@ -762,7 +762,7 @@ static void OnDownstreamRxPoweredDown(void)
 
 static void OnDownstreamRxPoweredUp(void)
 {
-	_printf (("DSRX -> Powered Up\r\n"),0,0);
+	_printf("DSRX -> Powered Up\r\n");
 	dsRxPoweredUp = TRUE;
 
 	HotPlugService();

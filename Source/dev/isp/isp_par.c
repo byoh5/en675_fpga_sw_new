@@ -7,7 +7,6 @@
 *************************************************************************** */
 
 #include "dev.h"
-#include "isp_menu.h"		// SetFontChg()
 #include "isp_font_tbl.h"	// SetFontChg()
 #include <string.h>			// strlen()
 
@@ -29,13 +28,13 @@ BYTE gbUsrParChgOn = 0;	// 0:실행안함, 1:부팅&변경, 2:변경
 // User Parameter --------------------------------------------------
 BYTE gbUsrParSaveChk=0;
 BYTE gbUsrParReadChk=0;
-BYTE gbUsrParTbl[USR_PAR_EA];
-BYTE gbUsrParTblSaved[USR_PAR_EA];
+__attribute__((__aligned__(4))) BYTE gbUsrParTbl[USR_PAR_EA];
+__attribute__((__aligned__(4))) BYTE gbUsrParTblSaved[USR_PAR_EA];
 
 // User Data -------------------------------------------------------
 BYTE gbUsrDataSaveChk=0;
 BYTE gbUsrDataReadChk=0;
-__attribute__((__aligned__(4))) BYTE gbUsrDataTbl[USR_DATA_EA];
+BYTE gbUsrDataTbl[USR_DATA_EA];
 
 
 //*************************************************************************************************
@@ -49,6 +48,7 @@ void InitDataSet(void)
 	gDataID += (*(gsBuildDate + gsBuildDateLen-4) - '0')<<8;
 	gDataID += (*(gsBuildDate + gsBuildDateLen-5) - '0')<<12;
 
+	#include "isp_user_parameter.h"
 	UP_LIB_LIST
 
 	void SensorSetting(BYTE, BYTE, BYTE); SensorSetting(model_Sens_Ctrl, model_Sens_Intf, model_Sens_Fps);
@@ -77,21 +77,70 @@ void UsrParValid(const UINT anValid)
 
 void UsrParChg(const UINT anStrIdx)
 {
+	if(gbUsrParChgOn == 0) return;
+
+#ifdef __SENSOR__
 	switch(anStrIdx) {
-		#undef _UP_
-		#define _UP_(S,N,D,...)		case UPi(N): { __VA_ARGS__ /*printf("UsrParChg("#N"):%d\n", anIdx);*/ } break;
-		#include "isp_par_tbl.h"
+		//#define INIT_NO
+		#define INIT_RUN	|| gbUsrParChgOn==1
+		#undef UP_SET
+		#define UP_SET(S,N,D,I,...)		case UPi(N): if(gbUsrParChgOn==2 I) { __VA_ARGS__ /*printf("UsrParChg("#N"):%d\n", anIdx);*/ } break;
+		#include "isp_user_parameter.h"
 		USR_PAR_LIST
+	}
+#endif
+
+	if(gbUsrParChgOn==2) {
+		if(MpPvcCfgIdx <= anStrIdx && anStrIdx < MpItlWinCfgIdx) {
+			PrivacyBox();
+		}
+		else if(MpItlWinCfgIdx <= anStrIdx && anStrIdx < USR_PAR_EA) {
+			MaskIMD();
+		}
+		else if(anStrIdx < UP_END) {
+			UsrParStyle(0, 0, anStrIdx);	// Style 값들 변경여부 체크 -> 값이 변경되었으면 /*CUSTOMIZE*/PREVIOUS 로
+		}
 	}
 }
 
 void UsrParChgEndIdx(const UINT anEndIdx)
 {
 	switch(anEndIdx) {
-		#undef _UP_
-		#define _UP_(S,N,D,...)		case UPinv(N): UsrParChg(UPi(N)); break;
-		#include "isp_par_tbl.h"
+		#undef UP_SET
+		#define UP_SET(S,N,D,...)		case UPinv(N): UsrParChg(UPi(N)); break;
+		#include "isp_user_parameter.h"
 		USR_PAR_LIST
+	}
+}
+
+void UsrParCpy(BYTE *dest, BYTE *src)
+{
+	if(gbUsrParChgOn==2) {
+		#undef UP_SET
+		#define UP_SET(S,N,D,...)		if( ((UP_LIST*)dest)->N != ((UP_LIST*)src)->N ) { ((UP_LIST*)dest)->N = ((UP_LIST*)src)->N; UsrParChg(UPi(N)); }
+		#include "isp_user_parameter.h"
+		USR_PAR_LIST
+
+		int i, iChg = 0;
+		for(i=MpPvcCfgIdx; i<MpItlWinCfgIdx; i++) {
+			if(dest[i] != src[i]) {
+				dest[i] = src[i];
+				iChg = 1;
+			}
+		}
+		if(iChg) PrivacyBox();
+
+		iChg = 0;
+		for(i=MpItlWinCfgIdx; i<USR_PAR_EA; i++) {
+			if(dest[i] != src[i]) {
+				dest[i] = src[i];
+				iChg = 1;
+			}
+		}
+		if(iChg) MaskIMD();
+	}
+	else {
+		for(int i=0; i<USR_PAR_EA; i++) dest[i] = src[i];
 	}
 }
 
@@ -99,9 +148,9 @@ void UsrParChgEndIdx(const UINT anEndIdx)
 BYTE UsrParSiz(const UINT anIdx)
 {
 	switch(anIdx) {
-		#undef _UP_
-		#define _UP_(S,N,D,...)		case UPi(N): return S;
-		#include "isp_par_tbl.h"
+		#undef UP_SET
+		#define UP_SET(S,N,D,...)		case UPi(N): return S;
+		#include "isp_user_parameter.h"
 		USR_PAR_LIST
 	}
 }
@@ -110,71 +159,141 @@ BYTE UsrParSiz(const UINT anIdx)
 void UsrParChgAll(void)
 {
 #if 0
-	#undef _UP_
-	#define _UP_(S,N,D,...)		UsrParChg(UPi(N));
-	#include "isp_par_tbl.h"
+	#undef UP_SET
+	#define UP_SET(S,N,D,...)		UsrParChg(UPi(N));
+	#include "isp_user_parameter.h"
 	USR_PAR_LIST
 #else
 	if(gbUsrParChgOn == 0) return;
-	for(UINT i=1; i<USR_PAR_EA; i++) {
-		if(UPi(UpLvdsPNSel) <= i && i <= UPi(UpOutVSyncOfs)) { if(gbUsrParChgOn==2) UsrParChg(i); }
-		else if(UPi(UpCamTitleOn) <= i && i <= UPi(UpCamTitle7)) { if(gbUsrParChgOn==2) UsrParChg(i); }
-		else { UsrParChg(i); }
+	for(UINT i=1; i<UP_END; i++) {
+		UsrParChg(i);
+		//if(UPi(LvdsPNSel) <= i && i <= UPi(OutVSyncOfs)) { if(gbUsrParChgOn==2) UsrParChg(i); }
+		//else if(UPi(CamTitleOn) <= i && i <= UPi(CamTitle7)) { if(gbUsrParChgOn==2) UsrParChg(i); }
+		//else { UsrParChg(i); }
 	}
 #endif
 }
 
-void UsrParReset(void)
-{	// User Parameter Reset
-	UsrParValid(1);
-
-	#undef _UP_
-	#define _UP_(S,N,D,...)		UP(N) = (D);//UPw(N,D);
-	#include "isp_par_tbl.h"
-	USR_PAR_LIST
-
-	UsrParStyle(INIT_STYLE);	// UsrParChgAll() 실행
+void InitUsrParChgAll(void)
+{
+	gbUsrParChgOn = 1;			// INIT_RUN 설정된 User Parameter 코드 실행
+	UsrParChgAll();				// SensFlip(), SensMirror() 실행을 위해 Isp_Sensor_init()이 먼저 설정되어야 함
+	gbUsrParChgOn = 2;			// User Parameter 변경 시 실행
 }
 
-void UsrParStyle(const BYTE abStyle)
+void UsrParReset(void)
+{	// User Parameter Reset
+	int i;
+
+	if(gbUsrParChgOn == 2) {
+		for(i=0; i<USR_PAR_EA; i++) gbUsrParTblSaved[i] = gbUsrParTbl[i];	// Reset 실행전 상태 백업
+	}
+
+	//----------------------------------------------------------------------
+	UsrParValid(1);
+
+	#undef UP_SET
+	#define UP_SET(S,N,D,...)		UP(N) = (D);//UPw(N,D);
+	#include "isp_user_parameter.h"
+	USR_PAR_LIST
+
+	for(i=0; i<PVC_EA; i++) {
+		gbMnPvcCfg(i)->bAction = (i<4) ? UP_ON : UP_OFF;
+		gbMnPvcCfg(i)->bPosX   = 8+((i%6)*4);
+		gbMnPvcCfg(i)->bPosY   = 2+((i/6)*4);
+		gbMnPvcCfg(i)->bSizX   = 3;
+		gbMnPvcCfg(i)->bSizY   = 3;
+	}
+
+	gbMnImdCfg(0)->bAction = /*UP_OFF*/UP_ON;
+	gbMnImdCfg(0)->bPosX   = 0;
+	gbMnImdCfg(0)->bPosY   = 0;
+	gbMnImdCfg(0)->bSizX   = IMD_HW;
+	gbMnImdCfg(0)->bSizY   = IMD_VW;
+	for(i=1; i<MASK_EA; i++)
+	{
+		gbMnImdCfg(i)->bAction = /*UP_ON*/UP_OFF;
+		gbMnImdCfg(i)->bPosX   = (IMD_HW-3)/3 * (i-1) + 1;
+		gbMnImdCfg(i)->bPosY   = (IMD_VW-3)/3 * (i-1) + 1;
+		gbMnImdCfg(i)->bSizX   = (IMD_HW-3)/3;
+		gbMnImdCfg(i)->bSizY   = (IMD_VW-3)/3;
+	}
+//	gbMnImdCfg(2)->bPosX -= 2;		// TODO KSH ◆ IMD Test Init
+//	gbMnImdCfg(2)->bPosY -= 2;
+//	gbMnImdCfg(2)->bSizX += 4;
+//	gbMnImdCfg(2)->bSizY += 4;
+//	gbMnImdCfg(1)->bPosX = 0;
+//	gbMnImdCfg(1)->bPosY = 0;
+//	gbMnImdCfg(1)->bSizX += 1;
+//	gbMnImdCfg(1)->bSizY += 1;
+//	gbMnImdCfg(3)->bSizX += (IMD_HW>>1);
+//	gbMnImdCfg(3)->bSizY += (IMD_VW>>1);
+
+
+	UsrParStyle(INIT_STYLE, 1, 1);	// INIT_STYLE 로 Style값들 변경
+	//----------------------------------------------------------------------
+
+	UsrParCpy(gbUsrParTblSaved, gbUsrParTbl);
+}
+
+void UsrParStyle(const int abStyle, const int abInit, const int abValChg)
 {
-	#define _UPSTYLE_1(N, ...) {\
-		const BYTE bStyle##N[] = { __VA_ARGS__ };\
-		if(abStyle==0) gbUsrParTbl[UPi(N)] = gbUsrParTblSaved[UPi(N)];\
-		else if((UINT)(abStyle-1) < ARRAY_SIZE(bStyle##N)) gbUsrParTbl[UPi(N)] = bStyle##N[abStyle-1]; }
+	static int bStyleBuf = 0;
 
-	#define _UPSTYLE_2(N, ...) {\
-		const WORD wStyle##N[] = { __VA_ARGS__ };\
-		if(abStyle==0) {\
-			gbUsrParTbl[UPi(N)]   = gbUsrParTblSaved[UPi(N)];\
-			gbUsrParTbl[UPi(N)+1] = gbUsrParTblSaved[UPi(N)+1];\
-		}\
-		else if((UINT)(abStyle-1) < ARRAY_SIZE(wStyle##N)) UP(N) = wStyle##N[abStyle-1];/*UPw(N, wStyle##N[abStyle-1]);*/ }
-#if 0
-	#define _UPSTYLE_3(N, ...) {\
-		const UINT nStyle##N[] = { __VA_ARGS__ };\
-		if(abStyle==0) {\
-			gbUsrParTbl[UPi(N)]   = gbUsrParTblSaved[UPi(N)];\
-			gbUsrParTbl[UPi(N)+1] = gbUsrParTblSaved[UPi(N)+1];\
-			gbUsrParTbl[UPi(N)+2] = gbUsrParTblSaved[UPi(N)+2];\
-		}\
-		else if((UINT)(abStyle-1) < ARRAY_SIZE(nStyle##N)) UPw(N, nStyle##N[abStyle-1]); }
-#endif
-	#define _UPSTYLE_4(N, ...) {\
-		const UINT nStyle##N[] = { __VA_ARGS__ };\
-		if(abStyle==0) {\
-			gbUsrParTbl[UPi(N)]   = gbUsrParTblSaved[UPi(N)];\
-			gbUsrParTbl[UPi(N)+1] = gbUsrParTblSaved[UPi(N)+1];\
-			gbUsrParTbl[UPi(N)+2] = gbUsrParTblSaved[UPi(N)+2];\
-			gbUsrParTbl[UPi(N)+3] = gbUsrParTblSaved[UPi(N)+3];\
-		}\
-		else if((UINT)(abStyle-1) < ARRAY_SIZE(nStyle##N)) UP(N) = nStyle##N[abStyle-1];/*UPw(N, nStyle##N[abStyle-1]);*/ }
-
-	#define _UPSTYLE_(S,N, ...)		_UPSTYLE_##S(N, __VA_ARGS__)
-
+	#define UP_STYLE(N, ...)	const UPt(N) bStyleVals##N[] = { __VA_ARGS__ };
+	#include "isp_user_parameter.h"
 	USR_PAR_STYLE
 
-	UsrParChgAll();
+	if(abInit) {
+		bStyleBuf = abStyle;
+		if(abStyle && abValChg) goto StyleSet;
+		else return;
+	}
+
+	if(abValChg) {
+		int nStyleChg = 0;
+
+		if(bStyleBuf) {
+			switch(abValChg) {
+				#undef UP_STYLE
+				#define UP_STYLE(N, ...)	case UPi(N): if((UINT)(bStyleBuf-1) < ARRAY_SIZE(bStyleVals##N)) { if(UP(N) != bStyleVals##N[bStyleBuf-1]) nStyleChg = 1; } break;
+				#include "isp_user_parameter.h"
+				USR_PAR_STYLE
+			}
+
+			if(nStyleChg) {
+				//extern BYTE gbMenuStyle;
+				//gbMenuStyle = 0;
+				UP(Style) = 0;
+				bStyleBuf = 0;
+			}
+		}
+		return;
+	}
+
+	if(bStyleBuf == abStyle) return;
+
+	#undef UP_STYLE
+	#define UP_STYLE(N, ...)	static UPt(N) bStylePrv##N = -16;
+	#include "isp_user_parameter.h"
+	USR_PAR_STYLE
+
+	if(bStyleBuf == 0) {	// abStyle값이 0에서 다른값으로 변경되는 경우 PREVIOUS값들 업데이트
+		#undef UP_STYLE
+		#define UP_STYLE(N, ...)	bStylePrv##N = UP(N);
+		#include "isp_user_parameter.h"
+		USR_PAR_STYLE
+	}
+	bStyleBuf = abStyle;
+
+StyleSet:
+	#undef UP_STYLE
+	#define UP_STYLE(N, ...)	{\
+		if(abStyle==0) { if(UP(N) != bStylePrv##N) { UP(N) = bStylePrv##N; if(abInit==0) UsrParChg(UPi(N)); } }\
+		else if((UINT)(abStyle-1) < ARRAY_SIZE(bStyleVals##N)) { if(UP(N) != bStyleVals##N[abStyle-1]) { UP(N) = bStyleVals##N[abStyle-1]; if(abInit==0) UsrParChg(UPi(N)); } }\
+	}
+	#include "isp_user_parameter.h"
+	USR_PAR_STYLE
 }
 
 void SetByte(BYTE *apAddr, const BYTE abLen, UINT anData)
@@ -242,8 +361,8 @@ void UsrParSave(UINT anSaveOn)
 		}
  	}
 	else {																	// No Save & Exit
-		for(i=0; i<USR_PAR_EA; i++) gbUsrParTbl[i] = gbUsrParTblSaved[i];	// 복귀
-		UsrParChgAll();
+		UsrParCpy(gbUsrParTbl, gbUsrParTblSaved);	// 복귀
+		UsrParStyle(UP(Style), 1, 0);	// Style의 buffer값 변경
 	}
 }
 
@@ -336,15 +455,14 @@ void AppLoadPar(void)
 		#endif
 
 		if ((WORD)((gbUsrParTbl[UP_START]<<8)|gbUsrParTbl[UP_END])!=(WORD)UP_DATA_ID) {	// Parameter reset condition
-			UsrParReset();			// gbUsrParTbl[] 초기화 & UsrParChgAll() 실행
-			gbUsrParSaveChk = 1;
+			UsrParReset();			// gbUsrParTbl[] 초기화 & UsrParCpy(gbUsrParTblSaved, gbUsrParTbl) 실행
+			gbUsrParSaveChk = 1;	// ROM 저장 실행
 			UartTxStrNoIRQ("MENU PAR reset ");
 		}
 		else {
-			UsrParChgAll();
+			UsrParCpy(gbUsrParTblSaved, gbUsrParTbl);
+			UsrParStyle(UP(Style), 1, 0);	// Style의 buffer값 변경
 		}
-
-		for(i=0; i<USR_PAR_EA; i++) gbUsrParTblSaved[i] = gbUsrParTbl[i];
 
 		gbUsrParReadChk = 0;
 	}
@@ -377,7 +495,7 @@ void AppLoadPar(void)
 	}
 }
 
-#if 0		// TODO ◆ KSH ParFncTest()
+#if 0		// TODO KSH ◆ ParFncTest()
 typedef struct {
 	BYTE bA;
 	WORD wB;
@@ -405,27 +523,46 @@ void ParFncTest(void)
 	printf("size : %d\n", sizeof(((stt*)bArray)->nD) );
 	printf("size : %d\n", sizeof(((stt*)bArray)->wB) );
 
+	#define PvcCfg(ADDR,INDEX)	((_PRIVACY*)(ADDR +((INDEX))*sizeof(_PRIVACY)))
 
-#if 1
+	PvcCfg(bArray+1,0)->bAction = 0x11;
+	PvcCfg(bArray+1,0)->bPosX = 0x22;
+	PvcCfg(bArray+1,0)->bPosY = 0x33;
+	PvcCfg(bArray+1,0)->bSizX = 0x44;
+	PvcCfg(bArray+1,0)->bSizY = 0x55;
+
+	PvcCfg(bArray+1,1)->bAction = 0x66;
+	PvcCfg(bArray+1,1)->bPosX = 0x77;
+	PvcCfg(bArray+1,1)->bPosY = 0x88;
+	PvcCfg(bArray+1,1)->bSizX = 0x99;
+	PvcCfg(bArray+1,1)->bSizY = 0xaa;
+
+	for(int i=0; i<ARRAY_SIZE(bArray); i++)
+	{
+		printf("[%d] : %x\n", i, bArray[i]);
+	}
+
+
+#if 0
 	#define UP_IDX_PRINTF(N)	printf("UPi("#N"):%d\n", UPi(N));
-	UP_IDX_PRINTF(UpBrightness);
-	UP_IDX_PRINTF(UpBrightnessMin);
-	UP_IDX_PRINTF(UpAwb);
-	UP_IDX_PRINTF(UpAwbStyle);
-	UP_IDX_PRINTF(UpColorBar);
-	UP_IDX_PRINTF(UpFlip);
+	UP_IDX_PRINTF(Brightness);
+	UP_IDX_PRINTF(BrightnessMin);
+	UP_IDX_PRINTF(Awb);
+	UP_IDX_PRINTF(AwbStyle);
+	UP_IDX_PRINTF(ColorBar);
+	UP_IDX_PRINTF(Flip);
 	UP_IDX_PRINTF(UpPAR00);
 	UP_IDX_PRINTF(UpPAR01);
 	UP_IDX_PRINTF(UpPAR10);
 	UP_IDX_PRINTF(UpPAR1F);
 
 	#define UP_PRINTF(N)	printf("UP("#N"): %d\n", UP(N))
-	UP_PRINTF(UpBrightness);
-	UP_PRINTF(UpBrightnessMin);
-	UP_PRINTF(UpAwb);
-	UP_PRINTF(UpAwbStyle);
-	UP_PRINTF(UpColorBar);
-	UP_PRINTF(UpFlip);
+	UP_PRINTF(Brightness);
+	UP_PRINTF(BrightnessMin);
+	UP_PRINTF(Awb);
+	UP_PRINTF(AwbStyle);
+	UP_PRINTF(ColorBar);
+	UP_PRINTF(Flip);
 	UP_PRINTF(UpPAR00);
 	UP_PRINTF(UpPAR01);
 	UP_PRINTF(UpPAR10);

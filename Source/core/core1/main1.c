@@ -180,7 +180,9 @@ void main_1(int cpu_id)
 #if 0
 	while (1) {
 		if (SYS_REG0 == 0xA) {
+#ifdef __USE_LED1__
 			GpioSetOut(GPIO_LED1, GPIO_OUT_HI);
+#endif
 			//_printf("%d:%lu\r\n", cpu_id, *mtime);
 			WaitXms(100);
 			SYS_REG0 = 0xB;

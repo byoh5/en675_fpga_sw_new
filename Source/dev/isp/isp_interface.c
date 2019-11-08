@@ -296,7 +296,7 @@ void Isp_PostSync_Config(BOOL OSyncMode, BOOL ExSyncSel, UINT Htw, UINT Vtw, UIN
 	EXVSYNC_SELw(ExSyncSel);
 	EXHSYNC_SELw(ExSyncSel);
 
-	OCSELw(OCSel);
+	//OCSELw(OCSel);	// Flip() 함수에서 실행됨
 
 	POS_HZw(0);
 }
@@ -322,7 +322,6 @@ void Isp_PostClk_Config(BYTE Clk)
 
 void Isp_Gamma_Config(BOOL Y_OnOff, BOOL C_OnOff)
 {
-
 	//	Table Setting
 
 	//	On
@@ -350,6 +349,9 @@ void Isp_Edge_Config(BOOL OnOff)
 
 	APT_ONw(OnOff);
 	APT_GAIN_ONw(OnOff);
+
+	APT_TH3w(0x80);
+	APT_CLIP3w(0x80);
 }
 
 //	OnOff	->	FN_ON, FN_OFF
@@ -358,7 +360,6 @@ void Isp_Edge_Config(BOOL OnOff)
 //	DnrGain	->	Gain보다 Dnrth의 값이 3D dnr 동작에 더 큰 영향을 준다. 보통 0x20으로 사용한다.
 void Isp_Dnr3d_Config(BOOL OnOff, BYTE DnrFk, BYTE DnrTh, BYTE DnrGain)
 {
-
 	DNR3D_FKw(DnrFk);
 	DNR3D_THw(DnrTh);
 	DNR3D_GAw(DnrGain);
@@ -373,6 +374,7 @@ void Isp_Dnr3d_Config(BOOL OnOff, BYTE DnrFk, BYTE DnrTh, BYTE DnrGain)
 
 }
 
+#if 0
 //	OnOff				->	FN_ON, FN_OFF
 //	GsumCnt, RBSumCnt	->	DF_SUM_4 : 4 pixel
 //							DF_SUM_6 : 6 pixel
@@ -384,7 +386,6 @@ void Isp_Dnr3d_Config(BOOL OnOff, BYTE DnrFk, BYTE DnrTh, BYTE DnrGain)
 //	RBThres				->	DF_GTHRES : Use this value normally
 void Isp_Defect_Config(BOOL OnOff, BOOL GsumCnt, BOOL RBSumCnt, BYTE GWgt, BYTE RBWgt, BYTE DfSlope, UINT GThres, UINT RBThres, UINT DfMax, UINT DfMin, BYTE DfCsel)
 {
-
 	DF_GSUM_SELw(GsumCnt);
 	DF_RBSUM_SELw(RBSumCnt);
 	DF_GWGT_SELw(GWgt);
@@ -399,7 +400,16 @@ void Isp_Defect_Config(BOOL OnOff, BOOL GsumCnt, BOOL RBSumCnt, BYTE GWgt, BYTE 
 
 	DF_COR_ONw(OnOff);
 }
+#endif
 
+#if 1
+void Isp_Dnr2d_Config(BOOL OnOff, BYTE Icsel, BYTE Ocsel)
+{
+	DNR_CSELw(Icsel);
+	DNR_RCSELw(Ocsel);
+	DNR2D_ONw(OnOff);
+}
+#else
 //	OnOff		->	FN_ON, FN_OFF
 //	Dnr2dMode	->	DNR2D_DTH_MOD (0) : Dnr2dDth 에 설정된 값보다 주변 difference가 작은 pixel에 대하여 reference로 사용하여 2d를 적용한다.
 //					DNR2D_SUM_MOD (1) : Dnr2dCnt 에 설정된 pixel 개수 만큼 reference로 사용하여 2d dnr을 적용한다.
@@ -416,6 +426,7 @@ void Isp_Dnr2d_Config(BOOL OnOff, BOOL Dnr2dMode, BYTE Dnr2dCnt, BYTE Dnr2dDth, 
 
 	DNR2D_ONw(OnOff);
 }
+#endif
 
 //	SD_MODw : 0 -> FRC 2 Page (Adr2, Adr3, Adr4 Don't care)
 //			  1 -> FRC 3 Page (Adr3, Adr4 Don't care)

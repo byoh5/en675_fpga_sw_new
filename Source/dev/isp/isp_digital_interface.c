@@ -852,7 +852,7 @@ UINT Isp_DigOut_Config(UINT PinList, UINT Mode, UINT Rsync, UINT Res, UINT Path,
 	switch(Path)
 	{
 		case IFO_ISP_PATH:
-			ITU_SSEL0w(0);	ITU_ASEL0w(0);
+			ITU_SSEL0w(0);	ITU_ASEL0w(0);	FN_APPCK0_HSELw(1);
 			if((PinList==IFO_OPIN_16TO31)||(PinList==IFO_OPIN_24TO31))
 			{
 				if((Mode==IFO_BT1120_16BIT)||(Mode==IFO_BT1120_8BIT_DDR))	{	DITCK1_SET(FRQ);	OTCK1_SET(FRQ);		ITCK1_SET(FRQ);		DO2_CK_SET(FRQ);	DO3_CK_SET(FRQ);	}
@@ -1497,7 +1497,7 @@ void Isp_Ddr_Init(BYTE IspFrcMode)
 //              WR_DIG_THERMAL					//	Digital Thermal Input Sync
 
 //	Normally Default Value -> Color : 1, Intl : 0
-void Isp_WrCh0_Config(UINT Path, SHORT Hw, BYTE WrSync, BOOL Color, BOOL Intl, BYTE VlcMode, BYTE Clk, BOOL OnOff)
+void Isp_WrCh0_Config(UINT Path, SHORT Hw, BYTE WrSync, BOOL Color, BOOL Intl, BYTE Clk, BOOL OnOff)
 {
 	if(OnOff==0) {	YCW_CK0_PDw(0);	return;	}
 
@@ -1530,16 +1530,6 @@ void Isp_WrCh0_Config(UINT Path, SHORT Hw, BYTE WrSync, BOOL Color, BOOL Intl, B
 	}
 
 	IM_IVSEL0w(0);
-
-	if(VlcMode==NO_VLCBIT)	{	LC_WON0w(0);	}
-	else{
-		if(VlcMode==VLC_4BIT)		{	LC_MODEY0w(2);	LC_MODEC0w(2);	}
-		else if(VlcMode==VLC_5BIT)	{	LC_MODEY0w(1);	LC_MODEC0w(1);	}
-		else						{	LC_MODEY0w(0);	LC_MODEC0w(0);	}
-
-		LC_WON0w(1);
-	}
-
 	YCW_CK0_SET(Clk);
 }
 
@@ -1996,7 +1986,7 @@ void Isp_ISyncGen_Config3(BYTE SyncMode, BYTE Clk, UINT Htwi, UINT Vtwi, UINT Hw
 //	WrCh	->	Use Default Value
 //
 //	Normally Default Value -> Color : 1
-void Isp_RdCh0_Config(BYTE Path, SHORT Hw, BYTE Color, BYTE Clk, BYTE RdSync, BYTE VlcMode, BOOL OnOff)
+void Isp_RdCh0_Config(BYTE Path, SHORT Hw, BYTE Color, BYTE Clk, BYTE RdSync, BOOL OnOff)
 {
 	IM_RHWI0w(Hw);										//	Read Horizontal Width
 	IM_CLRREN0w(Color);									//	Read Color ?
@@ -2015,9 +2005,6 @@ void Isp_RdCh0_Config(BYTE Path, SHORT Hw, BYTE Color, BYTE Clk, BYTE RdSync, BY
 		case RD_SYNC2		    :	YCR0_HLOCKI_SELw(6);	YCR0_HONw(1);	break;
 		case RD_SYNC3		    :	YCR0_HLOCKI_SELw(7);	YCR0_HONw(1);	break;
 	}
-
-	if(VlcMode==NO_VLCBIT)	{	LC_RON0w(0);	}
-	else					{	LC_RON0w(1);	}
 
 	if(OnOff)	{	IM_RON0w(1);	YCR_CK0_SET(Clk);	}
 	else		{	IM_RON0w(0);	YCR_CK0_PDw(0);		}

@@ -13,6 +13,13 @@
 static char gcShellCmdBuf[100];
 static char	gcHistoryBuf[100];
 
+#ifdef __ECM_STRING__
+#define SHELL_SEMAPHORE_USE 0
+#if (SHELL_SEMAPHORE_USE==1)
+SemaphoreHandle_t SemShell = NULL;
+#endif
+#endif
+
 //*************************************************************************************************
 // Shell functions
 //-------------------------------------------------------------------------------------------------
@@ -140,6 +147,48 @@ int _DoCommand(char *cmdline)
 
 //-------------------------------------------------------------------------------------------------
 //
+#ifdef __ECM_STRING__
+INT32S _getline(char *buf, INT32S max, INT32S timeout)
+{	// CPU0 to CPU1
+	while (1) {
+		printf(PROMPT);
+#if (SHELL_SEMAPHORE_USE==1)
+		if (SemaphoreTake(SemShell, portMAX_DELAY)) {
+#else
+		while (cQueue_isempty(&gptMsgShell) == ENX_OK) {
+			vTaskDelay(1);
+		}
+#endif
+			while (cQueue_isempty(&gptMsgShell) != ENX_OK) {
+				BDmaMemSet_rtos(0, (BYTE *)buf, 0, max - 1);
+
+				unsigned char len = gptMsgShell.arg[gptMsgShell.head][0] - 2;
+				if (len <= (MSG_SHELL_MAXLEN - 3)) { // len data CR LF 으로 data만 취하기 위해 3을 빼준다.
+					hwflush_dcache_range_rtos((ulong)buf, len);
+					BDmaMemCpy_rtos(0, (BYTE *)buf, (BYTE *)&gptMsgShell.arg[gptMsgShell.head][1], len);
+					hwflush_dcache_range_rtos((ulong)buf, len);
+					buf[len] = 0;	// CRLR 제거
+
+					printf((char *)&gptMsgShell.arg[gptMsgShell.head][1]);
+					if (_DoCommand(buf) == CMD_LINE_ERROR) {
+						printf("Bad or not command! : [%s]\n", buf);
+					}
+				}
+				BDmaMemSet_rtos(0, (BYTE *)gptMsgShell.arg[gptMsgShell.head], 0, MSG_SHELL_MAXLEN);
+
+				num_loop(gptMsgShell.head, gptMsgShell.tot_num);
+#if (SHELL_SEMAPHORE_USE==1)
+			}
+#endif
+		}
+	}
+
+	return 0;
+
+	UNUSED(timeout);
+	UNUSED(max);
+}
+#else
 int _getline(char *buf, int max, int timeout)
 {
 	static char crlf;
@@ -165,9 +214,9 @@ int _getline(char *buf, int max, int timeout)
 			}
 			UartTx(DEBUG_UART_NUM, '\r');
 			UartTx(DEBUG_UART_NUM, '\n');
-		    crlf = *buf;
-		    *buf = 0;
-		    break;
+			crlf = *buf;
+			*buf = 0;
+			break;
 		}
 
 		if (*buf == '\b') {
@@ -204,6 +253,7 @@ int _getline(char *buf, int max, int timeout)
 	return (strlen(base));
 	UNUSED(timeout);
 }
+#endif
 
 //*************************************************************************************************
 // Shell task
@@ -211,13 +261,24 @@ int _getline(char *buf, int max, int timeout)
 //
 void ShellTask(void* pvParameters)
 {
+#ifdef __ECM_STRING__
+#if (SHELL_SEMAPHORE_USE==1)
+	if (SemShell == NULL) {
+		SemaphoreCreateBinary(SemShell);
+	}
+	SemaphoreTake(SemShell, portMAX_DELAY);
+#endif
+	_getline(gcShellCmdBuf, CMDLINESIZE, 0); // input IDLE...
+#else
 	vTaskDelay(50);
 	while (1) {
 		_printf(PROMPT);
 		_getline(gcShellCmdBuf, CMDLINESIZE, 0); // input IDLE...
 		if (_DoCommand(gcShellCmdBuf) == CMD_LINE_ERROR) {
-			_printf("Bad or not command! : [%s]\n", gcShellCmdBuf);
+			printf("Bad or not command! : [%s]\n", gcShellCmdBuf);
 		}
 	}
+#endif
+	vTaskDelete(NULL);
 	UNUSED(pvParameters);
 }

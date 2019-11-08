@@ -7,7 +7,9 @@ void main_2(int cpu_id)
 
 	while (1) {
 		if (SYS_REG0 == 0xB) {
+#ifdef __USE_LED2__
 			GpioSetOut(GPIO_LED2, GPIO_OUT_HI);
+#endif
 			//_printf("%d:%lu\r\n", cpu_id, *mtime);
 			WaitXms(100);
 			SYS_REG0 = 0xC;

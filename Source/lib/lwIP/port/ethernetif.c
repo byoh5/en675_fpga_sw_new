@@ -294,7 +294,6 @@ static void network_ethif_pkt_input_irq(void *ctx)
 }
 
 #if (ETHPHY_LOOPBACK_TEST==1)
-static int ethphy_lop_ck = 0;
 void network_ethif_pkt_input_loopback_irq(void *ctx)
 {
 	EthLoopbackGp *ethlp = (EthLoopbackGp *)ctx;
@@ -320,10 +319,6 @@ void network_ethif_pkt_input_loopback_irq(void *ctx)
 			for (UINT i = 0; i < u32PktSize; i++) {
 				if (qEthernetRX.pkt_data[gRxPktTail].buffer[i] != ethlp->arrBuffer[ethlp->u8Index][i]) {
 					ethlp->eRes = ePlb_data;
-					if (ethphy_lop_ck == 0) {
-						ethphy_lop_ck = 1;
-						hexDump("ETH Error Input", qEthernetRX.pkt_data[gRxPktTail].buffer, u32PktSize+4);
-					}
 					break;
 				}
 			}

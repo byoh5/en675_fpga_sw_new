@@ -298,9 +298,7 @@ void enx_sys_init(void)
 	}
 	printf("%04X-%02X-%02X %02X:%02X:%02X%s\n", SYS_RTL_YEAR, SYS_RTL_MONTH, SYS_RTL_DAY, SYS_RTL_HOUR, SYS_RTL_MINUTE, SYS_RTL_SECOND, TTY_COLOR_RESET);
 
-#ifdef __FREERTOS__
-	;
-#else
+#ifdef __ECM_STRING__
 	UartRstQue();
 	UartRxIrqCallback(DEBUG_UART_NUM, UartDebugRxIrq, NULL);
 	UartRxSetIrqEn(DEBUG_UART_NUM,1);
@@ -310,6 +308,20 @@ void enx_sys_init(void)
 
 void enx_device_init(void)
 {
+#ifdef __USE_IRIS_PWM__
+	TimerSetFreq(TIMER_PWM_IRIS, 1, 0x400, 0);
+	TimerStart(TIMER_PWM_IRIS);
+	TimerSetPWMEn(TIMER_PWM_IRIS, ENX_ON);
+#endif
+
+#ifdef __USE_IR_LED_LPWM__
+
+#endif
+
+#ifdef __USE_IR_LED_GPIO__
+	GpioSetDir(GPIO_IR_LED, GPIO_DIR_OUT);
+#endif
+
 #ifdef __USE_LED0__
 	GpioSetDir(GPIO_LED0, GPIO_DIR_OUT);
 #endif
@@ -548,6 +560,9 @@ void main_0(int cpu_id)
 
 	//main_ddr_init();
 
+	_init_text_section();
+	_init_data_section();
+
 	enx_peri_init();
 	enx_sys_init();
 
@@ -556,6 +571,8 @@ void main_0(int cpu_id)
 
 	enx_device_init();
 	enx_default_userinfo();
+
+	enx_msgshell_init(&gptMsgShell);
 
 	SYS_REG0 = 0xA; // CPU0 Ready!
 
@@ -568,25 +585,54 @@ void main_0(int cpu_id)
 
 	Isp_init();
 
+	VIRQI_EN_Tw(1);
+	//CLI_VLOCKI_Tw(1);		// TODO KSH> 컴파일 문제?
+
+  #if 0
+	#define TIMER_IRQ_CH	0
+	TimerSetFreq(TIMER_IRQ_CH, 24, 29999, 1);
+	TimerIrqCallback(TIMER_IRQ_CH, IF_Funcs_Timer_irq, 0);
+	TimerSetIrqEn(TIMER_IRQ_CH, ENX_ON);
+	TimerStart(TIMER_IRQ_CH);
+  #endif
+
 	printf("--------- Main Loop Start --------- \r\n");
 
 	while (1)
 	{
+  #if 0
 		Wait_VLOCKO();
 
 		isp_main();
 
 		IF_Funcs();
+  #else
+		if(ISP_RIRQ_VIr) {
+			CLI_VLOCKI_Tw(1);
+			isp_main();
+		}
+		else {
+			IF_Funcs();
+		}
+  #endif
 
 //		ddr_control();	// for DDR Test, 사용하지 않음
 	}
 #else
+	enx_externalirq_init_cpu0();
+
+	int tick = 0;
 	while (1) {
+		Comm();
 		if (SYS_REG0 == 0xA) {
+#ifdef __USE_LED1__
 			GpioSetOut(GPIO_LED1, GPIO_OUT_HI);
+#endif
 			//_printf("%d:%lu\r\n", cpu_id, *mtime);
-			WaitXms(100);
-			SYS_REG0 = 0xB;
+			if (++tick == 100) {
+				tick = 0;
+				SYS_REG0 = 0xB;
+			}
 		}
 		WaitXms(1);
 	}

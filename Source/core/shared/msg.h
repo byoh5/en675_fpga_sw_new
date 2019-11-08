@@ -3,6 +3,19 @@
 
 #include <time.h>
 
+//...............................................
+// Shell message(?Byte)
+#define MSG_SHELL_NUM		3
+#define MSG_SHELL_MAXLEN	63
+typedef struct{									// Shell : cpu0 -> cpu1
+	UINT lock;									//		"
+	UINT head;									//		"
+	UINT tail;									//		"
+	UINT index;									//		"
+	UINT tot_num;								//		"
+	char arg[MSG_SHELL_NUM][MSG_SHELL_MAXLEN+1];//		"
+} shell_msg_t;									//		"
+
 typedef struct {
 	// Time info
 	time_t TIME;
@@ -55,7 +68,10 @@ typedef struct {
 } msgq_record_t;
 #endif
 
+extern shell_msg_t gptMsgShell;
 extern share_msg_t gptMsgShare;
 extern debug_msg_t gptMsgDebug;
+
+extern void enx_msgshell_init(volatile shell_msg_t *p);
 
 #endif // __MSG_H__

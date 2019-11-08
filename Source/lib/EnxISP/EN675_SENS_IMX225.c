@@ -95,7 +95,7 @@
 	const BYTE gbTblIMX225_0[][2] = {		// 27MHz - 720/60P
 								{0x00, 0x01}, 	// STANDBY
 								{0x02, 0x00},	// Sensor Master Mode
-								//{0x05, 0x01},	// AD12bit		TODO KSH IMX225의 AD bit 설정은?, EN673에서는 12bit으로 설정됨
+								//{0x05, 0x01},	// AD12bit		TODO KSH> IMX225의 AD bit 설정은? EN673은 12bit으로 설정됨
 								//{0x05, 0x00},	// 10bit Set AD	//150421 HSH --> 151005 HSH ???o??
 								{0x07, 0x10},
 								{0x09, 0x00},
@@ -159,7 +159,7 @@ void InitSensRun(void)
 {
 	if(gbSensIntf==0) {	// Parallel
 		UINT i;
-		for(i=0;i<ARRAY_SIZE(gbTblIMX225_0);i++)	{	SetSens(0x3000|gbTblIMX225_0[i][0], gbTblIMX225_0[i][1]);	}		//	ID2		// TODO KSH IMX225 초기설정 배열크기가 맞지 않음
+		for(i=0;i<ARRAY_SIZE(gbTblIMX225_0);i++)	{	SetSens(0x3000|gbTblIMX225_0[i][0], gbTblIMX225_0[i][1]);	}		//	ID2		// TODO KSH> IMX225 초기설정 배열크기가 맞지 않음
 		for(i=0;i<ARRAY_SIZE(gbTblIMX225_1);i++)	{	SetSens(0x3100|gbTblIMX225_1[i][0], gbTblIMX225_1[i][1]);	}		//	ID3
 		for(i=0;i<ARRAY_SIZE(gbTblIMX225_2);i++)	{	SetSens(0x3200|gbTblIMX225_2[i][0], gbTblIMX225_2[i][1]);	}		//	ID4
 

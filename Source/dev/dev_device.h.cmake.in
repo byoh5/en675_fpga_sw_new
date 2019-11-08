@@ -140,6 +140,20 @@
 #endif
 #endif // __AUDIO__
 
+#if ${USE_IRIS_PWM}
+#define __USE_IRIS_PWM__
+#define TIMER_PWM_IRIS	${IRIS_PWM_TIMER_CH}
+#endif // __USE_IRIS_PWM__
+
+#if ${USE_IR_LED_LPWM}
+#define __USE_IR_LED_LPWM__
+#endif // __USE_IR_LED_LPWM__
+
+#if ${USE_IR_LED_GPIO}
+#define __USE_IR_LED_GPIO__
+#define GPIO_IR_LED	${IR_LED_GPIO_CH}
+#endif // __USE_IR_LED_GPIO__
+
 #if ${USE_LED0}
 #define __USE_LED0__
 #define GPIO_LED0	${LED0_GPIO_CH}

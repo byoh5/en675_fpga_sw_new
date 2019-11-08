@@ -8,7 +8,8 @@
 // irq.c ///////////////////////////////////////////////////////////////////////
 extern void enx_timerirq_next(void);
 extern void enx_timerirq_init(void);
-extern void enx_externalirq_init(void);
+extern void enx_externalirq_init_cpu0(void);
+extern void enx_externalirq_init_cpu1(void);
 extern void enx_wake_cpu(int cpu_id);
 
 // Device driver ///////////////////////////////////////////////////////////////
@@ -90,6 +91,7 @@ extern void IrqI2c(UINT nCH);
 extern void SpiInit(UINT nCH, UINT Speed_Hz, BYTE nBIT, BYTE isLSB);
 extern void SpiDeinit(UINT nCH);
 extern void SpiSetCs(UINT nCH, ENX_HL hl);
+extern void SpiSetWs(UINT nCH, BYTE nBIT);
 extern ENX_HL SpiGetCs(UINT nCH);
 extern void SpiWrite(UINT nCH, BYTE *dat);
 extern void SpiRead(UINT nCH, BYTE *dat);

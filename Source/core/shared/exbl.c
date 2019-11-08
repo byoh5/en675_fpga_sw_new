@@ -23,7 +23,7 @@ void WaitXus(uint64_t us)
 	} while(clk < clk_period);
 }
 #else // version. rdcycle
-void WaitXus(uint64_t us)
+void ISRT0 WaitXus(uint64_t us)
 {	// Wait X usec
 	uint64_t clk_period = (CPU_FREQ / (1000 * 1000)) * us;
 	uint64_t start_clk = rdcycle();
@@ -38,7 +38,7 @@ void WaitXus(uint64_t us)
 }
 #endif
 
-void WaitXms(uint64_t ms)
+void ISRT0 WaitXms(uint64_t ms)
 {	// Wait X msec
 	WaitXus(ms * 1000);
 }
@@ -48,7 +48,7 @@ ULONG TimeGetMs(void)
 	return *mtime / TIME_1MS;
 }
 
-ULONG BenchTimeStart(void)
+ULONG ISRT0 BenchTimeStart(void)
 {
 	return rdcycle();
 }
@@ -67,7 +67,7 @@ ULONG BenchTimeStop(ULONG start_time)
 	return time_us;
 }
 #else
-UINT BenchTimeStop(ULONG start_time)
+UINT ISRT0 BenchTimeStop(ULONG start_time)
 {
 	const ULONG end_time = rdcycle();
 	const ULONG dep = (start_time < end_time) ? end_time - start_time : (0xFFFFFFFFFFFFFFFF - start_time) + end_time + 1;

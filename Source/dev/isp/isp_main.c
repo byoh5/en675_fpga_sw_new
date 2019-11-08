@@ -53,6 +53,18 @@ void Isp_Sensor_init(void)
 	void printf_SensorSetting(void); printf_SensorSetting();
 	InitSensRun();
 
+#if (model_Sens==SENS_IMX291)
+	PRE_GROFSw(0x3c4);
+	PRE_GBOFSw(0x3c4);
+	PRE_ROFSw(0x3c4);
+	PRE_BOFSw(0x3c4);
+#endif
+
+	_printf("ISP Sync & Sensor configuration...\r\n");
+}
+
+void Isp_PrePost_init(void)
+{
 	IspPreClkConfig();
 	IspPostClkConfig();
 	IspPreSyncConfig();
@@ -69,17 +81,17 @@ void Isp_Sensor_init(void)
 	SYNC_UPw(1);
 #endif
 
-	_printf("ISP Clk/Sync & Sensor configuration...\r\n");
+	_printf("ISP Clk/Res configuration...\r\n");
 }
 
 void Isp_Output_init(void)
 {
 	//	Digital Output Configuration----------------------------------------------------------
-	IspDout0SyncConfig();
-	IspDout1SyncConfig();
+	//IspDout0SyncConfig();
+	//IspDout1SyncConfig();
 
 	//	Digital Output Configuration
-	Isp_DigOut_Config(IFO_OPIN_0TO15, IFO_BT1120_16BIT, IFO_ISP_SYNC, IFO_1080_30P, IFO_ISP_PATH, 0, 0);		//	For HDMI (PinList, Dout Mode, Read Sync, Resolution, Output Source Path, Vsp, Hsp)
+	Isp_DigOut_Config(IFO_OPIN_0TO15,  IFO_BT1120_16BIT, IFO_ISP_SYNC, IFO_1080_30P, IFO_ISP_PATH, 0, 0);		//	For HDMI (PinList, Dout Mode, Read Sync, Resolution, Output Source Path, Vsp, Hsp)
 
 	Isp_DigOut_Config(IFO_OPIN_16TO31, IFO_BT1120_16BIT, IFO_ISP_SYNC, IFO_1080_30P, IFO_ISP_PATH, 0, 0);		//	For HD-SDI (PinList, Dout Mode, Read Sync, Resolution, Output Source Path, Vsp, Hsp)
 //	Isp_DigOut_Config(IFO_OPIN_24TO31, IFO_BT1120_8BIT_SDR, IFO_ISP_SYNC, IFO_1080_30P, IFO_ISP_PATH, 0, 0);		//	For HD-SDI (PinList, Dout Mode, Read Sync, Resolution, Output Source Path, Vsp, Hsp)
@@ -99,32 +111,31 @@ void Isp_Output_init(void)
 void Isp_Function_init(void)
 {
 	//	Isp Function Configuration------------------------------------------------------------
-	Isp_Gamma_Config(1,1);					//	Y/C Gamma On
-	Isp_Edge_Config(1);						//	Edge Enhancement On
+	InitAe();
+	IspAgcSet();
 
-	HSUP_ONw(1);
-	CHLPF_ONw(1);
-	CHLPF_SELw(1);
-	LSUP_ONw(1);
-	CES_ONw(1);
+	//DF_DETHSPw(RP(DF_HSP));
+	//DF_DETHEPw(RP(FR_HW) + RP(DF_HSP) - 1);
+	//DF_DETVSPw(RP(DF_VSP));
+	//DF_DETVEPw(RP(FR_VW) + RP(DF_VSP) - 1);
 
+	InitContrast();
 
-	// Font position setting by Sensor resolution.
-  #if	model_4M									//	2560 X 1440
-	FontInit(0x2f, 0xf, 1, 2560);
-	FontSetArea(78, 29, 154, 58);
-  #elif	model_1M									//	1280 X 720
-	FontInit(0x2f, 0x36, 1, 1280);
-	FontSetArea(39, 14, 77, 29);
-  #elif	model_8M
-	FontInit(0x2f, 0x30, 1, 3840);
-//	FontSetArea(120, 46);
-	FontSetArea(118, 34, 232, 88);
-  #elif model_2M || model_2M30p						//	1920 X 1080
-	FontInit(0x2f, 0xf, 1, 1920);
-	FontSetArea(59, 22, 116, 44);
-	//FontSetArea(115, 35);
-  #endif
+	InitAwb();
+
+	InitIMD();
+
+	BOX_HSP0w(RP(BOX_HSP));
+	BOX_VSP0w(RP(BOX_VSP));
+	PrivacyBox();						// Box Privacy
+
+	HlMask();							// High light mask
+
+	Isp_Gamma_Config(1,1);				//	Y/C Gamma On
+	Isp_Edge_Config(1);					//	Edge Enhancement On
+
+	//CHLPF_ONw(1);
+	//CHLPF_SELw(1);
 
 	FontSetColor(ISP_FONT_GREEN, ISP_FONT_WHITE, ISP_FONT_GRAY, ISP_FONT_YELLOW);
 	//FontSetSize(BIG_FONT,BIG_FONT_AREA,BORDER_THICK);
@@ -139,8 +150,9 @@ void Isp_Function_init(void)
 #ifdef	USE_DNR3D
 	Isp_Dnr3d_Config(FN_ON, 0x80, 0x40, 0x20);
 #endif
-	Isp_Dnr2d_Config(FN_ON, DNR2D_SUM_MOD, DNR2D_CNT8, 0x38, 0x30);
-	Isp_Defect_Config(FN_ON, DF_SUM_6, DF_SUM_4, DF_WGT_CASEB, DF_WGT_CASEB, DF_SLOPE_NOR, DF_GTHRES, DF_RBTHRES, DF_MAX, DF_MIN, 3);
+	//Isp_Dnr2d_Config(FN_ON, DNR2D_SUM_MOD, DNR2D_CNT8, 0x38, 0x30);
+	Isp_Dnr2d_Config(FN_ON, SP(Dnr2dICSel), SP(Dnr2dOCSel));
+	//Isp_Defect_Config(FN_ON, DF_SUM_6, DF_SUM_4, DF_WGT_CASEB, DF_WGT_CASEB, DF_SLOPE_NOR, DF_GTHRES, DF_RBTHRES, DF_MAX, DF_MIN, 3);
 
 
 	_printf("ISP Function configuration...\r\n");
@@ -150,6 +162,12 @@ void Isp_DDR_init(void)
 {
 	//	DDR Init---------------------------------------
 	Isp_Ddr_Cong();
+
+	//FIFO_ROSELw(1);
+	//WR_MSELw(1);
+	RD_MODw(0);
+	AXI_IDSw(0);
+
 
 //	bus_init();											//	Bus Monitor Init
 
@@ -180,7 +198,7 @@ void Isp_DDR_init(void)
 	Wait_VLOCKO();
 	Wait_VLOCKO();
 	Wait_VLOCKO();
-	SD_MODw(0);
+	SD_MODw(0);			// DDR OFF
 
 	RD_LTC7w(4);
 	RD_LTC8w(4);
@@ -190,7 +208,7 @@ void Isp_DDR_init(void)
 	Wait_VLOCKO();
 	Wait_VLOCKO();
 	Wait_VLOCKO();
-	CPU_FRC_ENw(1);
+	CPU_FRC_ENw(1);		// DDR OFF
 	BUS_RD_RSTw(1);
 #endif
 }
@@ -208,7 +226,7 @@ void Isp_Digital_input_init(void)
   #ifdef	USE_WRCH2_DS1_RDCH2_PIP0
 	Isp_DS1_Config(DS_DIGITAL_CH2_PATH, CLK_DIG_CH2_DIV2, 0x80, 0x80, 1920, 1080, LPF_LV3, LPF_LV3, 0, 0, FN_ON);	//	Down-Scale 1 Setting
 	Isp_DS1_Edge_Enhance_Config(FN_ON, 0x40, 0x10, 0xe0, DS_APT_ROI_OFF, 0, 0, 0, 0, 0, DS_ROI_OSD_OFF);			//	Down-Scale Aperture Setting
-	Isp_WrCh2_FrcAdr(0x82b4000, 0x82f4000, 0x8314000, 0x8354000, 0x8374000, 0x83b4000);								//	DDR Write Address Setting
+//	Isp_WrCh2_FrcAdr(0x82b4000, 0x82f4000, 0x8314000, 0x8354000, 0x8374000, 0x83b4000);								//	DDR Write Address Setting
 	Isp_WrCh2_Config(WR_CH_DOWN_SCALER1, 960, WR_DIG_CH2_SYNC, WR_COLOR, NO_INTERLACE, NO_VLCBIT, CLK_DIG_CH2_DIV2, USE_FRC, 0, DDR_WR_FIRST, DDR_RDCH2, IF_MODE_SET);	//	DDR Write Channel Setting -> Down-Scale Image
 //	Isp_WrCh2_Config(WR_CH_DOWN_SCALER1, 960, WR_DIG_CH2_SYNC, WR_COLOR, NO_INTERLACE, VLC_6BIT, CLK_DIG_CH2_DIV2, USE_FRC, 0, DDR_WR_FIRST, DDR_RDCH2, IF_MODE_SET);	//	DDR Write Channel Setting -> Down-Scale Image
 
@@ -226,7 +244,7 @@ void Isp_Digital_input_init(void)
   #ifdef	USE_WRCH3_DS2_RDCH3_PIP1
 	Isp_DS2_Config(DS_DIGITAL_CH3_PATH, CLK_DIG_CH3_DIV2, 0x80, 0x80, 1920, 1080, LPF_LV3, LPF_LV3, 0, 0, FN_ON);	//	Down-Scale 2 Setting
 	Isp_DS2_Edge_Enhance_Config(FN_ON, 0x40, 0x10, 0xe0, DS_APT_ROI_OFF, 0, 0, 0, 0, 0, DS_ROI_OSD_OFF);			//	Down-Scale Aperture Setting
-	Isp_WrCh3_FrcAdr(0x8194000, 0x81d4000, 0x81f4000, 0x8234000, 0x8254000, 0x8294000);								//	DDR Write Address Setting
+//	Isp_WrCh3_FrcAdr(0x8194000, 0x81d4000, 0x81f4000, 0x8234000, 0x8254000, 0x8294000);								//	DDR Write Address Setting
 	Isp_WrCh3_Config(WR_CH_DOWN_SCALER2, 960, WR_DIG_CH3_SYNC, WR_COLOR, NO_INTERLACE, NO_VLCBIT, CLK_DIG_CH3_DIV2, USE_FRC, 0, DDR_WR_FIRST, DDR_RDCH3, IF_MODE_SET);	//	DDR Write Channel Setting -> Down-Scale 2 Image
 //	Isp_WrCh3_Config(WR_CH_DOWN_SCALER2, 960, WR_DIG_CH3_SYNC, WR_COLOR, NO_INTERLACE, VLC_6BIT, CLK_DIG_CH3_DIV2, USE_FRC, 0, DDR_WR_FIRST, DDR_RDCH3, IF_MODE_SET);	//	DDR Write Channel Setting -> Down-Scale 2 Image
 
@@ -241,6 +259,29 @@ void Isp_Digital_input_init(void)
 	_printf("Digital Input configuration...\r\n");
 }
 
+void OutMode(void)
+{
+	static BYTE bOutFps = 0xee;
+	static BYTE bSysFreq = 0xee;
+
+	if(bOutFps!=UP(OutFps) || bSysFreq!=UP(SysFreq)) {
+
+		extern UINT gnVDI_CHG;
+		gnVDI_CHG = 2;
+
+		FreqAdjust();				// FPS_VDO & FPS_VDI 및 gnAeVtw & gnAeHtw 설정
+
+		Isp_PrePost_init();			// ISP Pre & Post의 Clk과 Res 설정
+
+		IspDout0SyncConfig();
+		IspDout1SyncConfig();
+		//Isp_Output_init();			// Output 설정
+
+		bOutFps = UP(OutFps);
+		bSysFreq = UP(SysFreq);
+	}
+}
+
 void Isp_init(void)
 {	// The execution order of the functions is important !!!
 
@@ -250,7 +291,13 @@ void Isp_init(void)
 
 	Isp_irq_init();				// Enable External Interrupts & Wait_VLOCKO() 사용을 위한 임시 설정
 
-	Isp_Sensor_init();			// ISP Pre & Post의 Clk과 Sync 설정 및 Sensor Initial
+	Isp_Sensor_init();			// ISP Sync 설정 및 Sensor Initial
+
+	FONT_INIT();				// SetFontChg() 보다 먼저 실행되어야 함
+	InitUsrParChgAll();			// SensFlip(), SensMirror() 실행을 위해 Isp_Sensor_init()이 먼저 설정되어야 함
+	ChangeMenuSize();
+
+	OutMode();
 
 	Isp_Output_init();			// Output 설정
 
@@ -260,15 +307,14 @@ void Isp_init(void)
 
 	Isp_Digital_input_init();	// Digital Input configuration
 
-	gbUsrParChgOn = 1;
-	UsrParChgAll();
-	gbUsrParChgOn = 2;
-	ChangeMenuSize();
+	YCW_DCK2_PDw(0);			// Clock enable ->  isp_clk.h의 YCW_DCK2_SET(2) 함수로 대치 가능.
+	YCW_DCK2_SELw(2);			// TODO KSH ◆ WDR 사용 시 꼭 필요한지 확인 필요
+	YCW_DCK2_PDw(1);
 
+	//extern void ParFncTest(void); ParFncTest();		// TODO KSH ◆ ParFncTest()
 
-	//extern void ParFncTest(void); ParFncTest();		// TODO ◆ KSH ParFncTest()
-
-	VIRQO_ENw(1);		// VLOCKO IRQ Routine Test, enx_exirq_source1() 함수에서 CLI_VLOCKOw(1) 실행됨
+	VIRQO_ENw(1);				// VLOCKO IRQ Routine Test, enx_exirq_source1() 함수에서 CLI_VLOCKOw(1) 실행됨
+	VIRQI_ENw(1);				// Sensor FPS 출력용
 }
 
 void Hdmi_Check(void)
@@ -282,8 +328,86 @@ void Hdmi_Check(void)
 #endif
 }
 
+void isp_DispLogo(void)
+{
+	const BYTE bLogo[][14] = {{142,143,146,147,150,151,168,169,172,173,176,177,180,181},
+							  {144,145,148,149,152,153,170,171,174,175,178,179,182,183}};
+
+	FontStr(0,0,(const char*)bLogo[0],14);
+	FontStr(1,0,(const char*)bLogo[1],14);
+}
+
+void isp_DispTime(void)
+{
+	static UINT VO_CNT = 0;
+	VO_CNT++;
+
+	static ULONG isp_main_first_time = 0;
+	if(isp_main_first_time==0) isp_main_first_time = BenchTimeStart();
+	const UINT nCur_ms = BenchTimeStop(isp_main_first_time)/1000;
+
+	static ULONG isp_main_start_time = 0;
+	const UINT isp_main_call_time = BenchTimeStop(isp_main_start_time);
+	isp_main_start_time = BenchTimeStart();
+	if(isp_main_start_time) FontDecEx(3, 4, NO_ALPHA, MN_YELLOW, isp_main_call_time, 6, 1);
+	FontStr(3,0,"VLO",3);
+	FontStr(3,10,"us",2);
+
+	extern UINT gnVDI_4FPS;
+	const UINT nFPS_Float = gnVDI_4FPS&3;
+	FontStr(4,0,"VDI",3);
+	FontDecEx(4, 4, NO_ALPHA, MN_YELLOW, gnVDI_4FPS>>2, 3, 1);
+	FontCharEx(4,7, NO_ALPHA, MN_YELLOW, '.');
+	FontStrEx(4,8, NO_ALPHA, MN_YELLOW, (nFPS_Float==0) ? "00": (nFPS_Float==1) ? "25" : (nFPS_Float==2) ? "50" : "75", 2);
+	FontStr(4,10,"FPS",3);
+
+	#define DISP_TIME_Y		17
+	#define DISP_TIME_X		0
+
+	//FontStr(DISP_TIME_Y, DISP_TIME_X, "TIME",4);
+
+	extern UINT gnVoIrqCnt;
+	FontStrEx(DISP_TIME_Y+1, DISP_TIME_X,    NO_ALPHA, MN_GREEN,  "IRQ",3);
+	FontDecEx(DISP_TIME_Y+1, DISP_TIME_X+3,  NO_ALPHA, MN_YELLOW, (gnVoIrqCnt*1000)/IF_FUNC_FPS, 10, 1);
+	FontStr(DISP_TIME_Y+1, DISP_TIME_X+13, "ms",2);
+
+	FontStrEx(DISP_TIME_Y+2, DISP_TIME_X,    NO_ALPHA, MN_GREEN,  "CPU",3);
+	FontDecEx(DISP_TIME_Y+2, DISP_TIME_X+3,  NO_ALPHA, MN_YELLOW, nCur_ms, 10, 1);
+	FontStr(DISP_TIME_Y+2, DISP_TIME_X+13, "ms",2);
+
+	FontStrEx(DISP_TIME_Y+3, DISP_TIME_X,    NO_ALPHA, MN_GREEN,  "VLO",3);
+	FontDecEx(DISP_TIME_Y+3, DISP_TIME_X+3,  NO_ALPHA, MN_YELLOW, (VO_CNT*1000)/IF_FUNC_FPS, 10, 1);
+	FontStr(DISP_TIME_Y+3, DISP_TIME_X+13, "ms",2);
+}
+
+void isp_LedCtrl(void)
+{
+	static UINT LED_FLG = 0;
+
+	//	LED Display when it operated
+	if(LED_FLG<10) { GPIO_PIN55_OUT = 1; /*FontStrEx(0,gnFontXw-5,NO_ALPHA,MN_GREEN,"EN675",5);*/ } // 10 Frames On		// TODO KSH> GPIO_IR_LED 에서 GPIO 55 사용
+	else		   { GPIO_PIN55_OUT = 0; /*FontClr(0,gnFontXw-5,5);*/                         } // 10 Frames Off		// "
+
+	LED_FLG = (LED_FLG<20) ? (LED_FLG+1) : 0;
+}
+
 void IF_Funcs(void)
 {
+	static ULONG IF_Funcs_Time = 0;
+
+	const int iVdo = ISP_RIRQ_VOr;
+
+	if(iVdo) {				// VLOCKO 에 동기화하여 실행
+		CLI_VLOCKO_Tw(1);
+
+		isp_DispTime();
+		isp_DispLogo();
+		isp_LedCtrl();
+	}
+	else if(ABSDIFF(IF_Funcs_Time,rdcycle()) < (CPU_FREQ/IF_FUNC_FPS)) return;
+
+	IF_Funcs_Time = rdcycle();
+
 //	FontStr(4,0,"ADC1",4);
 //	FontDec(4,5,AdcGet(1), 5, 1);
 
@@ -299,6 +423,13 @@ void IF_Funcs(void)
 //	FontDecEx(4+5,0, NO_ALPHA, MN_YELLOW, AdcGet(5), 5, 1);
 //	FontDecEx(4+6,0, NO_ALPHA, MN_YELLOW, AdcGet(6), 5, 1);
 //	FontDecEx(4+7,0, NO_ALPHA, MN_YELLOW, AdcGet(7), 5, 1);
+
+//	static UINT nPAR00 = 0;
+//	if(nPAR00 != PAR00) {
+//		nPAR00 = PAR00;
+//		extern void UartClk(UINT nCH, UINT Speed_Hz, int ofs);
+//		UartClk(7, UART7_SPEED, (nPAR00 > 100) ? 100 - (int)nPAR00 : (int)nPAR00);
+//	}
 
 	Comm(); 								// Communication Interface
 
@@ -319,106 +450,48 @@ void IF_Funcs(void)
 	AppSavePar();
 	AppLoadPar();
 
-	Hdmi_Check();	// VLOCKO 에 동기화될 필요 없이 가끔 한번씩 실행하면 됨
-}
+	if(gbMnDebugBypass==0) {
 
-void isp_DispLogo(void)
-{
-	const BYTE bLogo[][14] = {{142,143,146,147,150,151,168,169,172,173,176,177,180,181},
-							 {144,145,148,149,152,153,170,171,174,175,178,179,182,183}};
+//		Focus;								// Auto Focus or Focus Assist
 
-	FontStr(0,0,(const char*)bLogo[0],14);
-	FontStr(1,0,(const char*)bLogo[1],14);
-}
+//		TDN();								// Day & Night
 
-void isp_DispTime(void)
-{
-	static UINT VO_CNT = 0;
-	VO_CNT++;
+		Gamma();							// Gamma control
 
-	static ULONG isp_main_first_time = 0;
-	if(isp_main_first_time==0) isp_main_first_time = BenchTimeStart();
+//		BoxLast();							// Last Box control
+	}
 
-	static ULONG isp_main_start_time = 0;
-	const UINT isp_main_call_time = BenchTimeStop(isp_main_start_time);
-	isp_main_start_time = BenchTimeStart();
-	if(isp_main_start_time) FontDecEx(3, 4, NO_ALPHA, MN_YELLOW, isp_main_call_time, 6, 1);
-	FontStr(3,0,"VLO",3);
-	FontStr(3,10,"us",2);
-
-	#define DISP_TIME_Y		17
-	#define DISP_TIME_X		0
-
-	//FontStr(DISP_TIME_Y, DISP_TIME_X, "TIME",4);
-
-	extern UINT gnVoIrqCnt;
-	FontStrEx(DISP_TIME_Y+1, DISP_TIME_X,    NO_ALPHA, MN_GREEN,  "IRQ",3);
-	FontDecEx(DISP_TIME_Y+1, DISP_TIME_X+3,  NO_ALPHA, MN_YELLOW, (gnVoIrqCnt*1000)/30, 10, 1);
-	FontStr(DISP_TIME_Y+1, DISP_TIME_X+13, "ms",2);
-
-	FontStrEx(DISP_TIME_Y+2, DISP_TIME_X,    NO_ALPHA, MN_GREEN,  "CPU",3);
-	FontDecEx(DISP_TIME_Y+2, DISP_TIME_X+3,  NO_ALPHA, MN_YELLOW, BenchTimeStop(isp_main_first_time)/1000, 10, 1);
-	FontStr(DISP_TIME_Y+2, DISP_TIME_X+13, "ms",2);
-
-	FontStrEx(DISP_TIME_Y+3, DISP_TIME_X,    NO_ALPHA, MN_GREEN,  "VLO",3);
-	FontDecEx(DISP_TIME_Y+3, DISP_TIME_X+3,  NO_ALPHA, MN_YELLOW, (VO_CNT*1000)/FPS_VDO, 10, 1);
-	FontStr(DISP_TIME_Y+3, DISP_TIME_X+13, "ms",2);
-}
-
-void isp_LedCtrl(void)
-{
-	static UINT LED_FLG = 0;
-
-	//	LED Display when it operated
-	if(LED_FLG<10) { GPIO_PIN55_OUT = 1; /*FontStrEx(0,gnFontXw-5,NO_ALPHA,MN_GREEN,"EN675",5);*/ } // 10 Frames On
-	else		   { GPIO_PIN55_OUT = 0; /*FontClr(0,gnFontXw-5,5);*/                         } // 10 Frames Off
-
-	LED_FLG = (LED_FLG<20) ? (LED_FLG+1) : 0;
-}
-
-void isp_AeTest(void)
-{
-	const UINT 	nAe1Sum0    = AE1_SUM0_LOCKr;
-	const UINT 	nAe1Sum1    = AE1_SUM1_LOCKr;
-	const UINT 	nAe1Sum2    = AE1_SUM2_LOCKr;
-	const UINT 	nAe1SlicCnt = AE1_SLCNT_LOCKr;
-	const UINT 	nAe1ClipCnt = AE1_CLCNT_LOCKr;
-	const UINT	nAe1ClipLvl	= AE1_CLIPr;
-	const UINT	nAe1SlicLvl	= AE1_SLICEr;
-	const UINT	nAe1PxCnt	= ((AE1_VEPr - AE1_VSPr)+1) * ((AE1_HEPr - AE1_HSPr)+1);
-
-	const int iAe1Cur = (int)(((nAe1SlicCnt*nAe1SlicLvl) + nAe1Sum1 + (nAe1ClipCnt*nAe1ClipLvl)) / nAe1PxCnt);
-
-	GRP0 = iAe1Cur;
-	GRP1 = (nAe1SlicCnt) ? nAe1Sum0 / nAe1SlicCnt : 0;
-	GRP2 = (nAe1PxCnt > (nAe1SlicCnt+nAe1ClipCnt)) ? nAe1Sum1 / (nAe1PxCnt - (nAe1SlicCnt+nAe1ClipCnt)) : 0;
-	GRP3 = (nAe1ClipCnt) ? nAe1Sum2 / nAe1ClipCnt : 0;
-
-	GRP4 = nAe1Sum0;//nAe1SlicCnt;
-	GRP5 = nAe1Sum1;//(nAe1PxCnt > (nAe1SlicCnt+nAe1ClipCnt)) ? (nAe1PxCnt - (nAe1SlicCnt+nAe1ClipCnt)) : 0;
-	GRP6 = nAe1Sum2;//nAe1ClipCnt;
-
-	//GRP7 = nAe1ClipCnt;
-	GRP7+=10;
-	if(GRP7 > 500) GRP7 = 0;
-
-
-	//nAe1Sum1 / ((AE1_VEPr - AE1_VSPr)+1) * ((AE1_HEPr - AE1_HSPr)+1)
-
-	//GRP7 = nAe1Sum2
-
-	UartTxGrp();
+	if(iVdo) {
+		Hdmi_Check();	// VLOCKO 에 동기화될 필요 없이 가끔 한번씩 실행하면 됨
+	}
 }
 
 void isp_main(void)
 {
-	isp_DispLogo();
+	if(gbMnDebugBypass==0) {
 
-	isp_DispTime();
+		Ae();								// Auto exposure
 
-	isp_LedCtrl();
+		Af();								// Auto exposure
 
-	//isp_AeTest(); // TODO ◆ KSH AE test
+		AceDefog(); 						// ACE & Defog
+
+		Awb();								// Auto white balance
+
+		Adnr();								// DNR 2D/3D
+
+		Sharpness();						// Sharpness (aperture)
+
+		CSup(); 							// Color surpression
+
+		IMD();								// Motion detector
+
+		DefectAuto();						// Defect correction
+
+		BoxLast();							// Last Box control
+
+		AeDev();
+	}
 }
 
 #endif

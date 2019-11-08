@@ -15,6 +15,38 @@
 #ifndef _DEV_TYPES_H_
 #define	_DEV_TYPES_H_
 
+//******************************************************************************
+// 1. System define
+//------------------------------------------------------------------------------
+#define BDMA_CNT				4
+#define CDMA_CNT				4
+#define GPIO_CNT				72
+#define SDIO_CNT				2
+#define UART_CNT				9
+#define SPI_CNT					9
+#define I2C_CNT					9
+#define TIMER_CNT				39
+#define USB_CNT					1
+#define ETHERNET_CNT			1
+#define I2S_CNT					1
+#define ADC_CNT					8
+
+
+// uart printf out /////////////////////////////////////////////////////////////
+#define DEBUG_UART_NUM 			7
+#define INVALID_UART_NUM		0xFF
+
+
+// Tick irq ////////////////////////////////////////////////////////////////////
+#define TIME_TICK			100							// 10ms
+#define TIME_1MS			((MCK_FREQ / 100) / 1000)
+#define TIMECMP_NEXT_VAL	((MCK_FREQ / 100) / TIME_TICK)
+
+
+//******************************************************************************
+//
+//------------------------------------------------------------------------------
+//
 #define ARRAY_SIZE(x)			(sizeof(x) / sizeof((x)[0]))
 
 #include <stdint.h>							// for xxxx_t
@@ -154,9 +186,9 @@ typedef enum {
                      (((x) & (unsigned int)0x00ff0000UL) >>  8) | \
                      (((x) & (unsigned int)0xff000000UL) >> 24))
 
-#define ISRT0		//__attribute__((section(".ispmtext")))
-#define ISRT		//__attribute__((section(".ispmtext")))
-#define ISRD		//__attribute__((section(".ispmdata")))
+#define ISRT0		__attribute__((section(".ispmtext")))
+#define ISRT		__attribute__((section(".ispmtext")))
+#define ISRD		__attribute__((section(".ispmdata")))
 
 /**
  * container_of - cast a member of a structure out to the containing structure
@@ -184,6 +216,9 @@ typedef enum {
 #define min(a,b)				(((a) < (b)) ? (a) : (b))
 #endif
 
+#define ABS(x)					( (x) < 0  ? -(x) : (x) )
+#define ABSDIFF(A,B)			( (A) < (B) ? (B)-(A) : (A)-(B) )
+
 #define flprintf(fmt, args...) do { printf("    %04d:%s: "fmt, __LINE__, __func__, ##args); } while(0);
 
 #define TTY_COLOR_RESET		"\033[0m"
@@ -207,7 +242,6 @@ typedef enum {
 //******************************************************************************
 // Register define
 //------------------------------------------------------------------------------
-//
 #define BF_1(a)			a;
 #define BF_2(a,...)		BF_1(__VA_ARGS__);a;
 #define BF_3(a,...)		BF_2(__VA_ARGS__);a;
@@ -247,113 +281,6 @@ typedef enum {
 #define	_am(uon,base,addr)		((volatile uon*)(UINT*)(base+(addr)))->a	// All macro
 #define	_bm(uon,base,addr,mne)	((volatile uon*)(UINT*)(base+(addr)))->mne	// Bit macro
 #define _cm(base, idx)			(*(UINT*)(base+(idx<<3)))					//
-
-#define	_wr32(a,d)				(*((volatile UINT *)(unsigned long)(a)) = (d))			//			"			- Always used for ISP Register Write
-#define	_rd32(a)				(*((volatile UINT *)(unsigned long)(a)))				//			"			- Always used for ISP Register Read
-
-#define	SetIsp(anAddr, anData)	(_wr32(REG_BASE_ISP+((UINT)(anAddr)<<2), (UINT)(anData)))	// Write to bridge(Isp,Aud)
-#define	GetIsp(anAddr)			(_rd32(REG_BASE_ISP+((UINT)(anAddr)<<2))                )	// Read from bridge(Isp,Aud)
-
-#define BitMask_01			0x1
-#define BitMask_02			0x3
-#define BitMask_03			0x7
-#define BitMask_04			0xf
-#define BitMask_05			0x1f
-#define BitMask_06			0x3f
-#define BitMask_07			0x7f
-#define BitMask_08			0xff
-#define BitMask_09			0x1ff
-#define BitMask_10			0x3ff
-#define BitMask_11			0x7ff
-#define BitMask_12			0xfff
-#define BitMask_13			0x1fff
-#define BitMask_14			0x3fff
-#define BitMask_15			0x7fff
-#define BitMask_16			0xffff
-#define BitMask_17			0x1ffff
-#define BitMask_18			0x3ffff
-#define BitMask_19			0x7ffff
-#define BitMask_20			0xfffff
-#define BitMask_21			0x1fffff
-#define BitMask_22			0x3fffff
-#define BitMask_23			0x7fffff
-#define BitMask_24			0xffffff
-#define BitMask_25			0x1ffffff
-#define BitMask_26			0x3ffffff
-#define BitMask_27			0x7ffffff
-#define BitMask_28			0xfffffff
-#define BitMask_29			0x1fffffff
-#define BitMask_30			0x3fffffff
-#define BitMask_31			0x7fffffff
-#define BitMask_32			0xffffffff
-
-#define ValSft_R00(val)		((val)>> 0)
-#define ValSft_R01(val)		((val)>> 1)
-#define ValSft_R02(val)		((val)>> 2)
-#define ValSft_R03(val)		((val)>> 3)
-#define ValSft_R04(val)		((val)>> 4)
-#define ValSft_R05(val)		((val)>> 5)
-#define ValSft_R06(val)		((val)>> 6)
-#define ValSft_R07(val)		((val)>> 7)
-#define ValSft_R08(val)		((val)>> 8)
-#define ValSft_R09(val)		((val)>> 9)
-#define ValSft_R10(val)		((val)>>10)
-#define ValSft_R11(val)		((val)>>11)
-#define ValSft_R12(val)		((val)>>12)
-#define ValSft_R13(val)		((val)>>13)
-#define ValSft_R14(val)		((val)>>14)
-#define ValSft_R15(val)		((val)>>15)
-#define ValSft_R16(val)		((val)>>16)
-#define ValSft_R17(val)		((val)>>17)
-#define ValSft_R18(val)		((val)>>18)
-#define ValSft_R19(val)		((val)>>19)
-#define ValSft_R20(val)		((val)>>20)
-#define ValSft_R21(val)		((val)>>21)
-#define ValSft_R22(val)		((val)>>22)
-#define ValSft_R23(val)		((val)>>23)
-#define ValSft_R24(val)		((val)>>24)
-#define ValSft_R25(val)		((val)>>25)
-#define ValSft_R26(val)		((val)>>26)
-#define ValSft_R27(val)		((val)>>27)
-#define ValSft_R28(val)		((val)>>28)
-#define ValSft_R29(val)		((val)>>29)
-#define ValSft_R30(val)		((val)>>30)
-#define ValSft_R31(val)		((val)>>31)
-
-#define ValSft_L00(val)		((val)<< 0)
-#define ValSft_L01(val)		((val)<< 1)
-#define ValSft_L02(val)		((val)<< 2)
-#define ValSft_L03(val)		((val)<< 3)
-#define ValSft_L04(val)		((val)<< 4)
-#define ValSft_L05(val)		((val)<< 5)
-#define ValSft_L06(val)		((val)<< 6)
-#define ValSft_L07(val)		((val)<< 7)
-#define ValSft_L08(val)		((val)<< 8)
-#define ValSft_L09(val)		((val)<< 9)
-#define ValSft_L10(val)		((val)<<10)
-#define ValSft_L11(val)		((val)<<11)
-#define ValSft_L12(val)		((val)<<12)
-#define ValSft_L13(val)		((val)<<13)
-#define ValSft_L14(val)		((val)<<14)
-#define ValSft_L15(val)		((val)<<15)
-#define ValSft_L16(val)		((val)<<16)
-#define ValSft_L17(val)		((val)<<17)
-#define ValSft_L18(val)		((val)<<18)
-#define ValSft_L19(val)		((val)<<19)
-#define ValSft_L20(val)		((val)<<20)
-#define ValSft_L21(val)		((val)<<21)
-#define ValSft_L22(val)		((val)<<22)
-#define ValSft_L23(val)		((val)<<23)
-#define ValSft_L24(val)		((val)<<24)
-#define ValSft_L25(val)		((val)<<25)
-#define ValSft_L26(val)		((val)<<26)
-#define ValSft_L27(val)		((val)<<27)
-#define ValSft_L28(val)		((val)<<28)
-#define ValSft_L29(val)		((val)<<29)
-#define ValSft_L30(val)		((val)<<30)
-#define ValSft_L31(val)		((val)<<31)
-
-#define _REG_BASE_			REG_BASE_ISP
 
 //******************************************************************************
 // IRQ define
@@ -709,16 +636,16 @@ typedef struct {
 //******************************************************************************
 // Key define
 //------------------------------------------------------------------------------
-#define FPS_VDO		model_Sens_Fps
+#define IF_FUNC_FPS		25
 
-#define	UART_HOLD_CNT	(2<<(FPS_VDO>30))					// Holding time
-#define	UART_KEY_RPTF	(FPS_VDO>>2)						// First Repeat time
-#define	UART_KEY_RPTT	(FPS_VDO>>3)						// Repeat time
-#define	UART_KEY_RPTT2	(FPS_VDO>>4)						// Repeat time(Fast)	// 2016331 - WHL
+#define	UART_HOLD_CNT	(2<<(IF_FUNC_FPS>30))					// Holding time
+#define	UART_KEY_RPTF	(IF_FUNC_FPS>>2)						// First Repeat time
+#define	UART_KEY_RPTT	(IF_FUNC_FPS>>3)						// Repeat time
+#define	UART_KEY_RPTT2	(IF_FUNC_FPS>>4)						// Repeat time(Fast)	// 2016331 - WHL
 
 #define PUSH_DELAY_NOT	1									// No Holding time
-#define PUSH_DELAY_MIN	(FPS_VDO)							// Min Holding time
-#define PUSH_DELAY_NOR	(FPS_VDO+1)							// Max Holding time
+#define PUSH_DELAY_MIN	(IF_FUNC_FPS)							// Min Holding time
+#define PUSH_DELAY_NOR	(IF_FUNC_FPS+1)							// Max Holding time
 
 
 #define KEY_VAL_U	1
@@ -777,15 +704,77 @@ typedef	union{
 
 
 //******************************************************************************
+// BOX OSD
+//------------------------------------------------------------------------------
+#define ISP_BOX_EA			32				// (fix) number of Box
+#define PVC_EA				16//32			// number of privacy box (max 32ea, CAUTION. share with IMD box ea)
+#define MASK_EA				4				// number of IMD area box
+
+typedef struct _tagPRIVACY{				// 5 byte 크기, 모두 BYTE형이므로 aligned 필요 없음
+	BYTE	bAction;
+	BYTE	bPosX;
+	BYTE	bPosY;
+	BYTE	bSizX;
+	BYTE	bSizY;
+} _PRIVACY;
+
+typedef struct _IMD_RECT_W {
+	WORD 	ey;
+	WORD 	sy;
+	WORD 	ex;
+	WORD 	sx;
+} wRECT;
+
+typedef struct _IMD_RECT_B {
+	BYTE 	ey;
+	BYTE 	sy;
+	BYTE 	ex;
+	BYTE 	sx;
+} bRECT;
+
+
+//******************************************************************************
 // User Parameter define
 //------------------------------------------------------------------------------
-#ifndef __ISP_LIB__
+#define UPt(N)				N##_TYP									// Type of User Parameter
+
+#define _UP_TYPEDEF_1(N,...)	typedef BYTE UPt(N);
+#define _UP_TYPEDEF_2(N,...)	typedef WORD UPt(N);
+#define _UP_TYPEDEF_4(N,...)	typedef UINT UPt(N);
+
+#define UP_SET(S,N,...)		_UP_TYPEDEF_##S(N,...)
+#include "isp_user_parameter.h"
+USR_PAR_LIST
+
+
+#ifdef __ISP_LIB__
+	#define UP(N)		(*gLib##N)
+
+	#define PAR_BASE	(gLib##UpPAR00)
+
+	#ifdef UP_LIB_LINK
+		//#define UP_LIB1(N)	BYTE *gLib##N = 0;
+		//#define UP_LIB2(N)	WORD *gLib##N = 0;
+		//#define UP_LIB4(N)	UINT *gLib##N = 0;
+		#define UP_LIB(N)	UPt(N) *gLib##N = 0;//UP_LIB##S(N)
+	#else
+		//#define UP_LIB1(N)	extern BYTE *gLib##N;
+		//#define UP_LIB2(N)	extern WORD *gLib##N;
+		//#define UP_LIB4(N)	extern UINT *gLib##N;
+		#define UP_LIB(N)	extern UPt(N) *gLib##N;//UP_LIB##S(N)
+	#endif
+
+	#include "isp_user_parameter.h"
+	UP_LIB_LIST
+#else
 
 #define UpList				((UP_LIST*)gbUsrParTbl)
 #define UP(N)				UpList->N
+#define UPd(N)				((UP_LIST*)gbUsrParTblSaved)->N
 
 #define UPi(N)				N##_IDX									// Index of User Parameter
 #define UPs(N)				N##_SIZ									// Size of User Parameter
+
 
 //#define UPw(N,D)			UP(N) = (D)//SetByte(gbUsrParTbl+UPi(N), UPs(N), D)	// Write User Parameter
 //#define UPr(N)				UP(N)//GetByte(gbUsrParTbl+UPi(N), UPs(N))		// Read User Parameter
@@ -794,7 +783,7 @@ typedef	union{
 //#define UPx(N)				N//, sizeof(N)							// Use Default Type in MENU
 
 
-#define gbCamTitle(INDEX)	gbUsrParTbl[UPi(UpCamTitle0)+((INDEX))]
+#define gbCamTitle(INDEX)	gbUsrParTbl[UPi(CamTitle0)+((INDEX))]
 
 #define UPinv(N)			(UPi(N)+UPs(N)-1)
 
@@ -809,8 +798,9 @@ typedef	union{
 #define _UP_IDX_2(N,...)	N##_UP_END }; enum { N##_UP_START=((N##_UP_END+1)&~1)-1, PAR_IDX2(N,__VA_ARGS__)
 #define _UP_IDX_4(N,...)	N##_UP_END }; enum { N##_UP_START=((N##_UP_END+3)&~3)-1, PAR_IDX4(N,__VA_ARGS__)
 
-#define _UP_(S,N,...)		_UP_IDX_##S(N,...)
-#include "isp_par_tbl.h"
+#undef UP_SET
+#define UP_SET(S,N,...)		_UP_IDX_##S(N,...)
+#include "isp_user_parameter.h"
 enum {
 	UP_START=0,
 	USR_PAR_LIST
@@ -822,23 +812,25 @@ enum {
 #define _UP_TYPE_2(N,...)	WORD N;
 #define _UP_TYPE_4(N,...)	UINT N;
 
-#undef _UP_
-#define _UP_(S,N,...)		_UP_TYPE_##S(N,...)
-#include "isp_par_tbl.h"
+#undef UP_SET
+#define UP_SET(S,N,...)		_UP_TYPE_##S(N,...)//UPt(N) N;
+#include "isp_user_parameter.h"
 typedef struct {
-	BYTE UpStart;
+	BYTE Start;
 	USR_PAR_LIST
-	BYTE UpEnd;
+	BYTE End;
 } UP_LIST;
 
 
-#undef _UP_
-#define _UP_(S,N,...)		enum { UPs(N) = S };
-#include "isp_par_tbl.h"
+#undef UP_SET
+#define UP_SET(S,N,...)		enum { UPs(N) = S };
+#include "isp_user_parameter.h"
 USR_PAR_LIST
 
+#define MpPvcCfgIdx			(UP_END+1)
+#define MpItlWinCfgIdx		(MpPvcCfgIdx + (PVC_EA*sizeof(_PRIVACY)))
+#define USR_PAR_EA			(MpItlWinCfgIdx + (MASK_EA*sizeof(_PRIVACY)))
 
-#define USR_PAR_EA			(UP_END+1)
 
 extern BYTE gbUsrParChgOn;
 extern BYTE gbUsrParSaveChk;
@@ -848,31 +840,23 @@ extern BYTE gbUsrParTblSaved[USR_PAR_EA];
 
 #define PAR_BASE	((UINT*)(gbUsrParTbl+UPi(UpPAR00)))
 
-#define UP_LIB1(N) { extern BYTE *gLib##N; gLib##N = &UP(N); }
-#define UP_LIB2(N) { extern WORD *gLib##N; gLib##N = &UP(N); }
-#define UP_LIB4(N) { extern UINT *gLib##N; gLib##N = &UP(N); }
-#define UP_LIB(S,N)	UP_LIB##S(N)
+//#define UP_LIB1(N) { extern BYTE *gLib##N; gLib##N = &UP(N); }
+//#define UP_LIB2(N) { extern WORD *gLib##N; gLib##N = &UP(N); }
+//#define UP_LIB4(N) { extern UINT *gLib##N; gLib##N = &UP(N); }
+#define UP_LIB(N)	{ extern UPt(N) *gLib##N; gLib##N = &UP(N); }//UP_LIB##S(N)
 
-#else
-	#define UP(N)		(*gLib##N)
-
-	#define PAR_BASE	(gLib##UpPAR00)
-
-	#ifdef UP_LIB_LINK
-		#define UP_LIB1(N)	BYTE *gLib##N = 0;
-		#define UP_LIB2(N)	WORD *gLib##N = 0;
-		#define UP_LIB4(N)	UINT *gLib##N = 0;
-		#define UP_LIB(S,N)	UP_LIB##S(N)
-	#else
-		#define UP_LIB1(N)	extern BYTE *gLib##N;
-		#define UP_LIB2(N)	extern WORD *gLib##N;
-		#define UP_LIB4(N)	extern UINT *gLib##N;
-		#define UP_LIB(S,N)	UP_LIB##S(N)
-	#endif
-
-	#include "isp_par_tbl.h"
-	UP_LIB_LIST
 #endif
+
+
+#define USE_UP_PAR		0
+
+#if USE_UP_PAR == 0
+	extern UINT	gnRxPar[32];
+	#undef PAR_BASE
+	#define PAR_BASE	gnRxPar
+#endif
+
+
 //******************************************************************************
 // User Data define
 //------------------------------------------------------------------------------
@@ -911,6 +895,16 @@ extern BYTE gbUsrDataTbl[USR_DATA_EA];
 	#define EXCH_ADD	0
 #endif
 
+#define DispDec(Y, X, VAL, LEN)						FontDecEx(Y, X, NO_ALPHA, MN_WHITE, VAL, LEN, 1)						// TODO KSH> Font Fnc 나중에 제거
+#define DispDatHex(STR, Y, X, VAL)					FontStrHex( UP_ON, Y, X, MN_GREEN, STR, MN_WHITE, VAL, 8)
+#define DispDatDec(STR, Y, X, VAL)					FontStrDec( UP_ON, Y, X, MN_GREEN, STR, MN_WHITE, VAL, MN_FONT_MAX_PATH, 1)
+
+#define DispDat0Hex(ON, STR, Y, X, VAL)				FontStrHex( ON, Y, X, MN_GREEN, STR, MN_WHITE, VAL, 8)
+#define DispDat0Dec(ON, STR, Y, X, VAL)				FontStrDec( ON, Y, X, MN_GREEN, STR, MN_WHITE, VAL, MN_FONT_MAX_PATH, 1)
+#define DispDat0									DispDat0Hex
+#define DebugDisp(ON, TYPE, STR, Y, X, VAL, ...)	DispDat0##TYPE( ON, STR, Y, X, VAL );									// Debug display by Debug mode
+
+#define DebugDisp2(ON, TYPE, STR, Y, X, VAL, LEN)	FontStrDec( ON, Y, X, MN_GREEN, STR, MN_WHITE, VAL, LEN, 1);			// Debug display by Debug mode
 
 //******************************************************************************
 // Debug Graph & Parameter channel
@@ -941,7 +935,6 @@ extern union uFLOAT gnTxGrp[GRP_NUMBER];
 #define	GRP5F			(gnTxGrp[5].m_float)
 #define	GRP6F			(gnTxGrp[6].m_float)
 #define	GRP7F			(gnTxGrp[7].m_float)
-
 
 #define	PAR00			(*(PAR_BASE+ 0))
 #define	PAR01			(*(PAR_BASE+ 1))
@@ -1051,219 +1044,49 @@ enum {
 //******************************************************************************
 // Sensor define
 //------------------------------------------------------------------------------
-#ifndef __ISP_LIB__
-	#define SENS_DEF(N,V,S)	enum { N##___SENS_##S = V };
+#ifdef __ISP_LIB__
+	#define SENS_SEL(...)
+	#define RP_SEL(...)
+#else
+	//#define ENUM(N,V)		enum { N = V };
 
+	//#define _SP1_(N,V)		enum { SP(N) = V };
+	#define SENS_DEF(N,V,S)	enum { N##__SENS_##S = V };
 	#define SENS_SEL(N,V1,V2,V3,V4,V5,V6,V7,V8,V9,V10,V11,V12,V13,V14,V15,V16,V17,V18,V19,V20,S1,S2,S3,S4,S5,S6,S7,S8,S9,S10,S11,S12,S13,S14,S15,S16,S17,S18,S19,S20)	\
 		SENS_DEF(N,V1,S1)	SENS_DEF(N,V2,S2)	SENS_DEF(N,V3,S3)	SENS_DEF(N,V4,S4)	SENS_DEF(N,V5,S5)	SENS_DEF(N,V6,S6)	SENS_DEF(N,V7,S7)	SENS_DEF(N,V8,S8)	\
 		SENS_DEF(N,V9,S9)	SENS_DEF(N,V10,S10)	SENS_DEF(N,V11,S11)	SENS_DEF(N,V12,S12)	SENS_DEF(N,V13,S13)	SENS_DEF(N,V14,S14)	SENS_DEF(N,V15,S15)	SENS_DEF(N,V16,S16)	\
 		SENS_DEF(N,V17,S17)	SENS_DEF(N,V18,S18)	SENS_DEF(N,V19,S19)	SENS_DEF(N,V20,S20)
-#else
-	#define SENS_SEL(...)
-#endif
-//------------------------------------------------------------------------------
-// Frame info
-#if model_1M
-	#define FR_HW		1280			// Digital Output formatter horizontal active width
-	#define FR_VW		720				// Digital Output formatter vertical active width
-	#define PO_HW		1288            // HWI(pre module active image horizontal width) & HWO(Post module horizontal image active width)
-	#define PO_VW		728             // VWI(pre module active image vertical width) & VWO(Post module vertical image active width)
-	#define LV_HW		1308			// Lvds/Mipi internal buffer에서 image를 read하는 horizontal width를 설정한다. 이 값은 margin을 포함하여 실제 horizontal active pixel보다 크게 설정한다.
-	#define LV_VW		736				// Lvds/Mipi internal buffer에서 image를 read하는 vertical width를 설정한다. 이 값은 margin을 포함하여 실제 vertical active pixel보다 크게 설정한다.
-	#define FR_HTW60	1650			// Total  H width
-	#define FR_VTW60	750				// Total  V width
-	#define FR_HTW50	1980			// Total  H width
-	#define FR_VTW50	750				// Total  V width
-#elif model_2M || model_2M30p
-	#define FR_HW		1920			// Digital Output formatter horizontal active width
-	#define FR_VW		1080			// Digital Output formatter vertical active width
-	#define PO_HW		1928            // HWI(pre module active image horizontal width) & HWO(Post module horizontal image active width)
-	#define PO_VW		1088            // VWI(pre module active image vertical width) & VWO(Post module vertical image active width)
-	#define LV_HW		1988			// Lvds/Mipi internal buffer에서 image를 read하는 horizontal width를 설정한다. 이 값은 margin을 포함하여 실제 horizontal active pixel보다 크게 설정한다.
-	#define LV_VW		1100			// Lvds/Mipi internal buffer에서 image를 read하는 vertical width를 설정한다. 이 값은 margin을 포함하여 실제 vertical active pixel보다 크게 설정한다.
-	#define FR_HTW60	2200			// Total  H width
-	#define FR_VTW60	1125			// Total  V width
-	#define FR_HTW50	2640			// Total  H width
-	#define FR_VTW50	1125			// Total  V width
-#elif model_4M
-	#define FR_HW		2560			// Digital Output formatter horizontal active width
-	#define FR_VW		1440			// Digital Output formatter vertical active width
-	#define PO_HW		2568            // HWI(pre module active image horizontal width) & HWO(Post module horizontal image active width)
-	#define PO_VW		1448            // VWI(pre module active image vertical width) & VWO(Post module vertical image active width)
-	#define LV_HW		2584			// Lvds/Mipi internal buffer에서 image를 read하는 horizontal width를 설정한다. 이 값은 margin을 포함하여 실제 horizontal active pixel보다 크게 설정한다.
-	#define LV_VW		1458			// Lvds/Mipi internal buffer에서 image를 read하는 vertical width를 설정한다. 이 값은 margin을 포함하여 실제 vertical active pixel보다 크게 설정한다.
-	#define FR_HTW60	3300			// Total  H width
-	#define FR_VTW60	1500			// Total  V width
-	#define FR_HTW50	3960			// Total  H width
-	#define FR_VTW50	1500			// Total  V width
-#elif model_8M
-	#define FR_HW		3840			// Digital Output formatter horizontal active width
-	#define FR_VW		2160			// Digital Output formatter vertical active width
-	#define PO_HW		3848            // HWI(pre module active image horizontal width) & HWO(Post module horizontal image active width)
-	#define PO_VW		2168            // VWI(pre module active image vertical width) & VWO(Post module vertical image active width)
-	#define LV_HW		3860			// Lvds/Mipi internal buffer에서 image를 read하는 horizontal width를 설정한다. 이 값은 margin을 포함하여 실제 horizontal active pixel보다 크게 설정한다.
-	#define LV_VW		2180			// Lvds/Mipi internal buffer에서 image를 read하는 vertical width를 설정한다. 이 값은 margin을 포함하여 실제 vertical active pixel보다 크게 설정한다.
-	#define FR_HTW60	4400			// Total  H width
-	#define FR_VTW60	2250			// Total  V width
-	#define FR_HTW50	5280			// Total  H width
-	#define FR_VTW50	2250			// Total  V width
+
+	//#define _RP1_(N,V)		enum { RP(N) = V };
+	#define RP_DEF(N,V,R)	enum { N##__##R = V };
+	#define RP_SEL(N,V1,V2,V3,V4,V5,R1,R2,R3,R4,R5) \
+		enum { N##__##R1=V1 }; enum { N##__##R2=V2 }; enum { N##__##R3=V3 }; enum { N##__##R4=V4 }; enum { N##__##R5=V5 };
 #endif
 
-//------------------------------------------------------------------------------
-// Link
-#if model_Sens ==			SENS_IMX291
-	#define Sens(a) a##___##SENS_IMX291
-#elif model_Sens ==			SENS_IMX327
-	#define Sens(a) a##___##SENS_IMX327
-#elif model_Sens ==			SENS_SPC1
-	#define Sens(a) a##___##SENS_SPC1
-#elif model_Sens ==			SENS_IMX335
-	#define Sens(a) a##___##SENS_IMX335
-#elif model_Sens ==			SENS_OS05A10
-	#define Sens(a) a##___##SENS_OS05A10
-#elif model_Sens ==			SENS_IMX334
-	#define Sens(a) a##___##SENS_IMX334
-#elif model_Sens ==			SENS_IMX274
-	#define Sens(a) a##___##SENS_IMX274
-#elif model_Sens ==			SENS_IMX415
-	#define Sens(a) a##___##SENS_IMX415
-#elif model_Sens ==			SENS_OS08A10
-	#define Sens(a) a##___##SENS_OS08A10
-#elif model_Sens ==			SENS_IMX225
-	#define Sens(a) a##___##SENS_IMX225
-#elif model_Sens ==			SENS_OV2718
-	#define Sens(a) a##___##SENS_OV2718
-#elif model_Sens ==			SENS_OV4689
-	#define Sens(a) a##___##SENS_OV4689
+#include "isp_sensor_parameter.h"
 
-#else
-	//#define Sens(a) a##___##NOSENS
-	#define Sens(a) a
-#endif
+extern UINT FPS_VDI;
+extern UINT FPS_VDO;
 
-//------------------------------------------------------------------------------
-// Sensor Setting
-#define _SV_(NAME,V1,V2,V3,V4,V5,V6,V7,V8,V9,V10,V11,V12,V13,V14,V15,V16,V17,V18,V19,V20) SENS_SEL(NAME,V1,V2,V3,V4,V5,V6,V7,V8,V9,V10,V11,V12,V13,V14,V15,V16,V17,V18,V19,V20,\
-\
-					OV2718, IMX291,OS08A10, IMX225, IMX335, IMX274, OV4689, IMX415, none09, none10, none11, none12, none13, none14, none15, none16, none17, none18, none19, none20)
-_SV_(LvdsPNSel,		     0,      1,      1,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 0 : Negative Start, 1 : Positive Start,  입력 data의 latch start point를 설정
-_SV_(LvdsSofNo,		     1,      1,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 0 : usually Panasonic sensor, 1 : others		TODO KSH OS08A10의 SOF_NO 설정 확인 필요
-
-_SV_(LckDly,		     7,      2,      2,      2,      2,      6,      4,      4,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 0 ~ 7,  Lvds/Mipi input clock delay adjust
-_SV_(LdiDly0,		     0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 0 ~ 7,  LVDS channel 0 delay adjust
-_SV_(LdiDly1,		     0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 0 ~ 7,  LVDS channel 1 delay adjust
-_SV_(LdiDly2,		     0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 0 ~ 7,  LVDS channel 2 delay adjust
-_SV_(LdiDly3,		     0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 0 ~ 7,  LVDS channel 3 delay adjust
-
-_SV_(MipiClkPhase,	     0,      0,      0,      2,      2,      0,      2,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// Select Mipi 1/4 Clock Phase 0, 1, 2, 3, image align에 영향을 주어 영상을 보면서 이 값을 조절해야 함
-_SV_(MipiBit,		     0,      0,      0,     10,     12,     12,     10,     12,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)
-_SV_(MipiHSyncOfs,	     0,      0,      0,      7,      7,      7,      8,      7,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// Very Important!!! For Image Phase
-_SV_(MipiUseWcl,	     0,      0,      0,      0,      0,      0,      1,      1,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// use long packet word counter check function
-
-_SV_(IsSlave,		     1,      0,      1,      1,      1,      1,      1,      1,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 0 : Master Mode, 1 : Slave Mode,  Isp master/slave mode를 설정
-_SV_(IsASync,		     1,      0,      0,      0,      1,      0,      1,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// Auto sync generation, omni sensor와 같이 Active 이외의 구간에서 sync가 나오지 않는 sensor에서 1로 설정
-_SV_(IsNSync,		     1,      0,      0,      1,      1,      0,      1,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 입력 sync의 H/V 위상이 일치하지 않는 상황에서 1로 설정
-_SV_(PreHSyncOfs,	   0xe,    0xa,    0xa,   0xb0,   0xb0,    0xa,   0xb0,   0xa0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// Pre module Horizontal Sync Offset, Hsp 인자로 Image 위치가 맞지 않을때 Sync의 위치를 이동하여 image 위치를 맞추는데 사용
-_SV_(PreVSyncOfs,	     0,    0xc,    0xc,    0xc,    0xc,    0xc,    0xc,    0xc,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// Pre module Vertical Sync Offset, Vsp 인자로 Image 위치가 맞지 않을때 Sync의 위치를 이동하여 image 위치를 맞추는데 사용
-_SV_(PreHsp,		  0x13,   0x15,   0x15,    0x8,    0x8,   0x15,    0x8,   0x15,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// Pre module Horizontal image start position
-_SV_(PreVsp,		   0x8,    0x6,    0x6,    0x4,    0x4,    0x6,    0x4,    0x2,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// Pre module Vertical image start position
-_SV_(PreHSyncPol,	     0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 0 : Falling position, 1 : Rising position, Pre module Horizontal sync input polarity
-_SV_(PreVSyncPol,	     0,      0,      1,      1,      1,      1,      1,      1,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 0 : Falling position, 1 : Rising position, Pre module Vertical sync input polarity
-
-_SV_(OCSel,			     3,      1,      1,      2,      2,      1,      1,      3,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 0 ~ 3,  Post module color phase selection, RGB interpolator의 위상을 조절, 출력단 VLOCKO_IT_POS0w(OutVSyncOfs) & HLOCKO_IT_POS0w(OutHSyncOfs) 설정에 따라 OCSel값을 잘못 설정할 수 있으니 주의!!!
-
-_SV_(SyncCode0,		 0xfff,  0xfff,  0xfff,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)
-_SV_(SyncCode1,		     0,      0,      0,      1,      1,      1,      1,      1,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)
-_SV_(SyncCode2,		     0,      0,      0,      2,      2,      2,      2,      2,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)
-_SV_(SyncCode3_0,	     0,      0,      0,      3,      3,      3,      3,      3,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)
-_SV_(SyncCode3_1,	 0x800,  0x800,  0x200,   0xb8,   0xb8,   0xb8,   0xb8,   0xb8,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)
-_SV_(SyncCode3_2,	 0xab0,  0xab0,  0x280,  0xf30,  0xf30,  0xf30,  0xd20, 0x16a4,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)
-_SV_(SyncS0Code3_0,	     0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)
-_SV_(SyncS0Code3_1,	     0,      0,      0, 0x2000, 0x2000, 0x2000, 0x2000, 0x2000,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)
-_SV_(SyncS0Code3_2,	     0,      0,      0,   0x2b,   0x2c,   0x2c,   0x2b,   0x2c,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)
-_SV_(SyncS1Code3_0,	     0,      0,      0,      3,      3,      3,      3,      3,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)
-_SV_(SyncS1Code3_1,	     0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)
-_SV_(SyncS1Code3_2,	     0,      0,      0,      3,      3,      3,  0xd20,      3,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)
-
-#if	(model_Sens_Fps==60)
-_SV_(SensorClk,		     0,     74,      0,     27,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 148, 74, 37, 18, 27, 13, 6 MHz
-_SV_(PreClk,		     0, C_148M,      0,  C_74M,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// C_PLL, C_148M, C_74M, C_PCK, C_PCKD2, C_PLLD0
-#elif (model_Sens_Fps==30)
-_SV_(SensorClk,		    13,     37,      0,      0,     13,      0,     27,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 148, 74, 37, 18, 27, 13, 6 MHz
-_SV_(PreClk,		 C_74M,  C_74M,      0,      0,  C_74M,      0,  C_74M,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// C_PLL, C_148M, C_74M, C_PCK, C_PCKD2, C_PLLD0
-#elif (model_Sens_Fps==20)
-_SV_(SensorClk,		     0,      0,      0,      0,     13,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 148, 74, 37, 18, 27, 13, 6 MHz
-_SV_(PreClk,		     0,      0,      0,      0,  C_74M,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// C_PLL, C_148M, C_74M, C_PCK, C_PCKD2, C_PLLD0
-#elif (model_Sens_Fps==15)
-_SV_(SensorClk,		     0,      0,     27,      0,      0,     13,     13,     13,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 148, 74, 37, 18, 27, 13, 6 MHz
-_SV_(PreClk,		     0,      0,  C_74M,      0,      0,  C_74M,  C_74M,  C_74M,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// C_PLL, C_148M, C_74M, C_PCK, C_PCKD2, C_PLLD0
-#elif (model_Sens_Fps==12)
-_SV_(SensorClk,		     0,      0,      0,      0,     13,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 148, 74, 37, 18, 27, 13, 6 MHz
-_SV_(PreClk,		     0,      0,      0,      0,  C_74M,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// C_PLL, C_148M, C_74M, C_PCK, C_PCKD2, C_PLLD0
-#endif
-
-_SV_(PostClk,		 C_74M,  C_74M,  C_74M,  C_74M,  C_74M,  C_74M,  C_74M,  C_74M,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// C_PLL, C_148M, C_74M, C_PCK, C_PCKD2, C_PLLD0
-
-#if	model_1M
-	#define OutHSyncOfs		0x5c
-	#define OutVSyncOfs		0x0
-#elif model_2M || model_2M30p
-	#define OutHSyncOfs		0x5a
-	#define OutVSyncOfs		0x446
-#elif model_4M
-	#define OutHSyncOfs		0x5c
-	#define OutVSyncOfs		0x5ba
-#elif model_8M
-	#define OutHSyncOfs		0x5a
-	#define OutVSyncOfs		0x0
-#endif
-
-
-//------------------------------------------------------------------------------
-// ISP Function define
-#define IspSensorPowerOn()		Isp_SensorPowerOn(FN_ON,Sens(SensorClk))
-
-#if (model_Sens_Intf==0)	// Parallel
-	#define IspSDesPowerOn()	Isp_SDesPowerOn(FN_OFF,0,0)		// LVDS/MIPI Off
-	#define IspSDesConfig()		Isp_Parallel_Config(FN_ON/*, ISP_SLAVE*/, PARA_EXTER_CLK, PARA_CLK_SDR, 0/*, SYNC_FALL, SYNC_RISE, DIFF_EDGE, NO_USE_AUTOSYNC*/)
-#elif (model_Sens_Intf==1)	// LVDS
-	#define IspSDesPowerOn()	Isp_SDesPowerOn(FN_ON, LVDS_INTERFACE, 0)
-	#define IspSDesConfig()		Isp_Lvds_Config(LVDS_12BIT, LVDS_4LANE, 0, UP(UpLvdsPNSel), Sens(LvdsSofNo))
-#elif (model_Sens_Intf==2)	// MIPI
-	#define IspSDesPowerOn()	Isp_SDesPowerOn(FN_ON, MIPI_INTERFACE, UP(UpMipiClkPhase))
-	#define IspSDesConfig()		Isp_Mipi_Config(Sens(MipiBit), MIPI_4LANE, 0, 1, UP(UpMipiHSyncOfs), USE_ECC_CHECK, Sens(MipiUseWcl), NO_USE_CHECK, NO_USE_CHECK, 3)
-#endif
-
-#define IspSDesDelay()			Isp_SDesDelay(UP(UpLckDly), UP(UpLdiDly0), UP(UpLdiDly1), UP(UpLdiDly2), UP(UpLdiDly3))
-
-#if model_2M || model_2M30p
-	#define IspSDesPosition()	Isp_SDesPosition(0x1f, 0x1, LV_HW, LV_VW)
-#else
-	#define IspSDesPosition()	Isp_SDesPosition(0xb5, 0xc, LV_HW, LV_VW)
-#endif
-
-#define IspSYNC_CODE()			Isp_SYNC_CODE(Sens(SyncCode0), Sens(SyncCode1), Sens(SyncCode2), Sens(SyncCode3_0), Sens(SyncCode3_1), Sens(SyncCode3_2),\
-											  Sens(SyncS0Code3_0), Sens(SyncS0Code3_1), Sens(SyncS0Code3_2), Sens(SyncS1Code3_0), Sens(SyncS1Code3_1), Sens(SyncS1Code3_2))
-
-#define IspPreClkConfig()		Isp_PreClk_Config(Sens(PreClk))
-#define IspPostClkConfig()		Isp_PostClk_Config(Sens(PostClk))
-
-#define IspPreSyncConfig()		Isp_PreSync_Config(Sens(IsSlave), FR_HTW60, FR_VTW60, UP(UpPreHSyncOfs), UP(UpPreVSyncOfs), UP(UpPreHsp), UP(UpPreVsp), PO_HW, PO_VW, Sens(IsASync), Sens(IsNSync), UP(UpPreHSyncPol), UP(UpPreVSyncPol))
-
-#define IspPostSyncConfig()		Isp_PostSync_Config(1, 0, FR_HTW60, FR_VTW60, 0x3a, 0x2, 0x6, 0x4, PO_HW, PO_VW, UP(UpOCSel))
-
-#define IspDout0SyncConfig()	Isp_Dout0_Sync_Config(FR_HTW60, UP(UpOutHSyncOfs), UP(UpOutVSyncOfs), 0, 0x2a, FR_HW, FR_VW)
-#define IspDout1SyncConfig()	Isp_Dout1_Sync_Config(FR_HTW60, UP(UpOutHSyncOfs), UP(UpOutVSyncOfs), 0, 0x2a, FR_HW, FR_VW)
-
-//------------------------------------------------------------------------------
-#define InitSensRun			Sens(InitSensRun)
+extern UINT gnAeVtw;
+extern UINT gnAeHtw;
 
 
 //******************************************************************************
 //
 //------------------------------------------------------------------------------
+//typedef double float32;
+typedef float float32;
 
+#define _itof(I)		((float32)(I))
+#define _fmul(F1,F2)	((F1)*(F2))
+#define _fadd(F1,F2)	((F1)+(F2))
+#define _ftoi(F)		((int)(F))
+//#define TOFLOAT32(f)	f				// TODO KSH> AWB 초기화 코드 최적화 가능?
 
+//******************************************************************************
+//
+//------------------------------------------------------------------------------
 
 
 

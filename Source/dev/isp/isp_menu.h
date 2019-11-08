@@ -16,10 +16,11 @@
 #define	MN_YSTART			(MN_TITLE+2)					//
 
 
+#define	MN_MXSP_DEF			18/*14*//*0x1*/	// 160330 KSH		// main osd x start position
+#define MN_MXSP_DBG			(gnFontXw-MN_LINESIZE)//22
+
 extern BYTE MN_MXSP;
 
-#define	MN_MXSP_DEF			18/*14*//*0x1*/	// 160330 KSH		// main osd x start position
-#define MN_MXSP_DBG			22
 #define	MN_SXSP				(MN_MXSP+12)					// sub osd x start position
 #define MN_XBAR				(MN_SXSP+3)						// sub Bar osd start position
 #define MN_BAR_SIZE			7								// Bar Size, 7 or 5
@@ -39,30 +40,30 @@ extern BYTE MN_MXSP;
 
 
 #define FONT_SEL0											gnFontChar0
-#define FONT_SEL1	gbUsrParTbl[UPi(UpLanguageSel)] == 1  ? gnFontChar1 : FONT_SEL0
-#define FONT_SEL2	gbUsrParTbl[UPi(UpLanguageSel)] == 2  ? gnFontChar2 : FONT_SEL1
-#define FONT_SEL3	gbUsrParTbl[UPi(UpLanguageSel)] == 3  ? gnFontChar3 : FONT_SEL2
-#define FONT_SEL4	gbUsrParTbl[UPi(UpLanguageSel)] == 4  ? gnFontChar4 : FONT_SEL3
-#define FONT_SEL5	gbUsrParTbl[UPi(UpLanguageSel)] == 5  ? gnFontChar5 : FONT_SEL4
-#define FONT_SEL6	gbUsrParTbl[UPi(UpLanguageSel)] == 6  ? gnFontChar6 : FONT_SEL5
-#define FONT_SEL7	gbUsrParTbl[UPi(UpLanguageSel)] == 7  ? gnFontChar7 : FONT_SEL6
-#define FONT_SEL8	gbUsrParTbl[UPi(UpLanguageSel)] == 8  ? gnFontChar8 : FONT_SEL7
-#define FONT_SEL9	gbUsrParTbl[UPi(UpLanguageSel)] == 9  ? gnFontChar9 : FONT_SEL8
-#define FONT_SELA	gbUsrParTbl[UPi(UpLanguageSel)] == 10 ? gnFontCharA : FONT_SEL9
-#define FONT_SELB	gbUsrParTbl[UPi(UpLanguageSel)] == 11 ? gnFontCharB : FONT_SELA
+#define FONT_SEL1	gbUsrParTbl[UPi(LanguageSel)] == 1  ? gnFontChar1 : FONT_SEL0
+#define FONT_SEL2	gbUsrParTbl[UPi(LanguageSel)] == 2  ? gnFontChar2 : FONT_SEL1
+#define FONT_SEL3	gbUsrParTbl[UPi(LanguageSel)] == 3  ? gnFontChar3 : FONT_SEL2
+#define FONT_SEL4	gbUsrParTbl[UPi(LanguageSel)] == 4  ? gnFontChar4 : FONT_SEL3
+#define FONT_SEL5	gbUsrParTbl[UPi(LanguageSel)] == 5  ? gnFontChar5 : FONT_SEL4
+#define FONT_SEL6	gbUsrParTbl[UPi(LanguageSel)] == 6  ? gnFontChar6 : FONT_SEL5
+#define FONT_SEL7	gbUsrParTbl[UPi(LanguageSel)] == 7  ? gnFontChar7 : FONT_SEL6
+#define FONT_SEL8	gbUsrParTbl[UPi(LanguageSel)] == 8  ? gnFontChar8 : FONT_SEL7
+#define FONT_SEL9	gbUsrParTbl[UPi(LanguageSel)] == 9  ? gnFontChar9 : FONT_SEL8
+#define FONT_SELA	gbUsrParTbl[UPi(LanguageSel)] == 10 ? gnFontCharA : FONT_SEL9
+#define FONT_SELB	gbUsrParTbl[UPi(LanguageSel)] == 11 ? gnFontCharB : FONT_SELA
 
 #define FONT_SEL0_S											ARRAY_SIZE(gnFontChar0)
-#define FONT_SEL1_S	gbUsrParTbl[UPi(UpLanguageSel)] == 1  ? ARRAY_SIZE(gnFontChar1) : FONT_SEL0_S
-#define FONT_SEL2_S	gbUsrParTbl[UPi(UpLanguageSel)] == 2  ? ARRAY_SIZE(gnFontChar2) : FONT_SEL1_S
-#define FONT_SEL3_S	gbUsrParTbl[UPi(UpLanguageSel)] == 3  ? ARRAY_SIZE(gnFontChar3) : FONT_SEL2_S
-#define FONT_SEL4_S	gbUsrParTbl[UPi(UpLanguageSel)] == 4  ? ARRAY_SIZE(gnFontChar4) : FONT_SEL3_S
-#define FONT_SEL5_S	gbUsrParTbl[UPi(UpLanguageSel)] == 5  ? ARRAY_SIZE(gnFontChar5) : FONT_SEL4_S
-#define FONT_SEL6_S	gbUsrParTbl[UPi(UpLanguageSel)] == 6  ? ARRAY_SIZE(gnFontChar6) : FONT_SEL5_S
-#define FONT_SEL7_S	gbUsrParTbl[UPi(UpLanguageSel)] == 7  ? ARRAY_SIZE(gnFontChar7) : FONT_SEL6_S
-#define FONT_SEL8_S	gbUsrParTbl[UPi(UpLanguageSel)] == 8  ? ARRAY_SIZE(gnFontChar8) : FONT_SEL7_S
-#define FONT_SEL9_S	gbUsrParTbl[UPi(UpLanguageSel)] == 9  ? ARRAY_SIZE(gnFontChar9) : FONT_SEL8_S
-#define FONT_SELA_S	gbUsrParTbl[UPi(UpLanguageSel)] == 10 ? ARRAY_SIZE(gnFontCharA) : FONT_SEL9_S
-#define FONT_SELB_S	gbUsrParTbl[UPi(UpLanguageSel)] == 11 ? ARRAY_SIZE(gnFontCharB) : FONT_SELA_S
+#define FONT_SEL1_S	gbUsrParTbl[UPi(LanguageSel)] == 1  ? ARRAY_SIZE(gnFontChar1) : FONT_SEL0_S
+#define FONT_SEL2_S	gbUsrParTbl[UPi(LanguageSel)] == 2  ? ARRAY_SIZE(gnFontChar2) : FONT_SEL1_S
+#define FONT_SEL3_S	gbUsrParTbl[UPi(LanguageSel)] == 3  ? ARRAY_SIZE(gnFontChar3) : FONT_SEL2_S
+#define FONT_SEL4_S	gbUsrParTbl[UPi(LanguageSel)] == 4  ? ARRAY_SIZE(gnFontChar4) : FONT_SEL3_S
+#define FONT_SEL5_S	gbUsrParTbl[UPi(LanguageSel)] == 5  ? ARRAY_SIZE(gnFontChar5) : FONT_SEL4_S
+#define FONT_SEL6_S	gbUsrParTbl[UPi(LanguageSel)] == 6  ? ARRAY_SIZE(gnFontChar6) : FONT_SEL5_S
+#define FONT_SEL7_S	gbUsrParTbl[UPi(LanguageSel)] == 7  ? ARRAY_SIZE(gnFontChar7) : FONT_SEL6_S
+#define FONT_SEL8_S	gbUsrParTbl[UPi(LanguageSel)] == 8  ? ARRAY_SIZE(gnFontChar8) : FONT_SEL7_S
+#define FONT_SEL9_S	gbUsrParTbl[UPi(LanguageSel)] == 9  ? ARRAY_SIZE(gnFontChar9) : FONT_SEL8_S
+#define FONT_SELA_S	gbUsrParTbl[UPi(LanguageSel)] == 10 ? ARRAY_SIZE(gnFontCharA) : FONT_SEL9_S
+#define FONT_SELB_S	gbUsrParTbl[UPi(LanguageSel)] == 11 ? ARRAY_SIZE(gnFontCharB) : FONT_SELA_S
 
 #define EXTERN_FONT_CHAR0						extern const UINT gnFontChar0[][12]
 #define EXTERN_FONT_CHAR1	EXTERN_FONT_CHAR0;	extern const UINT gnFontChar1[][12]
@@ -163,7 +164,7 @@ extern BYTE gbBlcOsdOn;
 #define OSD_OFF()
 
 
-#define DispStr(S,Y,X,L)			FontStr(Y,X,S,L)	// TODO KHS 나중에 제거
+#define DispStr(S,Y,X,L)			FontStr(Y,X,S,L)	// TODO KSH> Font Fnc 나중에 제거
 #define DispClr(Y,X,L)				FontClr(Y,X,L)
 #define DispClrStr(S,Y,X,SL,CL)		FontClrStr(Y,X,S,SL,CL)
 #define DispClrDec(V,Y,X,L)			FontDec(Y,X,V,L,1)
@@ -217,7 +218,7 @@ extern BYTE gbBlcOsdOn;
 	//#define PEXCH		UINT//EXCH*
 
   #if model_CharMax == 1
-	#define LNG_INDEX(STR)		(gbUsrParTbl[UPi(UpLanguageSel)]>=((BYTE*)STR[0])[0] ? 1 : gbUsrParTbl[UPi(UpLanguageSel)]+1)
+	#define LNG_INDEX(STR)		(gbUsrParTbl[UPi(LanguageSel)]>=((BYTE*)STR[0])[0] ? 1 : gbUsrParTbl[UPi(LanguageSel)]+1)
 	#define LS(ARRAY)			ARRAY[LNG_INDEX(ARRAY)]
 	#define STRLEN(L,STR)		{ if( ((BYTE*)STR[0])[LNG_INDEX(STR)] == 2) L = strlenW((EXCH*)LS(STR)); else L = strlen((char*)LS(STR)); }
 	#define DISPSTR(STR,...)	{ if( ((BYTE*)STR[0])[LNG_INDEX(STR)] == 2) DispStrEx((EXCH*)LS(STR),__VA_ARGS__); else DispStr((char*)LS(STR),__VA_ARGS__); }
@@ -366,7 +367,7 @@ extern BYTE gbBlcOsdOn;
 			STR_LIST(C,NAME)
 	
   #else
-	#define LNG_INDEX(STR)		(gbUsrParTbl[UPi(UpLanguageSel)]>=STR[0] ? 1 : gbUsrParTbl[UPi(UpLanguageSel)]+1)
+	#define LNG_INDEX(STR)		(gbUsrParTbl[UPi(LanguageSel)]>=STR[0] ? 1 : gbUsrParTbl[UPi(LanguageSel)]+1)
 	#define STRLEN(L,STR)		L = strlen((EXCH*)STR[LNG_INDEX(STR)])
 	#define DISPSTR(STR,...)	DispStr((EXCH*)STR[LNG_INDEX(STR)],__VA_ARGS__)
 	#define DISPCLRSTR(STR,...)	DispClrStr((EXCH*)STR[LNG_INDEX(STR)],__VA_ARGS__)
@@ -573,32 +574,37 @@ extern BYTE gbBlcOsdOn;
 #define MS_SUF(TITLE,NUM)	menu_pos(_S(TITLE), NUM, TITLE##LIST);	switch(giStgPos[giLV]) {
 
 #define MENU_START\
-		/*int i;*/	\
-		UINT DRAW_ON;\
-		/*UINT DRAW_Y;*/	\
-	menu_start:\
-		DRAW_ON = (KEY_L || KEY_R || giMenuDispPos);\
-		/*DRAW_Y = gbMenuY+giStgPos[giLV];*/	\
-		if(0) {}
+	/*int i;*/	\
+	UINT DRAW_ON;\
+	/*UINT DRAW_Y;*/	\
+menu_start:\
+	DRAW_ON = (KEY_L || KEY_R || giMenuDispPos);\
+	/*DRAW_Y = gbMenuY+giStgPos[giLV];*/	\
+	if(0) {}
 
 #define MENU_DISPLAY_END(...)\
+	else if(MENU_TITLE != _S(OFF)) { menu_pos(MENU_TITLE, 0, 0); if(giMenuDispChg) { giMenuDispChg = 0;\
+										DrawStr(MENU_IS_NOT_AVAILABLE, gbMenuY+1, MN_MXSP+1, 21);\
+										DrawStr(ENTER_d_RETURN,	gbMenuY+4, MN_MXSP+4, 14); }\
+		MENU_OUT(/*OUT_ON*/1, 0, )\
+	}\
 	/*menu_display_end:*/	\
-		if(giMenuDispPos) {\
-			gbMenuList	= 0;\
-			gbMenuVal	= 0;\
-			if(giLV >= 0) {\
-				if(giStgPos[giLV] != giMenuNum) goto menu_start;\
-				giStgPos[giLV] = giMenuDispPos - 1;\
-				OsdMenuPos(1);\
-			}\
-			giMenuDispPos = 0;\
-			giMenuDispChg = 0;\
-			giGrayOnly = 0;\
-			__VA_ARGS__\
-			goto menu_end;\
-		} else {\
-			if(KEY_U || KEY_D) OsdMenuPos(1);\
-		}
+	if(giMenuDispPos) {\
+		gbMenuList	= 0;\
+		gbMenuVal	= 0;\
+		if(giLV >= 0) {\
+			if(giStgPos[giLV] != giMenuNum) goto menu_start;\
+			giStgPos[giLV] = giMenuDispPos - 1;\
+			OsdMenuPos(1);\
+		}\
+		giMenuDispPos = 0;\
+		giMenuDispChg = 0;\
+		giGrayOnly = 0;\
+		__VA_ARGS__\
+		goto menu_end;\
+	} else {\
+		if(KEY_U || KEY_D) OsdMenuPos(1);\
+	}
 
 #define MENU_DISPLAY_STAT\
 	DispClr(15,MN_MXSP,MN_LINESIZE);		if(MENU_TITLE)	{ DISPSTR(MENU_TITLE,	15, MN_MXSP, MN_LINESIZE); }\
@@ -641,13 +647,14 @@ extern BYTE gbBlcOsdOn;
 	else if((MENU_TITLE == _S(TITLE)) && (MENU_ON)) { menu_pos(_S(TITLE), 0, 0); if(giMenuDispChg) { giMenuDispChg = 0; __VA_ARGS__ }\
 		MENU_OUT(/*OUT_ON*/1, 0, OUT_CODE;)\
 	}
-#define MENU_SET(NUM,TITLE,MENU_ON/*,OUT_ON*/, ...)\
-		else if((MENU_TITLE == _S(TITLE)) && (MENU_ON)) { MENU_SET_NUM(TITLE, NUM, __VA_ARGS__)\
-			/*if(OUT_ON) {\
-				if(giMenuDispPos) { DrawStr(ENTER_d_RETURN, MN_YSTART+NUM+1, MN_MXSP+2, 14); }\
-				MENU_OUT(MN_ON, 1, DispClr(MN_YSTART+NUM+1, MN_MXSP+2, 14);)\
-			}*/\
-		}
+#define MENU_SET0(NUM,TITLE,MENU_ON/*,OUT_ON*/, ...)\
+	else if((MENU_TITLE == _S(TITLE)) && (MENU_ON)) { MENU_SET_NUM(TITLE, NUM, __VA_ARGS__)\
+		/*if(OUT_ON) {\
+			if(giMenuDispPos) { DrawStr(ENTER_d_RETURN, MN_YSTART+NUM+1, MN_MXSP+2, 14); }\
+			MENU_OUT(UP_ON, 1, DispClr(MN_YSTART+NUM+1, MN_MXSP+2, 14);)\
+		}*/\
+	}
+#define MENU_SET(NUM,TITLE,MENU_ON/*,OUT_ON*/, ...)	MENU_SET0(NUM,TITLE,MENU_ON/*,OUT_ON*/, __VA_ARGS__)
 
 // n : nothing
 // i : in

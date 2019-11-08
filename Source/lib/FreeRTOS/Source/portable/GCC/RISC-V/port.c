@@ -63,7 +63,7 @@ void vPortSetupTimerInterrupt(void)
 
 void vPortSetupExternalInterrupt(void)
 {	/* Sets and enable the external interrupt */
-	enx_externalirq_init();
+	enx_externalirq_init_cpu1();
 }
 /*-----------------------------------------------------------*/
 
@@ -218,9 +218,9 @@ void vTaskInfoPrint(void)
 //	printf("TaskStatus: %u\n", sizeof(etiList));
 	uxTask = uxTaskGetSystemState(etiList, TaskStatusCount, &uiTotal);
 
-	printf("-----------------------------------Task List(%02d)----------------------------------\n", uxTask);
-	printf(" TaskID  Task      State   Priority  Remained/Stack    RunTimeCounter  Percentage\n");
-	printf("----------------------------------------------------------------------------------\n");
+	printf("----------------------------------Task List(%02d)---------------------------------\n", uxTask);
+	printf(" TaskID  Task      State   Priority  Remained/Stack    RunTimeCounter Percentage\n");
+	printf("--------------------------------------------------------------------------------\n");
 	for (UBaseType_t i = 0; i < uxTask; i++) {
 		printf(" %-6lu %-8s %-9s    %lu/%lu    %4lu/0x%08X   %14u      %-lu%%\n",
 				etiList[i].xTaskNumber,
@@ -234,7 +234,7 @@ void vTaskInfoPrint(void)
 				(etiList[i].ulRunTimeCounter * 100) / uiTotal
 				);
 	}
-	printf("----------------------------------------------TotalRunTime(%10lu)------------\n", uiTotal);
+	printf("----------------------------------------------TotalRunTime(%10lu)----------\n", uiTotal);
 
 	vPortFree(etiList);
 }

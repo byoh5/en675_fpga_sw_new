@@ -33,6 +33,7 @@
 #ifndef __SENS_LIST__
 
 //	Sensor Setting--------------------------------------------------------------
+//#define model_Sens		SENS_OS08A10
 #define model_Sens		SENS_IMX291	// Sensor selection
 
 
@@ -43,6 +44,7 @@
 									// 1 : LVDS, supported OS08A10, IMX291, OV2718,
 									// 2 : MIPI, supported OV4689, IMX335, IMX274, IMX225, IMX415
 
+//#define model_Sens_Fps		15
 #define model_Sens_Fps		30		// 60 fps : supported IMX225
 									// 30 fps : supported IMX335, OV4689, OV2718, IMX291
 									// 20 fps : supported IMX335
@@ -85,7 +87,7 @@
 //	#define			USE_WRCH3_DS2_RDCH3_PIP1		1
 
 //	ISP Function----------------------------------------------------------------
-//#define				USE_DNR3D			1
+#define				USE_DNR3D			1		// TODO KSH ◆ 4K 시 USE_DNR3D 아직 사용 안됨
 
 //	Jpeg Test-------------------------------------------------------------------
 //#define			JPG_ENCODING			1
@@ -132,8 +134,9 @@
 #define model_Cds			0		//*0 : CDS input by ADC
 									// 1 : CDS input by GPIO
 
-#define model_Led			1		// 0 : IR-LED control by LPWM
+#define model_Led			2		// 0 : IR-LED control by LPWM
 									//*1 : IR-LED control by GPIO
+									// 2 : no IR-LED
 
 #define model_MotionOut		0		//*0 : GPIO Motion Alarm Disable
 									// 1 : GPIO Motion Alarm Enable

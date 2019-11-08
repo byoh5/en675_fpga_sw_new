@@ -143,20 +143,26 @@ void LedblinkTask(void *pvParameters)
 
 		if (ledcnt % 10 == 0) {
 			static uint64_t k = 0;
+#ifdef __USE_LED0__
 			if (k++%2)	GpioSetOut(GPIO_LED0, GPIO_OUT_HI);
 			else		GpioSetOut(GPIO_LED0, GPIO_OUT_LOW);
+#endif
 		}
 #if 0
 		if (ledcnt % 100 == 0) {
 			static uint64_t k = 0;
+#ifdef __USE_LED1__
 			if (k++%2)	GpioSetOut(GPIO_LED1, GPIO_OUT_HI);
 			else		GpioSetOut(GPIO_LED1, GPIO_OUT_LOW);
+#endif
 		}
 
 		if (ledcnt % 50 == 0) {
 			static uint64_t k = 0;
+#ifdef __USE_LED2__
 			if (k++%2)	GpioSetOut(GPIO_LED2, GPIO_OUT_HI);
 			else		GpioSetOut(GPIO_LED2, GPIO_OUT_LOW);
+#endif
 		}
 #endif
 		vTaskDelay(1);
