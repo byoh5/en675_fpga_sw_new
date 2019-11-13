@@ -73,13 +73,7 @@ void UartDeinit(UINT nCH)
 
 void UartTx(UINT nCH, char data)
 {
-#if 1	// 191107 ksh
-	while (arrUART[nCH]->TX_FULL || arrUART[nCH]->TX_IRQ_EN);
-#else
-	while (arrUART[nCH]->TX_FULL) {
-		WaitXms(1);
-	}
-#endif
+	while (arrUART[nCH]->TX_FULL) WaitXus(10);
 	arrUARTTX[nCH]->TX_DAT = data;
 }
 

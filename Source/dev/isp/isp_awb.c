@@ -504,14 +504,16 @@ void ISRT Awb(void)
 		nAwbBgain 	= AWB_GAIN_DFLT;
 #endif
 
-	/*GRP0 = iWgt;
+	/*static UINT nGrpCnt = 0;
+	nGrpCnt = (nGrpCnt==FPS_VDI) ? 1 : nGrpCnt+1;
+	GRP0 = iWgt;
 	GRP1 = (gnAwbRGainIIR>>4);
 	GRP2 = AWB_GAIN_DFLT;
 	GRP3 = (gnAwbBGainIIR>>4);
 	GRP4 = nAwbRgain;
 	GRP5 = nAwbGgain;
 	GRP6 = nAwbBgain;
-	GRP7 = 0;
+	GRP7 = nGrpCnt;
 	UartTxGrp();*/
 
 ////-------------------------------------------------------------------------------------------------

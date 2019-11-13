@@ -512,9 +512,9 @@ int rtspd_client_rtsp_check_url(rtsp_client *prcInfo, char *url)
 						res = 0;
 						prcInfo->isLive = ENX_RTSP_STREAM_FILE_H264_TYPE;
 					} else {
-						char strUrlBuf[STREAM_URL_LENGTH + 1];
+						char strUrlBuf[STREAM_URL_LENGTH + 2]; // '/'와 '\0'를 위해 +2를 추가함
 						for (UINT i = 0 ; i < VIDEO_CHANNEL_CNT; i++) {
-							snprintf(strUrlBuf, STREAM_URL_LENGTH, "/%s", (char *)gtUser.vcVideo[i].strStmUrl);
+							snprintf(strUrlBuf, STREAM_URL_LENGTH + 2, "/%s", (char *)gtUser.vcVideo[i].strStmUrl);
 							if (strcmp(strEnd, strUrlBuf) == 0) {
 								res = 0;
 								prcInfo->nVEncoderIdx = i;

@@ -863,7 +863,10 @@ void enx_externalirq_init_cpu0(void)
 	set_csr(mie, MIP_MEIP);								// Enable External Interrupts
 	set_csr(mstatus, MSTATUS_MIE);						// Machine Interrupt Enable
 
+	enx_externalirq_perl(eigiISP, ENX_ON, 0);			// Enable ISP Interrupts
 	enx_externalirq_perl(eigiUART, ENX_ON, 0);			// Enable UART Interrupts
+//	enx_externalirq_perl(eigiGPIO, ENX_ON, 0);			// Enable GPIO Interrupts
+//	enx_externalirq_perl(eigiTIMER, ENX_ON, 0);			// Enable TIMER Interrupts
 }
 
 void enx_externalirq_init_cpu1(void)
@@ -874,7 +877,7 @@ void enx_externalirq_init_cpu1(void)
 //	set_csr(mstatus, MSTATUS_MPIE);						// Machine Previous Interrupt Enabler
 //	set_csr(mstatus, MSTATUS_MPP);						// Machine Previous Privilege Mode
 
-	enx_externalirq_perl(eigiISP, ENX_ON, 0);			// Enable ISP Interrupts
+//	enx_externalirq_perl(eigiISP, ENX_ON, 0);			// Enable ISP Interrupts
 	enx_externalirq_perl(eigiDMA, ENX_ON, 0);			// Enable DMA Interrupts
 	enx_externalirq_perl(eigiH264, ENX_ON, 0);			// Enable H264 Interrupts
 	enx_externalirq_perl(eigiH265, ENX_ON, 0);			// Enable H265 Interrupts

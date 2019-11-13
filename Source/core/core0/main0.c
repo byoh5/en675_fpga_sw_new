@@ -554,6 +554,14 @@ void enx_pmp_init(void)
 #endif
 }
 
+#if 0
+UINT gnIF_Funcs_Run = 0;
+void IF_Funcs_Timer_irq(void *ctx)
+{
+	gnIF_Funcs_Run = 1;
+}
+#endif
+
 void main_0(int cpu_id)
 {
 	*mtime = 0; // timer init
@@ -580,8 +588,9 @@ void main_0(int cpu_id)
 
 	enx_pmp_init();
 
+	enx_externalirq_init_cpu0();
+
 #if defined(__SENSOR__)
-	enx_externalirq_init();
 
 	Isp_init();
 
@@ -619,8 +628,6 @@ void main_0(int cpu_id)
 //		ddr_control();	// for DDR Test, 사용하지 않음
 	}
 #else
-	enx_externalirq_init_cpu0();
-
 	int tick = 0;
 	while (1) {
 		Comm();

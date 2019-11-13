@@ -186,9 +186,9 @@ typedef enum {
                      (((x) & (unsigned int)0x00ff0000UL) >>  8) | \
                      (((x) & (unsigned int)0xff000000UL) >> 24))
 
-#define ISRT0		__attribute__((section(".ispmtext")))
-#define ISRT		__attribute__((section(".ispmtext")))
-#define ISRD		__attribute__((section(".ispmdata")))
+#define ISRT0		//__attribute__((section(".ispmtext")))
+#define ISRT		//__attribute__((section(".ispmtext")))
+#define ISRD		//__attribute__((section(".ispmdata")))
 
 /**
  * container_of - cast a member of a structure out to the containing structure

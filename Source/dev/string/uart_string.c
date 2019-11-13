@@ -127,11 +127,25 @@
 
 #define UNUSED_ARG(x)			((void)(x))
 
-#define IRQ_DISABLE				clear_csr(mstatus, MSTATUS_MIE)
-#define IRQ_ENABLE				set_csr(mstatus, MSTATUS_MIE)
+#define UART_TX_ECM_DLY			WaitXus(1000)	// TODO KSH> ECM에서 Read를 위 또는 아래로 연속 실행하는 경우 Uart 오동작 발생 방지
+
+#define IRQ_DISABLE				{ clear_csr(mstatus, MSTATUS_MIE); }
+#define IRQ_ENABLE				if(gnCommOn == 0) { set_csr(mstatus, MSTATUS_MIE); }
+
+#define UART_TX_IRQ_STA			{ IRQ_DISABLE UartTxSetIrqEn(DEBUG_UART_NUM, ENX_OFF); giTxOn = 1; }
+#define UART_TX_IRQ_END			{ giTxOn = 0; UartTxSetIrqEn(DEBUG_UART_NUM, ENX_ON); IRQ_ENABLE }
+
+#define UART_IRQ_OSD	0
+#if UART_IRQ_OSD == 1
+	#define UIO(A,B)	A
+#else
+	#define UIO(A,B)	B
+#endif
 
 //-------------------------------------------------------------------------------------------------
 // Variables
+UINT	gnCommOn = 0;
+
 BYTE	gbETX = 0;
 BYTE	gbRxStg = 0;
 WORD	gwRxAddr = 0;
@@ -167,15 +181,15 @@ volatile int giTxOn = 0;
 void UartRstRxQue(void)
 {
 	gtUartQue.wRxLen = 0;
-	gtUartQue.pbRxHead = &gtUartQue.bRxQue[0];
-	gtUartQue.pbRxTail = &gtUartQue.bRxQue[0];
+	gtUartQue.pbRxHead = gtUartQue.bRxQue;
+	gtUartQue.pbRxTail = gtUartQue.bRxQue;
 }
 
 void UartRstTxQue(void)
 {
 	gtUartQue.wTxLen = 0;
-	gtUartQue.pbTxHead = &gtUartQue.bTxQue[0];
-	gtUartQue.pbTxTail = &gtUartQue.bTxQue[0];
+	gtUartQue.pbTxHead = gtUartQue.bTxQue;
+	gtUartQue.pbTxTail = gtUartQue.bTxQue;
 }
 
 void UartRstQue(void)
@@ -184,28 +198,23 @@ void UartRstQue(void)
 	UartRstTxQue();
 }
 
-void UartTxIrq(BYTE abByte)
-{
-	if(gtUartQue.wTxLen >= UART_BUF_SIZE) return;	// The Tx data is lost.
-
-	UartTxSetIrqEn(DEBUG_UART_NUM, ENX_OFF);
-
-	giTxOn = 1;
-	*gtUartQue.pbTxHead++ = abByte;
-	if( gtUartQue.pbTxHead == &gtUartQue.bTxQue[UART_BUF_SIZE]){
-		gtUartQue.pbTxHead  = &gtUartQue.bTxQue[0];
-	}
-	gtUartQue.wTxLen++;
-	giTxOn = 0;
-	/*if(gtUartQue.wTxLen == 1)*/	UartTxSetIrqEn(DEBUG_UART_NUM, ENX_ON);
-}
+UIO(UINT gnRxOsdPos = 0;,)
 
 void UartDebugRxIrq(void *ctx)
 {
 	volatile BYTE bBuf = UartRxGetByte(DEBUG_UART_NUM);
 
 	if(gtUartQue.wRxLen < (UART_BUF_SIZE-1)) {
+
 		*gtUartQue.pbRxHead++ = bBuf;
+
+		UIO(
+			FontEx(22, (gnRxOsdPos<<1), NO_ALPHA, MN_WHITE, 2);
+			gnRxOsdPos++;
+			if(gnRxOsdPos==18) gnRxOsdPos = 0;
+			FontHexEx(22, (gnRxOsdPos<<1), NO_ALPHA, MN_YELLOW, *(gtUartQue.pbRxHead-1), 2);
+		,)
+
 		if(gtUartQue.pbRxHead == (gtUartQue.bRxQue + UART_BUF_SIZE)) {
 			gtUartQue.pbRxHead = gtUartQue.bRxQue;
 		}
@@ -216,9 +225,35 @@ void UartDebugRxIrq(void *ctx)
 	}
 }
 
+UIO(UINT gnTxOsdPos = 0;,)
+
+#if 0
+void UartTxAllBuffer(void)
+{
+	//if(gtUartQue.wTxLen == 0) return;
+
+	IRQ_DISABLE
+	//while(giTxOn) WaitXus(1);
+	UartTxSetIrqEn(DEBUG_UART_NUM, ENX_OFF);
+	//while(UartTxGetIrqEn(DEBUG_UART_NUM)) WaitXus(1);
+
+	while(gtUartQue.wTxLen) {
+		while(UartTxIsFull(DEBUG_UART_NUM)) WaitXus(10);
+		UartTxSetByte(DEBUG_UART_NUM, *gtUartQue.pbTxTail++);
+
+		if(	gtUartQue.pbTxTail == (gtUartQue.bTxQue + UART_BUF_SIZE)) {
+			gtUartQue.pbTxTail = gtUartQue.bTxQue;
+		}
+		gtUartQue.wTxLen--;
+	}
+
+	IRQ_ENABLE
+}
+#endif
+
 void UartDebugTxIrq(void *ctx)
 {
-	if(giTxOn) { UartTxSetIrqEn(DEBUG_UART_NUM, ENX_OFF); return; }
+	if(giTxOn) { UartTxSetIrqEn(DEBUG_UART_NUM, ENX_OFF); UIO(goto TxIrqEnd, return); }
 	else {
 		do {
 			if(gtUartQue.wTxLen == 0) {
@@ -226,20 +261,53 @@ void UartDebugTxIrq(void *ctx)
 				break;
 			}
 			else {
+				UIO(
+					FontEx(23, (gnTxOsdPos<<1), NO_ALPHA, MN_WHITE, 2);
+					gnTxOsdPos++;
+					if(gnTxOsdPos==18) gnTxOsdPos = 0;
+					FontHexEx(23, (gnTxOsdPos<<1), NO_ALPHA, MN_YELLOW, *gtUartQue.pbTxTail, 2);
+				,)
+
 				UartTxSetByte(DEBUG_UART_NUM, *gtUartQue.pbTxTail++);
 
-				if(	gtUartQue.pbTxTail == &gtUartQue.bTxQue[UART_BUF_SIZE]) {
-					gtUartQue.pbTxTail  = &gtUartQue.bTxQue[0];
+				if(	gtUartQue.pbTxTail == (gtUartQue.bTxQue + UART_BUF_SIZE)) {
+					gtUartQue.pbTxTail = gtUartQue.bTxQue;
 				}
 				gtUartQue.wTxLen--;
 			}
 		} while( UartTxIsFull(DEBUG_UART_NUM) == 0 );
 	}
+
+UIO(
+TxIrqEnd:
+	FontHexEx(24, 0, NO_ALPHA, MN_WHITE, gtUartQue.wTxLen, 3);
+,)
+}
+
+void UartTxIrq(BYTE abByte)
+{
+	if(gtUartQue.wTxLen >= UART_BUF_SIZE) return;	// The Tx data is lost.
+
+#if 0
+	UartTxSetIrqEn(DEBUG_UART_NUM, ENX_OFF);
+	giTxOn = 1;
+#endif
+
+	*gtUartQue.pbTxHead++ = abByte;
+	if( gtUartQue.pbTxHead == (gtUartQue.bTxQue + UART_BUF_SIZE)){
+		gtUartQue.pbTxHead = gtUartQue.bTxQue;
+	}
+	gtUartQue.wTxLen++;
+
+#if 0
+	giTxOn = 0;
+	/*if(gtUartQue.wTxLen == 1)*/	UartTxSetIrqEn(DEBUG_UART_NUM, ENX_ON);
+#endif
 }
 
 void UartTxReg(UINT anAddr, UINT anData)
 {
-	IRQ_DISABLE;
+	UART_TX_IRQ_STA
 
 	UartTxIrq(PC_STX);
 	UartTxIrq(PC_CMD_REGR);
@@ -254,18 +322,18 @@ void UartTxReg(UINT anAddr, UINT anData)
 
 	UartTxIrq(PC_ETX);
 
-	IRQ_ENABLE;
+	UART_TX_IRQ_END
 }
 
 void UartTxErr(void)
 {
-	IRQ_DISABLE;
+	UART_TX_IRQ_STA
 
 	UartTxIrq(PC_STX);
 	UartTxIrq(PC_CMD_ERR);
 	UartTxIrq(PC_ETX);
 
-	IRQ_ENABLE;
+	UART_TX_IRQ_END
 }
 
 void UartTxGrp(void)
@@ -274,7 +342,7 @@ void UartTxGrp(void)
 
 	//ULONG TxGrpTimeStart = BenchTimeStart();
 
-	IRQ_DISABLE;
+	UART_TX_IRQ_STA
 
 #if 1
 	UartTxIrq(PC_STX);
@@ -304,7 +372,7 @@ void UartTxGrp(void)
 
 	//const UINT TxGrpTime = BenchTimeStop(TxGrpTimeStart);
 
-	IRQ_ENABLE;
+	UART_TX_IRQ_END
 }
 
 void UartTxStrIrq0(const char *apcStr)
@@ -351,7 +419,7 @@ void UartTxStrEx(const UINT nCH, const char* apbStr0, const char* apbStr1, UINT 
 		UartTx(nCH, PC_ETX);
 	}
 	else {
-		IRQ_DISABLE;
+		UART_TX_IRQ_STA
 
 		UartTxIrq(PC_STX);
 		UartTxIrq(PC_CMD_STR);
@@ -367,7 +435,7 @@ void UartTxStrEx(const UINT nCH, const char* apbStr0, const char* apbStr1, UINT 
 
 		UartTxIrq(PC_ETX);
 
-		IRQ_ENABLE;
+		UART_TX_IRQ_END
 	}
 }
 
@@ -400,7 +468,7 @@ void UartTxStrDecCh(const UINT nCH, const char* apbStr0, UINT anVal, UINT anValL
 
 void /*ISPMu*/ UartTxPar(const UINT anAddr, BYTE abData)
 {
-	IRQ_DISABLE;
+	UART_TX_IRQ_STA
 
 	UartTxIrq(PC_STX);
 	UartTxIrq(PC_CMD_PARR);					// Cmd
@@ -412,7 +480,7 @@ void /*ISPMu*/ UartTxPar(const UINT anAddr, BYTE abData)
 
 	UartTxIrq(PC_ETX);							// ETX
 
-	IRQ_ENABLE;
+	UART_TX_IRQ_END
 }
 
 void /*ISPMu*/ UartRxPar(const int aiWrite)
@@ -437,18 +505,20 @@ void /*ISPMu*/ UartRxPar(const int aiWrite)
 	else {
 		UartTxPar(gwRxAddr, 0);
 	}
+
+	UART_TX_ECM_DLY;
 }
 
 void /*ISPMu*/ UartTxParK(const BYTE abVal)
 {
-	IRQ_DISABLE;
+	UART_TX_IRQ_STA
 
 	UartTxIrq(PC_STX);
 	UartTxIrq(PC_CMD_PARK);					// Cmd
 	UartTxIrq(abVal);
 	UartTxIrq(PC_ETX);							// ETX
 
-	IRQ_ENABLE;
+	UART_TX_IRQ_END
 }
 
 void /*ISPMu*/ UartRxParK(void)
@@ -460,12 +530,14 @@ void /*ISPMu*/ UartRxParK(void)
 		if(gnRxData == model_ParID) {
 			gbParOn = 0xFF;
 			UartTxParK(1);
+			UART_TX_ECM_DLY;
 			UartTxStr("Parameter Enable On ");
 		}
 		else {
 			if(gbParOn == 0xFF) gbParOn = 0;
 			gbParOn++;
 			UartTxParK(0);
+			UART_TX_ECM_DLY;
 			UartTxStrHex("Parameter ID Error...", gbParOn, 1);
 		}
 	}
@@ -492,13 +564,13 @@ void UpReset(void)
 
 void /*ISPMu*/ UartTxEepDone(void)
 {
-	IRQ_DISABLE;
+	UART_TX_IRQ_STA
 
 	UartTxIrq(PC_STX);
 	UartTxIrq(PC_CMD_EEPR);					// Cmd
 	UartTxIrq(PC_ETX);							// ETX
 
-	IRQ_ENABLE;
+	UART_TX_IRQ_END
 }
 
 void /*ISPMu*/ UartTxParSave(void)
@@ -597,11 +669,14 @@ void UartRxAddr(const int aiWrite)
 		//gnRxPar[wAddr])
 		nRxParOut)
 
+	UART_TX_ECM_DLY;
 }
 
 void Comm(void)
 {
 	BYTE bIn;
+
+	gnCommOn = 1;
 
 	while(gtUartQue.wRxLen > 0)
 	{
@@ -718,6 +793,10 @@ err_proc:
 				break;
 		 }
 	 }
+
+	gnCommOn = 0;
+	IRQ_ENABLE
+
 }
 #else
 static char * const gUartNumcode = "0123456789ABCDEF";
