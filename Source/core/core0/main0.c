@@ -594,8 +594,9 @@ void main_0(int cpu_id)
 
 	Isp_init();
 
-	VIRQI_EN_Tw(1);
+	//VIRQI_EN_Tw(1);
 	//CLI_VLOCKI_Tw(1);		// TODO KSH> 컴파일 문제?
+	extern UINT gnViIrqOn;
 
   #if 0
 	#define TIMER_IRQ_CH	0
@@ -616,8 +617,9 @@ void main_0(int cpu_id)
 
 		IF_Funcs();
   #else
-		if(ISP_RIRQ_VIr) {
-			CLI_VLOCKI_Tw(1);
+		if(gnViIrqOn/*ISP_RIRQ_VIr*/) {
+			//CLI_VLOCKI_Tw(1);
+			gnViIrqOn = 0;
 			isp_main();
 		}
 		else {

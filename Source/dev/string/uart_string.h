@@ -29,6 +29,7 @@ extern void UartTxIrq(BYTE abByte);
 extern void UartDebugRxIrq(void *ctx);
 extern void UartDebugTxIrq(void *ctx);
 extern void UartTxGrp(void);
+extern void UartTxGrpRun(void);
 extern void Comm(void);
 
 //#define UartTxStrHex(STR,VAL,LEN)		printf(STR"%"#LEN"x\r\n", VAL)

@@ -514,7 +514,7 @@ void ISRT Awb(void)
 	GRP5 = nAwbGgain;
 	GRP6 = nAwbBgain;
 	GRP7 = nGrpCnt;
-	UartTxGrp();*/
+	if(gbMnDebugFnc==1) UartTxGrp();*/
 
 ////-------------------------------------------------------------------------------------------------
 //// Post Matrix (final with R,B Gain)(Sign[12], Integer[10:8], Float[7:0])
@@ -625,6 +625,8 @@ void ISRT Awb(void)
 	DebugDisp2(gbAwbDebugOn, Dec, "WGT   ", 13, AWB_DEBUG_X, iWgt, 4)
 	DebugDisp2(gbAwbDebugOn, Dec, "HOLD  ", 14, AWB_DEBUG_X, nHold, 4)
 	DebugDisp2(gbAwbDebugOn, Dec, "DONE  ", 15, AWB_DEBUG_X, gnAwbErr, 4)
+	DebugDisp2(gbAwbDebugOn, Dec, "RGAIN ", 17, AWB_DEBUG_X, nRGain, 4)
+	DebugDisp2(gbAwbDebugOn, Dec, "BGAIN ", 18, AWB_DEBUG_X, nBGain, 4)
 #endif
 
 }	// end of AWB

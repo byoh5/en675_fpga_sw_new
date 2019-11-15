@@ -127,14 +127,23 @@
 
 #define UNUSED_ARG(x)			((void)(x))
 
-#define UART_TX_ECM_DLY			WaitXus(1000)	// TODO KSH> ECM에서 Read를 위 또는 아래로 연속 실행하는 경우 Uart 오동작 발생 방지
+#define UART_TX_ECM_DLY			WaitXus(1000)	// TODO KSH> ECM에서 Read를 위 또는 아래로 연속 실행하는 경우 Uart 오동작 발생 방지, 1000us가 가장 오동작 발생률 적음
 
+#if 0
 #define IRQ_DISABLE				{ clear_csr(mstatus, MSTATUS_MIE); }
 #define IRQ_ENABLE				if(gnCommOn == 0) { set_csr(mstatus, MSTATUS_MIE); }
 
 #define UART_TX_IRQ_STA			{ IRQ_DISABLE UartTxSetIrqEn(DEBUG_UART_NUM, ENX_OFF); giTxOn = 1; }
 #define UART_TX_IRQ_END			{ giTxOn = 0; UartTxSetIrqEn(DEBUG_UART_NUM, ENX_ON); IRQ_ENABLE }
+#else
+#define IRQ_DISABLE				{ UartTxSetIrqEn(DEBUG_UART_NUM, ENX_OFF); }
+#define IRQ_ENABLE				if(gnCommOn == 0) { UartTxSetIrqEn(DEBUG_UART_NUM, ENX_ON); }
 
+#define UART_TX_IRQ_STA			{ IRQ_DISABLE giTxOn = 1; }
+#define UART_TX_IRQ_END			{ giTxOn = 0; IRQ_ENABLE }
+#endif
+
+#define UART_IRQ_OSD_Y	24
 #define UART_IRQ_OSD	0
 #if UART_IRQ_OSD == 1
 	#define UIO(A,B)	A
@@ -175,6 +184,9 @@ UINT gnI2cOn = 0;
 
 TUartQue gtUartQue;
 volatile int giTxOn = 0;
+//volatile int giTxCnt = 0;
+//volatile BYTE* gpbTxCont = 0;
+volatile BYTE* gpbTxRegOn = 0;
 
 //-------------------------------------------------------------------------------------------------
 // Functions
@@ -209,10 +221,10 @@ void UartDebugRxIrq(void *ctx)
 		*gtUartQue.pbRxHead++ = bBuf;
 
 		UIO(
-			FontEx(22, (gnRxOsdPos<<1), NO_ALPHA, MN_WHITE, 2);
+			FontEx(UART_IRQ_OSD_Y, (gnRxOsdPos<<1), NO_ALPHA, MN_WHITE, 2);
 			gnRxOsdPos++;
 			if(gnRxOsdPos==18) gnRxOsdPos = 0;
-			FontHexEx(22, (gnRxOsdPos<<1), NO_ALPHA, MN_YELLOW, *(gtUartQue.pbRxHead-1), 2);
+			FontHexEx(UART_IRQ_OSD_Y, (gnRxOsdPos<<1), NO_ALPHA, MN_YELLOW, *(gtUartQue.pbRxHead-1), 2);
 		,)
 
 		if(gtUartQue.pbRxHead == (gtUartQue.bRxQue + UART_BUF_SIZE)) {
@@ -230,24 +242,18 @@ UIO(UINT gnTxOsdPos = 0;,)
 #if 0
 void UartTxAllBuffer(void)
 {
-	//if(gtUartQue.wTxLen == 0) return;
-
-	IRQ_DISABLE
-	//while(giTxOn) WaitXus(1);
-	UartTxSetIrqEn(DEBUG_UART_NUM, ENX_OFF);
-	//while(UartTxGetIrqEn(DEBUG_UART_NUM)) WaitXus(1);
-
-	while(gtUartQue.wTxLen) {
+	while(gpbTxCont != 0) {
 		while(UartTxIsFull(DEBUG_UART_NUM)) WaitXus(10);
+
 		UartTxSetByte(DEBUG_UART_NUM, *gtUartQue.pbTxTail++);
 
 		if(	gtUartQue.pbTxTail == (gtUartQue.bTxQue + UART_BUF_SIZE)) {
 			gtUartQue.pbTxTail = gtUartQue.bTxQue;
 		}
 		gtUartQue.wTxLen--;
-	}
 
-	IRQ_ENABLE
+		if(gpbTxCont == gtUartQue.pbTxTail) gpbTxCont = 0;
+	}
 }
 #endif
 
@@ -255,6 +261,42 @@ void UartDebugTxIrq(void *ctx)
 {
 	if(giTxOn) { UartTxSetIrqEn(DEBUG_UART_NUM, ENX_OFF); UIO(goto TxIrqEnd, return); }
 	else {
+
+		//if(UartTxIsEmpty(DEBUG_UART_NUM) == 0) UIO(goto TxIrqEnd, return);	// UART Polling TX 대기
+
+#if 1
+		while(gtUartQue.wTxLen)
+		{
+			if(UartTxIsFull(DEBUG_UART_NUM)) {
+				if(gpbTxRegOn) {
+					WaitXus(10);
+					continue;
+				}
+				else break;
+			}
+
+			UIO(
+				FontEx(UART_IRQ_OSD_Y+1, (gnTxOsdPos<<1), NO_ALPHA, MN_WHITE, 2);
+				gnTxOsdPos++;
+				if(gnTxOsdPos==18) gnTxOsdPos = 0;
+				FontHexEx(UART_IRQ_OSD_Y+1, (gnTxOsdPos<<1), NO_ALPHA, MN_YELLOW, *gtUartQue.pbTxTail, 2);
+			,)
+
+			UartTxSetByte(DEBUG_UART_NUM, *gtUartQue.pbTxTail++);
+
+			if(	gtUartQue.pbTxTail == (gtUartQue.bTxQue + UART_BUF_SIZE)) {
+				gtUartQue.pbTxTail = gtUartQue.bTxQue;
+			}
+			gtUartQue.wTxLen--;
+
+			//if(gpbTxCont == gtUartQue.pbTxTail) gpbTxCont = 0;
+			if(gpbTxRegOn == gtUartQue.pbTxTail) gpbTxRegOn = 0;
+		}
+
+		if(gtUartQue.wTxLen == 0) { UartTxSetIrqEn(DEBUG_UART_NUM, ENX_OFF); }
+		//else { if(gpbTxCont == 0) gpbTxCont = gtUartQue.pbTxHead; }
+
+#else
 		do {
 			if(gtUartQue.wTxLen == 0) {
 				UartTxSetIrqEn(DEBUG_UART_NUM, ENX_OFF);
@@ -276,11 +318,12 @@ void UartDebugTxIrq(void *ctx)
 				gtUartQue.wTxLen--;
 			}
 		} while( UartTxIsFull(DEBUG_UART_NUM) == 0 );
+#endif
 	}
 
 UIO(
 TxIrqEnd:
-	FontHexEx(24, 0, NO_ALPHA, MN_WHITE, gtUartQue.wTxLen, 3);
+	FontHexEx(UART_IRQ_OSD_Y+2, 0, NO_ALPHA, MN_WHITE, gtUartQue.wTxLen, 3);
 ,)
 }
 
@@ -322,6 +365,8 @@ void UartTxReg(UINT anAddr, UINT anData)
 
 	UartTxIrq(PC_ETX);
 
+	gpbTxRegOn = gtUartQue.pbTxHead;
+
 	UART_TX_IRQ_END
 }
 
@@ -336,9 +381,23 @@ void UartTxErr(void)
 	UART_TX_IRQ_END
 }
 
-void UartTxGrp(void)
+union uFLOAT gnTxGrp0[GRP_NUMBER] = { {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0} };	// Graphic data
+int giUartTxGrpOn = 0;
+
+void ISRT0 UartTxGrp(void)
 {
-	int		i;
+	for(int i=0; i<GRP_NUMBER; i++) {
+		gnTxGrp0[i].m_UINT = gnTxGrp[i].m_UINT;
+	}
+	giUartTxGrpOn = 1;
+}
+
+void ISRT UartTxGrpRun(void)
+{
+	if(!giUartTxGrpOn) return;
+	giUartTxGrpOn = 0;
+
+	int i;
 
 	//ULONG TxGrpTimeStart = BenchTimeStart();
 
@@ -349,10 +408,10 @@ void UartTxGrp(void)
 	UartTxIrq(PC_CMD_GRP);
 
 	for(i=0; i<GRP_NUMBER; i++){
-		UartTxIrq(gnTxGrp[i].m_UINT>>24);
-		UartTxIrq(gnTxGrp[i].m_UINT>>16);
-		UartTxIrq(gnTxGrp[i].m_UINT>> 8);
-		UartTxIrq(gnTxGrp[i].m_UINT>> 0);
+		UartTxIrq(gnTxGrp0[i].m_UINT>>24);
+		UartTxIrq(gnTxGrp0[i].m_UINT>>16);
+		UartTxIrq(gnTxGrp0[i].m_UINT>> 8);
+		UartTxIrq(gnTxGrp0[i].m_UINT>> 0);
 	}
 
 	UartTxIrq(PC_ETX);
@@ -361,10 +420,10 @@ void UartTxGrp(void)
 	UartTx(DEBUG_UART_NUM, PC_CMD_GRP);
 
 	for(i=0; i<GRP_NUMBER; i++){
-		UartTx(DEBUG_UART_NUM, gnTxGrp[i].m_UINT>>24);
-		UartTx(DEBUG_UART_NUM, gnTxGrp[i].m_UINT>>16);
-		UartTx(DEBUG_UART_NUM, gnTxGrp[i].m_UINT>> 8);
-		UartTx(DEBUG_UART_NUM, gnTxGrp[i].m_UINT>> 0);
+		UartTx(DEBUG_UART_NUM, gnTxGrp0[i].m_UINT>>24);
+		UartTx(DEBUG_UART_NUM, gnTxGrp0[i].m_UINT>>16);
+		UartTx(DEBUG_UART_NUM, gnTxGrp0[i].m_UINT>> 8);
+		UartTx(DEBUG_UART_NUM, gnTxGrp0[i].m_UINT>> 0);
 	}
 
 	UartTx(DEBUG_UART_NUM, PC_ETX);
@@ -680,6 +739,8 @@ void Comm(void)
 
 	while(gtUartQue.wRxLen > 0)
 	{
+		if(gpbTxRegOn != 0) break;
+
 		bIn = *gtUartQue.pbRxTail++;
 		if( gtUartQue.pbRxTail == (gtUartQue.bRxQue+UART_BUF_SIZE) ) {
 			gtUartQue.pbRxTail  = gtUartQue.bRxQue;
@@ -774,6 +835,7 @@ void Comm(void)
 					num_loop(gptMsgShell.tail, gptMsgShell.tot_num);
 //					CPU_SHARED1 |= eIP1_SHELL_RX;
 //					CPU_IRQ1 = 1;
+					UART_TX_ECM_DLY;
 					SetEnd();
 				} else {
 					if (gptMsgShell.index == MSG_SHELL_MAXLEN) {

@@ -96,6 +96,8 @@ static volatile unsigned int *iClaimCompliet[8] = {
 #define IRQ_ISP_PRINTF(...)	//printf(__VA_ARGS__)
 UINT gnVoIrqCnt = 0;
 UINT gnViIrqCnt = 0;
+//UINT gnVoIrqOn = 0;
+UINT gnViIrqOn = 0;
 UINT gnVDI_4FPS = 0;
 UINT gnVDI_CHG = 2;
 
@@ -103,7 +105,7 @@ void enx_exirq_source1(void)
 {
 	if (IRQ_ISP) {
 		IRQ_ISP_PRINTF("IRQ_ISP:");
-		if (IRQ_ISP0){CLI_VLOCKIw(1);
+		if (IRQ_ISP0){CLI_VLOCKIw(1); gnViIrqOn = 1;
 
 			static ULONG pre_time = 0;
 			const ULONG cur_time = rdcycle();
@@ -120,7 +122,8 @@ void enx_exirq_source1(void)
 			//printf("VI:%d\r\n", gnViIrqCnt);
 		}
 		if (IRQ_ISP1){CLI_VLOCKWw(1);}
-		if (IRQ_ISP2){CLI_VLOCKOw(1); gnVoIrqCnt++;
+		if (IRQ_ISP2){CLI_VLOCKOw(1);// gnVoIrqOn = 1;
+			gnVoIrqCnt++;
 			//if(!(gnVoIrqCnt%(FPS_VDO*5))) _printf("VLOCKO_IRQ %d!!!\n", gnVoIrqCnt/FPS_VDO);	// TODO KSH ¡ß VLOCKO IRQ test
 			//else if(!(gnVoIrqCnt%FPS_VDO)) _printf_irq("VLOCKO_IRQ %d\n", gnVoIrqCnt/FPS_VDO);
 			IRQ_ISP_PRINTF("VLOCKO_IRQ\n");

@@ -312,7 +312,7 @@ void ISRT AeDev(void)
 	gbSensUpdate = 1;
 
 //	FUNC_TIME_OSD(gbMnDebugFnc==1, AeDev, 16, 24,
-	const ULONG AeDevTimeSta = BenchTimeStart();
+	//const ULONG AeDevTimeSta = BenchTimeStart();
 
 		AE_ETCw(0);
 		AE_FREQw(0,0);
@@ -321,7 +321,7 @@ void ISRT AeDev(void)
 		AE_AGCw(0);
 		//AE_DGCw(0);
 //	)
-	FontBenchTime(gbMnDebugFnc==1, 16, 0, "AeDev", AeDevTimeSta, 6);
+	//FontBenchTime(gbMnDebugFnc==1, 16, 0, "AeDev", AeDevTimeSta, 6);
 
 	gbSensUpdate = 0;
 #endif
@@ -1740,11 +1740,11 @@ void ISRT Ae(void)
 	//isp_AeTest(); // TODO KSH + AE test
 
 	//----------------------------------------------------------------------------------------
-	const ULONG AeTimeSta = BenchTimeStart();
+	//const ULONG AeTimeSta = BenchTimeStart();
 
 	AeAdv();
 
-	FontBenchTime(gbMnDebugFnc==1, 15, 0, "Ae   ", AeTimeSta, 6);
+	//FontBenchTime(gbMnDebugFnc==1, 15, 0, "Ae   ", AeTimeSta, 6);
 	//----------------------------------------------------------------------------------------
 
 	IspAgcCurSet();

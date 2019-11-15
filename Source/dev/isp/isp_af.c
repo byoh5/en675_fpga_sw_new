@@ -28,7 +28,7 @@ const BYTE gbFocusAdjYCbCrTbl[6][3] = {{235,128,128/*WHT*/},{218,  8,139/*YEL*/}
 //*******************************************************************************
 // Main Functions
 //*******************************************************************************
-void Af(void) // 180320 LWH - Focus ADJ / Motorized AF
+void ISRT Af(void) // 180320 LWH - Focus ADJ / Motorized AF
 {
 	static BYTE bInitFlag=1, FocusAdj_MBuf[3]={0,};
 	const BYTE bMenuChg = (UP(FocusAdj_On)!=FocusAdj_MBuf[0])|(UP(FocusThrs)!=FocusAdj_MBuf[1])|(UP(FocusAdjColorSel)!=FocusAdj_MBuf[2]);

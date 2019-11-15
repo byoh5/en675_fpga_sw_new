@@ -636,7 +636,7 @@ typedef struct {
 //******************************************************************************
 // Key define
 //------------------------------------------------------------------------------
-#define IF_FUNC_FPS		25
+#define IF_FUNC_FPS		30//25
 
 #define	UART_HOLD_CNT	(2<<(IF_FUNC_FPS>30))					// Holding time
 #define	UART_KEY_RPTF	(IF_FUNC_FPS>>2)						// First Repeat time

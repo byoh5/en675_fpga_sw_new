@@ -54,7 +54,7 @@ void VideoModeChg(BYTE *abDetFrm)
 	rVTOTAL = VTWOr;
 	gPostClk = PPCK_SELr;
 
-	//_printf_irq("HTWOr : %d\tVTWOr : %d\r\n", rHWIDTH, rVTOTAL);
+	//_printf_irq("HDMI:HTWO=%d,VTWO=%d\r\n", rHWIDTH, rVTOTAL);
 
 //	ENX_I2Cr(DevAddr,0x325,&nRegReadBuf);	//ch A
 //	rEXD_HTC =((nRegReadBuf>>16)&0x3fff);						//	EN674 HTWO

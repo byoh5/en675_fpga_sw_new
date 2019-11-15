@@ -368,7 +368,7 @@ void isp_DispTime(void)
 
 	extern UINT gnVoIrqCnt;
 	FontStrEx(DISP_TIME_Y+1, DISP_TIME_X,    NO_ALPHA, MN_GREEN,  "IRQ",3);
-	FontDecEx(DISP_TIME_Y+1, DISP_TIME_X+3,  NO_ALPHA, MN_YELLOW, (gnVoIrqCnt*1000)/IF_FUNC_FPS, 10, 1);
+	FontDecEx(DISP_TIME_Y+1, DISP_TIME_X+3,  NO_ALPHA, MN_YELLOW, (gnVoIrqCnt*1000)/FPS_VDO, 10, 1);
 	FontStr(DISP_TIME_Y+1, DISP_TIME_X+13, "ms",2);
 
 	FontStrEx(DISP_TIME_Y+2, DISP_TIME_X,    NO_ALPHA, MN_GREEN,  "CPU",3);
@@ -376,10 +376,11 @@ void isp_DispTime(void)
 	FontStr(DISP_TIME_Y+2, DISP_TIME_X+13, "ms",2);
 
 	FontStrEx(DISP_TIME_Y+3, DISP_TIME_X,    NO_ALPHA, MN_GREEN,  "VLO",3);
-	FontDecEx(DISP_TIME_Y+3, DISP_TIME_X+3,  NO_ALPHA, MN_YELLOW, (VO_CNT*1000)/IF_FUNC_FPS, 10, 1);
+	FontDecEx(DISP_TIME_Y+3, DISP_TIME_X+3,  NO_ALPHA, MN_YELLOW, (VO_CNT*1000)/FPS_VDO, 10, 1);
 	FontStr(DISP_TIME_Y+3, DISP_TIME_X+13, "ms",2);
 }
 
+#if 0
 void isp_LedCtrl(void)
 {
 	static UINT LED_FLG = 0;
@@ -390,23 +391,21 @@ void isp_LedCtrl(void)
 
 	LED_FLG = (LED_FLG<20) ? (LED_FLG+1) : 0;
 }
+#endif
 
 void IF_Funcs(void)
 {
+	const ULONG IspIfTimeSta = rdcycle();
 	static ULONG IF_Funcs_Time = 0;
 
-	const int iVdo = ISP_RIRQ_VOr;
-
-	if(iVdo) {				// VLOCKO 에 동기화하여 실행
+	if(ISP_RIRQ_VOr) {			// VLOCKO 에 동기화하여 실행
 		CLI_VLOCKO_Tw(1);
-
 		isp_DispTime();
 		isp_DispLogo();
-		isp_LedCtrl();
+		//isp_LedCtrl();
 	}
-	else if(ABSDIFF(IF_Funcs_Time,rdcycle()) < (CPU_FREQ/IF_FUNC_FPS)) return;
+	else if(ABSDIFF(IF_Funcs_Time,IspIfTimeSta) < (CPU_FREQ/IF_FUNC_FPS)) return;
 
-	IF_Funcs_Time = rdcycle();
 
 //	FontStr(4,0,"ADC1",4);
 //	FontDec(4,5,AdcGet(1), 5, 1);
@@ -450,7 +449,7 @@ void IF_Funcs(void)
 	AppSavePar();
 	AppLoadPar();
 
-	if(gbMnDebugBypass==0) {
+	if(!gbMnDebugBypass) {
 
 //		Focus;								// Auto Focus or Focus Assist
 
@@ -461,14 +460,18 @@ void IF_Funcs(void)
 //		BoxLast();							// Last Box control
 	}
 
-	if(iVdo) {
-		Hdmi_Check();	// VLOCKO 에 동기화될 필요 없이 가끔 한번씩 실행하면 됨
-	}
+	Hdmi_Check();	// VLOCKO 에 동기화될 필요 없이 가끔 한번씩 실행하면 됨
+
+	IF_Funcs_Time = rdcycle();
+
+	FontBenchTime(1/*gbMnDebugFnc==1*/, 23, 0, "ISP_I", IspIfTimeSta, 6);
 }
 
 void isp_main(void)
 {
-	if(gbMnDebugBypass==0) {
+	const ULONG IspMainTimeSta = BenchTimeStart();
+
+	if(!gbMnDebugBypass) {
 
 		Ae();								// Auto exposure
 
@@ -490,8 +493,12 @@ void isp_main(void)
 
 		BoxLast();							// Last Box control
 
+		UartTxGrpRun();
+
 		AeDev();
 	}
+
+	FontBenchTime(1/*gbMnDebugFnc==1*/, 22, 0, "ISP_M", IspMainTimeSta, 6);
 }
 
 #endif
