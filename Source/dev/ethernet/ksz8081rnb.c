@@ -193,11 +193,13 @@ void EthphyRegView(UINT Type, WORD Data)
 }
 #endif
 
-void EthphyAutoNeg(ENX_SWITCH onoff)
+void EthphyAutoNeg(ETHERNETIF_AUTONEGO autonego)
 {
 	WORD wANAR = 0, wBCR = 0;
 
-	if (onoff == ENX_ON) {
+	int flag = 1;
+	switch (autonego) {
+	case ENIF_AUTO_NEGOTIATION:
 		MdioRead(ethphy_info.addr, ETHPHY_ANAR_ADR, &wANAR);	// Auto-Negotiation Advertisement: Read
 #if 1 // (ETH_MAC_PAUSE)
 		wANAR |= ETHPHY_ANAR_SY_PAUSE;							// Auto-Negotiation Advertisement: Enable symmetric pause
@@ -213,11 +215,33 @@ void EthphyAutoNeg(ENX_SWITCH onoff)
 		wBCR |= ETHPHY_BCR_AUTONEG_EN; 							// Basic Control: Enable auto-negotiation process
 		wBCR |= ETHPHY_BCR_RST_AUTONEG;							// Basic Control: Restart auto-negotiation process
 		ENX_DEBUGF(DBG_ETHPHY_MSG, "Auto-Negotiation start.\n");
-	} else {
+		flag = 0;
+		break;
+	case ENIF_MAN_10M_HALF:
+		wBCR |= 0;												// Basic Control: Set 10Mbps
+		wBCR |= 0;												// Basic Control: Set Half-duplex
+		break;
+	case ENIF_MAN_10M_FULL:
+		wBCR |= 0;												// Basic Control: Set 10Mbps
+		wBCR |= ETHPHY_BCR_FULLDPLX;							// Basic Control: Set Full-duplex
+		break;
+	case ENIF_MAN_100M_HALF:
+		wBCR |= ETHPHY_BCR_SPEED;								// Basic Control: Set 100Mbps
+		wBCR |= 0;												// Basic Control: Set Half-duplex
+		break;
+	case ENIF_MAN_100M_FULL:
 		wBCR |= ETHPHY_BCR_SPEED;								// Basic Control: Set 100Mbps
 		wBCR |= ETHPHY_BCR_FULLDPLX;							// Basic Control: Set Full-duplex
+		break;
+	default:
+		ENX_DEBUGF(DBG_ETHPHY_PANIC, "Manual configuration error. code(%d)\n", autonego);
+		flag = 0;
+		break;
+	}
+	if (flag) {
 		ENX_DEBUGF(DBG_ETHPHY_MSG, "Manual configuration.\n");
 	}
+
 	EthphyRegView(ETHPHY_BCR_ADR, wBCR);
 	MdioWrite(ethphy_info.addr, ETHPHY_BCR_ADR, wBCR);			// Basic Control: Write
 }
@@ -226,8 +250,6 @@ ENX_OKFAIL EthphySetting(void)
 {
 	// Interrupt Control(Enable link-down, link-up interrupt)
 	MdioWrite(ethphy_info.addr, ETHPHY_ICSR_ADR, ETHPHY_ICSR_LUIE | ETHPHY_ICSR_LDIE);
-
-	EthphyAutoNeg(ETHPHY_AUTONEG);
 
 	return ENX_OK;
 }

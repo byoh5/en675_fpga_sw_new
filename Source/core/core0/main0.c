@@ -398,7 +398,7 @@ void enx_default_userinfo(void)
 	gvsVideo[e_vsVSource4].eResolution = e_resEndorUnknown;
 	gvsVideo[e_vsVSource4].nFps = -1;
 
-#ifdef __ETHERNET__
+#if defined(__ETHERNET__)
 	gtSystem.arr8MacAddress[0] = 0x00;
 	gtSystem.arr8MacAddress[1] = 0x01;
 	gtSystem.arr8MacAddress[2] = 0x52;
@@ -406,6 +406,12 @@ void enx_default_userinfo(void)
 	gtSystem.arr8MacAddress[4] = 0x35;
 	gtSystem.arr8MacAddress[5] = 0x37;
 	EthMacAddrCheck((BYTE *)gtSystem.arr8MacAddress);
+
+#if 1
+	gtNetwork.u3EthAutoNegotiation = ETHPHY_AUTONEG;
+#else
+	gtNetwork.u3EthAutoNegotiation = ENIF_MAN_100M_FULL;
+#endif
 
 	gtNetwork.naEthernet.u1UseDhcp = NET_DHCP;
 	if (gtNetwork.naEthernet.u1UseDhcp == ENX_ON) {
@@ -582,13 +588,14 @@ void main_0(int cpu_id)
 
 	enx_msgshell_init(&gptMsgShell);
 
-	SYS_REG0 = 0xA; // CPU0 Ready!
-
 	printf("Init Device - RTL-191016-1408\n");
 
 	enx_pmp_init();
 
+
 	enx_externalirq_init_cpu0();
+
+	SYS_REG0 = 0xA; // CPU0 Ready!
 
 #if defined(__SENSOR__)
 

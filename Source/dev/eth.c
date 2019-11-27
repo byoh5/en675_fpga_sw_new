@@ -234,7 +234,9 @@ void EthRxTxInit(UINT type, UINT speed, UINT duplex)
 		}
 		ETH_RX_RMII10		= 0;
 		ETH_TX_RMII10		= 0;
+
 		ETH_RX_ERTYPE		= 1;
+
 		if (speed == ETHPHY_SPD_1000 && duplex == ETHPHY_DUPLEX_FULL) {
 			ETH_RX_DATTYPE	= 1;
 			ETH_TX_DATTYPE	= 1;
@@ -285,61 +287,6 @@ void EthRxTxInit(UINT type, UINT speed, UINT duplex)
 			ETH_RX_RCKDLY = 0xB;
 			break;
 		}
-#elif 0 // 190917(J)
-		ETH_TX_CLKEDGE = 1;
-		ETH_TX_TCKDLY = 0x1;
-		ETH_RX_RCKEDGE = 0;
-		ETH_RX_RCKDLY = 0xC;
-#elif 0 // 190829(C)
-		ETH_TX_CLKEDGE = 1;
-		ETH_TX_TCKDLY = 0x5;
-		ETH_RX_RCKEDGE = 0;
-		ETH_RX_RCKDLY = 0x1;
-#elif 1 // 190820(J)
-		ETH_TX_CLKEDGE = 1;
-		ETH_TX_TCKDLY = 0x1;
-		ETH_RX_RCKEDGE = 0;
-		ETH_RX_RCKDLY = 0xC;
-#elif 0 // 190708
-		ETH_TX_CLKEDGE = 1;
-		ETH_TX_TCKDLY = 0x6;
-		ETH_RX_RCKEDGE = 1;
-		ETH_RX_RCKDLY = 0x1;
-#elif 0 // 190701
-		ETH_TX_CLKEDGE = 1;
-		ETH_TX_TCKDLY = 0x9;
-		ETH_RX_RCKEDGE = 0;
-		ETH_RX_RCKDLY = 0x6;
-#elif 0 // 190626
-		ETH_TX_CLKEDGE = 1;
-		ETH_TX_TCKDLY = 0x7;
-		ETH_RX_RCKEDGE = 1;
-		ETH_RX_RCKDLY = 0x2;
-#elif 0 // 190624
-		ETH_TX_CLKEDGE = 0;
-		ETH_TX_TCKDLY = 0xC;
-		ETH_RX_RCKEDGE = 1;
-		ETH_RX_RCKDLY = 0x2;
-#elif 0 // 190621
-		ETH_TX_CLKEDGE = 1;
-		ETH_TX_TCKDLY = 0x5;
-		ETH_RX_RCKEDGE = 1;
-		ETH_RX_RCKDLY = 0x2;
-#elif 0 // 190620
-		ETH_TX_CLKEDGE = 1;
-		ETH_TX_TCKDLY = 0x1;
-		ETH_RX_RCKEDGE = 1;
-		ETH_RX_RCKDLY = 0xE;
-#elif 0 // 19.06.03 오전
-		ETH_TX_CLKEDGE = 1;
-		ETH_TX_TCKDLY = 0x7;
-		ETH_RX_RCKEDGE = 0;
-		ETH_RX_RCKDLY = 0x7;
-#elif 1 // 19.06.03 오후
-		ETH_TX_CLKEDGE = 1;
-		ETH_TX_TCKDLY = 0x5;
-		ETH_RX_RCKEDGE = 1;
-		ETH_RX_RCKDLY = 0xB;
 #endif
 
 		ETH_TX_TXENDLY		= 0;
@@ -385,37 +332,86 @@ void EthRxTxInit(UINT type, UINT speed, UINT duplex)
 		ETH_TX_TXD3DLY		= 0;
 		break;
 
+
+
+
 	case ETHPHY_TYPE_RMII:
-		ETH_TX_COLEN		= 0;
+
+
+
+
+#if 1
+		ETH_TX_DATBIT	= 0; // ?????????????????????????
+		ETH_TX_DATTYPE	= 0; // ?????????????????????????
+		ETH_TX_CLKOE	= 0;
+//		ETH_TX_CLKEDGE	= 1;
+		ETH_TX_CLKSEL	= 1;
+//		ETH_TX_TXENDLY	= 0;
+//		ETH_TX_TXD0DLY	= 0;
+//		ETH_TX_TXD1DLY	= 0;
+//		ETH_TX_TXD2DLY	= 0;
+//		ETH_TX_TXD3DLY	= 0;
+//		ETH_TX_TCKDLY	= 0;
+		ETH_TX_IFGGAP	= 20; // 10
+		ETH_RX_DATTYPE	= 2;
+		ETH_RX_ERTYPE	= 2;
 		switch (duplex) {
 		case ETHPHY_DUPLEX_HALF:
-			ETH_TX_CRSCHK	= 1;
-			ETH_TX_COLCHK	= 1;
-			ETH_TX_COLSEL	= 1;
+			ETH_TX_CRSCHK = 1;
+			ETH_TX_COLCHK = 1;
+			ETH_TX_COLEN  = 1;
 			break;
 		case ETHPHY_DUPLEX_FULL:
-			ETH_TX_CRSCHK	= 0;
-			ETH_TX_COLCHK	= 0;
-			ETH_TX_COLSEL	= 0;
+			ETH_TX_CRSCHK = 0;
+			ETH_TX_COLCHK = 0;
+			ETH_TX_COLEN  = 0;
+			break;
+		}
+
+		switch (speed) {
+		case ETHPHY_SPD_10:
+			ETH_RX_RMII10	= 1;	// ??
+			ETH_TX_RMII10	= 1;	// ??
+			break;
+		case ETHPHY_SPD_100:
+			ETH_RX_RMII10	= 0;	// ??
+			ETH_TX_RMII10	= 0;	// ??
+			break;
+		}
+
+		ETH_TX_COLSEL = 1;
+#else
+		ETH_TX_COLEN		= 0;	//
+		switch (duplex) {
+		case ETHPHY_DUPLEX_HALF:
+			ETH_TX_CRSCHK	= 1;	// ok
+			ETH_TX_COLCHK	= 1;	// ok
+			ETH_TX_COLSEL	= 1;	// ????
+			break;
+		case ETHPHY_DUPLEX_FULL:
+			ETH_TX_CRSCHK	= 0;	// ok
+			ETH_TX_COLCHK	= 0;	// ok
+			ETH_TX_COLSEL	= 0;	// ?????
 			break;
 		}
 		switch (speed) {
 		case ETHPHY_SPD_10:
-			ETH_RX_RMII10	= 1;
-			ETH_TX_RMII10	= 1;
+			ETH_RX_RMII10	= 1;	// ??
+			ETH_TX_RMII10	= 1;	// ??
 			break;
 		case ETHPHY_SPD_100:
-			ETH_RX_RMII10	= 0;
-			ETH_TX_RMII10	= 0;
+			ETH_RX_RMII10	= 0;	// ??
+			ETH_TX_RMII10	= 0;	// ??
 			break;
 		}
-		ETH_RX_ERTYPE		= 2;
-		ETH_RX_DATTYPE		= 2;
-		ETH_TX_DATTYPE		= 0;
-		ETH_TX_DATBIT		= 0;
-		ETH_TX_CLKOE		= 0;
-		ETH_TX_CLKSEL		= 1;
-		ETH_TX_IFGGAP		= 20;
+		ETH_RX_ERTYPE		= 2;	//
+		ETH_RX_DATTYPE		= 2;	// => 2
+		ETH_TX_DATTYPE		= 0;	// => 1
+		ETH_TX_DATBIT		= 0;	// => 1
+		ETH_TX_CLKOE		= 0;	// ok
+		ETH_TX_CLKSEL		= 1;	// ok
+		ETH_TX_IFGGAP		= 20;	//
+#endif
 
 		// Edge & Delay
 		ETH_TX_CLKEDGE		= 0;

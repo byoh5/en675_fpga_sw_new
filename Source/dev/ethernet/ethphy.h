@@ -35,11 +35,11 @@ typedef struct {
 extern UINT EthphySetting(void);				// submodule
 extern UINT EthphyLinkCheck(void);				// submodule
 extern void EthphyLinkView(void);				// submodule
-extern void EthphyAutoNeg(ENX_SWITCH onoff);	// submodule
+extern void EthphyAutoNeg(ETHERNETIF_AUTONEGO autonego);// submodule
 
 extern UINT EthphyReset(void);					// ethphy.c
 extern UINT EthphyLinkState(void);				// ethphy.c
-extern UINT EthphyInit(BYTE phy_addr, irq_fn irqfn);	// ethphy.c
+extern void EthphyInit(BYTE phy_addr, irq_fn irqfn);	// ethphy.c
 extern UINT EthphyGetPHYID(void);				// ethphy.c
 
 #if (DBG_ETHPHY_LOG == ENX_DBG_OFF)
@@ -71,11 +71,12 @@ typedef enum {
 } eEthphyLoopbackRes;
 
 typedef enum {
-	ePlk_off,		// 0:end/off
-	ePlk_init,		// 1:init
-	ePlk_ready,		// 2:ready
-	ePlk_single,	// 3:single
-	ePlk_auto,		// 4:auto
+	ePlk_off,		// 0:off status
+	ePlk_stop,		// 1:close command
+	ePlk_init,		// 2:init
+	ePlk_ready,		// 3:ready
+	ePlk_single,	// 4:single
+	ePlk_auto,		// 5:auto
 } eEthphyLoopbackMode;
 
 typedef struct {

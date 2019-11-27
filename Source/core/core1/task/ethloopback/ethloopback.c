@@ -8,6 +8,7 @@
 #if (ETHPHY_LOOPBACK_TEST==1)
 #include "ethloopback.h"
 
+extern void network_ethif_pkt_input_irq(void *ctx);
 extern void network_ethif_pkt_input_loopback_irq(void *ctx);
 
 EthLoopbackGp ethlp;
@@ -157,9 +158,9 @@ void EthloopbackTask(void *ctx)
 	ENX_OKFAIL nRes = EthloopbackMalloc(&ethlp);
 	if (nRes == ENX_OK) {
 		EthSetRxEn(ENX_OFF);
-		vTaskDelay(10);
+		vTaskDelay(1);
 		EthSetRxIrqEn(ENX_OFF);
-		vTaskDelay(10);
+		vTaskDelay(1);
 
 		netifapi_netif_set_down(netif_state[enlETHERNET]._netif);
 		while (netif_is_up(netif_state[enlETHERNET]._netif)) {
@@ -182,21 +183,28 @@ void EthloopbackTask(void *ctx)
 			case ePlk_single:
 				EthSetRxEn(ENX_ON);
 				lpRes = EthphyLoopbackTest(&ethlp);
+				EthSetRxEn(ENX_OFF);
 				printf("The test is complete(%d).\n", lpRes);
 				break;
 			case ePlk_auto:
 				EthSetRxEn(ENX_ON);
 				EthLoopbackAuto(&ethlp);
+				EthSetRxEn(ENX_OFF);
 				printf("The test is complete.\n");
 				break;
-			case ePlk_off:
+			case ePlk_stop:
 				printf("Ethernet Loopback Test: kill\n");
 				break;
 			default:
 				printf("Invalid mode selected.\n");
 				break;
 			}
-		} while (ethlp.eRunMode != ePlk_off);
+		} while (ethlp.eRunMode != ePlk_stop);
+
+		EthSetRxEn(ENX_OFF);
+		vTaskDelay(1);
+		EthSetRxIrqEn(ENX_OFF);
+		vTaskDelay(1);
 	} else {
 		printf("Ethernet Loopback Test: Malloc fail\n");
 	}

@@ -599,16 +599,45 @@ int UsrCmd_i(int argc, char *argv[])
 	UNUSED(argv);
 }
 
+
+#define NUM32(ch4) ((((DWORD)(ch4) & 0xFF) << 24) |     \
+                  (((DWORD)(ch4) & 0xFF00) << 8) |    \
+                  (((DWORD)(ch4) & 0xFF0000) >> 8) |  \
+                  (((DWORD)(ch4) & 0xFF000000) >> 24))
+
+
 int UsrCmd_j(int argc, char *argv[])
 {
 	//set_csr(mie, MIP_MTIP|MIP_MEIP);
 	//clear_csr(mie, MIP_MTIP|MIP_MEIP);
 
-	enx_wake_cpu(3);
+	//enx_wake_cpu(3);
 
 	//TimerSetFreq(8, 250, 1000000000, 500000000);
 	//TimerSetPWMEn(8, ENX_ON);
 	//TimerStart(8);
+
+#if 0
+	// 정답지 만들기
+	BYTE *arrSrc = pvPortMalloc(512*1024+1024);
+	if (arrSrc == NULL) {
+		printf("malloc error(arrSrc), size(%lu)\n", 512*1024+1024);
+		return 0;
+	}
+	UINT *parrOrg = (BYTE *)ENX_MEM_ALIGN(arrSrc);
+
+	hwflush_dcache_range((ULONG)parrOrg, 512*1024);
+
+	for (UINT j = 0; j < 32768; j+=4) {
+		parrOrg[j+0] = NUM32(0x87c00000 + (j * 4));
+		parrOrg[j+1] = NUM32(0x01234567);
+		parrOrg[j+2] = NUM32(0x89abcdef);
+		parrOrg[j+3] = NUM32(j / 4);
+	}
+	hwflush_dcache_range((ULONG)parrOrg, 512*1024);
+
+	hexDump("TEST", parrOrg, 512);
+#endif
 
 #if 0
 	WdtInit(10000);

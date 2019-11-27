@@ -16,9 +16,9 @@
 #ifndef __DEV_DEVICE_H__
 #define __DEV_DEVICE_H__
 
-#define OSC_FREQ	25000000
-#define MCK_FREQ	50000000
-#define CPU_FREQ	75000000
+#define OSC_FREQ	27000000
+#define MCK_FREQ	41625000
+#define CPU_FREQ	74250000
 
 #if 1
 #define __SFLS_EN25QH128A__
@@ -108,7 +108,7 @@
 #define ETHPHY_GPIO_RST	54
 #define ETHPHY_GPIO_IRQ	53
 #define ETHPHY_MDIO_ADR	1
-#if 1
+#if 0
 #define __ETHPHY_KSZ8081MNX__
 #define ETHPHY_TYPE_VAL 2
 #define ETHPHY_SPD_VAL 100
@@ -120,7 +120,7 @@
 #define ETHPHY_SPD_VAL 100
 #define ETHPHY_DUPLEX_VAL 2
 #endif // __ETHPHY_KSZ8081RNB__
-#if 0
+#if 1
 #define __ETHPHY_KSZ9031RNX__
 #define ETHPHY_TYPE_VAL 1
 #define ETHPHY_SPD_VAL 1000

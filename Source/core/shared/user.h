@@ -110,6 +110,12 @@ typedef struct {
 //	NetifAddress	naWifiuap;
 //	NetifAddress	naWifista;
 
+#if defined(__ETHERNET__)
+	UINT			u3EthAutoNegotiation;
+#else
+	UINT			_Dummy_u3EthAutoNegotiation;
+#endif
+
 #if defined(__WIFI__)
 	tWifiUAPcfg		UAPcfg;
 	tWifiSTAcfg		STAcfg;

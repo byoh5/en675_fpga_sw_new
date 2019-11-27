@@ -29,9 +29,13 @@
 #define	ETH_NETMASK						"255.255.255.0"		// Subnet mask
 #define	ETH_GWADDR						"192.169.10.1"		// Gateway
 
-#define ETHPHY_AUTONEG					1			// 0 : No use
+#define ETHPHY_AUTONEG					1			// 0 : No use(Error)
 													//*1 : Ethernet PHY auto negotiation
-
+													// 2 : Ethernet PHY manual (10Mbps Half-duplex)
+													// 3 : Ethernet PHY manual (10Mbps Full-duplex)
+													// 4 : Ethernet PHY manual (100Mbps Half-duplex)
+													// 5 : Ethernet PHY manual (100Mbps Full-duplex)
+													// 6 : Ethernet PHY manual (1000Mbps Full-duplex)
 
 // Debug flag
 #define ETHPHY_MDIO_TEST				0			//*0 : No use

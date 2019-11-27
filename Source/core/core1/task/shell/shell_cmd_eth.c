@@ -251,7 +251,7 @@ void eth_tx_state(void)
 	printf("ETH_TX_CLKSEL   (tx cs ) : %u\n", ETH_TX_CLKSEL);
 	printf("ETH_TX_CRSCHK   (tx cr ) : %u\n", ETH_TX_CRSCHK);
 	printf("ETH_TX_COLCHK   (tx co ) : %u\n", ETH_TX_COLCHK);
-	printf("ETH_TX_COLSEL   (tx oen) : %u\n", ETH_TX_COLEN);
+	printf("ETH_TX_COLEN    (tx oen) : %u\n", ETH_TX_COLEN);
 	printf("ETH_TX_COLSEL   (tx os ) : %u\n", ETH_TX_COLSEL);
 	printf("ETH_TX_RMII10   (tx rmi) : %u\n", ETH_TX_RMII10);
 	printf("ETH_TX_EMPTY             : %u\n", ETH_TX_EMPTY);
@@ -462,13 +462,31 @@ int cmd_test_eth(int argc, char *argv[])
 				netifapi_netif_set_up(netif_state[enlETHERNET]._netif);
 			} else if (argc == 3 && strcmp(argv[2], "off") == 0) {
 				netifapi_netif_set_down(netif_state[enlETHERNET]._netif);
-			} else if (argc == 3 && strcmp(argv[2], "auto") == 0) {
+			} else if (argc == 3 && strcmp(argv[2], "restart") == 0) {
 				netifapi_netif_set_down(netif_state[enlETHERNET]._netif);
 				while (netif_is_up(netif_state[enlETHERNET]._netif)) {
 					vTaskDelay(1);
 				}
-				EthphyAutoNeg(ENX_ON);
-				//netifapi_netif_set_up(netif_state[enlETHERNET]._netif);
+				network_ethif_phy_restart();
+			} else if (argc == 4 && strcmp(argv[2], "conn") == 0) {
+				netifapi_netif_set_down(netif_state[enlETHERNET]._netif);
+				while (netif_is_up(netif_state[enlETHERNET]._netif)) {
+					vTaskDelay(1);
+				}
+				if (strcmp(argv[3], "auto") == 0) {
+					gtNetwork.u3EthAutoNegotiation = ENIF_AUTO_NEGOTIATION;
+				} else if (strcmp(argv[3], "10h") == 0) {
+					gtNetwork.u3EthAutoNegotiation = ENIF_MAN_10M_HALF;
+				} else if (strcmp(argv[3], "10f") == 0) {
+					gtNetwork.u3EthAutoNegotiation = ENIF_MAN_10M_FULL;
+				} else if (strcmp(argv[3], "100h") == 0) {
+					gtNetwork.u3EthAutoNegotiation = ENIF_MAN_100M_HALF;
+				} else if (strcmp(argv[3], "100f") == 0) {
+					gtNetwork.u3EthAutoNegotiation = ENIF_MAN_100M_FULL;
+				} else if (strcmp(argv[3], "1000f") == 0) {
+					gtNetwork.u3EthAutoNegotiation = ENIF_MAN_1000M_FULL;
+				}
+				network_ethif_phy_restart();
 			}
 #if 0
 			else if(argc == 4 && strcmp(argv[2], "t1000") == 0)
@@ -633,8 +651,12 @@ int cmd_test_eth(int argc, char *argv[])
 #endif
 #if (ETHPHY_LOOPBACK_TEST==1)
 		else if (strcmp(argv[1], "lbm") == 0) {
-			if (argc == 3 && strcmp(argv[2], "off") == 0) {
-				EthloopbackSetMode(ePlk_off);
+			if (argc == 3 && strcmp(argv[2], "stop") == 0) {
+				EthloopbackSetMode(ePlk_stop);
+				while (EthloopbackGetMode() == ePlk_off) {
+					vTaskDelay(1);
+				}
+				network_ethif_phy_restart();
 			} else if (argc == 4) {
 				UINT nSpeed = atoi(argv[2]);
 				UINT nDuplex = atoi(argv[3]);

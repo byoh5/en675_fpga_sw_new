@@ -180,7 +180,7 @@ static err_t low_level_ethif_output(struct netif *netif, struct pbuf *p)
 // Ethernet RX
 static UINT *pRX_LEN_INFO = (UINT *)(REG_BASE_ETH + 0x80000);
 static BYTE gRxPktTail = 0;
-static void network_ethif_pkt_input_irq(void *ctx)
+void network_ethif_pkt_input_irq(void *ctx)
 {
 //	struct netif *netif = netif_state[enlETHERNET]._netif;
 	BYTE gRxPktHead = ((pRX_LEN_INFO[gRxPktTail]&0xff000000)>>24);
@@ -191,7 +191,6 @@ static void network_ethif_pkt_input_irq(void *ctx)
 		}
 		pkt_info *pkinfo;
 		if (u32PktSize <= 1514) {
-
 			pkinfo = &(qEthernetRX.info[qEthernetRX.tail]);
 			pkinfo->data = qEthernetRX.pkt_data[gRxPktTail].buffer;
 			pkinfo->lenth = u32PktSize;
@@ -712,6 +711,8 @@ static err_t network_ethif_init(struct netif *netif)
 //
 //-------------------------------------------------------------------------------------------------
 // Ethernet PHY link
+static int network_ethif_phy_restart_flag = 0;
+
 static void network_ethif_ethphy_irq(void *ctx)
 {
 	portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
@@ -724,10 +725,28 @@ static void network_ethif_ethphy_irq(void *ctx)
 static void network_ethif_link(void *ctx)
 {
 	vTaskDelay(10);
+init:
 	EthphyInit(ETHPHY_MDIO_ADR, network_ethif_ethphy_irq);
+
+	if (EthphyReset() == ENX_FAIL) {
+		printf("Ethphy reset Fail, retry in 5 seconds.\n");
+		vTaskDelay(500); // wait 5sec
+		goto init; // reset
+	}
+
+	EthphyGetPHYID();
+
+	EthphySetting();
+
+	EthphyAutoNeg(gtNetwork.u3EthAutoNegotiation);
 
 	while (1) {
 		if (ulTaskNotifyTake(pdTRUE, portMAX_DELAY)) {
+			if (network_ethif_phy_restart_flag == 1) {
+				printf("Ethphy restart\n");
+				network_ethif_phy_restart_flag = 0;
+				goto init; // reset
+			}
 			UINT u32LinkStatus = EthphyLinkCheck();
 			switch (u32LinkStatus) {
 			case ETHPHY_LINKSTATUS_UP:
@@ -745,6 +764,12 @@ static void network_ethif_link(void *ctx)
 			}
 		}
 	}
+}
+
+void network_ethif_phy_restart(void)
+{
+	network_ethif_phy_restart_flag = 1;
+	xTaskNotifyGive(netif_state[enlETHERNET].link_notity);
 }
 
 //*************************************************************************************************

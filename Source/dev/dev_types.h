@@ -282,6 +282,8 @@ typedef enum {
 #define	_bm(uon,base,addr,mne)	((volatile uon*)(UINT*)(base+(addr)))->mne	// Bit macro
 #define _cm(base, idx)			(*(UINT*)(base+(idx<<3)))					//
 
+typedef void (*idle_fn)(uint64_t tick);
+
 //******************************************************************************
 // IRQ define
 //------------------------------------------------------------------------------
@@ -603,6 +605,19 @@ typedef enum {
 	e_pmMainCB = 1,
 	e_pmEndorUnknown = 2,
 } H264ProfileMode;
+
+//******************************************************************************
+// Ethernet define
+//------------------------------------------------------------------------------
+typedef enum {
+	ENIF_NO_USE,
+	ENIF_AUTO_NEGOTIATION,
+	ENIF_MAN_10M_HALF,
+	ENIF_MAN_10M_FULL,
+	ENIF_MAN_100M_HALF,
+	ENIF_MAN_100M_FULL,
+	ENIF_MAN_1000M_FULL,
+} ETHERNETIF_AUTONEGO;
 
 //******************************************************************************
 // Wi-Fi define

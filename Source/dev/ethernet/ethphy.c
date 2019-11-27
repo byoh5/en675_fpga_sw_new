@@ -92,13 +92,15 @@ ENX_SWITCH EthphyLinkState(void)
 	return ENX_OFF;
 }
 
-UINT EthphyInit(BYTE phy_addr, irq_fn irqfn)
+void EthphyInit(BYTE phy_addr, irq_fn irqfn)
 {
-	GpioSetDir(ETHPHY_GPIO_RST, GPIO_DIR_OUT);
-	GpioSetDir(ETHPHY_GPIO_IRQ, GPIO_DIR_IN);
-	GpioIrqCallback(ETHPHY_GPIO_IRQ, irqfn, NULL);
-	GpioSetIrqEn(ETHPHY_GPIO_IRQ, ENX_ON);
+	if (irqfn != NULL) {
+		GpioSetDir(ETHPHY_GPIO_IRQ, GPIO_DIR_IN);
+		GpioIrqCallback(ETHPHY_GPIO_IRQ, irqfn, NULL);
+		GpioSetIrqEn(ETHPHY_GPIO_IRQ, ENX_ON);
+	}
 
+	GpioSetDir(ETHPHY_GPIO_RST, GPIO_DIR_OUT);
 	GpioSetOut(ETHPHY_GPIO_RST, GPIO_OUT_LOW);
 	WaitXms(10);
 	GpioSetOut(ETHPHY_GPIO_RST, GPIO_OUT_HI);
@@ -107,22 +109,23 @@ UINT EthphyInit(BYTE phy_addr, irq_fn irqfn)
 	ethphy_info.type = ETHPHY_TYPE_UNKNOWN;
 	ethphy_info.speed = ETHPHY_SPD_0;
 	ethphy_info.duplex = ETHPHY_DUPLEX_UNKNOWN;
-
-	if (EthphyReset() == ENX_FAIL) {
-		printf("Ethphy Reset Fail\n");
-		//return ENX_FAIL;
-	}
-
-	return EthphySetting();
 }
 
 UINT EthphyGetPHYID(void)
 {
-	UINT outData = 0;
+#define ETHPHY_PHY_ID_MASK 0x00fffff0
+	UINT outData;
 	WORD getData2, getData1;
 	MdioRead(ethphy_info.addr, ETHPHY_PI1R_ADR, &getData1); // Read the PHY Identifier I Register.
 	MdioRead(ethphy_info.addr, ETHPHY_PI2R_ADR, &getData2); // Read the PHY Identifier II Register.
-	outData = (getData2 << 16) | getData1;
+	outData = ((getData1 << 16) | getData2);
+	if ((outData & ETHPHY_PHY_ID_MASK) == 0x00221560) {
+		_Gprintf("  >>KSZ8081 Connected...\n");
+	} else if ((outData & ETHPHY_PHY_ID_MASK) == 0x00221620) {
+		_Gprintf("  >>KSZ9031 Connected...\n");
+	} else {
+		_Rprintf("  >>Unknown Ethernet PHY[0x%08X] Connected...\n", outData);
+	}
 	return outData;
 }
 
