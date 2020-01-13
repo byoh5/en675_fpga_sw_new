@@ -28,12 +28,12 @@
 #else
 #error "Sfls size error."
 #endif
-#define DDR0_SIZE				( 64*1024*1024)	//	 64MB	-	AP Memory AD251232 , Winbond W979H2KK , Etron EM6KA32HGDA
-#define DDR1_SIZE				( 64*1024*1024)	//	 64MB	-	AP Memory AD251232 , Winbond W979H2KK , Etron EM6KA32HGDA
+#define DDR0_SIZE				(128*1024*1024)	//	 64MB	-	AP Memory AD251232 , Winbond W979H2KK , Etron EM6KA32HGDA
+//#define DDR1_SIZE				( 64*1024*1024)	//	 64MB	-	AP Memory AD251232 , Winbond W979H2KK , Etron EM6KA32HGDA
 //#define DDR_SIZE				(128*1024*1024)	//	128MB	-	AP Memory 1Gb , Fidelix 1Gb, Winbond W97AH2KK
 //#define DDR_SIZE				(256*1024*1024)	//	256MB	-	AP Memory AD220032
-//#define SRAM_SIZE				(     256*1024)	//	256kB   -
-#define SRAM_SIZE				(  1*1024*1024)	//	  1MB   -   TEST
+#define SRAM_SIZE				(     256*1024)	//	256kB   -
+//#define SRAM_SIZE				(  1*1024*1024)	//	  1MB   -   TEST
 
 #endif
 //******************************************************************************
@@ -130,6 +130,7 @@
 #define REG_BASE_SHA			0x44F00000
 #define REG_BASE_CHKSUM			0x45000000
 #define REG_BASE_SYS			0x45100000
+#define REG_BASE_BDMA			0x45200000
 #define REG_BASE_BDMA0			0x45200000
 #define REG_BASE_BDMA1			0x45200020
 #define REG_BASE_BDMA2			0x45200040

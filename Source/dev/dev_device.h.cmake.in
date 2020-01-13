@@ -17,8 +17,9 @@
 #define __DEV_DEVICE_H__
 
 #define OSC_FREQ	${OSC_FREQ}
-#define MCK_FREQ	${MCK_FREQ}
-#define CPU_FREQ	${CPU_FREQ}
+#define APB_FREQ	${APB_FREQ}
+#define AXI_FREQ	${AXI_FREQ}
+#define CPU_FREQ	${AXI_FREQ}
 
 #if ${USE_SFLS_EN25QH128A}
 #define __SFLS_EN25QH128A__

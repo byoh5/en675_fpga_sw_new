@@ -25,7 +25,7 @@ SECTIONS
   _ftext = .;
   PROVIDE( eprol = . );
 
-/* .reset : AT (ORIGIN(FLASH)) */
+/*  .reset : AT (ORIGIN(FLASH)) */
   .reset : AT (ORIGIN(DDR))
   {
     . = ALIGN(64);
@@ -36,25 +36,26 @@ SECTIONS
   } > DDR
 
   __reset_lma_s = LOADADDR(.reset);
-  __reset_lma_e = ( (LOADADDR(.reset) + SIZEOF(.reset) + 63) & ~ (64-1) );
+  __reset_lma_e = ( (LOADADDR(.reset) + SIZEOF(.reset) + (64-1)) & ~ (64-1) );
 
   /* text: Program code section */
-  .text : AT ( (LOADADDR (.reset) + SIZEOF(.reset) + 255) & ~ (256-1))
+  .text : AT ( (LOADADDR(.reset) + SIZEOF(.reset) + (256-1)) & ~ (256-1) )
   {
     . = ALIGN(256);
     __text_s = .;
     *(.text)
     *(.text.*)
     *(.gnu.linkonce.t.*)
-    . = ALIGN(64);
+    . = ALIGN(256);
     __text_e = .;
   } > DDR
 
   __text_lma_s = LOADADDR(.text);
-  __text_lma_e = ( (LOADADDR(.text) + SIZEOF(.text) + 63) & ~ (64-1) );
+  __text_lma_e = ((LOADADDR(.text) + SIZEOF(.text) + (256-1)) & ~ (256-1));
 
   /* rodata: Read-only data */
-  .rodata : AT ( (LOADADDR (.text) + SIZEOF(.text) + 63) & ~ (64-1))
+  /* : AT ( (LOADADDR(.text) + SIZEOF(.text) + (64-1)) & ~ (64-1) ) */
+  .rodata :
   {
     . = ALIGN(64);
     __rodata_s = .;
@@ -67,7 +68,7 @@ SECTIONS
   } > DDR
 
   __rodata_lma_s = LOADADDR(.rodata);
-  __rodata_lma_e = ( (LOADADDR(.rodata) + SIZEOF(.rodata) + 63) & ~ (64-1) );
+  __rodata_lma_e = ((LOADADDR(.rodata) + SIZEOF(.rodata) + (64-1)) & ~ (64-1));
 
   /* End of code and read-only segment */
   PROVIDE( etext = . );
@@ -93,7 +94,7 @@ SECTIONS
    _fdata = .;
 
   /* data: Writable data */
-  .data : AT ( (LOADADDR(.rodata) + SIZEOF(.rodata) + 63) & ~ (64-1) )
+  .data : AT ((LOADADDR(.rodata) + SIZEOF(.rodata) + (64-1)) & ~(64-1))
   {
     . = ALIGN(64);
     __data_s = .;
@@ -109,7 +110,7 @@ SECTIONS
   } > DDR
 
   __data_lma_s = LOADADDR(.data);
-  __data_lma_e = ( (LOADADDR(.data) + SIZEOF(.data) + 63) & ~ (64-1) );
+  __data_lma_e = ((LOADADDR(.data) + SIZEOF(.data) + (64-1)) & ~(64-1));
 
   /* End of initialized data segment */
   . = ALIGN(4);
@@ -122,7 +123,7 @@ SECTIONS
 
   . = ALIGN(64);
 
-  .ispm_text : AT ( (LOADADDR (.data) + SIZEOF(.data) + 63) & ~ (64-1))
+  .ispm_text : AT ((LOADADDR(.data) + SIZEOF(.data) + (64-1)) & ~(64-1))
   {
     . = ALIGN(64);
     __ispm_text_s = .;
@@ -133,9 +134,9 @@ SECTIONS
   } > SRAM
 
   __ispm_text_lma_s = LOADADDR(.ispm_text);
-  __ispm_text_lma_e = ( (LOADADDR(.ispm_text) + SIZEOF(.ispm_text) + 63) & ~ (64-1) );
+  __ispm_text_lma_e = ((LOADADDR(.ispm_text) + SIZEOF(.ispm_text) + (64-1)) & ~(64-1));
 
-  .ispm_data : AT ( (LOADADDR (.ispm_text) + SIZEOF(.ispm_text) + 63) & ~ (64-1))
+  .ispm_data : AT ((LOADADDR(.ispm_text) + SIZEOF(.ispm_text) + (64-1)) & ~(64-1))
   {
     . = ALIGN(64);
     __ispm_data_s = .;
@@ -145,7 +146,7 @@ SECTIONS
   } > SRAM
 
   __ispm_data_lma_s = LOADADDR(.ispm_data);
-  __ispm_data_lma_e = ( (LOADADDR(.ispm_data) + SIZEOF(.ispm_data) + 63) & ~ (64-1) );
+  __ispm_data_lma_e = ((LOADADDR(.ispm_data) + SIZEOF(.ispm_data) + 63) & ~(64-1));
 
   . = ALIGN(64);
 
@@ -165,6 +166,7 @@ SECTIONS
   _bss_start = .;
   .bss : 
   {
+  . = ALIGN(64);
     __bss_s = .;
     *(.bss)
     *(.bss.*)
@@ -178,10 +180,25 @@ SECTIONS
   .heap : {
    . = ALIGN(64);
    _heap = .;
-   _heap_start = .;
+   _heap_os_start = .;
+   . += (16*1024*1024);
+   . = ALIGN(64);
+   _heap_os_end = .;
+   . = ALIGN(64);
+   _heap_fw_start = .;
    . += (4*1024*1024);
    . = ALIGN(64);
+   _heap_fw_end = .;
+   . = ALIGN(64);
    _heap_end = .;
+  } > DDR
+
+  .test_buffer : {
+   . = ALIGN(64);
+   _buf_start = .;
+   . += (32*1024*1024);
+   . = ALIGN(64);
+   _buf_end = .;
   } > DDR
 
   .sbi :
@@ -194,7 +211,7 @@ SECTIONS
     *(.payload)
   }
 
-  __lma_size = ( (LOADADDR(.ispm_data) + SIZEOF(.ispm_data) + 63) & ~ (64-1) ) - LOADADDR(.reset);
+  __lma_size = ((LOADADDR(.ispm_data) + SIZEOF(.ispm_data) + (64-1)) & ~(64-1)) - LOADADDR(.reset);
   __lma_start = 0;	/* reserved */
 
   _end = .;

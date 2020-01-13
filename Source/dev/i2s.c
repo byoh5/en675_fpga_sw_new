@@ -283,22 +283,23 @@ void I2sRxIrqClear(void)
 
 UINT I2sTxIsIrq(void)
 {
-//	printf("%s (0x%02X)\n", __func__, I2S_IRQ);
-	return I2S_IRQ & 0x1;
+//	printf("%s (0x%02X)\n", __func__, I2S_TX_IRQ);
+	return I2S_TX_IRQ;
 }
 
 UINT I2sRxIsIrq(void)
 {
-//	printf("%s (0x%02X)\n", __func__, I2S_IRQ);
-	return I2S_IRQ & 0x2;
+//	printf("%s (0x%02X)\n", __func__, I2S_RX_IRQ);
+	return I2S_RX_IRQ;
 }
 
 void IrqI2sTx(void)
 {
 	if (I2sTxIsIrq()) {
-//		printf("I2sTx IRQ Get\n");
 		if (arrI2STXIrq.irqfn) {
 			arrI2STXIrq.irqfn(arrI2STXIrq.arg);
+		} else {
+			printf("I2sTx IRQ Get\n");
 		}
 		I2sTxIrqClear();
 	}
@@ -307,9 +308,10 @@ void IrqI2sTx(void)
 void IrqI2sRx(void)
 {
 	if (I2sRxIsIrq()) {
-//		printf("I2sRx IRQ Get\n");
 		if (arrI2SRXIrq.irqfn) {
 			arrI2SRXIrq.irqfn(arrI2SRXIrq.arg);
+		} else {
+			printf("I2sRx IRQ Get\n");
 		}
 		I2sRxIrqClear();
 	}

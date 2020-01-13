@@ -1,4 +1,5 @@
 #include "dev.h"
+#include "enx_rtos.h"
 
 void enx_peri_init(void)
 {
@@ -51,11 +52,12 @@ void enx_peri_init(void)
 	asm volatile("la %0, __bss_s" : "=r"(hs));
 	asm volatile("la %0, __bss_e" : "=r"(he));
 	hwflush_dcache_range(hs, 16*1024);
-	memset((void *)hs, 0, he - hs);
+	//memset((void *)hs, 0, he - hs);
+	BDmaMemSet_isr(0, (BYTE *)hs, 0x00, he - hs);
 	hwflush_dcache_range(hs, 16*1024);
 #endif
 
-	printf("%s", TTY_COLOR_RESET);
+	printf("%s\n\n", TTY_COLOR_RESET);
 
 	SflsInit();
 
@@ -254,22 +256,13 @@ void enx_peri_init(void)
 
 	GpioInit();
 
-	AdcInit(1000000);
-//	AdcOn(0);
-//	AdcOn(1);
-//	AdcOn(2);
-//	AdcOn(3);
-//	AdcOn(4);
-//	AdcOn(5);
-//	AdcOn(6);
-//	AdcOn(7);
+//	AdcInit(1000000);
+//	AdcOn();
 
 #if USE_I2S
 	I2sInit();
 	I2sSlvInit();
 #endif
-
-	//BusInit();
 
 #if USE_ETH
 	EthInit();
@@ -349,7 +342,7 @@ void enx_device_init(void)
 #ifdef __RTC_LOAD__
 	rtc_init();
 #endif
-	set_devicetime(TimeZone_GMT, 2019, 5, 9, 21, 0, 0);
+	set_devicetime(TimeZone_GMT, 2020, 1, 13, 12, 0, 0);
 
 #ifdef __AUDIO__
 	GpioSetDir(AUDIO_GPIO_RST, GPIO_DIR_OUT);
@@ -358,7 +351,11 @@ void enx_device_init(void)
 #endif
 
 #ifdef __USE_SDIOCD__
-	GpioSetDir(SD_GPIO_RST, GPIO_DIR_IN);
+#if 0
+	GpioSetDir(SD_GPIO_RST, GPIO_DIR_OUT);	// New Peri B/d
+#else
+	GpioSetDir(SD_GPIO_RST, GPIO_DIR_IN);	// Old Peri B/d
+#endif
 	GpioSetDir(SD_GPIO_IRQ, GPIO_DIR_IN);
 	SdioCdInit(SD_SDIO_CH);
 #endif
@@ -483,6 +480,7 @@ extern UINT ipaddr_addr(const char *cp);
 }
 
 #ifdef __AUDIO__
+#if 0
 void audtx11_irq(void *ctx)
 {
 	UINT pos = I2sTxPos();
@@ -497,7 +495,7 @@ void audrx11_irq(void *ctx)
 
 void audio_test(void)
 {
-	enx_externalirq_init();
+//	enx_externalirq_init();
 	//tx_mode : 0: L, 1: R, 2: L+R/2, 3: Stereo -> 데이터를 전송할 방향, 2는 한 word의 데이터를 읽은 후 2로 divide, 양방향으로 전송.
 	//tx_cd : 0 or 1: PCM, 2: G711-a, 3: G711-u)
 	//tx_dw : 0->8 , 1->16, 2->24, 3->32 : Tx의 데이터 width
@@ -537,6 +535,7 @@ void audio_test(void)
 	while(1);
 }
 #endif
+#endif
 
 void enx_pmp_init(void)
 {
@@ -560,14 +559,6 @@ void enx_pmp_init(void)
 #endif
 }
 
-#if 0
-UINT gnIF_Funcs_Run = 0;
-void IF_Funcs_Timer_irq(void *ctx)
-{
-	gnIF_Funcs_Run = 1;
-}
-#endif
-
 void main_0(int cpu_id)
 {
 	*mtime = 0; // timer init
@@ -580,77 +571,31 @@ void main_0(int cpu_id)
 	enx_peri_init();
 	enx_sys_init();
 
-	//enx_externalirq_init();
-	//enx_timerirq_init();
-
 	enx_device_init();
 	enx_default_userinfo();
 
 	enx_msgshell_init(&gptMsgShell);
 
-	printf("Init Device - RTL-191016-1408\n");
+	printf("Init Device - RTL-200108-1309\n");
 
 	enx_pmp_init();
 
-
-	enx_externalirq_init_cpu0();
-
 	SYS_REG0 = 0xA; // CPU0 Ready!
 
-#if defined(__SENSOR__)
-
-	Isp_init();
-
-	//VIRQI_EN_Tw(1);
-	//CLI_VLOCKI_Tw(1);		// TODO KSH> 컴파일 문제?
-	extern UINT gnViIrqOn;
-
-  #if 0
-	#define TIMER_IRQ_CH	0
-	TimerSetFreq(TIMER_IRQ_CH, 24, 29999, 1);
-	TimerIrqCallback(TIMER_IRQ_CH, IF_Funcs_Timer_irq, 0);
-	TimerSetIrqEn(TIMER_IRQ_CH, ENX_ON);
-	TimerStart(TIMER_IRQ_CH);
-  #endif
-
-	printf("--------- Main Loop Start --------- \r\n");
-
-	while (1)
-	{
-  #if 0
-		Wait_VLOCKO();
-
-		isp_main();
-
-		IF_Funcs();
-  #else
-		if(gnViIrqOn/*ISP_RIRQ_VIr*/) {
-			//CLI_VLOCKI_Tw(1);
-			gnViIrqOn = 0;
-			isp_main();
-		}
-		else {
-			IF_Funcs();
-		}
-  #endif
-
-//		ddr_control();	// for DDR Test, 사용하지 않음
-	}
+#ifdef __FREERTOS__
+	main_os();
+	while(1);
 #else
+	enx_externalirq_init_cpu0();
+
 	int tick = 0;
 	while (1) {
-		Comm();
-		if (SYS_REG0 == 0xA) {
-#ifdef __USE_LED1__
-			GpioSetOut(GPIO_LED1, GPIO_OUT_HI);
+#ifdef __USE_LED0__
+		GpioSetOut(GPIO_LED0, GPIO_OUT_HI);
+		WaitXms(100);
+		GpioSetOut(GPIO_LED1, GPIO_OUT_LOW);
+		WaitXms(100);
 #endif
-			//_printf("%d:%lu\r\n", cpu_id, *mtime);
-			if (++tick == 100) {
-				tick = 0;
-				SYS_REG0 = 0xB;
-			}
-		}
-		WaitXms(1);
 	}
 #endif
 }

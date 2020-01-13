@@ -175,10 +175,11 @@ typedef enum {
 extern UINT getDateID(void);
 extern BYTE UserAreaCmd(sfls_cmd cmd, sfls_fixed_area index);
 
+#if defined(__NETWORK__)
 extern void UserPasswordSet(UserLoginData *user, char *pw);
 extern int UserPasswordVerify(char *id, BYTE *hashUserPw);
 extern int UserPasswordCheck(char *id, char *pw);
-
+#endif
 //-------------------------------------------------------------------------------------------------
 // Variable
 extern VideoSource gvsVideo[VIDEO_SOURCE_CNT];

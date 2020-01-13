@@ -1,4 +1,4 @@
-﻿//******************************************************************************
+//******************************************************************************
 //	Copyright(c) Eyenix Co.,Ltd. 2003-
 //
 //	File Name:     dev_peri.h
@@ -18,8 +18,8 @@
 
 #define EN675_FW_VERSION_MAJOR		0
 #define EN675_FW_VERSION_MINOR		0
-#define EN675_FW_VERSION_PATCH		2
-#define EN675_FW_VERSION			0.0.2
+#define EN675_FW_VERSION_PATCH		4
+#define EN675_FW_VERSION			0.0.4
 
 // SDIO0 define
 #define USE_SDIO0			1
@@ -28,7 +28,7 @@
 #endif
 
 // SDIO1 define
-#define USE_SDIO1			1
+#define USE_SDIO1			0
 #if USE_SDIO1
 #define SDIO1_SPEED			400000
 #endif
@@ -192,7 +192,7 @@
 #define SPI7_LSB			0
 
 // SPI8 define
-#define USE_SPI8			0
+#define USE_SPI8			3
 #if USE_SPI8==2
 #define SPI8_PIN_INIT		SYS_GPIO64_MUX=2;SYS_GPIO65_MUX=2;SYS_GPIO66_MUX=2;SYS_GPIO67_MUX=2;
 #define SPI8_PIN_DEINIT		SYS_GPIO64_MUX=0;SYS_GPIO65_MUX=0;SYS_GPIO66_MUX=0;SYS_GPIO67_MUX=0;
@@ -320,7 +320,7 @@
 #define I2C7_SPEED			400000
 
 // I2C8 define
-#define USE_I2C8			0
+#define USE_I2C8			3
 #if USE_I2C8==2
 #define I2C8_PIN_INIT		SYS_GPIO70_MUX=2;SYS_GPIO71_MUX=2;
 #define I2C8_PIN_DEINIT		SYS_GPIO70_MUX=0;SYS_GPIO71_MUX=0;
@@ -446,7 +446,7 @@
 #define UART7_SPEED			115200
 
 // UART8 define
-#define USE_UART8			0
+#define USE_UART8			3
 #if USE_UART8==2
 #define UART8_PIN_INIT		SYS_GPIO68_MUX=2;SYS_GPIO69_MUX=2;
 #define UART8_PIN_DEINIT	SYS_GPIO68_MUX=0;SYS_GPIO69_MUX=0;

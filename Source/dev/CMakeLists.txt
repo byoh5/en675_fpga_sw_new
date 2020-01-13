@@ -84,9 +84,13 @@ SET ( DEV_HDRS
 	isp/isp_user_parameter.h
 	isp/isp_sensor_parameter.h
 	key/key.h
+	minilib/aes.h
+	minilib/aes_local.h	
 	minilib/md5.h
 	minilib/net_ascii.h
+	minilib/sha.h
 	minilib/sha1.h
+	minilib/md32_common.h
 	minilib/Base64.h
 	minilib/enx_time.h
 	rtc/rtc.h
@@ -111,7 +115,7 @@ SET ( DEV_HDRS
 SET ( DEV_SRCS
 	adc.c
 	aes.c
-	bus.c
+	oic.c
 	checksum.c
 	ddr.c
 	dma.c
@@ -126,7 +130,7 @@ SET ( DEV_SRCS
 	spi.c
 	timer.c
 	uart.c
-	wdt.c
+	sys.c
 	audio/audio.c
 	audio/tlv320aic3206.c
 	cpu/syscall.c
@@ -168,9 +172,14 @@ SET ( DEV_SRCS
 	isp/isp_cont.c
 	isp/isp_etc.c
 	key/key.c
+	minilib/aes_core.c
+	minilib/aes_cbc.c
+	minilib/cbc128.c
+	minilib/aes_ecb.c
 	minilib/md5.c
 	minilib/net_ascii.c
 	minilib/sha1.c
+	minilib/sha256.c
 	minilib/Base64.c
 	minilib/enx_time.c
 	rtc/rtc.c

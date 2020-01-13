@@ -58,14 +58,14 @@
  * Default is 0 and locks interrupts/scheduler for SYS_ARCH_PROTECT().
  */
 #ifndef LWIP_FREERTOS_SYS_ARCH_PROTECT_USES_MUTEX
-#define LWIP_FREERTOS_SYS_ARCH_PROTECT_USES_MUTEX     1 // 0
+#define LWIP_FREERTOS_SYS_ARCH_PROTECT_USES_MUTEX     1 // 0/1
 #endif
 
 /** Set this to 1 to include a sanity check that SYS_ARCH_PROTECT() and
  * SYS_ARCH_UNPROTECT() are called matching.
  */
 #ifndef LWIP_FREERTOS_SYS_ARCH_PROTECT_SANITY_CHECK
-#define LWIP_FREERTOS_SYS_ARCH_PROTECT_SANITY_CHECK   1 // 0
+#define LWIP_FREERTOS_SYS_ARCH_PROTECT_SANITY_CHECK   1 // 0/1
 #endif
 
 /** Set this to 1 to let sys_mbox_free check that queues are empty when freed */
@@ -115,7 +115,9 @@ sys_init(void)
 {
 #if SYS_LIGHTWEIGHT_PROT && LWIP_FREERTOS_SYS_ARCH_PROTECT_USES_MUTEX
   /* initialize sys_arch_protect global mutex */
-  sys_arch_protect_mutex = xSemaphoreCreateRecursiveMutex();
+//sys_arch_protect_mutex = xSemaphoreCreateRecursiveMutex();
+  sys_arch_protect_mutex = xSemaphoreCreateMutex();
+  printf("%s sys_init(0x%08X)\n", __func__, sys_arch_protect_mutex);
   LWIP_ASSERT("failed to create sys_arch_protect mutex",
     sys_arch_protect_mutex != NULL);
 #endif /* SYS_LIGHTWEIGHT_PROT && LWIP_FREERTOS_SYS_ARCH_PROTECT_USES_MUTEX */
@@ -148,7 +150,8 @@ sys_arch_protect(void)
   BaseType_t ret;
   LWIP_ASSERT("sys_arch_protect_mutex != NULL", sys_arch_protect_mutex != NULL);
 
-  ret = xSemaphoreTakeRecursive(sys_arch_protect_mutex, portMAX_DELAY);
+//ret = xSemaphoreTakeRecursive(sys_arch_protect_mutex, portMAX_DELAY);
+  ret = xSemaphoreTake(sys_arch_protect_mutex, portMAX_DELAY);
   LWIP_ASSERT("sys_arch_protect failed to take the mutex", ret == pdTRUE);
 #else /* LWIP_FREERTOS_SYS_ARCH_PROTECT_USES_MUTEX */
   taskENTER_CRITICAL();
@@ -181,7 +184,8 @@ sys_arch_unprotect(sys_prot_t pval)
 #if LWIP_FREERTOS_SYS_ARCH_PROTECT_USES_MUTEX
   LWIP_ASSERT("sys_arch_protect_mutex != NULL", sys_arch_protect_mutex != NULL);
 
-  ret = xSemaphoreGiveRecursive(sys_arch_protect_mutex);
+//ret = xSemaphoreGiveRecursive(sys_arch_protect_mutex);
+  ret = xSemaphoreGive(sys_arch_protect_mutex);
   LWIP_ASSERT("sys_arch_unprotect failed to give the mutex", ret == pdTRUE);
 #else /* LWIP_FREERTOS_SYS_ARCH_PROTECT_USES_MUTEX */
   taskEXIT_CRITICAL();
@@ -207,7 +211,9 @@ sys_mutex_new(sys_mutex_t *mutex)
 {
   LWIP_ASSERT("mutex != NULL", mutex != NULL);
 
-  mutex->mut = xSemaphoreCreateRecursiveMutex();
+//mutex->mut = xSemaphoreCreateRecursiveMutex();
+  mutex->mut = xSemaphoreCreateMutex();
+  printf("%s mut(0x%08X)\n", __func__, mutex->mut);
   if(mutex->mut == NULL) {
     SYS_STATS_INC(mutex.err);
     return ERR_MEM;
@@ -223,7 +229,8 @@ sys_mutex_lock(sys_mutex_t *mutex)
   LWIP_ASSERT("mutex != NULL", mutex != NULL);
   LWIP_ASSERT("mutex->mut != NULL", mutex->mut != NULL);
 
-  ret = xSemaphoreTakeRecursive(mutex->mut, portMAX_DELAY);
+  //ret = xSemaphoreTakeRecursive(mutex->mut, portMAX_DELAY);
+  ret = xSemaphoreTake(mutex->mut, portMAX_DELAY);
   LWIP_ASSERT("failed to take the mutex", ret == pdTRUE);
 }
 
@@ -234,7 +241,8 @@ sys_mutex_unlock(sys_mutex_t *mutex)
   LWIP_ASSERT("mutex != NULL", mutex != NULL);
   LWIP_ASSERT("mutex->mut != NULL", mutex->mut != NULL);
   //printf("a");
-  ret = xSemaphoreGiveRecursive(mutex->mut);
+  ret = xSemaphoreGive(mutex->mut);
+//ret = xSemaphoreGiveRecursive(mutex->mut);
   //printf("b");
   LWIP_ASSERT("failed to give the mutex", ret == pdTRUE);
 }
@@ -273,9 +281,12 @@ sys_sem_new(sys_sem_t *sem, u8_t initial_count)
   if(initial_count == 1) {
     BaseType_t ret = xSemaphoreGive(sem->sem);
     LWIP_ASSERT("sys_sem_new: initial give failed", ret == pdTRUE);
-  } else { // $CMT-hjlee-180928 - add xSemaphoreTake
+  }
+#if 0
+  else { // $CMT-hjlee-180928 - add xSemaphoreTake
     xSemaphoreTake(sem->sem, 1); // $CMT-hjlee-180928 - add xSemaphoreTake
   } // $CMT-hjlee-180928 - add xSemaphoreTake
+#endif
   return ERR_OK;
 }
 
@@ -366,6 +377,7 @@ sys_mbox_trypost(sys_mbox_t *mbox, void *msg)
   LWIP_ASSERT("mbox->mbx != NULL", mbox->mbx != NULL);
 
   ret = xQueueSendToBack(mbox->mbx, &msg, 0);
+//ret = xQueueSend(mbox->mbx, &msg, 0);
   if (ret == pdTRUE) {
     return ERR_OK;
   } else {
@@ -384,6 +396,7 @@ sys_mbox_trypost_fromisr(sys_mbox_t *mbox, void *msg)
   LWIP_ASSERT("mbox->mbx != NULL", mbox->mbx != NULL);
 
   ret = xQueueSendToBackFromISR(mbox->mbx, &msg, &xHigherPriorityTaskWoken);
+//ret = xQueueSendFromISR(mbox->mbx, &msg, &xHigherPriorityTaskWoken);
   if (ret == pdTRUE) {
     if (xHigherPriorityTaskWoken == pdTRUE) {
       gbXsrTaskSwitchNeeded = 1; // $CMT-hjlee-180928 - add gbXsrTaskSwitchNeeded = 1;
@@ -614,8 +627,9 @@ sys_check_core_locking(void)
          configASSERT( ( portNVIC_INT_CTRL_REG & portVECTACTIVE_MASK ) == 0 );
 
      Instead, we use more generic FreeRTOS functions here, which should fail from ISR: */
-  taskENTER_CRITICAL();
-  taskEXIT_CRITICAL();
+//taskENTER_CRITICAL();
+//taskEXIT_CRITICAL();
+  LWIP_ASSERT("Check we are NOT in an interrupt context here.", !(read_csr(mstatus) & MSTATUS_MPP));
 
 #if !NO_SYS
   if (lwip_tcpip_thread != 0) {
@@ -692,7 +706,7 @@ WORD my_chksum(const void *dataptr, WORD len)
 //	}
 
 //	ULONG stime = BenchTimeStart();
-
+#if 1
 #if 1
 	BYTE *ptr;
 	WORD hw_chksum1 = 0;
@@ -729,6 +743,9 @@ WORD my_chksum(const void *dataptr, WORD len)
 	}
 //	printf("%4u|H:%4luus|S:%4luus|\n", len, a_out, b_out);
 	return sw_chksum;
+#endif
+#else
+	return lwip_standard_chksum(dataptr, len);
 #endif
 }
 

@@ -211,6 +211,7 @@ void EthphyAutoNeg(ETHERNETIF_AUTONEGO autonego)
 		wBCR |= ETHPHY_BCR_AUTONEG_EN; 							// Basic Control: Enable auto-negotiation process
 		wBCR |= ETHPHY_BCR_RST_AUTONEG;							// Basic Control: Restart auto-negotiation process
 		ENX_DEBUGF(DBG_ETHPHY_MSG, "Auto-Negotiation start.\n");
+		flag = 0;
 		break;
 	case ENIF_MAN_10M_HALF:
 		wBCR |= 0;												// Basic Control: Set 10Mbps
@@ -278,13 +279,15 @@ the above setting for 16ms FLP transmit timing is compatible with all PHY link p
 	return ENX_OK;
 }
 
-ENX_OKFAIL EthphyLinkInfo(void)
+ENX_OKFAIL EthphyLinkInfo(int log)
 {
 	UINT u32Loop;
 	WORD wPHYCR = 0, w1000SR = 0;
 
 	MdioRead(ethphy_info.addr, ETHPHY_1000SR_ADR, &w1000SR); // Get 1000Base-T Status from PHY status reg.
-	EthphyRegView(ETHPHY_1000SR_ADR, w1000SR);
+	if (log == 1) {
+		EthphyRegView(ETHPHY_1000SR_ADR, w1000SR);
+	}
 	if ((w1000SR & ETHPHY_GIGASR_IEC) == 0xFF) {
 		ENX_DEBUGF(DBG_ETHPHY_ERR, "Idle Error(0xFF).\n");
 		return ENX_FAIL;
@@ -294,7 +297,9 @@ ENX_OKFAIL EthphyLinkInfo(void)
 
 	for (u32Loop = 0; u32Loop < 50; u32Loop++) {
 		MdioRead(ethphy_info.addr, ETHPHY_PHYCR_ADR, &wPHYCR); // Read the PHY Control Register.
-		EthphyRegView(ETHPHY_PHYCR_ADR, wPHYCR);
+		if (log == 1) {
+			EthphyRegView(ETHPHY_PHYCR_ADR, wPHYCR);
+		}
 
 		if (!(wPHYCR & ETHPHY_PCR_LINK_STATUS_CHK_FAIL)) { // Link is not failing
 			u32Loop = 0;
@@ -339,7 +344,7 @@ UINT EthphyLinkCheck(void)
 
 	if (getData & ETHPHY_ICSR_LUI) { // Link-Up
 		ENX_DEBUGF(DBG_ETHPHY_LOG, "Link-Up\n");
-		if (EthphyLinkInfo() == ENX_OK) {
+		if (EthphyLinkInfo(1) == ENX_OK) {
 			ENX_DEBUGF(DBG_ETHPHY_MSG, "NetNIC Link Up Detect Link Speed(%uMbps) %s Duplex\n", ethphy_info.speed, ethphy_info.duplex == ETHPHY_DUPLEX_FULL ? "Full" : "Half");
 			EthRxTxInit(ethphy_info.type, ethphy_info.speed, ethphy_info.duplex);
 			return ETHPHY_LINKSTATUS_UP;

@@ -59,10 +59,10 @@
 #define configUSE_MUTEXES                       1
 #define configUSE_RECURSIVE_MUTEXES             1
 #define configUSE_COUNTING_SEMAPHORES           1
-#define configQUEUE_REGISTRY_SIZE               8
+#define configQUEUE_REGISTRY_SIZE               32
 #define configUSE_QUEUE_SETS                    0
 #define configUSE_TIME_SLICING                  0
-#define configUSE_NEWLIB_REENTRANT              0
+#define configUSE_NEWLIB_REENTRANT              1
 #define configENABLE_BACKWARD_COMPATIBILITY     0
 #define configNUM_THREAD_LOCAL_STORAGE_POINTERS 5
 
@@ -99,7 +99,7 @@
 extern int es_printf(const char *format, ...);
 extern void vTaskInfoPrint(void);
 extern void vMemoryHeapInfoPrint(void);
-#define configASSERT(x)                         if( ( x ) == 0 ) { taskDISABLE_INTERRUPTS(); es_printf("OS Assert! [Task:%s]\n", pcTaskGetName(NULL) == NULL ? "null" : pcTaskGetName(NULL)); vTaskInfoPrint(); vMemoryHeapInfoPrint(); for( ;; ); }
+#define configASSERT(x)                         if( ( x ) == 0 ) { taskDISABLE_INTERRUPTS(); es_printf("OS Assert! [Func:%s][Task:%s]\n", __func__, pcTaskGetName(NULL) == NULL ? "null" : pcTaskGetName(NULL)); asm volatile("ebreak"); vTaskInfoPrint(); vMemoryHeapInfoPrint(); for( ;; ); }
 
 /* FreeRTOS MPU specific definitions. */
 #define configINCLUDE_APPLICATION_DEFINED_PRIVILEGED_FUNCTIONS 0
@@ -120,7 +120,7 @@ extern void vMemoryHeapInfoPrint(void);
 #define INCLUDE_xEventGroupSetBitFromISR        1
 #define INCLUDE_xTimerPendFunctionCall          0
 #define INCLUDE_xTaskAbortDelay                 0
-#define INCLUDE_xTaskGetHandle                  0
+#define INCLUDE_xTaskGetHandle                  1
 #define INCLUDE_xTaskResumeFromISR              1
 
 #endif /* FREERTOS_CONFIG_H */

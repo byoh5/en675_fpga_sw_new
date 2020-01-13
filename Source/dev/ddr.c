@@ -1,5 +1,6 @@
 #include "dev.h"
 
+#if 0
 #if 1
 
 #if 0
@@ -1145,4 +1146,5 @@ void DdrInit(BYTE bCH, BYTE Sel)
 //	DdrMapTest(bCH);
 	_Gprintf("DDR%u Init OK.\n", bCH);
 }
+#endif
 #endif

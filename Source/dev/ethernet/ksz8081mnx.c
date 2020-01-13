@@ -253,11 +253,13 @@ ENX_OKFAIL EthphySetting(void)
 	return ENX_OK;
 }
 
-ENX_OKFAIL EthphyLinkInfo(void)
+ENX_OKFAIL EthphyLinkInfo(int log)
 {
 	WORD wPHYC1R = 0;
 	MdioRead(ethphy_info.addr, ETHPHY_PHYC1R_ADR, &wPHYC1R); // Read the PHY Control 1 Register.
-	EthphyRegView(ETHPHY_PHYC1R_ADR, wPHYC1R);
+	if (log == 1) {
+		EthphyRegView(ETHPHY_PHYC1R_ADR, wPHYC1R);
+	}
 
 	ethphy_info.type = ETHPHY_TYPE_VAL;
 
@@ -309,7 +311,7 @@ UINT EthphyLinkCheck(void)
 
 	if (getData & ETHPHY_ICSR_LUI) { // Link-Up
 		ENX_DEBUGF(DBG_ETHPHY_LOG, "Link-Up\n");
-		if (EthphyLinkInfo() == ENX_OK) {
+		if (EthphyLinkInfo(1) == ENX_OK) {
 			ENX_DEBUGF(DBG_ETHPHY_MSG, "NetNIC Link Up Detect Link Speed(%uMbps) %s Duplex\n", ethphy_info.speed, ethphy_info.duplex == ETHPHY_DUPLEX_FULL ? "Full" : "Half");
 			EthRxTxInit(ethphy_info.type, ethphy_info.speed, ethphy_info.duplex);
 			return ETHPHY_LINKSTATUS_UP;

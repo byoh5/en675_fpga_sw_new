@@ -10,10 +10,10 @@ ISRD static tIhnd arrI2CIrq[I2C_CNT];
 
 void I2cInit(UINT nCH, UINT Speed_Hz)
 {
-	arrI2CCLK[nCH]->CLK_DIV = (MCK_FREQ / (8 * Speed_Hz) - 1);	// Clock divider for I2C controller
-	arrI2CCONT[nCH]->MODE = 0;		// Controller mode / 0:Master, 1:Slave
-	arrI2CCONT[nCH]->BIT_MODE = 0;	// Data bit direction / 0:MSB first, 1:LSB first
-	arrI2CCONT[nCH]->IRQ_EN = 0;	// Interrupt enable / 0:Disabled, 1:Enabled
+	I2cSetClk(nCH, Speed_Hz);			// Clock divider for I2C controller
+	I2cSetMode(nCH, I2C_Master);		// Controller mode / 0:Master, 1:Slave
+	I2cSetBitmode(nCH, I2C_MSBfirst);	// Data bit direction / 0:MSB first, 1:LSB first
+	I2cSetIrqEn(nCH, ENX_OFF);			// Interrupt enable / 0:Disabled, 1:Enabled
 
 	arrI2CIrq[nCH].irqfn = NULL;
 	arrI2CIrq[nCH].arg = NULL;
@@ -31,15 +31,15 @@ void I2cInit(UINT nCH, UINT Speed_Hz)
 		case 8:	I2C8_PIN_INIT;	break;
 	}
 
-	ENX_DEBUGF(DBG_I2C_LOG, "I2C%u Init - %uHz\n", nCH, MCK_FREQ / ((arrI2CCLK[nCH]->CLK_DIV + 1) * 8));
+	ENX_DEBUGF(DBG_I2C_LOG, "I2C%u Init - %uHz\n", nCH, APB_FREQ / ((arrI2CCLK[nCH]->CLK_DIV + 1) * 8));
 }
 
 void I2cDeInit(UINT nCH)
 {
-	arrI2CCLK[nCH]->CLK_DIV   = 0xFFFF;
-	arrI2CCONT[nCH]->MODE     = 0;
-	arrI2CCONT[nCH]->BIT_MODE = 0;
-	arrI2CCONT[nCH]->IRQ_EN   = 0;
+	I2cSetClkdiv(nCH, 0xFFFF);
+	I2cSetMode(nCH, I2C_Master);
+	I2cSetBitmode(nCH, I2C_MSBfirst);
+	I2cSetIrqEn(nCH, ENX_OFF);
 
 	arrI2CIrq[nCH].irqfn = NULL;
 	arrI2CIrq[nCH].arg = NULL;
@@ -56,6 +56,68 @@ void I2cDeInit(UINT nCH)
 		case 7:	I2C7_PIN_DEINIT;	break;
 		case 8:	I2C8_PIN_DEINIT;	break;
 	}
+}
+
+void I2cSetClkdiv(UINT nCH, UINT Clkdiv)
+{
+	arrI2CCLK[nCH]->CLK_DIV = Clkdiv;
+}
+
+UINT I2cGetClkdiv(UINT nCH)
+{
+	return arrI2CCLK[nCH]->CLK_DIV;
+}
+
+void I2cSetClk(UINT nCH, UINT Speed_Hz)
+{
+	UINT u32Cal = (APB_FREQ / (8 * Speed_Hz)) - 1;
+	if (u32Cal > 0xFFFF) {
+		arrI2CCLK[nCH]->CLK_DIV = 0xFFFF;
+		ENX_DEBUGF(DBG_I2C_LOG, "I2C Clk Min.(%u/%u)\n", u32Cal, arrI2CCLK[nCH]->CLK_DIV);
+	} else {
+		arrI2CCLK[nCH]->CLK_DIV = u32Cal;
+	}
+}
+
+UINT I2cGetClk(UINT nCH)
+{
+//	ENX_DEBUGF(DBG_I2C_LOG, "I2C Clk Set %uHz(%u)\n", APB_FREQ / ((arrI2CCLK[nCH]->CLK_DIV + 1) * 8), arrI2CCLK[nCH]->CLK_DIV);
+	return APB_FREQ / ((arrI2CCLK[nCH]->CLK_DIV + 1) * 8);
+}
+
+void I2cSetMode(UINT nCH, I2C_MODE mode)
+{
+	arrI2CCONT[nCH]->MODE = mode;
+}
+
+I2C_MODE I2cGetMode(UINT nCH)
+{
+	return arrI2CCONT[nCH]->MODE;
+}
+
+void I2cSetBitmode(UINT nCH, I2C_BITMODE bitmode)
+{
+	arrI2CCONT[nCH]->BIT_MODE = bitmode;
+}
+
+I2C_BITMODE I2cGetBitmode(UINT nCH)
+{
+	return arrI2CCONT[nCH]->BIT_MODE;
+}
+
+UINT I2cGetACT(UINT nCH)
+{
+	return arrI2CCONT[nCH]->ACT;
+}
+
+UINT I2cGetMstCol(UINT nCH)
+{
+	return arrI2CMST[nCH]->MST_COL;
+}
+
+UINT I2cGetMstAck(UINT nCH)
+{
+	return arrI2CMST[nCH]->MST_ACK;
 }
 
 UINT I2cWrite(UINT nCH, BYTE dat, BYTE last, BYTE repeat)
@@ -100,6 +162,31 @@ void I2cChCheck(UINT nCH)
 void I2cSlvTest(UINT nCH)
 {
 	arrI2CSLV[nCH]->a = 0;
+}
+
+void I2cSetSlvAddr(UINT nCH, UINT nAddr)
+{
+	arrI2CSLV[nCH]->SLV_ADR = nAddr;
+}
+
+UINT I2cGetSlvAddr(UINT nCH)
+{
+	return arrI2CSLV[nCH]->SLV_ADR;
+}
+
+UINT I2cGetSlvSDA(UINT nCH)
+{
+	return arrI2CSLV[nCH]->I2C_SDA;
+}
+
+UINT I2cGetSlvSCL(UINT nCH)
+{
+	return arrI2CSLV[nCH]->I2C_SCL;
+}
+
+UINT I2cGetSlvAckIn(UINT nCH)
+{
+	return arrI2CSLV[nCH]->SLV_ACK_IN;
 }
 
 void I2cIrqCallback(UINT nCH, irq_fn irqfn, void *arg)

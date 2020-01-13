@@ -1,0 +1,98 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+<title></title>
+<link rel="stylesheet" type="text/css" href="..\bootstrap.min.css">
+<link rel="stylesheet" type="text/css" href="..\style.css">
+<script type="text/javascript">
+<!--
+function SetFormDefaults()
+{
+//<!--#isp_outs-->
+
+	document.form.i_o_md.selectedIndex = OUTPUT_MODE;
+	document.form.i_o_wdr.selectedIndex = OUTPUT_LEV;
+	document.form.i_o_fq[OUTPUT_RATE].checked = true;
+
+	SetFrameRate();
+	SetOutputSet();
+}
+
+function SetOutputSet()
+{
+	switch(document.form.i_o_md.selectedIndex)
+	{
+		case 0:
+		case 3:
+			document.form.i_o_wdr.disabled = true;
+			break;
+		case 1:
+		case 2:
+		case 4:
+		case 5:
+			document.form.i_o_wdr.disabled = false;
+			break;
+	}
+}
+
+function SetFrameRate()
+{
+	if(document.form.i_o_fq[0].checked)
+	{
+		document.form.i_o_md[0].text = "25fps Normal";
+		document.form.i_o_md[1].text = "12fps WDR";
+		document.form.i_o_md[2].text = "25fps DNR";
+		document.form.i_o_md[3].text = "50fps Normal";
+		document.form.i_o_md[4].text = "25fps WDR";
+		document.form.i_o_md[5].text = "50fps DNR";
+	}
+	else
+	{
+		document.form.i_o_md[0].text = "30fps Normal";
+		document.form.i_o_md[1].text = "15fps WDR";
+		document.form.i_o_md[2].text = "30fps DNR";
+		document.form.i_o_md[3].text = "60fps Normal";
+		document.form.i_o_md[4].text = "30fps WDR";
+		document.form.i_o_md[5].text = "60fps DNR";
+	}
+}
+//-->
+</script>
+
+</head>
+<body onload="SetFormDefaults();">
+<form id="form" name="form" method="get" action="appispmu.cgi">
+	<div class="sub-title">
+		<input class="btn btn-default pull-right" name="btOK" type="submit" value="submit">
+		<h3>OUTPUT SET</h3>
+	</div>
+	<hr>
+	<div>
+		<label class="sub-label">Mode</label>
+		<select id="i_o_md" name="i_o_md" onchange="SetOutputSet()">
+			<option value=0></option>
+			<option value=1></option>
+			<option value=2></option>
+			<option value=3></option>
+			<option value=4></option>
+			<option value=5></option>
+		</select>
+	</div>
+	<hr>
+	<div>
+		<label class="sub-label">Level</label>
+		<select id="i_o_wdr" name="i_o_rlv">
+			<option value=0>LOW</option>
+			<option value=1>MIDDLE</option>
+			<option value=2>HIGH</option>
+		</select>
+	</div>
+	<div>
+		<label class="sub-label">Frequency</label>
+		<label class="radio-inline"><input type="radio" name="i_o_fq" value=0 onchange="SetFrameRate()">50Hz</label>
+		<label class="radio-inline"><input type="radio" name="i_o_fq" value=1 onchange="SetFrameRate()">60Hz</label>
+	</div>
+</form>
+</body>
+</html>

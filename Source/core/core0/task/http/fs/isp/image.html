@@ -1,0 +1,324 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+<title></title>
+<link rel="stylesheet" type="text/css" href="..\bootstrap.min.css">
+<link rel="stylesheet" type="text/css" href="..\style.css">
+<script type="text/javascript">
+<!--
+//<!--#isp_im-->
+
+function SetFormDefaults()
+{
+	document.form.i_i_sp.value = IMG_SHARP;
+	if(IMG_GAMMA_CNT == 2)
+		var type_Gamma = new Array("0.45", "0.75");
+	else if(IMG_GAMMA_CNT == 3)
+		var type_Gamma = new Array("0.45", "0.6", "0.75");
+	else if(IMG_GAMMA_CNT == 4)
+		var type_Gamma = new Array("0.45", "0.55", "0.65", "0.75");
+	else if(IMG_GAMMA_CNT == 5)
+		var type_Gamma = new Array("0.45", "0.525", "0.6", "0.675", "0.75");
+	optionType = new Array(type_Gamma.length);
+	for(i=0;i<type_Gamma.length;i++)
+	{
+		optionType[i] = document.createElement("option");
+		optionType[i].value = i;
+		optionType[i].text = type_Gamma[i];
+		document.form.i_i_gm.options.add(optionType[i], i);
+	}
+	document.form.i_i_gm.selectedIndex = IMG_GAMMA;
+	document.form.i_i_mr[IMG_MIRROR].checked = true;
+	document.form.i_i_fp[IMG_FLIP].checked = true;
+	document.form.i_i_dw.selectedIndex = IMG_DWDR;
+	
+	document.form.i_i_df[IMG_DEFOG].checked = true;
+	document.form.i_i_df_mo.selectedIndex = IMG_DE_MODE;
+	document.form.i_i_df_lv.selectedIndex = IMG_DE_LEV;
+	
+	document.form.i_i_sh[IMG_SHADING].checked = true;
+	document.form.i_i_sh_we.value = IMG_SHA_WE;
+	
+	document.form.i_i_pr[IMG_PRIVACY].checked = true;
+	document.form.i_i_pr_mo.value = IMG_PR_MODE;
+	document.form.i_i_pr_yl.value = IMG_PR_YL;
+	document.form.i_i_pr_cbl.value = IMG_PR_CBL;
+	document.form.i_i_pr_crl.value = IMG_PR_CRL;
+	document.form.i_i_pr_tra.value = IMG_PR_TRA;
+
+	for(i = 0 ; i < IMG_PR_CNT ; i++)
+	{
+		var t_form = document.getElementById("form" + i);
+		t_form["i_i_pr_zd_" + i][IMG_PR_ZDISP[i]].checked = true;
+		t_form["i_i_pr_hp_" + i].value = IMG_PR_HP[i];
+		t_form["i_i_pr_vp_" + i].value = IMG_PR_VP[i];
+		t_form["i_i_pr_hs_" + i].value = IMG_PR_HS[i];
+		t_form["i_i_pr_vs_" + i].value = IMG_PR_VS[i];
+	}
+
+	document.getElementById("i_i_pr_step1").innerHTML = IMG_BOX_COLOR_STEP;
+	document.getElementById("i_i_pr_step2").innerHTML = IMG_BOX_COLOR_STEP;
+	document.getElementById("i_i_pr_step3").innerHTML = IMG_BOX_COLOR_STEP;
+
+	document.getElementById("i_i_pr_hpa").innerHTML = IMG_BOX_XMAX;
+	document.getElementById("i_i_pr_vpa").innerHTML = IMG_BOX_YMAX;
+	document.getElementById("i_i_pr_hsa").innerHTML = IMG_BOX_XMAX;
+	document.getElementById("i_i_pr_vsa").innerHTML = IMG_BOX_YMAX;
+
+	SetDefogAcePriority();
+	SetDefogMode();
+	SetShadingMode();
+	SetPrivacyMode();
+//	SetPIPMode();
+}
+
+function SetDefogMode()
+{
+	var def_switch = document.form.i_i_df[0].checked;
+	document.form.i_i_df_mo.disabled = def_switch;
+	document.form.i_i_df_lv.disabled = def_switch;
+	document.form.i_i_dw.disabled = !def_switch;
+}
+
+function SetShadingMode()
+{
+	var shd_switch = document.form.i_i_sh[0].checked;
+	document.form.i_i_sh_we.disabled = shd_switch;
+}
+
+function SetPrivacyMode()
+{
+	var pri_switch = document.form.i_i_pr[0].checked;
+	document.form.i_i_pr_mo.disabled = pri_switch;
+	document.form.i_i_pr_yl.disabled = pri_switch;
+	document.form.i_i_pr_cbl.disabled = pri_switch;
+	document.form.i_i_pr_crl.disabled = pri_switch;
+	document.form.i_i_pr_tra.disabled = pri_switch;
+	for(i = 0 ; i < IMG_PR_CNT ; i++)
+	{
+		var t_form = document.getElementById("form" + i);
+		t_form["i_i_pr_zd_" + i][0].disabled = pri_switch;
+		t_form["i_i_pr_zd_" + i][1].disabled = pri_switch;
+		t_form["i_i_pr_hp_" + i].disabled = pri_switch;
+		t_form["i_i_pr_vp_" + i].disabled = pri_switch;
+		t_form["i_i_pr_hs_" + i].disabled = pri_switch;
+		t_form["i_i_pr_vs_" + i].disabled = pri_switch;
+		t_form["btOK"].disabled = pri_switch;
+		if(pri_switch == false)
+		{
+			SetPrivacySWMode(i);
+		}
+	}
+}
+
+function SetPrivacySWMode(idx)
+{
+	var t_form = document.getElementById("form" + idx);
+	var pri_switch = t_form["i_i_pr_zd_" + idx][0].checked;
+	t_form["i_i_pr_hp_" + idx].disabled = pri_switch;
+	t_form["i_i_pr_vp_" + idx].disabled = pri_switch;
+	t_form["i_i_pr_hs_" + idx].disabled = pri_switch;
+	t_form["i_i_pr_vs_" + idx].disabled = pri_switch;
+}
+
+function SetPIPMode()
+{
+	var pip_switch = document.form.i_i_pi[0].checked;
+	document.form.i_i_pi0.disabled = pip_switch;
+	document.form.i_i_pi1.disabled = pip_switch;
+	document.form.i_i_pi2.disabled = pip_switch;
+	document.form.i_i_pi3.disabled = pip_switch;
+}
+function SetDefogAcePriority()
+{
+	switch(IMG_FrameMode)
+	{
+		case 1:
+		case 4:
+			document.form.i_i_df[0].disabled = true;
+			document.form.i_i_df[1].disabled = true;
+			document.form.i_i_dw.disabled = true;
+			break;
+		default:
+			document.form.i_i_df[0].disabled = false;
+			document.form.i_i_df[1].disabled = false;
+			break;
+	}
+	
+}
+</script>
+</head>
+
+<body onload="SetFormDefaults();">
+<form id="form" name="form" method="get" action="appispmu.cgi">
+	<div class="sub-title">
+		<input class="btn btn-default pull-right" name="btOK" type="submit" value="submit">
+		<h3>IMAGE</h3>
+	</div>
+	<hr>
+	<div>
+		<label class="sub-label">Sharpness</label>
+		<input name="i_i_sp" type="text"> [0~10]
+	</div>
+	<div>
+		<label class="sub-label">Gamma</label>
+		<select id="i_i_gm" name="i_i_gm">
+		</select>
+	</div>
+	<div>
+		<label class="sub-label">Mirror</label>
+		<label class="radio-inline"><input type="radio" name="i_i_mr" value=0>OFF</label>
+		<label class="radio-inline"><input type="radio" name="i_i_mr" value=1>ON</label>
+	</div>
+	<div>
+		<label class="sub-label">Flip</label>
+		<label class="radio-inline"><input type="radio" name="i_i_fp" value=0>OFF</label>
+		<label class="radio-inline"><input type="radio" name="i_i_fp" value=1>ON</label>
+	</div>
+	<div>
+		<label class="sub-label">ACE</label>
+		<select id="i_i_dw" name="i_i_dw">
+			<option value=0>OFF</option>
+			<option value=1>LOW</option>
+			<option value=2>MIDDLE</option>
+			<option value=3>HIGH</option>
+		</select>
+	</div>
+	<hr>
+	<div>
+		<label class="sub-label">Defog</label>
+		<label class="radio-inline"><input type="radio" name="i_i_df" value=0 onchange=SetDefogMode()>OFF</label>
+		<label class="radio-inline"><input type="radio" name="i_i_df" value=1 onchange=SetDefogMode()>ON</label>
+	</div>
+	<div>
+		<label class="sub-label">Mode</label>
+		<select id="i_i_df_mo" name="i_i_df_mo">
+			<option value=0>MANUAL</option>
+			<option value=1>AUTO</option>
+		</select>
+	</div>
+	<div>
+		<label class="sub-label">Level</label>
+		<select id="i_i_df_lv" name="i_i_df_lv">
+			<option value=0>LOW</option>
+			<option value=1>MIDDLE</option>
+			<option value=2>HIGH</option>
+		</select>
+	</div>
+	<hr>
+	<div>
+		<label class="sub-label">Shading</label>
+		<label class="radio-inline"><input type="radio" name="i_i_sh" value=0 onchange=SetShadingMode()>OFF</label>
+		<label class="radio-inline"><input type="radio" name="i_i_sh" value=1 onchange=SetShadingMode()>ON</label>
+	</div>
+	<div>
+		<label class="sub-label">Weight</label>
+		<input name="i_i_sh_we" type="text"> [0~200]%
+	</div>
+	<hr>
+	<div>
+		<label class="sub-label">Privacy</label>
+		<label class="radio-inline"><input type="radio" name="i_i_pr" value=0 onchange=SetPrivacyMode()>OFF</label>
+		<label class="radio-inline"><input type="radio" name="i_i_pr" value=1 onchange=SetPrivacyMode()>ON</label>
+	</div>
+	<div>
+		<label class="sub-label">Mask mode</label>
+		<select id="i_i_pr_mo" name="i_i_pr_mo">
+			<option value=0>FILL</option>
+			<option value=1>FORMAT</option>
+		</select>
+	</div>
+	<div>
+		<label class="sub-label">Y level</label>
+		<input name="i_i_pr_yl" type="text"> [0~<label id="i_i_pr_step1"></label>]
+	</div>
+	<div>
+		<label class="sub-label">CB level</label>
+		<input name="i_i_pr_cbl" type="text"> [0~<label id="i_i_pr_step2"></label>]
+	</div>
+	<div>
+		<label class="sub-label">CR level</label>
+		<input name="i_i_pr_crl" type="text"> [0~<label id="i_i_pr_step3"></label>]
+	</div>
+	<div>
+		<label class="sub-label">Trans</label>
+		<input name="i_i_pr_tra" type="text"> [0~3]
+	</div>
+</form>
+<br />
+<div>
+	<label class="sub-label">Privacy Zone</label>
+<table class="table table-bordered" style="width: 500px;">
+	<colgroup>
+		<col style="width: 20px;text-align: center;">
+		<col style="width: 120px;text-align: center;">
+		<col style="width: 60px;text-align: center;">
+		<col style="width: 60px;text-align: center;">
+		<col style="width: 60px;text-align: center;">
+		<col style="width: 60px;text-align: center;">
+		<col style="text-align: center;">
+	</colgroup>
+	<tr>
+		<td> </td>
+		<td>Zone Disp</td>
+		<td>H-POS<br />[0~<label id="i_i_pr_hpa"></label>]</td>
+		<td>V-POS<br />[0~<label id="i_i_pr_vpa"></label>]</td>
+		<td>H-SIZE<br />[0~<label id="i_i_pr_hsa"></label>]</td>
+		<td>V-SIZE<br />[0~<label id="i_i_pr_vsa"></label>]</td>
+		<td>Submit</td>
+	</tr>
+<script type="text/javascript">
+<!--
+for (i = 0; i < IMG_PR_CNT; i++)
+{
+document.write("<form id=\"form"+i+"\" name=\"form"+i+"\" method=\"get\" action=\"appispmu.cgi\">");
+document.write("<tr>");
+document.write("	<td>"+i+"</td>");
+document.write("	<td>");
+document.write("		<label class=\"radio-inline\"><input type=\"radio\" name=\"i_i_pr_zd_"+i+"\" value=0 onchange=SetPrivacySWMode("+i+")>OFF</label>");
+document.write("		<label class=\"radio-inline\"><input type=\"radio\" name=\"i_i_pr_zd_"+i+"\" value=1 onchange=SetPrivacySWMode("+i+")>ON</label>");
+document.write("	</td>");
+document.write("	<td><input name=\"i_i_pr_hp_"+i+"\" style=\"width: 40px;text-align: center;\" type=\"text\"></td>");
+document.write("	<td><input name=\"i_i_pr_vp_"+i+"\" style=\"width: 40px;text-align: center;\" type=\"text\"></td>");
+document.write("	<td><input name=\"i_i_pr_hs_"+i+"\" style=\"width: 40px;text-align: center;\" type=\"text\"></td>");
+document.write("	<td><input name=\"i_i_pr_vs_"+i+"\" style=\"width: 40px;text-align: center;\" type=\"text\"></td>");
+document.write("	<td><input class=\"btn btn-default btn-xs\" name=\"btOK\" type=\"submit\" value=\"submit\"></td>");
+document.write("</tr>");
+document.write("</form>");
+}
+-->
+</script>
+</table>
+</div>
+</body>
+</html>
+
+<!--
+	<hr>
+	<div>
+		<label class="sub-label">PIP</label>
+		<label class="radio-inline"><input type="radio" name="i_i_pi" value=0 onchange=SetPIPMode()>OFF</label>
+		<label class="radio-inline"><input type="radio" name="i_i_pi" value=1 onchange=SetPIPMode()>ON</label>
+	</div>
+	<div>
+		<label class="sub-label">PIP channel</label>
+		<select id="i_i_pi0" name="i_i_pi0">
+			<option value=0>MAIN</option>
+			<option value=1>BT1120</option>
+			<option value=2>BT656</option>
+		</select>
+	</div>
+	<div>
+		<label class="sub-label">H position</label>
+		<input name="i_i_pi1" type="text"> [0~255]
+	</div>
+	<div>
+		<label class="sub-label">V position</label>
+		<input name="i_i_pi2" type="text"> [0~255]
+	</div>
+	<div>
+		<label class="sub-label">H size</label>
+		<input name="i_i_pi3" type="text"> [0~100]
+	</div>
+-->

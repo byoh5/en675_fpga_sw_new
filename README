@@ -1,48 +1,52 @@
-﻿EN675 CPU code
+﻿EN675 Core code
 =====================================
-test
+
 
 코드 구성
 ---------
 
-FPGA ver 19.10.16 14:08 입니다.
-이 코드는 Flash이 없는 환경에서 테스트 되었습니다. Source Code는 DDR에서 작동중입니다.
-DDR 메모리의 용량 및 작동주파수, log view s/w(Teraterm/Putty or ECM)에 따라서 Debug폴더에 있는 아래의 파일을 ddrinit.elf로 이름을 변경합니다.
-  40.5MHz/81MHz   1Gb: ddrinit_40.5Mhz_1Gb.elf   / ddrinit_40.5Mhz_1Gb_ECM.elf
-  40.5MHz/81MHz 512Mb: ddrinit_40.5Mhz_512Mb.elf / ddrinit_40.5Mhz_512Mb_ECM.elf
-  50.0MHz/75MHz   1Gb: ddrinit_50Mhz_1Gb.elf     / ddrinit_50Mhz_1Gb_ECM.elf
-  50.0MHz/75MHz 512Mb: ddrinit_50Mhz_512Mb.elf   / ddrinit_50Mhz_512Mb_ECM.elf
-  54.0MHz/81MHz   1Gb: ddrinit_54Mhz_1Gb.elf     / ddrinit_54Mhz_1Gb_ECM.elf
-  54.0MHz/81MHz 512Mb: ddrinit_54Mhz_512Mb.elf   / ddrinit_54Mhz_512Mb_ECM.elf
+FPGA ver 20.01.08 13:09
+이 코드는 Serial Flash Memory(SFLS) 또는 DDR에서 바로 부팅할 수 있습니다.
 
-"\\192.168.0.10\_연구소_Team2\_EN675\Document\EN675_Ver0.4_개발환경구성_Cmake.pdf" 을 참조하시기 바랍니다.
+Source\core\shared\exbl.lds의 28, 29번째 줄에서 모드에 따라 시작 주소를 설정해주세요.
+SFLS로 부팅할 binary 생성시 .reset : AT (ORIGIN(FLASH))
+ DDR로 부팅할 binary 생성시 .reset : AT (ORIGIN(DDR))
+
+all 명령은 core.elf가 생성됩니다. Eclipse에서 디버깅을 위한 것으로 DDR로 컴파일해야합니다.
+create_binary 명령은 먼저 all(core.elf)이 실행되어 core.bin이 생성되고 boot.bin + core.bin이 합쳐서 EN675.bin을 생성해냅니다.
+ECM에서 SFLS에 write할 경우 EN675.bin을 생성하여 Write하세요. (SFLS로 컴파일한 elf/binary여야 합니다)
+
+"\\192.168.0.10\_연구소_Team2\_EN675\Document\릴리즈문서\EN675_Ver0.4_개발환경구성_Cmake.pdf" 을 참조하시기 바랍니다.
 
 CPU0, 1, 2, 3은 source/core폴더에서 core0, core1, core2, core3의 main_.c 파일을 root로 합니다.
-CPU1에서 freeRTOS가 작동중입니다. DDR BSS영역 뒤의 4MByte 영역을 RTOS Heap 영역으로 사용합니다.
-만약 freeRTOS를 사용하지 않는다면 Cmake/device.cmake의 USE_FREERTOS 부분을 찾아 0으로 수정하시면 됩니다.
+CPU0에서 freeRTOS, CPU3에서 ISP가 준비되어있습니다.
+DDR BSS영역 뒤의 16MByte 영역을 RTOS Heap 영역으로 사용합니다.
+그리고 그 뒤 4MByte 영역은 F/W Heap 영역으로 사용합니다. 자세한 내용은 exbl.lds를 참조하세요.
+만약 freeRTOS를 사용하지 않는다면 Cmake/device.cmake의 USE_FREERTOS 부분을 찾아 0으로 수정하시면 됩니다. (테스트 되지 않음)
 
 
 메모리 구성
 ---------
 
-Code에서 사용하고 있는 메모리는 DDR memory입니다. EN675_Ver0.4_개발환경구성_Cmake.pdf에 따라 부팅을 할 경우,
-ddrinit.elf가 SRAM으로 부팅 및 DDR memory 초기화 작업을 진행 후, 이클립스에서 바이너리를 DDR로 dump합니다.
+Code에서 사용하고 있는 메모리는 SRAM입니다. 저장공간은 SFLS를 사용합니다.
+이 binary를 SFLS에 write 하면, 초기화 과정을 거친 후 0xC0020000에 있는 binary를 읽어 DDR로 복사합니다.
+그 다음 모든 CPU는 0x80000100으로 jump 합니다.
 
 |               |
 |               |
 |---------------| 0x8000_0000 (DDR START)
 | .reset        |
-|---------------| 0x8000_0500
+|---------------| 0x8xxx_xxxx
 | .text         |
-|---------------| 0x800B_0580
-| .redata       |
-|---------------| 0x8033_E200
+|---------------| 0x8xxx_xxxx
+| .rodata       |
+|---------------| 0x8xxx_xxxx
 | .data         |
-|---------------| 0x8034_4000
+|---------------| 0x8xxx_xxxx
 | .bss          |
-|---------------| 0x8040_5780
+|---------------| 0x8xxx_xxxx
 | .heap         |
-|---------------| 0x8080_5780
+|---------------| 0x8xxx_xxxx
 |               |
 |         empty |
 |               |

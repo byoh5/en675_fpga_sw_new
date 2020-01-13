@@ -11,7 +11,7 @@
 
 typedef long (*syscall_t)(long, long, long, long, long, long, long);
 
-#define CLOCK_FREQ MCK_FREQ
+#define CLOCK_FREQ APB_FREQ
 
 void sys_exit(int code)
 {
@@ -364,31 +364,25 @@ long sys_getcwd(const char* buf, size_t size)
 
 size_t sys_brk(size_t pos)
 {
+	static BYTE *heap_fw_start;
+	static BYTE *heap_fw_end;
+
 #if 1
-	//printf("%s\n", __func__);
-	//BYTE *addr = pvPortMalloc(pos+16);
-	//printf("%s-(Addr:0x%08X, Size:%u/0x%X)\n", __func__, addr, pos, pos);
-	//return addr;
-	//return -EBADF;
-	//return do_brk(pos);
-
-
-
-
-	printf("%s-0x%x\n", __func__, pos);
-
-
-
-
 	if (pos == 0) {
-		return 0x81000000;
+		asm volatile("la %0, _heap_fw_start" : "=r"(heap_fw_start));
+		asm volatile("la %0, _heap_fw_end" : "=r"(heap_fw_end));
+		printf("%s-0x%08x [0x%08x-0x%08x]\n", __func__, pos, (intptr_t)heap_fw_start, (intptr_t)heap_fw_end);
+		return (size_t)heap_fw_start;
 	} else {
-		if (pos > (0x80000000 + 64*1024*1024 - 8*1024*1024))
-			return -1;
+		if (pos > (size_t)heap_fw_end) {
+			_Rprintf("%s Error, 0x%08x > 0x%08x(heap_fw_end)\n", __func__, pos, (intptr_t)heap_fw_end);
+			return -ENOMEM;
+		}
+		//printf("%s-0x%08x\n", __func__, pos);
 		return pos;
 	}
 #else
-	return -EBADF;
+	return -ENOMEM;
 #endif
 }
 

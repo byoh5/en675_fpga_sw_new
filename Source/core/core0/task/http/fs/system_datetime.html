@@ -1,0 +1,238 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+<title></title>
+<link rel="stylesheet" type="text/css" href="bootstrap.min.css">
+<link rel="stylesheet" type="text/css" href="style.css">
+<script type="text/javascript">
+<!--
+//<!--#sy_date-->
+
+function realtimeClock() {
+	var cTime = new Date((systime++)*1000);	// 시스템 시간
+	var pTime = new Date();	// PC시간
+	firsttime++;
+
+	document.getElementById("txtCtime").innerHTML = getTimeStamp(cTime, 1);
+	document.getElementById("txtPtime").innerHTML = getTimeStamp(pTime, 0);
+	document.getElementById("txtUtime").innerHTML = getUpTimeStamp(firsttime);
+
+	setTimeout("realtimeClock()", 1000);
+}
+
+function getUpTimeStamp(d)
+{
+	var sDay = 24*60*60;
+	var nDay = d / sDay;
+	sDay = Math.floor(nDay);
+	
+	var nHour = (nDay - sDay) * 24;
+	var sHour = Math.floor(nHour);
+	
+	var nMin = (nHour - sHour) * 60;
+	var sMin = Math.floor(nMin);
+	
+	var nSec = (nMin - sMin) * 60;
+	var sSec = Math.floor(nSec);
+	
+	var s =
+		sDay + 'Days ' +
+		leadingZeros(sHour, 2) + ':' +
+		leadingZeros(sMin, 2) + ':' +
+		leadingZeros(sSec, 2);
+
+  return s;
+}
+
+function getTimeStamp(d, isLTZ)
+{
+	var s = "";
+	if(isLTZ == 1)
+	{
+		s =	leadingZeros(d.getUTCFullYear(), 4) + '-' +
+			leadingZeros(d.getUTCMonth() + 1, 2) + '-' +
+			leadingZeros(d.getUTCDate(), 2) + ' ' +
+			leadingZeros(d.getUTCHours(), 2) + ':' +
+			leadingZeros(d.getUTCMinutes(), 2) + ':' +
+			leadingZeros(d.getUTCSeconds(), 2);
+	}
+	else
+	{
+		s =	leadingZeros(d.getFullYear(), 4) + '-' +
+			leadingZeros(d.getMonth() + 1, 2) + '-' +
+			leadingZeros(d.getDate(), 2) + ' ' +
+			leadingZeros(d.getHours(), 2) + ':' +
+			leadingZeros(d.getMinutes(), 2) + ':' +
+			leadingZeros(d.getSeconds(), 2);
+	}
+  return s;
+}
+
+function leadingZeros(n, digits)
+{
+  var zero = '';
+  n = n.toString();
+
+  if (n.length < digits) {
+    for (i = 0; i < digits - n.length; i++)
+      zero += '0';
+  }
+  return zero + n;
+}
+
+function SetSNTPEnabled()
+{
+	document.form.s_s_svr.disabled = document.form.s_s_svw[0].checked;
+	document.form.s_s_svp.disabled = document.form.s_s_svw[0].checked;
+	document.form.s_s_svs.disabled = document.form.s_s_svw[0].checked;
+	document.form.s_s_svm.disabled = document.form.s_s_svw[0].checked;
+	
+	document.form.s_s_uy.disabled = document.form.s_s_svw[1].checked;
+	document.form.s_s_um.disabled = document.form.s_s_svw[1].checked;
+	document.form.s_s_ud.disabled = document.form.s_s_svw[1].checked;
+	document.form.s_s_uh.disabled = document.form.s_s_svw[1].checked;
+	document.form.s_s_ui.disabled = document.form.s_s_svw[1].checked;
+	document.form.s_s_us.disabled = document.form.s_s_svw[1].checked;
+}
+
+function GetPCTime()
+{
+	sd = new Date();
+	document.form.s_s_uy.value = leadingZeros(sd.getFullYear(), 4);
+	document.form.s_s_um.value = leadingZeros(sd.getMonth() + 1, 2);
+	document.form.s_s_ud.value = leadingZeros(sd.getDate(), 2);
+	document.form.s_s_uh.value = leadingZeros(sd.getHours(), 2);
+	document.form.s_s_ui.value = leadingZeros(sd.getMinutes(), 2);
+	document.form.s_s_us.value = leadingZeros(sd.getSeconds(), 2);
+}
+
+function SetFormDefaults()
+{
+	if (sntpsw != -1)
+	{
+		document.form.s_s_svw[sntpsw].checked = true;
+		document.form.s_s_svr.value = sntpsvr;
+		document.form.s_s_svp.value = repetper;
+		document.form.s_s_svs.value = rettime;
+		document.form.s_s_svm.value = retcount;
+	}
+	else
+	{
+		var tgset = document.getElementById("SNTP");
+		tgset.style.display = "none";
+	}
+
+	document.form.s_s_tz.selectedIndex = timezone;
+	document.form.s_s_st[summertime].checked = true;
+
+	sd = new Date(systime*1000);
+	document.form.s_s_uy.value = leadingZeros(sd.getUTCFullYear(), 4);
+	document.form.s_s_um.value = leadingZeros(sd.getUTCMonth() + 1, 2);
+	document.form.s_s_ud.value = leadingZeros(sd.getUTCDate(), 2);
+	document.form.s_s_uh.value = leadingZeros(sd.getUTCHours(), 2);
+	document.form.s_s_ui.value = leadingZeros(sd.getUTCMinutes(), 2);
+	document.form.s_s_us.value = leadingZeros(sd.getUTCSeconds(), 2);
+
+	SetSNTPEnabled();
+}
+//-->
+</script>
+
+</head>
+<body onload="SetFormDefaults();realtimeClock();">
+<form id="form" name="form" method="get" action="appquery.cgi">
+	<div class="sub-title">
+		<input class="btn btn-default pull-right" style="width:100px" name="btOK" type="submit" value="submit">
+		<h3>Date&nbsp;&amp;&nbsp;Time</h3>
+	</div>
+	<div id="SNTP">
+	<hr>
+	<div>
+		<label class="sub-label">SNTP Enable</label>
+		<label class="radio-inline"><input type="radio" name="s_s_svw" value=0 onclick="SetSNTPEnabled()">OFF</label>
+		<label class="radio-inline"><input type="radio" name="s_s_svw" value=1 onclick="SetSNTPEnabled()">ON</label>
+	</div>
+	<div>
+		<label class="sub-label">SNTP Server</label>
+		<input name="s_s_svr" type="text">
+	</div>
+	<div>
+		<label class="sub-label">Repetition Period</label>
+		<input name="s_s_svp" type="text"> [&gt;=15](sec)
+	</div>
+	<div>
+		<label class="sub-label">Retry Time</label>
+		<input name="s_s_svs" type="text"> [&gt;=3](sec) - If SNTP fails, retry(ex: 2 times, every 10 seconds).
+	</div>
+	<div>
+		<label class="sub-label">Retry Count</label>
+		<input name="s_s_svm" type="text"> [&gt;0]
+	</div>
+	</div>
+	<hr>
+	<div>
+		<label class="sub-label">Time</label>
+		<input name="s_s_uy" type="text" style="width: 50px;text-align: center;" maxlength=4> -
+		<input name="s_s_um" type="text" style="width: 30px;text-align: center;" maxlength=2> -
+		<input name="s_s_ud" type="text" style="width: 30px;text-align: center;" maxlength=2>&nbsp;&nbsp;
+		<input name="s_s_uh" type="text" style="width: 30px;text-align: center;" maxlength=2> :
+		<input name="s_s_ui" type="text" style="width: 30px;text-align: center;" maxlength=2> :
+		<input name="s_s_us" type="text" style="width: 30px;text-align: center;" maxlength=2>&nbsp;&nbsp;
+		<input class="btn btn-default btn-xs" style="width:200px" name="btOK" type="button" value="Get PC time" onclick="GetPCTime()">
+	</div>
+	<hr>
+	<div>
+		<label class="sub-label">Summer Time</label>
+		<label class="radio-inline"><input type="radio" name="s_s_st" value=0>OFF</label>
+		<label class="radio-inline"><input type="radio" name="s_s_st" value=1>ON</label>
+	</div>
+	<div>
+		<label class="sub-label">Timezone</label>
+		<select id="s_s_tz" name="s_s_tz">
+			<option value=0>(UTC-12:00) 베이커, 하울랜드</option>
+			<option value=1>(UTC-11:00) 파고파고</option>
+			<option value=2>(UTC-10:00) 하와이</option>
+			<option value=3>(UTC-09:00) 알래스카</option>
+			<option value=4>(UTC-08:00) 태평양 표준시, 로스앤젤레스, 시애틀, 샌프란시스코, 밴쿠버</option>
+			<option value=5>(UTC-07:00) 산지 표준시, 덴버, 에드먼턴</option>
+			<option value=6>(UTC-06:00) 중부 표준시, 시카도, 멕시코시티</option>
+			<option value=7>(UTC-05:00) 동부 표준시, 워싱턴D.C., 뉴욕, 몬트리올, 오타와</option>
+			<option value=8>(UTC-04:00) 대서양 표준시, 카라카스, 라파스</option>
+			<option value=9>(UTC-03:00) 상파울루, 부에노스아이레스</option>
+			<option value=10>(UTC-02:00) 페르난두데누로냐</option>
+			<option value=11>(UTC-01:00) 그린란드, 아조레스</option>
+			<option value=12>(UTC 00:00) 런던, 리스본</option>
+			<option value=13>(UTC+01:00) 베를린, 마드리드, 트리폴리, 로마</option>
+			<option value=14>(UTC+02:00) 아테네, 이스탄불, 케이프타운, 헬싱키</option>
+			<option value=15>(UTC+03:00) 바그다드, 모스크바</option>
+			<option value=16>(UTC+03:30) 테헤란</option>
+			<option value=17>(UTC+04:00) 아부다비</option>
+			<option value=18>(UTC+05:00) 이슬라마바드</option>
+			<option value=19>(UTC+05:30) 뉴델리, 콜롬보</option>
+			<option value=20>(UTC+06:00) 다카, 알마티</option>
+			<option value=21>(UTC+07:00) 하노이, 방콕, 자카르타</option>
+			<option value=22>(UTC+08:00) 베이징, 홍콩, 싱가포르, 타이베이</option>
+			<option value=23>(UTC+09:00) 서울, 도쿄</option>
+			<option value=24>(UTC+10:00) 시드니, 캔버라</option>
+			<option value=25>(UTC+11:00) 누메아, 호니아라</option>
+			<option value=26>(UTC+12:00) 웰링턴, 수바</option>
+			<option value=27>(UTC+13:00) 통가, 사모아, 피닉스 제도</option>
+			<option value=28>(UTC+14:00) 라인 제도</option>
+		</select>
+	</div>
+	<div>
+		<label class="sub-label">Camera Time</label>
+		<label id="txtCtime"></label>
+	</div>
+	<div>
+		<label class="sub-label">PC Time</label>
+		<label id="txtPtime"></label>
+	</div>
+	<div>
+		<label class="sub-label">UpTime</label>
+		<label id="txtUtime"></label>
+	</div>
+</form>
+</body>
+</html>

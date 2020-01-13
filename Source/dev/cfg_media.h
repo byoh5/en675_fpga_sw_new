@@ -80,7 +80,7 @@
 #define AUDIO_CODEC_RAW					0
 #define AUDIO_CODEC_G711A				1
 #define AUDIO_CODEC_G711U				2
-#define AUDIO_CODEC						AUDIO_CODEC_RAW
+#define AUDIO_CODEC						AUDIO_CODEC_G711U
 
 ////////////////////////////////////////////////////////////////////////////////
 // PCM

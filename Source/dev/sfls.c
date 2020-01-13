@@ -12,7 +12,8 @@ void SflsInit(void)
 		return;
 	}
 
-	SFLS_IO_CLKDIV = 1;
+#if 1 // bootloader only
+	SFLS_IO_CLKDIV = 0x1;
 
 	SFLS_BUS_RD_CMD_MODE = sfls_master->ior_cmd;
 	SFLS_BUS_RD_ADR_MODE = sfls_master->ior_adr;
@@ -38,7 +39,25 @@ void SflsInit(void)
 	}
 	SFLS_IO_RDLTC = sfls_master->rdltc;
 
+	if (sfls_master->cmd_enter_4b) {
+		SFLS_USR_ADR_EN = 0;
+		SFLS_USR_GAP_EN = 0;
+		SFLS_USR_RD_EN = 0;
+		SFLS_USR_WR_EN = 0;
+		SFLS_USR_BUSY_EN = 0;
+		SFLS_USR_CMD = sfls_master->cmd_enter_4b;
+		SFLS_BUS_ADR_EXT = 1;
+		SFLS_USR_ADR_EXT = 1;
+		SFLS_USR_REQ = 1;
+		while (SFLS_USR_REQ);
+	}
+
 	if (sfls_master->cmd_enter_qpi) {
+		SFLS_USR_ADR_EN = 0;
+		SFLS_USR_GAP_EN = 0;
+		SFLS_USR_RD_EN = 0;
+		SFLS_USR_WR_EN = 0;
+		SFLS_USR_BUSY_EN = 0;
 		SFLS_USR_CMD = sfls_master->cmd_enter_qpi;
 		SFLS_USRBUS_REQ = 1;
 	} else {
@@ -56,6 +75,7 @@ void SflsInit(void)
 	if (sfls_master->func_init) {
 		sfls_master->func_init();
 	}
+#endif
 }
 
 UINT SflsGetinfo(void)
@@ -64,7 +84,7 @@ UINT SflsGetinfo(void)
 	BYTE u8Manid = SFLS_ID >> 16 & 0xff;
 	BYTE u8Type = SFLS_ID >> 8 & 0xff;
 	BYTE u8Capa = SFLS_ID & 0xff;
-	printf("ID(%02X) Type(%02X) Capa(%02X)\n", u8Manid, u8Type, u8Capa);
+	printf("ID(%02X) Type(%02X) Capa(%02X) - ", u8Manid, u8Type, u8Capa);
 
 	switch (u8Manid) {
 	case 0x1C: // EON
@@ -153,7 +173,19 @@ UINT SflsGetUsrreq(void)
 	return SFLS_USR_REQ;
 }
 
-#if 1
+void SflsSingleCommand(BYTE cmd)
+{
+	SFLS_USR_CMD_MODE	= SFLS_BUS_RD_CMD_MODE;
+	SFLS_USR_ADR_EN		= 0;
+	SFLS_USR_GAP_EN		= 0;
+	SFLS_USR_RD_EN		= 0;
+	SFLS_USR_WR_EN		= 0;
+	SFLS_USR_BUSY_EN	= 0;
+	SFLS_USR_CMD		= cmd;
+	SFLS_USR_REQ		= 1;
+	while (SFLS_USR_REQ);
+}
+
 void SflsWriteReg(BYTE wrdata, BYTE len, BYTE iomode)
 {
 	SflsWriteEnable();
@@ -167,7 +199,7 @@ void SflsWriteReg(BYTE wrdata, BYTE len, BYTE iomode)
 	SFLS_USR_WR_EN		= 1;
 	SFLS_USR_GAP		= 0;
 	SFLS_USR_LEN		= len - 1;
-	SFLS_USR_ADR_EXT	= 0;
+	SFLS_USR_ADR_EXT	= SFLS_BUS_ADR_EXT;
 	SFLS_USR_BUSY_EN	= 0;
 	SFLS_USR_CMD		= 0x01;
 	SFLS_USR_ADR		= 0;
@@ -192,9 +224,8 @@ UINT SflsReadReg(BYTE cmd, BYTE iomode, BYTE gap)
 	SFLS_USR_WR_EN		= 0;
 	SFLS_USR_GAP		= gap;
 	SFLS_USR_LEN		= 2;
-	SFLS_USR_ADR_EXT	= 0;
+	SFLS_USR_ADR_EXT	= SFLS_BUS_ADR_EXT;
 	SFLS_USR_BUSY_EN	= 0;
-//	SFLS_USR_BUSY_KEEP	= 0;
 	SFLS_USR_CMD		= cmd;
 	SFLS_USR_ADR		= 0;
 	SFLS_USR_WRDAT		= 0;
@@ -203,7 +234,98 @@ UINT SflsReadReg(BYTE cmd, BYTE iomode, BYTE gap)
 	while (SFLS_USR_REQ);
 	return SFLS_USR_RDDAT;
 }
-#endif
+
+void SflsReadSFDP(SFLSsfdp *sfdp)
+{
+	UINT *data = (UINT *)sfdp;
+
+	SFLS_USR_CMD_MODE	= SFLS_BUS_RD_CMD_MODE;
+	SFLS_USR_ADR_MODE	= SFLS_BUS_RD_ADR_MODE;
+	SFLS_USR_DAT_MODE	= SFLS_BUS_RD_DAT_MODE;
+	SFLS_USR_ADR_EN		= 1;
+	if (SFLS_BUS_GAP_EN) {
+		SFLS_USR_GAP_EN	= 1;
+		SFLS_USR_GAP = SFLS_BUS_GAP;
+	} else {
+		SFLS_USR_GAP_EN	= 0;
+		SFLS_USR_GAP = 0;
+	}
+	SFLS_USR_RD_EN		= 1;
+	SFLS_USR_WR_EN		= 0;
+	SFLS_USR_LEN		= 3;
+	SFLS_USR_ADR_EXT	= SFLS_BUS_ADR_EXT;
+	SFLS_USR_BUSY_EN	= 0;
+	SFLS_USR_CMD		= 0x5A;
+	SFLS_USR_WRDAT		= 0;
+	SFLS_USR_RDLTC		= SFLS_IO_RDLTC;
+
+	for (UINT i = 0; i < (sizeof(SFLSsfdp) / 4); i++) {
+		SFLS_USR_ADR	= i * 4;
+		SFLS_USR_REQ	= 1;
+		while (SFLS_USR_REQ);
+		data[i] = ENX_HTONL(SFLS_USR_RDDAT);
+	}
+}
+
+void SflsViewerSFDP(SFLSsfdp *sfdp)
+{
+	hexDump("SFDP", (BYTE *)sfdp, 144);
+
+	printf("== %c%c%c%c ==\n", sfdp->SFDPSignature[0], sfdp->SFDPSignature[1], sfdp->SFDPSignature[2], sfdp->SFDPSignature[3]);
+	printf("Parameter Table Length(%u) Pointer(0x%02X)\n", sfdp->ParameterTableLength, sfdp->ParameterTablePointer);
+
+	printf("Block / Sector Erase sizes : [%u]\n", sfdp->BlockSectorEreaseSize);
+	printf("Write Granularity : [%u]\n", sfdp->WriteGranularity);
+	printf("Write Enable Instruction Required for Writing to Volatile Status Register : [%u]\n", sfdp->WEIR_WVSR);
+	printf("Write Enable Opcode Select for Writing to Volatile Status Register : [%u]\n", sfdp->WEOS_WVSR);
+	printf("4 Kilo-Byte Erase Opcode : [0x%02X]\n", sfdp->FourKBEraseOpcode);
+	printf("Address Byte : [%u]\n", sfdp->AddrByte);
+	printf("Supports Double Transfer Rate (DTR) Clocking : [%u]\n", sfdp->SupDTRClocking);
+	printf("SFLS size: %uByte (raw:0x%08X)\n", (sfdp->FlashMemoryDensity + 1) / 8, sfdp->FlashMemoryDensity);
+
+	printf("Supports (1-4-4) Fast Read : [%u]\n", sfdp->Sup144FastRead);
+	printf("(1-4-4) Fast Read Number of Wait states (dummy clocks) needed before valid output : [%u]\n", sfdp->DummyClock144FR);
+	printf("(1-4-4) Fast Read Number of Mode Bits : [%u]\n", sfdp->Modebit144FR);
+	printf("(1-4-4) Fast Read Opcode : [0x%02X]\n", sfdp->Op144FR);
+
+	printf("Supports (1-1-4) Fast Read : [%u]\n", sfdp->Sup114FastRead);
+	printf("(1-1-4) Fast Read Number of Wait states (dummy clocks) needed before valid output : [%u]\n", sfdp->DummyClock114FR);
+	printf("(1-1-4) Fast Read Number of Mode Bits : [%u]\n", sfdp->Modebit114FR);
+	printf("(1-1-4) Fast Read Opcode : [0x%02X]\n", sfdp->Op114FR);
+
+	printf("Supports (1-1-2) Fast Read : [%u]\n", sfdp->Sup112FastRead);
+	printf("(1-1-2) Fast Read Number of Wait states (dummy clocks) needed before valid output : [%u]\n", sfdp->DummyClock112FR);
+	printf("(1-1-2) Fast Read Number of Mode Bits : [%u]\n", sfdp->Modebit112FR);
+	printf("(1-1-2) Fast Read Opcode : [0x%02X]\n", sfdp->Op112FR);
+
+	printf("Supports (1-2-2) Fast Read : [%u]\n", sfdp->Sup122FastRead);
+	printf("(1-2-2) Fast Read Number of Wait states (dummy clocks) needed before valid output : [%u]\n", sfdp->DummyClock122FR);
+	printf("(1-2-2) Fast Read Number of Mode Bits : [%u]\n", sfdp->Modebit122FR);
+	printf("(1-2-2) Fast Read Opcode : [0x%02X]\n", sfdp->Op122FR);
+
+	printf("Supports (2-2-2) Fast Read : [%u]\n", sfdp->Sup222FastRead);
+	printf("(2-2-2) Fast Read Number of Wait states (dummy clocks) needed before valid output : [%u]\n", sfdp->DummyClock222FR);
+	printf("(2-2-2) Fast Read Number of Mode Bits : [%u]\n", sfdp->Modebit222FR);
+	printf("(2-2-2) Fast Read Opcode : [0x%02X]\n", sfdp->Op222FR);
+
+	printf("Supports (4-4-4) Fast Read : [%u]\n", sfdp->Sup444FastRead);
+	printf("(4-4-4) Fast Read Number of Wait states (dummy clocks) needed before valid output : [%u]\n", sfdp->DummyClock444FR);
+	printf("(4-4-4) Fast Read Number of Mode Bits : [%u]\n", sfdp->Modebit444FR);
+	printf("(4-4-4) Fast Read Opcode : [0x%02X]\n", sfdp->Op444FR);
+
+	printf("Sector Type 1 Size   : [0x%02X]\n", sfdp->SectorType1Size);
+	printf("Sector Type 1 Opcode : [0x%02X]\n", sfdp->SectorType1Op);
+	printf("Sector Type 2 Size   : [0x%02X]\n", sfdp->SectorType2Size);
+	printf("Sector Type 2 Opcode : [0x%02X]\n", sfdp->SectorType2Op);
+	printf("Sector Type 3 Size   : [0x%02X]\n", sfdp->SectorType3Size);
+	printf("Sector Type 3 Opcode : [0x%02X]\n", sfdp->SectorType3Op);
+	printf("Sector Type 4 Size   : [0x%02X]\n", sfdp->SectorType4Size);
+	printf("Sector Type 4 Opcode : [0x%02X]\n", sfdp->SectorType4Op);
+
+	printf("UniqueIDNumber : %02X-%02X-%02X-%02X-%02X-%02X-%02X-%02X-%02X-%02X-%02X-%02X\n",
+			sfdp->UniqueID[0], sfdp->UniqueID[1], sfdp->UniqueID[2], sfdp->UniqueID[3], sfdp->UniqueID[4], sfdp->UniqueID[5],
+			sfdp->UniqueID[6], sfdp->UniqueID[7], sfdp->UniqueID[8], sfdp->UniqueID[9], sfdp->UniqueID[10], sfdp->UniqueID[11]);
+}
 
 void SflsRegShow(ENX_YN isDetail)
 {

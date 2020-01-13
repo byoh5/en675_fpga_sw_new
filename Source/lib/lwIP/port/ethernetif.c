@@ -186,7 +186,7 @@ void network_ethif_pkt_input_irq(void *ctx)
 	BYTE gRxPktHead = ((pRX_LEN_INFO[gRxPktTail]&0xff000000)>>24);
 	while (gRxPktTail != gRxPktHead) {
 		UINT u32PktSize = (pRX_LEN_INFO[gRxPktTail] & 0x7ff) - 4;
-		if (gptMsgDebug.ETH_RX_CHECK) {
+		if (gptMsgDebug.ETH_RX_CHECK == 1) {
 			printf("EthRX Idx[%s%3u%s/%s%3u%s] - %u\n", TTY_COLOR_YELLOW, gRxPktHead, TTY_COLOR_RESET, TTY_COLOR_GREEN, gRxPktTail, TTY_COLOR_RESET, u32PktSize);
 		}
 		pkt_info *pkinfo;
@@ -198,7 +198,7 @@ void network_ethif_pkt_input_irq(void *ctx)
 			pkinfo->flag = 0;
 			num_loop(qEthernetRX.tail, NETRX_BUF_COUNT);	// next head
 
-			if (gptMsgDebug.ETH_RX_CHECK) {
+			if (gptMsgDebug.ETH_RX_CHECK == 1) {
 				hwflush_dcache_range((ULONG)pkinfo->data, (UINT)u32PktSize + 4);
 				hexDump("Eth input(+CRC32)", pkinfo->data, u32PktSize + 4);
 			}
@@ -298,26 +298,30 @@ void network_ethif_pkt_input_loopback_irq(void *ctx)
 	EthLoopbackGp *ethlp = (EthLoopbackGp *)ctx;
 	BYTE gRxPktHead = ((pRX_LEN_INFO[gRxPktTail]&0xff000000)>>24);
 	while (gRxPktTail != gRxPktHead) {
-		//UINT u32PktSize = (*pRX_LEN_INFO & 0x7ff) - 4;
-		UINT u32PktSize = (pRX_LEN_INFO[gRxPktTail] & 0x7ff) - 4;
+		//UINT u32PktSize = (*pRX_LEN_INFO & 0x7ff); // +CRC(4byte)
+		UINT u32PktSize = (pRX_LEN_INFO[gRxPktTail] & 0x7ff); // +CRC(4byte)
 
 //		printf("RX: 0x%08X(%u)\n", qEthernetRX.pkt_data[gRxPktTail].buffer, u32PktSize);
 
-		if (u32PktSize <= 1518 && u32PktSize >= 60) {
+		if (u32PktSize <= (1514+4) && u32PktSize >= (60+4)) {
 			// D-cache flush
-			hwflush_dcache_range((ULONG)qEthernetRX.pkt_data[gRxPktTail].buffer, u32PktSize+4);
+			hwflush_dcache_range((ULONG)qEthernetRX.pkt_data[gRxPktTail].buffer, u32PktSize);
 
 			//printf("H(%d) T(%d)\n", gRxPktHead, gRxPktTail);
 			//hexDump("RECV", qEthernetRX.pkt_data[gRxPktTail].buffer, u32PktSize);
-			if (gptMsgDebug.ETH_RX_CHECK) {
+			if (gptMsgDebug.ETH_RX_CHECK == 1) {
 				printf("EthRX Idx[%s%3u%s/%s%3u%s] - %u\n", TTY_COLOR_YELLOW, gRxPktHead, TTY_COLOR_RESET, TTY_COLOR_GREEN, gRxPktTail, TTY_COLOR_RESET, u32PktSize);
-				hexDump("ETH Input", qEthernetRX.pkt_data[gRxPktTail].buffer, u32PktSize+4);
+				hexDump("ETH Input", qEthernetRX.pkt_data[gRxPktTail].buffer, u32PktSize);
 			}
 
 			// Data compare
+			u32PktSize -= 4; // delete CRC(4byte)
 			for (UINT i = 0; i < u32PktSize; i++) {
 				if (qEthernetRX.pkt_data[gRxPktTail].buffer[i] != ethlp->arrBuffer[ethlp->u8Index][i]) {
 					ethlp->eRes = ePlb_data;
+					if (gptMsgDebug.ETH_RX_CHECK == 2) {
+						hexCmpDump("Eth Rx Error", qEthernetRX.pkt_data[gRxPktTail].buffer, ethlp->arrBuffer[ethlp->u8Index], u32PktSize);
+					}
 					break;
 				}
 			}
@@ -338,6 +342,13 @@ void network_ethif_pkt_input_loopback_irq(void *ctx)
 	}
 }
 #endif
+
+void network_ethif_rx_start(void)
+{
+	EthRxIrqCallback(network_ethif_pkt_input_irq, NULL);
+	EthSetRxIrqEn(ENX_ON);
+	EthSetRxEn(ENX_ON);
+}
 
 uint64 TTa, TTb;
 UINT _test_crc32;
@@ -477,9 +488,7 @@ static void network_ethif_pkt_input(void *ctx)
 //	pmp_entry_set(5, PMP_R|PMP_W|PMP_X|PMP_L, 0x80000000ul, DDR1_SIZE); // DDR enabled area
 //	pmp_entry_set(6, PMP_L, 0x80000000ul, 0x20000000ul);				// DDR disabled area
 
-	EthRxIrqCallback(network_ethif_pkt_input_irq, NULL);
-	EthSetRxIrqEn(ENX_ON);
-	EthSetRxEn(ENX_ON);
+	network_ethif_rx_start();
 
 	for (;;) {
 		if (ulTaskNotifyTake(pdTRUE, portMAX_DELAY)) {
@@ -557,6 +566,8 @@ static void network_ethif_pkt_input(void *ctx)
 					case 0x892F: // High-availability Seamless Redundancy (HSR)
 					case 0x9000: // Ethernet Configuration Testing Protocol[13]
 					case ETHTYPE_QINQ: // VLAN-tagged (IEEE 802.1Q) frame with double tagging
+					case 0x887e: // iptime packet?
+					case 0x0006: // ...
 						LWIP_DEBUGF(NETIF_DEBUG, ("if_input: inval type\n"));
 						pbuf_free(p);
 						p = NULL;
@@ -734,7 +745,7 @@ init:
 		goto init; // reset
 	}
 
-	EthphyGetPHYID();
+	EthphyPrintPHYName();
 
 	EthphySetting();
 

@@ -1,5 +1,8 @@
 #include "dev.h"
+
+#ifdef __FREERTOS__
 #include "enx_freertos.h"
+#endif
 
 #include <string.h>
 
@@ -208,7 +211,11 @@ BYTE UserAreaCmd(sfls_cmd cmd, sfls_fixed_area index)
 				for (i = 0; i < nCount; i++) {
 					SflsSectErase(nBase + (i * 4096), ENX_YES);
 				}
+#ifdef __FREERTOS__
 				BDmaMemCpy_rtos(0, (BYTE *)(intptr_t)nBase, pgtBase, nSize);
+#else
+				BDmaMemCpy_isr(0, (BYTE *)(intptr_t)nBase, pgtBase, nSize);
+#endif
 
 				hexDump("SFLS SAVE", (void *)(intptr_t)nBase, nSize);
 
@@ -216,8 +223,11 @@ BYTE UserAreaCmd(sfls_cmd cmd, sfls_fixed_area index)
 				break;
 			case sflsc_Load:
 				hwflush_dcache_range((ULONG)pgtBase, nSize);
+#ifdef __FREERTOS__
 				BDmaMemCpy_rtos(0, pgtBase, (BYTE *)(intptr_t)nBase, nSize);
-
+#else
+				BDmaMemCpy_isr(0, pgtBase, (BYTE *)(intptr_t)nBase, nSize);
+#endif
 				hexDump("SFLS READ", pgtBase, nSize);
 
 				bRes = ENX_OK;

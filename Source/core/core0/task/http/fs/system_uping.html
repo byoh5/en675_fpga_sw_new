@@ -1,0 +1,82 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+<title></title>
+<link rel="stylesheet" type="text/css" href="bootstrap.min.css">
+<link rel="stylesheet" type="text/css" href="style.css">
+<style type="text/css">
+#js-progress {
+	width: 50%;
+	height: 20px;
+	position: relative;
+	border: 1px solid #ccc;
+}
+#js-bar {
+	width: 10px;
+	height: 100%;
+	position: absolute;
+	background-color: blue;
+}
+</style>
+
+<script type="text/javascript">
+<!--
+function redirect()
+{
+    document.location = "system_uping.html";
+}
+
+function fail_referrer()
+{
+    document.location = "system_update.html";
+}
+
+function reboot()
+{
+    top.location = "reboot.cgi";
+}
+
+function SetFormDefaults()
+{
+	uping = 0;
+//<!--#sy_uping-->
+
+	document.form.s_u_ig.value = uping;
+	var elem = document.getElementById("js-bar");
+	elem.style.width = uping + '%';
+	if(uping == 100)
+	{
+		alert("update complete! system reboot.");
+		setTimeout("reboot()", 100);
+	}
+	else if(uping == -100)
+	{
+		alert("update fail!");
+		setTimeout("fail_referrer()", 100);		
+	}
+	else
+	{
+		setTimeout("redirect()", 1000);
+	}
+}
+//-->
+</script>
+
+</head>
+<body onload="SetFormDefaults();">
+<form id="form" name="form">
+<div>
+	<table style="width: 100%">
+		<tr>
+			<td style="width:170px">Firmware updating...</td>
+			<td>
+				<input name="s_u_ig" type="text" readonly>%
+				<div id="js-progress"><div id="js-bar"></div></div>
+			</td>
+		</tr>
+	</table>
+</div>
+</form>
+</body>
+</html>

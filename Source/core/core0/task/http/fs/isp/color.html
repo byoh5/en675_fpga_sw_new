@@ -1,0 +1,106 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+<title></title>
+<link rel="stylesheet" type="text/css" href="..\bootstrap.min.css">
+<link rel="stylesheet" type="text/css" href="..\style.css">
+<script type="text/javascript">
+<!--
+function SetFormDefaults()
+{
+//<!--#isp_co-->
+
+	document.form.i_c_wb.selectedIndex = COLOR_MODE;
+	document.form.i_c_cg.value = COLOR_CGAIN;
+
+	// AWB-PRESET
+	document.form.i_c_pr[COLOR_PRESET].checked = true;
+
+	// AWB-MANUAL
+	document.form.i_c_ct.selectedIndex = COLOR_CTEMP;
+	document.form.i_c_rg.value = COLOR_RGAIN;
+	document.form.i_c_bg.value = COLOR_BGAIN;
+
+	SetAWBMode();
+}
+
+function SetAWBMode()
+{
+	switch(document.form.i_c_wb.selectedIndex)
+	{
+		case 0:
+		case 1:
+			document.form.i_c_pr[0].disabled = true;
+			document.form.i_c_pr[1].disabled = true;
+			document.form.i_c_ct.disabled = true;
+			document.form.i_c_rg.disabled = true;
+			document.form.i_c_bg.disabled = true;
+			break;
+		case 2:
+			document.form.i_c_pr[0].disabled = false;
+			document.form.i_c_pr[1].disabled = false;
+			document.form.i_c_ct.disabled = true;
+			document.form.i_c_rg.disabled = true;
+			document.form.i_c_bg.disabled = true;
+			break;
+		case 3:
+			document.form.i_c_pr[0].disabled = true;
+			document.form.i_c_pr[1].disabled = true;
+			document.form.i_c_ct.disabled = false;
+			document.form.i_c_rg.disabled = false;
+			document.form.i_c_bg.disabled = false;
+			break;
+	}
+}
+</script>
+</head>
+
+<body onload="SetFormDefaults();">
+<form id="form" name="form" method="get" action="appispmu.cgi">
+	<div class="sub-title">
+		<input class="btn btn-default pull-right" name="btOK" type="submit" value="submit">
+		<h3>COLOR</h3>
+	</div>
+	<hr>
+	<div>
+		<label class="sub-label">AWB</label>
+		<select id="i_c_wb" name="i_c_wb" onchange="SetAWBMode()">
+			<option value=0>AUTO</option>
+			<option value=1>AUTOext</option>
+			<option value=2>PRESET</option>
+			<option value=3>MANUAL</option>
+		</select>
+	</div>
+	<div>
+		<label class="sub-label">Color Gain</label>
+		<input name="i_c_cg" type="text"> [0~40]
+	</div>
+	<hr>
+	<h4>Preset</h4>
+	<div>
+		<label class="sub-label">Preset</label>
+		<label class="radio-inline"><input type="radio" name="i_c_pr" value=0>Idle</label>
+		<label class="radio-inline"><input type="radio" name="i_c_pr" value=1>SET</label>
+	</div>
+	<hr>
+	<h4>Manual</h4>
+	<div>
+		<label class="sub-label">C Temp</label>
+		<select id="i_c_ct" name="i_c_ct">
+			<option value=0>3000K</option>
+			<option value=1>5000K</option>
+			<option value=2>8000K</option>
+		</select>
+	</div>
+	<div>
+		<label class="sub-label">R Gain</label>
+		<input name="i_c_rg" type="text"> [0~20]
+	</div>
+	<div>
+		<label class="sub-label">B Gain</label>
+		<input name="i_c_bg" type="text"> [0~20]
+	</div>
+</form>	
+</body>
+</html>

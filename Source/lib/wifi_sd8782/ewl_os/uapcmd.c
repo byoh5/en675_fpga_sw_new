@@ -2,6 +2,8 @@
 #include "uaputl.h"
 #include "ewl_os.h"
 
+#define dprintf printf
+
 /** custom IE, auto mask value */
 #define	UAP_CUSTOM_IE_AUTO_MASK	0xffff
 

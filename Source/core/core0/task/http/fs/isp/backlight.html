@@ -1,0 +1,153 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+<title></title>
+<link rel="stylesheet" type="text/css" href="..\bootstrap.min.css">
+<link rel="stylesheet" type="text/css" href="..\style.css">
+<script type="text/javascript">
+<!--
+function SetFormDefaults()
+{
+//<!--#isp_back-->
+
+	document.form.i_b_md.selectedIndex = BACKLIG_MODE;
+
+	// HLC
+	document.form.i_b_hlv.value = BACKLIG_HLC_LV;
+	document.form.i_b_hcl.selectedIndex = BACKLIG_HLC_CL;
+
+	// BLC
+	document.form.i_b_hp.value = BACKLIG_BLC_HP;
+	document.form.i_b_vp.value = BACKLIG_BLC_VP;
+	document.form.i_b_hs.value = BACKLIG_BLC_HS;
+	document.form.i_b_vs.value = BACKLIG_BLC_VS;
+	document.form.i_b_osd[BACKLIG_BLC_OSD].checked = true;
+
+	SetBackLightMode();
+}
+
+function SetBackLightMode()
+{
+	var wdrmode;
+	var hlc_switch = true;
+	var blc_switch = true;
+	
+	switch(IMG_FrameMode)
+	{
+		case 1:
+		case 4:
+			wdrmode = 1;	
+			break;
+		default:
+			wdrmode = 0;
+			break;
+	}
+
+	if(wdrmode ==1){
+		switch(document.form.i_b_md.selectedIndex)
+		{
+			case 0:
+				hlc_switch = true;
+				blc_switch = true;
+				break;
+			case 1:
+				document.form.i_b_md.selectedIndex = 2;
+			case 2:
+				hlc_switch = true;
+				blc_switch = false;
+				break;
+		}
+	}
+	else{
+	switch(document.form.i_b_md.selectedIndex)
+	{
+		case 0:
+			hlc_switch = true;
+			blc_switch = true;
+			break;
+		case 1:
+			hlc_switch = false;
+			blc_switch = true;
+			break;
+		case 2:
+			hlc_switch = true;
+			blc_switch = false;
+			break;
+	}
+	}
+	document.form.i_b_hlv.disabled = hlc_switch;
+	document.form.i_b_hcl.disabled = hlc_switch;
+
+	document.form.i_b_hp.disabled = blc_switch;
+	document.form.i_b_vp.disabled = blc_switch;
+	document.form.i_b_hs.disabled = blc_switch;
+	document.form.i_b_vs.disabled = blc_switch;
+	document.form.i_b_osd[0].disabled = blc_switch;
+	document.form.i_b_osd[1].disabled = blc_switch;
+}
+//-->
+</script>
+
+</head>
+<body onload="SetFormDefaults();">
+<form id="form" name="form" method="get" action="appispmu.cgi">
+	<div class="sub-title">
+		<input class="btn btn-default pull-right" name="btOK" type="submit" value="submit">
+		<h3>BACKLIGHT</h3>
+	</div>
+	<hr>
+	<div>
+		<label class="sub-label">Mode</label>
+			<select id="i_b_md" name="i_b_md" onchange="SetBackLightMode()">
+				<option value=0>OFF</option>
+				<option value=1>HLC</option>
+				<option value=2>BLC</option>
+			</select>
+	</div>
+	<hr>
+	<h4>HLC</h4>
+	<div>
+		<label class="sub-label">Level</label>
+		<input name="i_b_hlv" type="text"> [0~20]
+	</div>
+	<div>
+		<label class="sub-label">Color</label>
+		<select id="i_b_hcl" name="i_b_hcl">
+			<option value=0>WHT</option>
+			<option value=1>YEL</option>
+			<option value=2>CYN</option>
+			<option value=3>GRN</option>
+			<option value=4>MAG</option>
+			<option value=5>RED</option>
+			<option value=6>BLU</option>
+			<option value=7>BLK</option>
+			<option value=8>CUSTOMIZE</option>
+		</select>
+	</div>
+	<hr>
+	<h4>BLC</h4>
+	<div>
+		<label class="sub-label">BLC OSD ON</label>
+		<label class="radio-inline"><input type="radio" name="i_b_osd" value=0 >OFF</label>
+		<label class="radio-inline"><input type="radio" name="i_b_osd" value=1 >ON</label>	
+	</div>	
+	<div>
+		<label class="sub-label">H position</label>
+		<input name="i_b_hp" type="text"> [0~20]
+	</div>
+	<div>
+		<label class="sub-label">V position</label>
+		<input name="i_b_vp" type="text"> [0~20]
+	</div>
+	<div>
+		<label class="sub-label">H size</label>
+		<input name="i_b_hs" type="text"> [0~20]
+	</div>
+	<div>
+		<label class="sub-label">V size</label>
+		<input name="i_b_vs" type="text"> [0~20]
+	</div>
+</form>
+</body>
+</html>

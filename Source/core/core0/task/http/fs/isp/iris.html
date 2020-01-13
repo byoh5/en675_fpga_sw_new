@@ -1,0 +1,90 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+<title></title>
+<link rel="stylesheet" type="text/css" href="..\bootstrap.min.css">
+<link rel="stylesheet" type="text/css" href="..\style.css">
+<script type="text/javascript">
+<!--
+function SetFormDefaults()
+{
+//<!--#isp_iris-->
+
+	var type_DCIris = new Array("ELC", "ALC");
+	var type_AFIris = new Array("Manual", "Auto");
+
+	switch(IRIS_MODE)
+	{
+		case 0:
+			document.getElementById("useIRIS").style.display = "none";
+			document.getElementById("useLEVEL").style.display = "none";
+			document.getElementById("unuseIRIS").hidden = false;
+			break;
+		case 3:
+		case 4:
+			optionType = new Array(type_AFIris.length);
+			for(i=0;i<type_AFIris.length;i++)
+			{
+				optionType[i] = document.createElement("option");
+				optionType[i].value = i;
+				optionType[i].text = type_AFIris[i];
+				document.form.i_i_md.options.add(optionType[i], i);
+			}
+			document.form.i_i_md.onchange = SetIrisMode;
+			document.form.i_i_md.selectedIndex = IRIS_VAR;
+			document.form.i_i_lv.value = IRIS_LEVEL;
+			SetIrisMode();
+			break;
+		case 1:
+		case 2:
+			optionType = new Array(type_DCIris.length);
+			for(i=0;i<type_DCIris.length;i++)
+			{
+				optionType[i] = document.createElement("option");
+				optionType[i].value = i;
+				optionType[i].text = type_DCIris[i];
+				document.form.i_i_md.options.add(optionType[i], i);
+			}
+			document.form.i_i_md.selectedIndex = IRIS_VAR;
+			document.getElementById("useLEVEL").style.display = "none";
+			break;
+	}
+}
+
+function SetIrisMode()
+{
+	if(document.form.i_i_md.selectedIndex == 1){
+		document.form.i_i_lv.disabled = true;
+	}
+	else{
+		document.form.i_i_lv.disabled = false;
+	}
+}
+//-->
+</script>
+</head>
+
+<body onload="SetFormDefaults();">
+<form id="form" name="form" method="get" action="appispmu.cgi">
+	<div class="sub-title">
+		<input class="btn btn-default pull-right" name="btOK" type="submit" value="submit">
+		<h3>IRIS</h3>
+	</div>
+	<hr>
+	<div id="useIRIS">
+		<label class="sub-label">Mode</label>
+		<select name="i_i_md">
+		</select>
+	</div>
+	<hr>
+	<div id="useLEVEL">
+		<label class="sub-label">Level</label>
+		<input name="i_i_lv" type="text"> [0~20]
+	</div>
+	<div id="unuseIRIS" hidden>
+		NO IRIS
+	</div>
+</form>
+</body>
+</html>

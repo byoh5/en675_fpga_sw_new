@@ -1,0 +1,40 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+<title></title>
+<link rel="stylesheet" type="text/css" href="bootstrap.min.css">
+<link rel="stylesheet" type="text/css" href="style.css">
+<script type="text/javascript">
+<!--
+function SetFormDefaults()
+{
+	nowver = '0.0.0';
+	uping = 0;
+//<!--#sy_uping-->
+
+	document.getElementById("s_u_nv").innerHTML = nowver;
+}
+//-->
+</script>
+
+</head>
+<body onload="SetFormDefaults();">
+<form method="post" enctype="multipart/form-data" action="appupdate.cgi">
+	<div class="sub-title">
+		<input class="btn btn-default pull-right" style="width:100px" type="submit" value="submit">
+		<h3>Firmware Update</h3>
+	</div>
+	<hr>
+	<div>
+		<label class="sub-label">Version Info</label>
+		<label id="s_u_nv">3</label>
+	</div>
+	<hr>
+	<div>
+		<label class="sub-label">Firmware Path</label>
+		<input type="file" name="upfile" accept=".bin">
+	</div>
+</form>
+</body>
+</html>

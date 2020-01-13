@@ -29,6 +29,8 @@ static SFLScontrol sfls_n25q128a = {
 #else
 	.cmd_enter_qpi = 0,
 #endif
+	.cmd_enter_4b = 0,
+	.cmd_exit_4b = 0,
 	.cmd_sector_erase = N25Q128A_CMD_SECTOR_ERASE,
 	.cmd_64k_erase = N25Q128A_CMD_64KB_ERASE,
 	.cmd_chip_erase = N25Q128A_CMD_CHIP_ERASE,

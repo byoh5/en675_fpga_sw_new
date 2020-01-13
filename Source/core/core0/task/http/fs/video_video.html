@@ -1,0 +1,440 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+<title></title>
+<link rel="stylesheet" type="text/css" href="bootstrap.min.css">
+<link rel="stylesheet" type="text/css" href="style.css">
+<script type="text/javascript">
+<!--
+var ResolText = ["3840x2160","2560x2048","2560x1600","2560x1440","2048x1536","1920x1200","1920x1080","1280x720","800x600","704x480","704x400","640x480","640x360","320x240"];
+var SensorName = "";
+var SensorWSize = 0;
+var SensorHSize = 0;
+var SensorMAXfps = 0;
+var rtspport = 0;
+var venccount = 0;
+
+//<!--#isp_outs-->
+	OUTPUT_RATE = 1;	// 임시 값
+	OUTPUT_MODE = 0;	// 임시 값
+
+//<!--#vi_info-->
+
+//<!--#vi_video-->
+
+function GetChannelVar(index, stm)
+{
+	switch (index) {
+		case 0:
+			if (stm == 1) {
+				rmax = H5R1Max;
+				rmin = H5R1Min;
+			} else {
+				rmax = H5R2Max;
+				rmin = H5R2Min;
+			}
+			qmin = H5QMin;
+			qmax = H5QMax;
+			ifmin = H5IfMin;
+			ifmax = H5IfMax;
+			break;
+		case 1:
+			if (stm == 1) {
+				rmax = H4R1Max;
+				rmin = H4R1Min;
+			} else {
+				rmax = H4R2Max;
+				rmin = H4R2Min;
+			}
+			qmin = H4QMin;
+			qmax = H4QMax;
+			ifmin = H4IfMin;
+			ifmax = H4IfMax;
+			break;
+		case 2:
+			rmax = JRMax;
+			rmin = JRMin;
+			qmin = JQMin;
+			qmax = JQMax;
+			ifmin = -1;
+			ifmax = -1;
+			break;
+	}
+}
+
+function SetFormDefaults()
+{
+	document.getElementById("v_v_sname").innerHTML = SensorName;
+	document.getElementById("v_v_sres").innerHTML = SensorWSize + " X " + SensorHSize;
+	document.getElementById("v_v_sfps").innerHTML = SensorMAXfps + "FPS";
+
+	var strOutMode = "";
+	switch (OUTPUT_RATE) {
+		case 0:
+			switch (OUTPUT_MODE) {
+				case 0: strOutMode = "25FPS Normal"; break;
+				case 1: strOutMode = "12FPS WDR"; break;
+				case 2: strOutMode = "25FPS DNR"; break;
+				case 3: strOutMode = "50FPS Normal"; break;
+				case 4: strOutMode = "25FPS WDR"; break;
+				case 5: strOutMode = "50FPS DNR"; break;
+			}
+			break;
+		case 1:
+			switch (OUTPUT_MODE) {
+				case 0: strOutMode = "30FPS Normal"; break;
+				case 1: strOutMode = "15FPS WDR"; break;
+				case 2: strOutMode = "30FPS DNR"; break;
+				case 3: strOutMode = "60FPS Normal"; break;
+				case 4: strOutMode = "30FPS WDR"; break;
+				case 5: strOutMode = "60FPS DNR"; break;
+			}
+			break;
+	}
+	document.getElementById("v_v_outm").innerHTML = strOutMode;
+
+	document.getElementById("n_r_port").innerHTML = rtspport;
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+	var targetObj;
+	for (id = 0; id < venccount; id++) {
+		GetChannelVar(arrCodec[id], id + 1);
+
+		targetObj = document.getElementById("v_v_" + (id+1) + "f");
+		SetFPSproc(targetObj);
+
+		if (HWDS0 != id && HWDS1 != id && HWDS2 != id && HWDS3 != id) {
+			var tg = document.getElementById("v_v_" + (id+1) + "r");
+			tg.disabled = true;
+		}
+
+		if (arrResolution[id] > -1) {
+			var targetObj = document.getElementById("v_v_" + (id+1) + "r");
+			SetResolutionProc(targetObj);
+		}
+
+		document.getElementById("v_s" + (id+1) + "qn").innerHTML = qmin;
+		document.getElementById("v_s" + (id+1) + "qx").innerHTML = qmax;
+		document.getElementById("v_s" + (id+1) + "in").innerHTML = ifmin;
+		document.getElementById("v_s" + (id+1) + "ix").innerHTML = ifmax;
+
+		// Codec
+		targetObj = document.getElementById("v_v_" + (id+1) + "c");
+		targetObj.selectedIndex = arrCodec[id];
+		if (arrCodec[id] == 2) {
+			targetObj.options[0].hidden = true;
+			targetObj.options[1].hidden = true;
+		} else {
+			targetObj.options[2].hidden = true;
+		}
+
+		// Resolution
+		targetObj = document.getElementById("v_v_" + (id+1) + "r");
+		if (arrResolution[id] > -1) {
+			targetObj.selectedIndex = arrResolution[id];
+		} else {
+			var tg = document.getElementById("stream" + (id+1) + "_res");
+			tg.style.display = "none";
+			tg.disabled = true;
+			targetObj.disabled = true;
+		}
+
+		// Codec Profile(H.264)
+		targetObj = document.getElementById("v_v_" + (id+1) + "p");
+		if (arrProfile[id] > -1) {
+			targetObj.selectedIndex = arrProfile[id];
+		} else {
+			var tg = document.getElementById("stream" + (id+1) + "_pro");
+			tg.style.display = "none";
+			tg.disabled = true;
+			targetObj.disabled = true;
+		}
+
+		// IDR Frame(H.264, H.265)
+		targetObj = document.getElementById("v_v_" + (id+1) + "i");
+		if (arrIdrframe[id] > -1) {
+			targetObj.value = arrIdrframe[id];
+		} else {
+			var tg = document.getElementById("stream" + (id+1) + "_idr");
+			tg.style.display = "none";
+			tg.disabled = true;
+			targetObj.disabled = true;
+		}
+
+		// Quality
+		targetObj = document.getElementById("v_v_" + (id+1) + "q");
+		if (arrQuality[id] > -1) {
+			targetObj.value = arrQuality[id];
+		} else {
+			var tg = document.getElementById("stream" + (id+1) + "_q");
+			tg.style.display = "none";
+			tg.disabled = true;
+			targetObj.disabled = true;
+		}
+
+		// FPS
+		targetObj = document.getElementById("v_v_" + (id+1) + "f");
+		if (arrFps[id] > -1) {
+			for (m = 0; m < targetObj.options.length; m++) {
+				if (targetObj.options[m].value == arrFps[id]) {
+					targetObj.selectedIndex = m;
+					break;
+				}
+			}
+		} else {
+			var tg = document.getElementById("stream" + (id+1) + "_fps");
+			tg.style.display = "none";
+			tg.disabled = true;
+			targetObj.disabled = true;
+		}
+
+		if (arrProfile[id] < 0 && arrResolution[id] < 0 && arrIdrframe[id] < 0 && arrQuality[id] < 0 && arrFps[id] < 0) {
+			var tg = document.getElementById("stream" + (id+1) + "_line");
+			tg.style.display = "none";
+			tg.disabled = true;
+		}
+
+		// BR Code Start ==============
+		targetObj = document.getElementsByName("v_v_" + (id+1) + "bm");
+		targetObj2 = document.getElementById("v_v_" + (id+1) + "br");
+		if (arrBrmode[id] > -1) {
+			targetObj[arrBrmode[id]].checked = true;
+			SetBREnabled(arrBrmode[id], id+1);
+			SetResolutionBitrate(arrBrmode[id], id+1);
+
+			for (m = 0; m < targetObj2.options.length; m++) {
+				if (targetObj2.options[m].value == arrBrate[id]) {
+					targetObj2.selectedIndex = arrBrate[id];
+					break;
+				}
+			}
+		} else {
+			var tgBRc = document.getElementById("stream" + (id+1) + "_bm");
+			var tgBRcr = document.getElementById("stream" + (id+1) + "_br");
+			tgBRc.style.display = "none";
+			tgBRcr.style.display = "none";
+			tgBRc.disabled = true;
+			tgBRcr.disabled = true;
+			targetObj.disabled = true;
+			targetObj2.disabled = true;
+		}
+		// BR Code End ================
+	}
+}
+
+function SetCodec(id)
+{
+	targetObjC = document.getElementById("v_v_" + id + "c");
+	switch (targetObjC.selectedIndex) {
+		case 0:
+		case 2:
+			var tg = document.getElementById("stream" + id + "_pro");
+			tg.style.display = "none";
+			tg.disabled = true;
+			targetObjP = document.getElementById("v_v_" + id + "p");
+			targetObjP.disabled = true;
+			break;
+		case 1:
+			var tg = document.getElementById("stream" + id + "_pro");
+			tg.style.display = "inline";
+			tg.disabled = false;
+			targetObjP = document.getElementById("v_v_" + id + "p");
+			targetObjP.disabled = false;
+			if (arrProfile[id-1] > -1) {
+				targetObjP.selectedIndex = arrProfile[id-1];
+			}
+			break;
+	}
+}
+
+function SetBREnabled(idx, ch)
+{
+	var targetObjQ = document.getElementById("v_v_" + ch + "q");
+	var targetObjBR = document.getElementById("v_v_" + ch + "br");
+
+	switch (idx) {
+		case 0:	// OFF
+			targetObjQ.disabled = false;
+			targetObjBR.disabled = true;
+			break;
+		case 1:	// VBR
+			targetObjQ.disabled = false;
+			targetObjBR.disabled = false;
+			break;
+		case 2:	// CBR
+			targetObjQ.disabled = true;
+			targetObjBR.disabled = false;
+			break;
+		case 3:	// CVBR
+			targetObjQ.disabled = true;
+			targetObjBR.disabled = false;
+			break;
+	}
+}
+
+function SetResolutionBitrate(brsw, ch)
+{
+	var targetObjBR = null;
+	var targetObjCodec = null;
+	if (brsw > -1) {
+		targetObjCodec = document.getElementById("v_v_" + ch + "c");
+		targetObjBR = document.getElementById("v_v_" + ch + "br");
+
+		// removeall: Bitrate options
+		for (i = targetObjBR.options.length; i >= 0; i--) {
+			targetObjBR.options.remove(i);
+		}
+
+		var optionBR = new Array();
+
+		for (k = 0; k < 6; k++) {
+			optionBR[k + 1] = document.createElement("option");
+			optionBR[k + 1].value = 50 - (k * 5);
+			optionBR[k + 1].text = (50 - (k * 5)) + "Mbit";
+			if (targetObjCodec.selectedIndex != 2) {
+				optionBR[k + 1].hidden = true;
+			}
+		}
+
+		for (j = 0; j < 20; j++) {
+			optionBR[j + k + 1] = document.createElement("option");
+			optionBR[j + k + 1].value = 20 - j;
+			optionBR[j + k + 1].text = (20 - j)+"Mbit";
+		}
+
+		for (m = 0; m < 3; m++) {
+			optionBR[m + j + k + 1] = document.createElement("option");
+			optionBR[m + j + k + 1].value = 1024 >> (m + 1);
+			optionBR[m + j + k + 1].text = (1024 >> (m + 1)) + "Kbit";
+			if (targetObjCodec.selectedIndex == 2) {
+				optionBR[m + j + k + 1].hidden = true;
+			}
+		}
+
+		for (i = 1; i <= 29; i++) {
+			targetObjBR.options.add(optionBR[i], i);
+		}
+	}
+}
+
+function SetResolutionProc(ObjList)
+{
+	for (i = 0 ; i <= rmin ; i++) {
+		var option = document.createElement("option");
+		option.value = i;
+		option.text = ResolText[i];
+		ObjList.options.add(option, i);
+	}
+
+	for (i = 0 ; i < rmax ; i++) {
+		ObjList.options[i].hidden = true;
+	}
+}
+
+function SetFPSproc(ObjList)
+{
+	var optionFPS = new Array(SensorMAXfps);
+	for (j = 1, i = SensorMAXfps; i > 0; i--) {
+		if (SensorMAXfps % i == 0) {
+			optionFPS[i] = document.createElement("option");
+			optionFPS[i].value = i;
+			optionFPS[i].text = i + "fps";
+
+			ObjList.options.add(optionFPS[i], j++);
+		}
+	}
+}
+//-->
+</script>
+
+</head>
+<body onload="SetFormDefaults();">
+<form id="form" name="form" method="get" action="appquery.cgi">
+	<div class="sub-title">
+		<input class="btn btn-default pull-right" name="btOK" type="submit" value="submit">
+		<h3>Video Infomation</h3>
+	</div>
+	<hr>
+	<div>
+		<label class="sub-label">Sensor Name</label>
+		<label id="v_v_sname"></label>
+	</div>
+	<div>
+		<label class="sub-label">Max Resolution</label>
+		<label id="v_v_sres"></label>
+	</div>
+	<div>
+		<label class="sub-label">Max FPS</label>
+		<label id="v_v_sfps"></label>
+	</div>
+	<div>
+		<label class="sub-label">Output Mode</label>
+		<label id="v_v_outm"></label>
+	</div>
+	<hr>
+	<div>
+		<label class="sub-label">RTSP Port</label>
+		<label id="n_r_port"></label>
+		<!-- <input name="n_r_port" id="n_r_port" type="text"> [1~65535] -->
+	</div>
+
+
+<script type="text/javascript">
+<!--
+for (i = 1; i <= venccount; i++) {
+document.write("<hr id=\"stream" + i + "_line\">");
+document.write("<h4>stream" + i + "</h4>");
+document.write("<div id=\"s" + i + "codec\">");
+document.write("	<label class=\"sub-label\">Codec</label>");
+document.write("	<select id=\"v_v_" + i + "c\" name=\"v_v_" + i + "c\" onclick=\"SetCodec(" + i + ")\">");
+document.write("		<option value=0>H.265</option>");
+document.write("		<option value=1>H.264</option>");
+document.write("		<option value=2>JPEG</option>");
+document.write("	</select>");
+document.write("</div>");
+document.write("<div id=\"stream" + i + "_pro\">");
+document.write("	<label class=\"sub-label\">Profiles</label>");
+document.write("	<select id=\"v_v_" + i + "p\" name=\"v_v_" + i + "p\">");
+document.write("		<option value=0>Baseline</option>");
+document.write("		<option value=1>Main</option>");
+document.write("	</select>");
+document.write("</div>");
+document.write("<div id=\"stream" + i + "_res\">");
+document.write("	<label class=\"sub-label\">Resolution</label>");
+document.write("	<select id=\"v_v_" + i + "r\" name=\"v_v_" + i + "r\" onchange=\"SetResolutionBitrate(s" + i + "brmode, " + i + ")\">");
+document.write("	</select>");
+document.write("</div>");
+document.write("<div id=\"stream" + i + "_q\">");
+document.write("	<label class=\"sub-label\">Quality</label>");
+document.write("	<input id=\"v_v_" + i + "q\" name=\"v_v_" + i + "q\" type=\"text\"> [<label id=\"v_s" + i + "qn\"></label>~<label id=\"v_s" + i + "qx\"></label>]");
+document.write("</div>");
+document.write("<div id=\"stream" + i + "_idr\">");
+document.write("	<label class=\"sub-label\">GOP(IDR)</label>");
+document.write("	<input id=\"v_v_" + i + "i\" name=\"v_v_" + i + "i\" type=\"text\"> [<label id=\"v_s" + i + "in\"></label>~<label id=\"v_s" + i + "ix\"></label>]");
+document.write("</div>");
+document.write("<div id=\"stream" + i + "_fps\">");
+document.write("	<label class=\"sub-label\">FPS</label>");
+document.write("	<select id=\"v_v_" + i + "f\" name=\"v_v_" + i + "f\">");
+document.write("	</select>");
+document.write("</div>");
+document.write("<div id=\"stream" + i + "_bm\">");
+document.write("	<label class=\"sub-label\">Bitrate Control</label>");
+document.write("	<label class=\"radio-inline\"><input type=\"radio\" id=\"v_v_" + i + "bm\" name=\"v_v_" + i + "bm\" value=0 onclick=\"SetBREnabled(0, " + i + ")\">OFF</label>");
+document.write("	<label class=\"radio-inline\"><input type=\"radio\" id=\"v_v_" + i + "bm\" name=\"v_v_" + i + "bm\" value=1 onclick=\"SetBREnabled(1, " + i + ")\">VBR</label>");
+document.write("	<label class=\"radio-inline\"><input type=\"radio\" id=\"v_v_" + i + "bm\" name=\"v_v_" + i + "bm\" value=2 onclick=\"SetBREnabled(2, " + i + ")\">CBR</label>");
+document.write("	<label class=\"radio-inline\"><input type=\"radio\" id=\"v_v_" + i + "bm\" name=\"v_v_" + i + "bm\" value=3 onclick=\"SetBREnabled(3, " + i + ")\">CVBR</label>");
+document.write("</div>");
+document.write("<div id=\"stream" + i + "_br\">");
+document.write("	<label class=\"sub-label\">Bitrate</label>");
+document.write("	<select id=\"v_v_" + i + "br\" name=\"v_v_" + i + "br\">");
+document.write("	</select>");
+document.write("</div>");
+}
+-->
+</script>
+</form>
+</body>
+</html>

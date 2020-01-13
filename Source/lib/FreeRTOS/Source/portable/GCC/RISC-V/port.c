@@ -63,7 +63,7 @@ void vPortSetupTimerInterrupt(void)
 
 void vPortSetupExternalInterrupt(void)
 {	/* Sets and enable the external interrupt */
-	enx_externalirq_init_cpu1();
+	enx_externalirq_init_cpu0();
 }
 /*-----------------------------------------------------------*/
 
@@ -153,8 +153,8 @@ void vMemoryHeapInit(void)
 	0x80000000 has the lower start address so appears in the array fist. */
 
 	register ULONG hs, he;
-	asm volatile("la %0, _heap_start" : "=r"(hs));
-	asm volatile("la %0, _heap_end" : "=r"(he));
+	asm volatile("la %0, _heap_os_start" : "=r"(hs));
+	asm volatile("la %0, _heap_os_end" : "=r"(he));
 
 	HeapRegion_t xHeapRegions[2] = {
 	    { ( uint8_t * ) hs, he - hs },

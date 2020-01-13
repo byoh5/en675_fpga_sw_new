@@ -152,7 +152,7 @@ void sys_unlock_tcpip_core(void);
  * MEMP_SANITY_CHECK==1: run a sanity check after each memp_free() to make
  * sure that there are no cycles in the linked lists.
  */
-#define MEMP_SANITY_CHECK               0
+#define MEMP_SANITY_CHECK               1
 
 /**
  * MEM_OVERFLOW_CHECK: mem overflow protection reserves a configurable
@@ -169,7 +169,7 @@ void sys_unlock_tcpip_core(void);
  * MEM_SANITY_CHECK==1: run a sanity check after each mem_free() to make
  * sure that the linked list of heap elements is not corrupted.
  */
-#define MEM_SANITY_CHECK                0
+#define MEM_SANITY_CHECK                1
 
 /**
  * MEM_USE_POOLS==1: Use an alternative to malloc() by allocating from a set

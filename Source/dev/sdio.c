@@ -34,7 +34,7 @@ void SdioInit(UINT nCH, UINT Speed_Hz)
 	arrSDIOReg13[nCH]->CMD_IRQ_EN = 0;
 	arrSDIOReg13[nCH]->DAT_IRQ_EN = 0;
 	arrSDIOReg11[nCH]->DAT_BLKBYTE = 0x00000200;
-	arrSDIOReg9[nCH]->CMD_RESP_TLMT = 0x00000200;
+	arrSDIOReg9[nCH]->CMD_RESP_TLMT = 0x00000400;
 	arrSDIOReg0[nCH]->BITMODE = 0; // 0:1bit, 1:4bit
 	arrSDIOReg0[nCH]->MODE = 1; // 0:Slave, 1:Master
 	arrSDIOReg0[nCH]->IOMODE = 0; // 0:Card 1:IO
@@ -45,7 +45,7 @@ void SdioInit(UINT nCH, UINT Speed_Hz)
 	//arrSDIOReg13[nCH]->CMD53_OP = 0;
 
 	arrSDIOReg1[nCH]->CLK_SELECT = 1; // 0:MCK+clock output 1:DIV+clock output 2:SDIO_CLK Input 3:Off
-	arrSDIOReg1[nCH]->CLK_DIV = (MCK_FREQ / (2 * Speed_Hz) - 1);
+	arrSDIOReg1[nCH]->CLK_DIV = (APB_FREQ / (2 * Speed_Hz) - 1);
 	arrSDIOReg1[nCH]->CLK_EN = 1;
 	arrSDIOReg0[nCH]->EN = 1;
 #else
@@ -60,19 +60,21 @@ void SdioInit(UINT nCH, UINT Speed_Hz)
 
 	arrSDIOReg0[nCH]->CMD_TXEDGE = 1;
 	arrSDIOReg0[nCH]->CMD_RXEDGE = 0;
-	arrSDIOReg0[nCH]->DAT_RXEDGE = 0;
 	arrSDIOReg0[nCH]->DAT_TXEDGE = 0;
+	arrSDIOReg0[nCH]->DAT_RXEDGE = 1;
 	//printf("CMD RXE(%u)TXE(%u)\n", arrSDIOReg0[nCH]->CMD_RXEDGE, arrSDIOReg0[nCH]->CMD_TXEDGE);
 	//printf("DAT RXE(%u)TXE(%u)\n", arrSDIOReg0[nCH]->DAT_RXEDGE, arrSDIOReg0[nCH]->DAT_TXEDGE);
 
 	arrSDIODefSpeed[nCH] = Speed_Hz;
 
-	printf("SDIO%d Init - %uHz\n", nCH, MCK_FREQ / ((arrSDIOReg1[nCH]->CLK_DIV + 1) * 2));
+	printf("SDIO%d Init - %uHz\n", nCH, APB_FREQ / ((arrSDIOReg1[nCH]->CLK_DIV + 1) * 2));
 }
 
 ENX_OKFAIL SdioCmd(UINT nCH, BYTE Cmd, UINT Arg, UINT *nResp, eCmdRespType cmdType)
 {
 	ENX_OKFAIL nRes = ENX_OK;
+
+//	printf("%04u:%s - CMD_EN(%d), DAT_EN(%d)\n", __LINE__, __func__, arrSDIOReg3[nCH]->CMD_EN, arrSDIOReg13[nCH]->DAT_EN);
 
 	while (arrSDIOReg3[nCH]->CMD_EN) {
 		//delay[nCH](1);
@@ -80,22 +82,18 @@ ENX_OKFAIL SdioCmd(UINT nCH, BYTE Cmd, UINT Arg, UINT *nResp, eCmdRespType cmdTy
 
 	arrSDIOReg3[nCH]->CMD_IDX = Cmd;
 	arrSDIOReg2[nCH]->CMD_ARG = Arg;
-	arrSDIOReg3[nCH]->CMD_RESP_BUSY_EN = 0;
-	arrSDIOReg3[nCH]->CMD_RESP_TYPE = 0;
 	switch (cmdType) {
-	case ecrtR1b:
+	case ecrtR1b: // CMD busy check, 32bit response
 		arrSDIOReg3[nCH]->CMD_RESP_BUSY_EN = 1;
+		arrSDIOReg3[nCH]->CMD_RESP_TYPE = 0;
 		break;
-	case ecrtR2:
+	case ecrtR2: // 128bit response
+		arrSDIOReg3[nCH]->CMD_RESP_BUSY_EN = 0;
 		arrSDIOReg3[nCH]->CMD_RESP_TYPE = 1;
 		break;
-//	case ecrtR1:
-//	case ecrtR3:
-//	case ecrtR4:
-//	case ecrtR5:
-//	case ecrtR6:
-//	case ecrtR7:
-	default:
+	default: // 32bit response
+		arrSDIOReg3[nCH]->CMD_RESP_BUSY_EN = 0;
+		arrSDIOReg3[nCH]->CMD_RESP_TYPE = 0;
 		break;
 	}
 	if (nResp != NULL) {
@@ -103,14 +101,16 @@ ENX_OKFAIL SdioCmd(UINT nCH, BYTE Cmd, UINT Arg, UINT *nResp, eCmdRespType cmdTy
 	} else {
 		arrSDIOReg3[nCH]->CMD_RESP_EN = 0;
 	}
+//	printf("%04u:%s - CMD_EN(%d), DAT_EN(%d)\n", __LINE__, __func__, arrSDIOReg3[nCH]->CMD_EN, arrSDIOReg13[nCH]->DAT_EN);
 	arrSDIOReg3[nCH]->CMD_EN = 1;
+//	printf("%04u:%s - CMD_EN(%d), DAT_EN(%d)\n", __LINE__, __func__, arrSDIOReg3[nCH]->CMD_EN, arrSDIOReg13[nCH]->DAT_EN);
 	while (arrSDIOReg3[nCH]->CMD_EN) {
-		//printf(".");
-		//if (arrSDIOReg3[nCH]->CMD_RESP_TOUT || arrSDIOReg3[nCH]->CMD_RESP_CRCERR) {
-			//printf("1 CMD(%u) Arg(%u) CRCERR(%u:0x%02X), RESPTOUT(%u)\n", Cmd, Arg, arrSDIOReg3[nCH]->CMD_RESP_CRCERR, arrSDIOReg4[nCH]->CMD_RESP_CRC, arrSDIOReg3[nCH]->CMD_RESP_TOUT);
-			//break;
-		//}
-		//delay[nCH](1);
+//		printf(".");
+//		if (arrSDIOReg3[nCH]->CMD_RESP_TOUT || arrSDIOReg3[nCH]->CMD_RESP_CRCERR) {
+//			printf("1 CMD(%u) Arg(%u) CRCERR(%u:0x%02X), RESPTOUT(%u)\n", Cmd, Arg, arrSDIOReg3[nCH]->CMD_RESP_CRCERR, arrSDIOReg4[nCH]->CMD_RESP_CRC, arrSDIOReg3[nCH]->CMD_RESP_TOUT);
+//			break;
+//		}
+//		delay[nCH](1);
 	}
 
 	if (Cmd == 2 || Cmd == 9 || Cmd == 10 || Cmd == 41) {
@@ -125,13 +125,92 @@ ENX_OKFAIL SdioCmd(UINT nCH, BYTE Cmd, UINT Arg, UINT *nResp, eCmdRespType cmdTy
 		}
 	}
 
-	SdioGetResp(nCH, nResp, cmdType);
-	if (Cmd != 23 && Cmd != 55 && Cmd != 52) {
-		printf("[%2u] res(%c) RESP0(0x%08X)\n", Cmd, nRes == ENX_OK ? 'O' : 'X', nResp[0]);
-		if (cmdType == ecrtR2) {
-			printf("[%2u] res(%c) RESP1(0x%08X)\n", Cmd, nRes == ENX_OK ? 'O' : 'X', nResp[1]);
-			printf("[%2u] res(%c) RESP2(0x%08X)\n", Cmd, nRes == ENX_OK ? 'O' : 'X', nResp[2]);
-			printf("[%2u] res(%c) RESP3(0x%08X)\n", Cmd, nRes == ENX_OK ? 'O' : 'X', nResp[3]);
+	if (nResp != NULL) {
+		SdioGetResp(nCH, nResp, cmdType);
+		if (nRes != ENX_OK) {
+			if (Cmd != 23 && Cmd != 55 && Cmd != 52) {
+				printf("[%2u] res(%c) RESP0(0x%08X)\n", Cmd, nRes == ENX_OK ? 'O' : 'X', nResp[0]);
+				if (cmdType == ecrtR2) {
+					printf("[%2u] res(%c) RESP1(0x%08X)\n", Cmd, nRes == ENX_OK ? 'O' : 'X', nResp[1]);
+					printf("[%2u] res(%c) RESP2(0x%08X)\n", Cmd, nRes == ENX_OK ? 'O' : 'X', nResp[2]);
+					printf("[%2u] res(%c) RESP3(0x%08X)\n", Cmd, nRes == ENX_OK ? 'O' : 'X', nResp[3]);
+				}
+			}
+		}
+	}
+
+	return nRes;
+}
+
+ENX_OKFAIL SdioCmd_async(UINT nCH, BYTE Cmd, UINT Arg, ENX_ENABLE bEnResp, eCmdRespType cmdType)
+{
+	ENX_OKFAIL nRes = ENX_OK;
+
+	while (arrSDIOReg3[nCH]->CMD_EN) {
+		//delay[nCH](1);
+	}
+
+	arrSDIOReg3[nCH]->CMD_IDX = Cmd;
+	arrSDIOReg2[nCH]->CMD_ARG = Arg;
+	switch (cmdType) {
+	case ecrtR1b:
+		arrSDIOReg3[nCH]->CMD_RESP_BUSY_EN = 1;
+		arrSDIOReg3[nCH]->CMD_RESP_TYPE = 0;
+		break;
+	case ecrtR2:
+		arrSDIOReg3[nCH]->CMD_RESP_BUSY_EN = 0;
+		arrSDIOReg3[nCH]->CMD_RESP_TYPE = 1;
+		break;
+	default:
+		arrSDIOReg3[nCH]->CMD_RESP_BUSY_EN = 0;
+		arrSDIOReg3[nCH]->CMD_RESP_TYPE = 0;
+		break;
+	}
+	if (bEnResp == ENX_ENABLED) {
+		arrSDIOReg3[nCH]->CMD_RESP_EN = 1;
+	} else {
+		arrSDIOReg3[nCH]->CMD_RESP_EN = 0;
+	}
+	arrSDIOReg3[nCH]->CMD_EN = 1;
+
+	return nRes;
+}
+
+ENX_OKFAIL SdioCmdResp(UINT nCH, UINT *nResp, eCmdRespType cmdType)
+{
+	ENX_OKFAIL nRes = ENX_OK;
+
+	while (arrSDIOReg3[nCH]->CMD_EN) {
+		printf("[CMD_EN]");
+		//delay[nCH](1);
+	}
+
+	BYTE Cmd = arrSDIOReg3[nCH]->CMD_IDX;
+	UINT Arg = arrSDIOReg2[nCH]->CMD_ARG;
+
+	if (Cmd == 2 || Cmd == 9 || Cmd == 10 || Cmd == 41) {
+		if (arrSDIOReg3[nCH]->CMD_RESP_TOUT) {
+			printf("CMD(%u) Arg(%u) CRCERR(%u:0x%02X), RESPTOUT(%u) 1\n", Cmd, Arg, arrSDIOReg3[nCH]->CMD_RESP_CRCERR, arrSDIOReg4[nCH]->CMD_RESP_CRC, arrSDIOReg3[nCH]->CMD_RESP_TOUT);
+			nRes = ENX_FAIL;
+		}
+	} else {
+		if (arrSDIOReg3[nCH]->CMD_RESP_TOUT || arrSDIOReg3[nCH]->CMD_RESP_CRCERR) {
+			printf("CMD(%u) Arg(%u) CRCERR(%u:0x%02X), RESPTOUT(%u) 2\n", Cmd, Arg, arrSDIOReg3[nCH]->CMD_RESP_CRCERR, arrSDIOReg4[nCH]->CMD_RESP_CRC, arrSDIOReg3[nCH]->CMD_RESP_TOUT);
+			nRes = ENX_FAIL;
+		}
+	}
+
+	if (nResp != NULL) {
+		SdioGetResp(nCH, nResp, cmdType);
+		if (nRes != ENX_OK) {
+			if (Cmd != 23 && Cmd != 55 && Cmd != 52) {
+				printf("[%2u] res(%c) RESP0(0x%08X)\n", Cmd, nRes == ENX_OK ? 'O' : 'X', nResp[0]);
+				if (cmdType == ecrtR2) {
+					printf("[%2u] res(%c) RESP1(0x%08X)\n", Cmd, nRes == ENX_OK ? 'O' : 'X', nResp[1]);
+					printf("[%2u] res(%c) RESP2(0x%08X)\n", Cmd, nRes == ENX_OK ? 'O' : 'X', nResp[2]);
+					printf("[%2u] res(%c) RESP3(0x%08X)\n", Cmd, nRes == ENX_OK ? 'O' : 'X', nResp[3]);
+				}
+			}
 		}
 	}
 
@@ -155,12 +234,12 @@ void SdioGetResp(UINT nCH, UINT *nResp, eCmdRespType cmdType)
 
 void SdioSetClockDef(UINT nCH)
 {
-	arrSDIOReg1[nCH]->CLK_DIV = (MCK_FREQ / (2 * arrSDIODefSpeed[nCH]) - 1);
+	arrSDIOReg1[nCH]->CLK_DIV = (APB_FREQ / (2 * arrSDIODefSpeed[nCH]) - 1);
 }
 
 void SdioSetClock(UINT nCH, UINT Speed_Hz)
 {
-	arrSDIOReg1[nCH]->CLK_DIV = (MCK_FREQ / (2 * Speed_Hz) - 1);
+	arrSDIOReg1[nCH]->CLK_DIV = (APB_FREQ / (2 * Speed_Hz) - 1);
 }
 
 void SdioSetClockDiv(UINT nCH, UINT nClkDiv)
@@ -176,7 +255,11 @@ void SdioSetClockDiv(UINT nCH, UINT nClkDiv)
 
 UINT SdioGetClockDiv(UINT nCH)
 {
-	return arrSDIOReg1[nCH]->CLK_DIV;
+	if (arrSDIOReg1[nCH]->CLK_SELECT) {
+		return arrSDIOReg1[nCH]->CLK_DIV;
+	} else {
+		return 0xffff;
+	}
 }
 
 void SdioSetClockEn(UINT nCH, ENX_SWITCH sw)
@@ -191,7 +274,11 @@ ENX_SWITCH SdioGetClockEn(UINT nCH)
 
 void SdioClockDivPrint(UINT nCH, char *strBuffer)
 {
-	sprintf(strBuffer, "%uHz/CLK_DIV:%u", MCK_FREQ / ((arrSDIOReg1[nCH]->CLK_DIV + 1) * 2), arrSDIOReg1[nCH]->CLK_DIV);
+	if (arrSDIOReg1[nCH]->CLK_SELECT) {
+		sprintf(strBuffer, "%uHz/CLK_SELCT:%u,CLK_DIV:%u", APB_FREQ / ((arrSDIOReg1[nCH]->CLK_DIV + 1) * 2), arrSDIOReg1[nCH]->CLK_SELECT, arrSDIOReg1[nCH]->CLK_DIV);
+	} else {
+		sprintf(strBuffer, "%uHz/CLK_SELCT:%u,CLK_DIV:%u", APB_FREQ, arrSDIOReg1[nCH]->CLK_SELECT, arrSDIOReg1[nCH]->CLK_DIV);
+	}
 }
 
 void SdioSetBitMode(UINT nCH, eSDIO_BIT_MODE bitmode)
@@ -246,6 +333,22 @@ UINT SdioIsDataEn(UINT nCH)
 
 ENX_OKFAIL SdioDataIO(UINT nCH, eSDIO_DIO_TYPE iotype, ULONG MemDst, UINT BlkAdr, UINT BlkCnt)
 {
+	int k = 0;
+	UINT myselcmd = SdioGetDataCmd(nCH, iotype);
+//	_Gprintf("CMD%-2u SDIO_DAT_IO\n", myselcmd);
+	while (arrSDIOReg13[nCH]->DAT_BUSY) {
+//		if (k++ == 0) {
+//			_Yprintf("CMD%-2u SDIO_DAT_BUSY!", myselcmd);
+//		}
+//		printf(".");
+//		if (k >= 10) {
+//			printf("\n");
+//			break;
+//		}
+//		delay[nCH](10);
+		delay[nCH](1);
+	}
+
 	arrSDIOReg10[nCH]->DAT_ADR = MemDst;
 	arrSDIOReg11[nCH]->DAT_BLKNUM = BlkCnt;
 	arrSDIOReg12[nCH]->DAT_BLKADR = BlkAdr;
@@ -257,11 +360,14 @@ ENX_OKFAIL SdioDataIO(UINT nCH, eSDIO_DIO_TYPE iotype, ULONG MemDst, UINT BlkAdr
 	while (arrSDIOReg13[nCH]->DAT_EN) {
 		delay[nCH](1);
 		if (arrSDIOReg13[nCH]->DAT_BUSY) {
-			printf("B");
+			NOP();
+		} else {
+//			arrSDIOReg13[nCH]->DAT_EN = 0;
 		}
 		if (arrSDIOReg3[nCH]->CMD_RESP_TOUT || arrSDIOReg3[nCH]->CMD_RESP_CRCERR || arrSDIOReg13[nCH]->DAT_CRCERR) {
 			UINT selcmd = SdioGetDataCmd(nCH, iotype);
-			printf("SDIO%u CMD(%u) Arg(0x%08X) CMDCRC(%u:0x%02X), RESPTOUT(%u), DATCRC(%u)\n", nCH, selcmd, BlkAdr, arrSDIOReg3[nCH]->CMD_RESP_CRCERR, arrSDIOReg4[nCH]->CMD_RESP_CRC, arrSDIOReg3[nCH]->CMD_RESP_TOUT, arrSDIOReg13[nCH]->DAT_CRCERR);
+			printf("ER1(%u/%u/%u)\n", arrSDIOReg3[nCH]->CMD_RESP_TOUT, arrSDIOReg3[nCH]->CMD_RESP_CRCERR, arrSDIOReg13[nCH]->DAT_CRCERR);
+			//printf("SDIO%u CMD(%u) Arg(0x%08X) CMDCRC(%u:0x%02X), RESPTOUT(%u), DATCRC(%u) 1\n", nCH, selcmd, BlkAdr, arrSDIOReg3[nCH]->CMD_RESP_CRCERR, arrSDIOReg4[nCH]->CMD_RESP_CRC, arrSDIOReg3[nCH]->CMD_RESP_TOUT, arrSDIOReg13[nCH]->DAT_CRCERR);
 			//return ENX_FAIL;
 		}
 	}
@@ -287,9 +393,41 @@ ENX_OKFAIL SdioDataIO(UINT nCH, eSDIO_DIO_TYPE iotype, ULONG MemDst, UINT BlkAdr
 	//uint64_t b = rdcycle();
 	//printf("DAT cycle %lu\n", b - a);
 
+	if (arrSDIOReg13[nCH]->DAT_BUSY) {
+		_Rprintf("CMD%-2u SDIO_DAT_BUSY!\n", myselcmd);
+	}
+
 	if (arrSDIOReg3[nCH]->CMD_RESP_TOUT || arrSDIOReg3[nCH]->CMD_RESP_CRCERR || arrSDIOReg13[nCH]->DAT_CRCERR) {
 		UINT selcmd = SdioGetDataCmd(nCH, iotype);
-		printf("SDIO%u CMD(%u) Arg(0x%08X) CMDCRC(%u:0x%02X), RESPTOUT(%u), DATCRC(%u)\n", nCH, selcmd, BlkAdr, arrSDIOReg3[nCH]->CMD_RESP_CRCERR, arrSDIOReg4[nCH]->CMD_RESP_CRC, arrSDIOReg3[nCH]->CMD_RESP_TOUT, arrSDIOReg13[nCH]->DAT_CRCERR);
+		printf("ER2(%u/%u/%u)\n", arrSDIOReg3[nCH]->CMD_RESP_TOUT, arrSDIOReg3[nCH]->CMD_RESP_CRCERR, arrSDIOReg13[nCH]->DAT_CRCERR);
+		//printf("SDIO%u CMD(%u) Arg(0x%08X) CMDCRC(%u:0x%02X), RESPTOUT(%u), DATCRC(%u) 2\n", nCH, selcmd, BlkAdr, arrSDIOReg3[nCH]->CMD_RESP_CRCERR, arrSDIOReg4[nCH]->CMD_RESP_CRC, arrSDIOReg3[nCH]->CMD_RESP_TOUT, arrSDIOReg13[nCH]->DAT_CRCERR);
+		return ENX_FAIL;
+	}
+
+	return ENX_OK;
+}
+
+ENX_OKFAIL SdioDataIO_async(UINT nCH, eSDIO_DIO_TYPE iotype, ULONG MemDst, UINT BlkAdr, UINT BlkCnt)
+{
+	arrSDIOReg10[nCH]->DAT_ADR = MemDst;
+	arrSDIOReg11[nCH]->DAT_BLKNUM = BlkCnt;
+	arrSDIOReg12[nCH]->DAT_BLKADR = BlkAdr;
+	arrSDIOReg13[nCH]->DAT_WE = iotype & 0x1;
+	arrSDIOReg13[nCH]->DAT_EN = 1;
+	return ENX_OK;
+}
+
+ENX_OKFAIL SdioDataIO_resp(UINT nCH, eSDIO_DIO_TYPE iotype)
+{
+	UINT ncnt = 0;
+	while (arrSDIOReg13[nCH]->DAT_EN) {
+		printf("[DAT_EN]");
+	}
+
+	if (arrSDIOReg3[nCH]->CMD_RESP_TOUT || arrSDIOReg3[nCH]->CMD_RESP_CRCERR || arrSDIOReg13[nCH]->DAT_CRCERR) {
+		UINT selcmd = SdioGetDataCmd(nCH, iotype);
+		UINT BlkAdr = arrSDIOReg12[nCH]->DAT_BLKADR;
+		printf("SDIO%u CMD(%u) Arg(0x%08X) CMDCRC(%u:0x%02X), RESPTOUT(%u), DATCRC(%u) 3\n", nCH, selcmd, BlkAdr, arrSDIOReg3[nCH]->CMD_RESP_CRCERR, arrSDIOReg4[nCH]->CMD_RESP_CRC, arrSDIOReg3[nCH]->CMD_RESP_TOUT, arrSDIOReg13[nCH]->DAT_CRCERR);
 		return ENX_FAIL;
 	}
 
@@ -334,6 +472,11 @@ UINT SdioGetDataCmd(UINT nCH, eSDIO_DIO_TYPE iotype)
 		return arrSDIOReg15[nCH]->DAT_IORW_CMD;
 	}
 	return 0xFFFFFFFF;
+}
+
+void SdioSetTrg(UINT nCH, int val)
+{
+	arrSDIOReg11[nCH]->TRG = val;
 }
 
 void SdioIoIrqCallback(UINT nCH, irq_fn irqfn, void *arg)
@@ -417,123 +560,122 @@ UINT SdioDatIsIrq(UINT nCH)
 void IrqSdio(UINT nCH)
 {
 	if (SdioIoIsIrq(nCH)) {
-		//printf("SDIO%d-IO IRQ Get\n", nCH);
 		if (arrSDIOIoIrq[nCH].irqfn) {
 			arrSDIOIoIrq[nCH].irqfn(arrSDIOIoIrq[nCH].arg);
+		} else {
+			printf("SDIO%d-IO IRQ Get\n", nCH);
 		}
 		SdioIoIrqClear(nCH);
 	}
 
 	if (SdioCmdIsIrq(nCH)) {
-		printf("SDIO%d-CMD IRQ Get\n", nCH);
 		if (arrSDIOCmdIrq[nCH].irqfn) {
 			arrSDIOCmdIrq[nCH].irqfn(arrSDIOCmdIrq[nCH].arg);
+		} else {
+			printf("SDIO%d-CMD IRQ Get\n", nCH);
 		}
 		SdioCmdIrqClear(nCH);
 	}
 
 	if (SdioDatIsIrq(nCH)) {
-		printf("SDIO%d-DAT IRQ Get\n", nCH);
 		if (arrSDIODatIrq[nCH].irqfn) {
 			arrSDIODatIrq[nCH].irqfn(arrSDIODatIrq[nCH].arg);
+		} else {
+			printf("SDIO%d-DAT IRQ Get\n", nCH);
 		}
 		SdioDatIrqClear(nCH);
 	}
 }
 
-void SdioRegShow(UINT nCH, ENX_YN isDetail)
+void SdioRegShow(ENX_YN isDetail)
 {
-#if 0
-	_regs_ BF_5(UINT _rev0 : 28, UINT BITMODE : 1 ,UINT IOMODE : 1 ,UINT MODE : 1 ,UINT EN : 1 ) _rege_ _SDIO_REG0;
-	_regs_ BF_4(UINT _rev0 : 17, UINT CLK_EN : 1 ,UINT CLK_SELECT : 2 ,UINT CLK_DIV : 12 ) _rege_ _SDIO_REG1;
-	_regs_ BF_1(UINT CMD_ARG : 32 ) _rege_ _SDIO_REG2;
-	_regs_ BF_10(UINT _rev0 : 1, UINT CMD_IDX : 7 ,UINT _rev1 : 14, UINT CMD_RESP_TOUT : 1 ,UINT CMD_RESP_CRCERR : 1 ,UINT _rev2 : 4, UINT CMD_RESP_BUSY_EN : 1 ,UINT CMD_RESP_TYPE : 1 ,UINT CMD_RESP_EN : 1 ,UINT CMD_EN : 1 ) _rege_ _SDIO_REG3;
-	_regs_ BF_4(UINT _rev0 : 18, UINT CMD_RESP_IDX : 6 ,UINT _rev1 : 1, UINT CMD_RESP_CRC : 7 ) _rege_ _SDIO_REG4;
-	_regs_ BF_1(UINT CMD_RESP_DAT127_96 : 32 ) _rege_ _SDIO_REG5;
-	_regs_ BF_1(UINT CMD_RESP_DAT95_64 : 32 ) _rege_ _SDIO_REG6;
-	_regs_ BF_1(UINT CMD_RESP_DAT63_32 : 32 ) _rege_ _SDIO_REG7;
-	_regs_ BF_1(UINT CMD_RESP_DAT31_0 : 32 ) _rege_ _SDIO_REG8;
-	_regs_ BF_1(UINT CMD_RESP_TLMT : 32 ) _rege_ _SDIO_REG9;
-	_regs_ BF_1(UINT DAT_ADR : 32 ) _rege_ _SDIO_REG10;
-	_regs_ BF_3(UINT _rev0 : 4, UINT DAT_BLKBYTE : 12 ,UINT DAT_BLKNUM : 16 ) _rege_ _SDIO_REG11;
-	_regs_ BF_1(UINT DAT_BLKADR : 32 ) _rege_ _SDIO_REG12;
-	_regs_ BF_13(UINT DAT_CRCERR : 1 ,UINT _rev0 : 20, UINT IO_IRQ : 1 ,UINT IO_IRQ_CLR : 1 ,UINT IO_IRQ_EN : 1 ,UINT CMD_IRQ : 1 ,UINT CMD_IRQ_CLR : 1 ,UINT CMD_IRQ_EN : 1 ,UINT DAT_IRQ : 1 ,UINT DAT_IRQ_CLR : 1 ,UINT DAT_IRQ_EN : 1 ,UINT DAT_WE : 1 ,UINT DAT_EN : 1 ) _rege_ _SDIO_REG13;
-	_regs_ BF_2(UINT _rev0 : 16, UINT DAT_BLKCNT : 16 ) _rege_ _SDIO_REG14;
-	_regs_ BF_4(UINT _rev0 : 18, UINT DAT_STOP_CMD : 6 ,UINT _rev1 : 2, UINT DAT_IORW_CMD : 6 ) _rege_ _SDIO_REG15;
-	_regs_ BF_8(UINT _rev0 : 2, UINT DAT_WRCMD_S : 6 ,UINT _rev1 : 2, UINT DAT_WRCMD_M : 6 ,UINT _rev2 : 2, UINT DAT_RDCMD_S : 6 ,UINT _rev3 : 2, UINT DAT_RDCMD_M : 6 ) _rege_ _SDIO_REG16;
-#endif
-	printf("SDIO%u Register View\n", nCH);
-	printf("========================================\n");
+	printf("Register View            SDIO0                    SDIO1\n");
+	printf("==========================================================================\n");
 	if (isDetail == ENX_YES) {
-		printf(" 0:0x%08X\n", arrSDIOReg0[nCH]->a);
-		printf("   %-20s: %u\n", "BITMODE", SDIO0_BITMODE);
-		printf("   %-20s: %u\n", "IOMODE", SDIO0_IOMODE);
-		printf("   %-20s: %u\n", "MODE", SDIO0_MODE);
-		printf("   %-20s: %u\n", "EN", SDIO0_EN);
-		printf(" 1:0x%08X\n", arrSDIOReg1[nCH]->a);
-		printf("   %-20s: %u\n", "CLK_EN", SDIO0_CLK_EN);
-		printf("   %-20s: %u\n", "CLK_SELECT", SDIO0_CLK_SELECT);
-		printf("   %-20s: %u\n", "CLK_DIV", SDIO0_CLK_DIV);
-		printf(" 2:0x%08X\n", arrSDIOReg2[nCH]->a);
-		printf("   %-20s: %u\n", "CMD_ARG", SDIO0_CMD_ARG);
-		printf(" 3:0x%08X\n", arrSDIOReg3[nCH]->a);
-		printf("   %-20s: %u\n", "CMD_IDX", SDIO0_CMD_IDX);
-		printf("   %-20s: %u\n", "CMD_RESP_TOUT", SDIO0_CMD_RESP_TOUT);
-		printf("   %-20s: %u\n", "CMD_RESP_CRCERR", SDIO0_CMD_RESP_CRCERR);
-		printf("   %-20s: %u\n", "CMD_RESP_BUSY_EN", SDIO0_CMD_RESP_BUSY_EN);
-		printf("   %-20s: %u\n", "CMD_RESP_TYPE", SDIO0_CMD_RESP_TYPE);
-		printf("   %-20s: %u\n", "CMD_RESP_EN", SDIO0_CMD_RESP_EN);
-		printf("   %-20s: %u\n", "CMD_EN", SDIO0_CMD_EN);
-		printf(" 4:0x%08X\n", arrSDIOReg4[nCH]->a);
-		printf("   %-20s: %u\n", "CMD_RESP_IDX", SDIO0_CMD_RESP_IDX);
-		printf("   %-20s: %u\n", "CMD_RESP_CRC", SDIO0_CMD_RESP_CRC);
-		printf(" 5:0x%08X\n", arrSDIOReg5[nCH]->a);
-		printf("   %-20s: %u, 0x%08X\n", "CMD_RESP_DAT127_96", SDIO0_CMD_RESP_DAT127_96, SDIO0_CMD_RESP_DAT127_96);
-		printf(" 6:0x%08X\n", arrSDIOReg6[nCH]->a);
-		printf("   %-20s: %u, 0x%08X\n", "CMD_RESP_DAT95_64", SDIO0_CMD_RESP_DAT95_64, SDIO0_CMD_RESP_DAT95_64);
-		printf(" 7:0x%08X\n", arrSDIOReg7[nCH]->a);
-		printf("   %-20s: %u, 0x%08X\n", "CMD_RESP_DAT63_32", SDIO0_CMD_RESP_DAT63_32, SDIO0_CMD_RESP_DAT63_32);
-		printf(" 8:0x%08X\n", arrSDIOReg8[nCH]->a);
-		printf("   %-20s: %u, 0x%08X\n", "CMD_RESP_DAT31_0", SDIO0_CMD_RESP_DAT31_0, SDIO0_CMD_RESP_DAT31_0);
-		printf(" 9:0x%08X\n", arrSDIOReg9[nCH]->a);
-		printf("   %-20s: %u\n", "CMD_RESP_TLMT", SDIO0_CMD_RESP_TLMT);
-		printf("10:0x%08X\n", arrSDIOReg10[nCH]->a);
-		printf("   %-20s: %u, 0x%08X\n", "DAT_ADR", SDIO0_DAT_ADR, SDIO0_DAT_ADR);
-		printf("11:0x%08X\n", arrSDIOReg10[nCH]->a);
-		printf("   %-20s: %u\n", "DAT_BLKBYTE", SDIO0_DAT_BLKBYTE);
-		printf("   %-20s: %u\n", "DAT_BLKNUM", SDIO0_DAT_BLKNUM);
-		printf("12:0x%08X\n", arrSDIOReg12[nCH]->a);
-		printf("   %-20s: %u\n", "DAT_BLKADR", SDIO0_DAT_BLKADR);
-		printf("13:0x%08X\n", arrSDIOReg13[nCH]->a);
-		printf("   %-20s: %u\n", "DAT_CRCERR", SDIO0_DAT_CRCERR);
-		printf("   %-20s: %u\n", "IO_IRQ", SDIO0_IO_IRQ);
-		printf("   %-20s: %u\n", "IO_IRQ_CLR", SDIO0_IO_IRQ_CLR);
-		printf("   %-20s: %u\n", "IO_IRQ_EN", SDIO0_IO_IRQ_EN);
-		printf("   %-20s: %u\n", "CMD_IRQ", SDIO0_CMD_IRQ);
-		printf("   %-20s: %u\n", "CMD_IRQ_CLR", SDIO0_CMD_IRQ_CLR);
-		printf("   %-20s: %u\n", "CMD_IRQ_EN", SDIO0_CMD_IRQ_EN);
-		printf("   %-20s: %u\n", "DAT_IRQ", SDIO0_DAT_IRQ);
-		printf("   %-20s: %u\n", "DAT_IRQ_CLR", SDIO0_DAT_IRQ_CLR);
-		printf("   %-20s: %u\n", "DAT_IRQ_EN", SDIO0_DAT_IRQ_EN);
-		printf("   %-20s: %u\n", "CMD53_OP", SDIO0_CMD53_OP);
-		printf("   %-20s: %u\n", "DAT_WE", SDIO0_DAT_WE);
-		printf("   %-20s: %u\n", "DAT_EN", SDIO0_DAT_EN);
-		printf("14:0x%08X\n", arrSDIOReg14[nCH]->a);
-		printf("   %-20s: %u\n", "DAT_BLKCNT", SDIO0_DAT_BLKCNT);
-		printf("15:0x%08X\n", arrSDIOReg15[nCH]->a);
-		printf("   %-20s: %u\n", "DAT_STOP_CMD", SDIO0_DAT_STOP_CMD);
-		printf("   %-20s: %u\n", "DAT_IORW_CMD", SDIO0_DAT_IORW_CMD);
-		printf("16:0x%08X\n", arrSDIOReg16[nCH]->a);
-		printf("   %-20s: %u\n", "DAT_WRCMD_S", SDIO0_DAT_WRCMD_S);
-		printf("   %-20s: %u\n", "DAT_WRCMD_M", SDIO0_DAT_WRCMD_M);
-		printf("   %-20s: %u\n", "DAT_RDCMD_S", SDIO0_DAT_RDCMD_S);
-		printf("   %-20s: %u\n", "DAT_RDCMD_M", SDIO0_DAT_RDCMD_M);
+		const char * const messtitle = " %-22u: 0x%08X:0x%08X  | 0x%08X:0x%08X  |\n";
+		const char * const messtype1 = "   %-20s: %-22u | %-22u |\n";
+		const char * const messtype2 = "   %-20s: 0x%08X, %-11u| 0x%08X, %-11u|\n";
+		const char * const messtype3 = "   %-20s: 0x%02X, %-17u| 0x%02X, %-17u|\n";
+		printf(messtitle, 0, arrSDIOReg0[0], arrSDIOReg0[0]->a, arrSDIOReg0[1], arrSDIOReg0[1]->a);
+		printf(messtype1, "CMD_RXEDGE", SDIO0_CMD_RXEDGE, SDIO1_CMD_RXEDGE);
+		printf(messtype1, "CMD_TXEDGE", SDIO0_CMD_TXEDGE, SDIO1_CMD_TXEDGE);
+		printf(messtype1, "DAT_RXEDGE", SDIO0_DAT_RXEDGE, SDIO1_DAT_RXEDGE);
+		printf(messtype1, "DAT_TXEDGE", SDIO0_DAT_TXEDGE, SDIO1_DAT_TXEDGE);
+		printf(messtype1, "BITMODE", SDIO0_BITMODE, SDIO1_BITMODE);
+		printf(messtype1, "IOMODE", SDIO0_IOMODE, SDIO1_IOMODE);
+		printf(messtype1, "MODE", SDIO0_MODE, SDIO1_MODE);
+		printf(messtype1, "EN", SDIO0_EN, SDIO1_EN);
+		printf(messtitle, 1, arrSDIOReg1[0], arrSDIOReg1[0]->a, arrSDIOReg1[1], arrSDIOReg1[1]->a);
+		printf(messtype1, "CLK_EN", SDIO0_CLK_EN, SDIO1_CLK_EN);
+		printf(messtype1, "CLK_SELECT", SDIO0_CLK_SELECT, SDIO1_CLK_SELECT);
+		printf(messtype1, "CLK_DIV", SDIO0_CLK_DIV, SDIO1_CLK_DIV);
+		printf(messtitle, 2, arrSDIOReg2[0], arrSDIOReg2[0]->a, arrSDIOReg2[1], arrSDIOReg2[1]->a);
+		printf(messtype2, "CMD_ARG", SDIO0_CMD_ARG, SDIO0_CMD_ARG, SDIO1_CMD_ARG, SDIO1_CMD_ARG);
+		printf(messtitle, 3, arrSDIOReg3[0], arrSDIOReg3[0]->a, arrSDIOReg3[1], arrSDIOReg3[1]->a);
+		printf(messtype3, "CMD_IDX", SDIO0_CMD_IDX, SDIO0_CMD_IDX, SDIO1_CMD_IDX, SDIO1_CMD_IDX);
+		printf(messtype1, "CMD_RESP_TOUT", SDIO0_CMD_RESP_TOUT, SDIO1_CMD_RESP_TOUT);
+		printf(messtype1, "CMD_RESP_CRCERR", SDIO0_CMD_RESP_CRCERR, SDIO1_CMD_RESP_CRCERR);
+		printf(messtype1, "CMD_RESP_BUSY_EN", SDIO0_CMD_RESP_BUSY_EN, SDIO1_CMD_RESP_BUSY_EN);
+		printf(messtype1, "CMD_RESP_TYPE", SDIO0_CMD_RESP_TYPE, SDIO1_CMD_RESP_TYPE);
+		printf(messtype1, "CMD_RESP_EN", SDIO0_CMD_RESP_EN, SDIO1_CMD_RESP_EN);
+		printf(messtype1, "CMD_EN", SDIO0_CMD_EN, SDIO1_CMD_EN);
+		printf(messtitle, 4, arrSDIOReg4[0], arrSDIOReg4[0]->a, arrSDIOReg4[1], arrSDIOReg4[1]->a);
+		printf(messtype3, "CMD_RESP_IDX", SDIO0_CMD_RESP_IDX, SDIO0_CMD_RESP_IDX, SDIO1_CMD_RESP_IDX, SDIO1_CMD_RESP_IDX);
+		printf(messtype3, "CMD_RESP_CRC", SDIO0_CMD_RESP_CRC, SDIO0_CMD_RESP_CRC, SDIO1_CMD_RESP_CRC, SDIO1_CMD_RESP_CRC);
+		printf(messtitle, 5, arrSDIOReg5[0], arrSDIOReg5[0]->a, arrSDIOReg5[1], arrSDIOReg5[1]->a);
+		printf(messtype2, "CMD_RESP_DAT127_96", SDIO0_CMD_RESP_DAT127_96, SDIO0_CMD_RESP_DAT127_96, SDIO1_CMD_RESP_DAT127_96, SDIO1_CMD_RESP_DAT127_96);
+		printf(messtitle, 6, arrSDIOReg6[0], arrSDIOReg6[0]->a, arrSDIOReg6[1], arrSDIOReg6[1]->a);
+		printf(messtype2, "CMD_RESP_DAT95_64", SDIO0_CMD_RESP_DAT95_64, SDIO0_CMD_RESP_DAT95_64, SDIO1_CMD_RESP_DAT95_64, SDIO1_CMD_RESP_DAT95_64);
+		printf(messtitle, 7, arrSDIOReg7[0], arrSDIOReg7[0]->a, arrSDIOReg7[1], arrSDIOReg7[1]->a);
+		printf(messtype2, "CMD_RESP_DAT63_32", SDIO0_CMD_RESP_DAT63_32, SDIO0_CMD_RESP_DAT63_32, SDIO1_CMD_RESP_DAT63_32, SDIO1_CMD_RESP_DAT63_32);
+		printf(messtitle, 8, arrSDIOReg8[0], arrSDIOReg8[0]->a, arrSDIOReg8[1], arrSDIOReg8[1]->a);
+		printf(messtype2, "CMD_RESP_DAT31_0", SDIO0_CMD_RESP_DAT31_0, SDIO0_CMD_RESP_DAT31_0, SDIO1_CMD_RESP_DAT31_0, SDIO1_CMD_RESP_DAT31_0);
+		printf(messtitle, 9, arrSDIOReg9[0], arrSDIOReg9[0]->a, arrSDIOReg9[1], arrSDIOReg9[1]->a);
+		printf(messtype1, "CMD_RESP_TLMT", SDIO0_CMD_RESP_TLMT, SDIO1_CMD_RESP_TLMT);
+		printf(messtitle, 10, arrSDIOReg10[0], arrSDIOReg10[0]->a, arrSDIOReg10[1], arrSDIOReg10[1]->a);
+		printf(messtype2, "DAT_ADR", SDIO0_DAT_ADR, SDIO0_DAT_ADR, SDIO1_DAT_ADR, SDIO1_DAT_ADR);
+		printf(messtitle, 11, arrSDIOReg11[0], arrSDIOReg11[0]->a, arrSDIOReg11[1], arrSDIOReg11[1]->a);
+		printf(messtype1, "DAT_BLKBYTE", SDIO0_DAT_BLKBYTE, SDIO1_DAT_BLKBYTE);
+		printf(messtype1, "DAT_BLKNUM", SDIO0_DAT_BLKNUM, SDIO1_DAT_BLKNUM);
+		printf(messtitle, 12, arrSDIOReg12[0], arrSDIOReg12[0]->a, arrSDIOReg12[1], arrSDIOReg12[1]->a);
+		printf(messtype2, "DAT_BLKADR", SDIO0_DAT_BLKADR, SDIO0_DAT_BLKADR, SDIO1_DAT_BLKADR, SDIO1_DAT_BLKADR);
+		printf(messtitle, 13, arrSDIOReg13[0], arrSDIOReg13[0]->a, arrSDIOReg13[1], arrSDIOReg13[1]->a);
+		printf(messtype1, "DAT_CRCERR", SDIO0_DAT_CRCERR, SDIO1_DAT_CRCERR);
+		printf(messtype1, "DAT_BUSY", SDIO0_DAT_BUSY, SDIO1_DAT_BUSY);
+		printf(messtype1, "IO_IRQ", SDIO0_IO_IRQ, SDIO1_IO_IRQ);
+		printf(messtype1, "IO_IRQ_CLR", SDIO0_IO_IRQ_CLR, SDIO1_IO_IRQ_CLR);
+		printf(messtype1, "IO_IRQ_EN", SDIO0_IO_IRQ_EN, SDIO1_IO_IRQ_EN);
+		printf(messtype1, "CMD_IRQ", SDIO0_CMD_IRQ, SDIO1_CMD_IRQ);
+		printf(messtype1, "CMD_IRQ_CLR", SDIO0_CMD_IRQ_CLR, SDIO1_CMD_IRQ_CLR);
+		printf(messtype1, "CMD_IRQ_EN", SDIO0_CMD_IRQ_EN, SDIO1_CMD_IRQ_EN);
+		printf(messtype1, "DAT_IRQ", SDIO0_DAT_IRQ, SDIO1_DAT_IRQ);
+		printf(messtype1, "DAT_IRQ_CLR", SDIO0_DAT_IRQ_CLR, SDIO1_DAT_IRQ_CLR);
+		printf(messtype1, "DAT_IRQ_EN", SDIO0_DAT_IRQ_EN, SDIO1_DAT_IRQ_EN);
+		printf(messtype1, "CMD53_FN", SDIO0_CMD53_FN, SDIO1_CMD53_FN);
+		printf(messtype1, "CMD53_BM", SDIO0_CMD53_BM, SDIO1_CMD53_BM);
+		printf(messtype1, "CMD53_OP", SDIO0_CMD53_OP, SDIO1_CMD53_OP);
+		printf(messtype1, "DAT_WE", SDIO0_DAT_WE, SDIO1_DAT_WE);
+		printf(messtype1, "DAT_EN", SDIO0_DAT_EN, SDIO1_DAT_EN);
+		printf(messtitle, 14, arrSDIOReg14[0], arrSDIOReg14[0]->a, arrSDIOReg14[1], arrSDIOReg14[1]->a);
+		printf(messtype1, "DAT_TOUT", SDIO0_DAT_TOUT, SDIO1_DAT_TOUT);
+		printf(messtype1, "DAT_BLKCNT", SDIO0_DAT_BLKCNT, SDIO1_DAT_BLKCNT);
+		printf(messtitle, 15, arrSDIOReg15[0], arrSDIOReg15[0]->a, arrSDIOReg15[1], arrSDIOReg15[1]->a);
+		printf(messtype1, "DAT_STOP_CMD", SDIO0_DAT_STOP_CMD, SDIO1_DAT_STOP_CMD);
+		printf(messtype1, "DAT_IORW_CMD", SDIO0_DAT_IORW_CMD, SDIO1_DAT_IORW_CMD);
+		printf(messtitle, 16, arrSDIOReg16[0], arrSDIOReg16[0]->a, arrSDIOReg16[1], arrSDIOReg16[1]->a);
+		printf(messtype1, "DAT_WRCMD_S", SDIO0_DAT_WRCMD_S, SDIO1_DAT_WRCMD_S);
+		printf(messtype1, "DAT_WRCMD_M", SDIO0_DAT_WRCMD_M, SDIO1_DAT_WRCMD_M);
+		printf(messtype1, "DAT_RDCMD_S", SDIO0_DAT_RDCMD_S, SDIO1_DAT_RDCMD_S);
+		printf(messtype1, "DAT_RDCMD_M", SDIO0_DAT_RDCMD_M, SDIO1_DAT_RDCMD_M);
 	} else {
-		printf("SDIO%u  0:0x%08X  1:0x%08X  2:0x%08X  3:0x%08X  4:0x%08X  5:0x%08X\n", nCH, arrSDIOReg0[nCH]->a, arrSDIOReg1[nCH]->a, arrSDIOReg2[nCH]->a, arrSDIOReg3[nCH]->a, arrSDIOReg4[nCH]->a, arrSDIOReg5[nCH]->a);
-		printf("SDIO%u  6:0x%08X  7:0x%08X  8:0x%08X  9:0x%08X 10:0x%08X 11:0x%08X\n", nCH, arrSDIOReg6[nCH]->a, arrSDIOReg7[nCH]->a, arrSDIOReg8[nCH]->a, arrSDIOReg9[nCH]->a, arrSDIOReg10[nCH]->a, arrSDIOReg11[nCH]->a);
-		printf("SDIO%u 12:0x%08X 13:0x%08X 14:0x%08X 15:0x%08X 16:0x%08X\n",           nCH, arrSDIOReg12[nCH]->a, arrSDIOReg13[nCH]->a, arrSDIOReg14[nCH]->a, arrSDIOReg15[nCH]->a, arrSDIOReg16[nCH]->a);
+		printf("SDIO%u  0:0x%08X  1:0x%08X  2:0x%08X  3:0x%08X  4:0x%08X  5:0x%08X\n", 0, arrSDIOReg0[0]->a, arrSDIOReg1[0]->a, arrSDIOReg2[0]->a, arrSDIOReg3[0]->a, arrSDIOReg4[0]->a, arrSDIOReg5[0]->a);
+		printf("SDIO%u  6:0x%08X  7:0x%08X  8:0x%08X  9:0x%08X 10:0x%08X 11:0x%08X\n", 0, arrSDIOReg6[0]->a, arrSDIOReg7[0]->a, arrSDIOReg8[0]->a, arrSDIOReg9[0]->a, arrSDIOReg10[0]->a, arrSDIOReg11[0]->a);
+		printf("SDIO%u 12:0x%08X 13:0x%08X 14:0x%08X 15:0x%08X 16:0x%08X\n",           0, arrSDIOReg12[0]->a, arrSDIOReg13[0]->a, arrSDIOReg14[0]->a, arrSDIOReg15[0]->a, arrSDIOReg16[0]->a);
+		printf("SDIO%u  0:0x%08X  1:0x%08X  2:0x%08X  3:0x%08X  4:0x%08X  5:0x%08X\n", 1, arrSDIOReg0[1]->a, arrSDIOReg1[1]->a, arrSDIOReg2[1]->a, arrSDIOReg3[1]->a, arrSDIOReg4[1]->a, arrSDIOReg5[1]->a);
+		printf("SDIO%u  6:0x%08X  7:0x%08X  8:0x%08X  9:0x%08X 10:0x%08X 11:0x%08X\n", 1, arrSDIOReg6[1]->a, arrSDIOReg7[1]->a, arrSDIOReg8[1]->a, arrSDIOReg9[1]->a, arrSDIOReg10[1]->a, arrSDIOReg11[1]->a);
+		printf("SDIO%u 12:0x%08X 13:0x%08X 14:0x%08X 15:0x%08X 16:0x%08X\n",           1, arrSDIOReg12[1]->a, arrSDIOReg13[1]->a, arrSDIOReg14[1]->a, arrSDIOReg15[1]->a, arrSDIOReg16[1]->a);
 	}
-	printf("========================================\n");
+	printf("==========================================================================\n");
 }
 
 #if 0

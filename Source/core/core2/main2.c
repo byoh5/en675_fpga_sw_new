@@ -5,6 +5,8 @@ void main_2(int cpu_id)
 	SYS_REG0 = 0;
 	while(SYS_REG0 == 0x0) {} // Wait for CPU0 to be ready.
 
+	enx_externalirq_init_cpu2();
+
 	while (1) {
 		if (SYS_REG0 == 0xB) {
 #ifdef __USE_LED2__

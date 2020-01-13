@@ -19,8 +19,10 @@
 
 	.data
 	.align 6
-	WORD_ENTRY(heap_start)
-	WORD_ENTRY(heap_end)
+	WORD_ENTRY(heap_os_start)
+	WORD_ENTRY(heap_os_end)
+	WORD_ENTRY(heap_fw_start)
+	WORD_ENTRY(heap_fw_end)
 
 	.option norvc
 	.section .text.init,"ax",@progbits

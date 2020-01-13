@@ -1,0 +1,153 @@
+﻿<!--
+<!DOCTYPE HTML>
+-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+<title>EN675 Network Camera</title>
+<link rel="stylesheet" type="text/css" href="style.css">
+<script type="text/javascript">
+<!--
+function SetFormDefaults()
+{
+//<!--#sy_func-->
+
+	if(isp == 0)
+	{
+		var tgispset = document.getElementById("ISP");
+		tgispset.style.display = "none";
+	}
+	else
+	{
+		if(mod_lens == 0)
+		{
+			var tgispml = document.getElementById("ISP_TM");
+			tgispml.style.display = "none";
+		}
+		else if(mod_lens == 1)
+		{
+			var tgispml = document.getElementById("ISP_FC");
+			tgispml.style.display = "none";
+		}
+		else
+		{
+			var tgispml1 = document.getElementById("ISP_FC");
+			tgispml1.style.display = "none";
+			var tgispml2 = document.getElementById("ISP_TM");
+			tgispml2.style.display = "none";
+		}
+		
+		if(mod_iris == 0)
+		{
+			var tgispml = document.getElementById("ISP_IS");
+			tgispml.style.display = "none";
+		}
+			
+	}
+
+	if(sdcd == 0)
+	{
+		var tgset1 = document.getElementById("SD");
+		tgset1.style.display = "none";
+	}
+
+	if(avc == 0)
+	{
+		var tgset1 = document.getElementById("VDO_AVC");
+		tgset1.style.display = "none";
+	}
+
+	if(jpeg == 0)
+	{
+		var tgset1 = document.getElementById("VDO_JPG");
+		tgset1.style.display = "none";
+	}
+
+	if(eth == 0)
+	{
+		var tgset2 = document.getElementById("ETH");
+		tgset2.style.display = "none";
+	}
+
+	if(wifi == 0)
+	{
+		var tgset3 = document.getElementById("WIFI");
+		tgset3.style.display = "none";
+	}
+}
+//-->
+function change_menu(text) { document.getElementById('menu-tree').innerHTML = text;}
+function change_iframeheight() { 
+	//var iframeHeight = (i).contentWindow.document.body.style.height;
+	document.getElementById('iframe_id').height = document.getElementById('iframe_id').contentWindow.document.body.offsetHeight + 450;
+}
+</script>
+
+</head>
+<body onload="SetFormDefaults();">
+<table style="width: 100%; height: 100%; border-style:solid; border-collapse:collapse; border:0">
+	<tr>
+		<td colspan="2">
+			<div class="toptitle"><a href="index.html" style="color:#ffffff" onclick=document_write("Main")>EN675 Web Viewer</a></div>
+		</td>
+	</tr>
+	<tr>
+		<td colspan="2">
+			<p class="menu-tree" id="menu-tree">Main</p>
+		</td>
+	</tr>
+	<tr padding="20px" valign="top">
+		<td style="width: 170px; padding-left:10px">
+		<div style="padding-bottom:10px">
+			<div class="menu-title" >SYSTEM SETUP</div>
+			<a href="system_info.html" target="main" onclick=change_menu("System&nbsp;Setup&nbsp;&gt;&nbsp;System&nbsp;Information")><div class="menu-subtitle">Info</div></a>
+			<a href="system_user.html" target="main" onclick=change_menu("System&nbsp;Setup&nbsp;&gt;&nbsp;User&nbsp;Information")><div class="menu-subtitle">User</div></a>
+			<a href="system_datetime.html" target="main" onclick=change_menu("System&nbsp;Setup&nbsp;&gt;&nbsp;Date&nbsp;&amp;&nbsp;Time")><div class="menu-subtitle">Date&nbsp;&amp;&nbsp;Time</div></a>
+			<a href="system_update.html" target="main" onclick=change_menu("System&nbsp;Setup&nbsp;&gt;&nbsp;Firmware&nbsp;Update")><div class="menu-subtitle">Update</div></a>
+			<a href="system_reboot_cmd.html"><div class="menu-subtitle">Reboot</div></a>
+		</div>
+		<div style="padding-bottom:10px" id="SD">
+			<div class="menu-title">SDcard</div>
+			<div><a href="sdcard_setup.html" target="main" onclick=change_menu("SDCard&nbsp;&gt;&nbsp;SD&nbsp;Setup")><div class="menu-subtitle">SD Setup</div></a></div>
+			<div><a href="sdcard/ls.html" target="main" onclick=change_menu("SDCard&nbsp;&gt;&nbsp;File&nbsp;List")><div class="menu-subtitle">File List</div></a></div>
+		</div>
+		<div style="padding-bottom:10px" id="ISP">
+			<div class="menu-title">ISP SETUP</div>
+			<div id="ISP_IS"><a href="isp/iris.html" target="main" onclick=change_menu("ISP&nbsp;Setup&nbsp;&gt;&nbsp;IRIS")><div class="menu-subtitle">IRIS</div></a></div>
+			<div id="ISP_FC"><a href="isp/focus.html" target="main" onclick=change_menu("ISP&nbsp;Setup&nbsp;&gt;&nbsp;Focus&nbsp;ADJ")><div class="menu-subtitle">Focus ADJ</div></a></div>
+			<div id="ISP_TM"><a href="isp/motorized.html" target="main" onclick=change_menu("ISP&nbsp;Setup&nbsp;&gt;&nbsp;Motorized")><div class="menu-subtitle">Motorized</div></a></div>
+			<a href="isp/exposure.html" target="main" onclick=change_menu("ISP&nbsp;Setup&nbsp;&gt;&nbsp;Exposure")><div class="menu-subtitle">Exposure</div></a>
+			<a href="isp/backlight.html" target="main" onclick=change_menu("ISP&nbsp;Setup&nbsp;&gt;&nbsp;Backlight")><div class="menu-subtitle">Backlight</div></a>
+			<a href="isp/daynight.html" target="main" onclick=change_menu("ISP&nbsp;Setup&nbsp;&gt;&nbsp;Day&amp;Night")><div class="menu-subtitle">Day&Night</div></a>
+			<a href="isp/color.html" target="main" onclick=change_menu("ISP&nbsp;Setup&nbsp;&gt;&nbsp;Color")><div class="menu-subtitle">Color</div></a>
+			<a href="isp/image.html" target="main" onclick=change_menu("ISP&nbsp;Setup&nbsp;&gt;&nbsp;Image")><div class="menu-subtitle">Image</div></a>
+			<a href="isp/motion.html" target="main" onclick=change_menu("ISP&nbsp;Setup&nbsp;&gt;&nbsp;Motion")><div class="menu-subtitle">Motion</div></a>
+			<a href="isp/outputset.html" target="main" onclick=change_menu("ISP&nbsp;Setup&nbsp;&gt;&nbsp;Output&nbsp;Set")><div class="menu-subtitle">Output Set</div></a>
+			<a href="isp/system.html" target="main" onclick=change_menu("ISP&nbsp;Setup&nbsp;&gt;&nbsp;System")><div class="menu-subtitle">System</div></a>
+		</div>
+		<div style="padding-bottom:10px">
+			<div class="menu-title">VIDEO SETUP</div>
+			<a href="video_video.html" target="main" onclick=change_menu("Video&nbsp;Setup&nbsp;&gt;&nbsp;Video&nbsp;Information")><div class="menu-subtitle">Video</div></a>
+			<div id="VDO_STM1"><a href="video_view.html"><div class="menu-subtitle">Stm1 View</div></a></div>
+			<div id="VDO_STM2"><a href="video_view.html"><div class="menu-subtitle">Stm2 View</div></a></div>
+			<div id="VDO_STM3"><a href="video_jpeg.html" target="main" onclick=change_menu("Video&nbsp;Setup&nbsp;&gt;&nbsp;Stm3&nbsp;View")><div class="menu-subtitle">Stm3 View</div></a></div>
+		</div>
+		<div style="padding-bottom:10px" id="ETH">
+			<div class="menu-title">NETWORK SETUP</div>
+			<a href="network_tcp.html" target="main" onclick=change_menu("Network&nbsp;Setup&nbsp;&gt;&nbsp;Network&nbsp;Information")><div class="menu-subtitle">Ethernet</div></a>
+			<a href="network_upnp.html" target="main" onclick=change_menu("Network&nbsp;Setup&nbsp;&gt;&nbsp;UPnP&nbsp;Information")><div class="menu-subtitle">UPnP</div></a>
+		</div>
+		<div style="padding-bottom:10px" id="WIFI">
+			<div class="menu-title">WiFi SETUP</div>
+			<a href="wifi/wifi_ap.html" target="main" onclick=change_menu("WiFi&nbsp;Setup&nbsp;&gt;&nbsp;Wireless&nbsp;Access&nbsp;Point&nbsp;Mode&nbsp;Setting")><div class="menu-subtitle">AP Mode</div></a>
+			<a href="wifi/wifi_sta.html" target="main" onclick=change_menu("WiFi&nbsp;Setup&nbsp;&gt;&nbsp;Wireless&nbsp;Station&nbsp;Mode&nbsp;Setting")><div class="menu-subtitle">STA Mode</div></a>
+		</div>
+		</td>
+		<td style="padding-left:10px; padding-right:10px;" height="100%">
+			<iframe width="100%" height="100%" scrolling="no" src="play.html" name="main" frameborder="0" id="iframe_id" onload=change_iframeheight()></iframe>
+		</td>
+	</tr>
+</table>
+</body>
+</html>

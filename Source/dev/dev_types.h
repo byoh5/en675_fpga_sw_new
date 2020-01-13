@@ -18,6 +18,8 @@
 //******************************************************************************
 // 1. System define
 //------------------------------------------------------------------------------
+#define CPU_ID					read_csr(mhartid)
+
 #define BDMA_CNT				4
 #define CDMA_CNT				4
 #define GPIO_CNT				72
@@ -29,8 +31,10 @@
 #define USB_CNT					1
 #define ETHERNET_CNT			1
 #define I2S_CNT					1
-#define ADC_CNT					8
+#define ADC_CNT					4
 
+#define CPU_BREAK()				__asm __volatile("EBREAK")
+#define NOP()					__asm __volatile("NOP")
 
 // uart printf out /////////////////////////////////////////////////////////////
 #define DEBUG_UART_NUM 			7
@@ -39,8 +43,9 @@
 
 // Tick irq ////////////////////////////////////////////////////////////////////
 #define TIME_TICK			100							// 10ms
-#define TIME_1MS			((MCK_FREQ / 100) / 1000)
-#define TIMECMP_NEXT_VAL	((MCK_FREQ / 100) / TIME_TICK)
+#define TIME_1TICK_TO_MS	(1000 / TIME_TICK)
+#define TIME_1MS			((CPU_FREQ / 100) / 1000)
+#define TIMECMP_NEXT_VAL	((CPU_FREQ / 100) / TIME_TICK)
 
 
 //******************************************************************************
@@ -288,23 +293,46 @@ typedef void (*idle_fn)(uint64_t tick);
 // IRQ define
 //------------------------------------------------------------------------------
 typedef enum {
-	eigiISP = 0,
-	eigiDMA = 1,
-	eigiH264 = 1,
-	eigiH265 = 1,
-	eigiUSB = 2,
-	eigiI2S = 2,
-	eigiETH = 2,
-	eigiSDIO = 3,
-	eigiASE = 4,
-	eigiSHA = 4,
-	eigiCHKSUM = 4,
-	eigiBUS = 4,
-	eigiUART = 5,
-	eigiSPI = 5,
-	eigiI2C = 5,
-	eigiGPIO = 6,
-	eigiTIMER = 7
+	eigiISP = 1,
+	eigiVCODEC = 2,
+	eigiDMA0 = 3,
+	eigiDMA1 = 4,
+	eigiDMA2 = 5,
+	eigiDMA3 = 6,
+	eigiATOB = 7,
+	eigiBTOA = 8,
+	eigiETH = 9,
+	eigiSDIO0 = 10,
+	eigiSDIO1 = 11,
+	eigiNPU = 12,
+	eigiI2S = 13,
+	eigiUSB = 14,
+	eigiCHKSUM = 15,
+	eigiSHA = 16,
+	eigiASE = 17,
+	eigiOIC = 18,
+	eigiGPIO0_3_PWM0_3_SPI0 = 19,
+	eigiGPIO4_7_PWM4_7_I2C0_UART0 = 20,
+	eigiGPIO8_11_PWM8_11_SPI1 = 21,
+	eigiGPIO12_15_PWM12_15_I2C1_UART1 = 22,
+	eigiGPIO16_19_SPI2 = 23,
+	eigiGPIO20_23_PWM16_19_I2C2_UART2 = 24,
+	eigiGPIO24_27_PWM20_23_SPI3 = 25,
+	eigiGPIO28_31_PWM24_27_I2C3_UART3 = 26,
+	eigiGPIO32_35_PWM28_31_SPI4 = 27,
+	eigiGPIO36_39_I2C4_UART4 = 28,
+	eigiGPIO40_43_SPI5 = 29,
+	eigiGPIO44_47_I2C5_UART5 = 30,
+	eigiGPIO48_51_SPI6 = 31,
+	eigiGPIO52_55_PWM32_34_I2C6_UART6 = 32,
+	eigiGPIO56_59_PWM35_38_SPI7 = 33,
+	eigiGPIO60_63_I2C7_UART7 = 34,
+	eigiGPIO64_67_SPI8 = 35,
+	eigiGPIO68_71_I2C8_UART8 = 36,
+	eigiReserved37 = 37,
+	eigiReserved38 = 38,
+	eigiReserved39 = 39,
+	eigiReserved40 = 40,
 } eIRQ_GROUP_INDEX;
 
 typedef void (*irq_fn)(void *arg);
@@ -332,6 +360,61 @@ typedef enum {
 	GPIO_OUT_LOW = 0,
 	GPIO_OUT_HI = 1
 } GPIO_OUT;
+
+//******************************************************************************
+// UART define
+//------------------------------------------------------------------------------
+typedef enum {
+	UART_PARITY_NONE = 0,
+	UART_PARITY_EVEN = 2,
+	UART_PARITY_ODD = 3
+} UART_PARITY_MODE;
+
+//******************************************************************************
+// I2C define
+//------------------------------------------------------------------------------
+typedef enum {
+	I2C_Master = 0,			// Master
+	I2C_Slave = 1,			// Slave
+} I2C_MODE;
+
+typedef enum {
+	I2C_MSBfirst = 0,		// MSB first
+	I2C_LSBfirst = 1,		// LSB first
+} I2C_BITMODE;
+
+//******************************************************************************
+// SPI define
+//------------------------------------------------------------------------------
+typedef enum {
+	SPI_WS_8BIT = 0,
+	SPI_WS_16BIT = 1,
+	SPI_WS_24BIT = 2,
+	SPI_WS_32BIT = 3,
+} SPI_WORD_SIZE;
+
+typedef enum {
+	SPI_CS_OUT_LOW = 0,		// Output - Low
+	SPI_CS_OUT_HIGH = 1,	// Output - High
+	SPI_CS_HIGH_Z = 2,		// High-z
+} SPI_CSMODE;
+
+typedef enum {
+	SPI_MSBfirst = 0,		// MSB first
+	SPI_LSBfirst = 1,		// LSB first
+} SPI_BITMODE;
+
+typedef enum {
+	SPI_BYTE_MODE = 0,		// Byte mode
+	SPI_BIT_MODE = 1,		// Bit mode
+} SPI_ONEBITMODE;
+
+typedef enum {
+	SPI_CLKDIR_LOW_POSI = 0,	// Low + positive edge clock
+	SPI_CLKDIR_LOW_NEGA = 1,	// Low + negative edge clock
+	SPI_CLKDIR_HIGH_POSI = 2,	// High + positive edge clock
+	SPI_CLKDIR_HIGH_NEGA = 3,	// High + negative edge clock
+} SPI_CLKDIR_MODE;
 
 //******************************************************************************
 // SFLS define
@@ -374,6 +457,8 @@ typedef struct {
 	BYTE cmd_write_enable;
 	BYTE cmd_read_status;
 	BYTE cmd_enter_qpi;
+	BYTE cmd_enter_4b;
+	BYTE cmd_exit_4b;
 	BYTE cmd_sector_erase;
 	BYTE cmd_32k_erase;
 	BYTE cmd_64k_erase;
@@ -382,6 +467,8 @@ typedef struct {
 	BYTE gap;
 	BYTE rdltc;
 
+	UINT size;
+
 	sfls_func func_init;
 	sfls_func func_write_enable;
 	sfls_erase_func func_secter_erase;
@@ -389,6 +476,75 @@ typedef struct {
 	sfls_erase_func func_64k_erase;
 	sfls_erase_func func_chip_erase;
 } SFLScontrol;
+
+typedef struct {
+	char SFDPSignature[4];			// 00:03
+	BYTE SFDPMinorNum;				// 04
+	BYTE SFDPMajorNum;				// 05
+	BYTE NumberParameterHeaders;	// 06
+	BYTE _res00;					// 07
+	BYTE IDNum;						// 08
+	BYTE ParameterTableMinorNum;	// 09
+	BYTE ParameterTableMajorNum;	// 0A
+	BYTE ParameterTableLength;		// 0B
+	UINT ParameterTablePointer:24;	// 0C:0E
+	UINT _res01:8;					// 0F
+	UINT _res02[4];					// 10:1F
+	UINT _res03[4];					// 20:2F
+	UINT BlockSectorEreaseSize:2;	// 30		00:reserved, 01:4KB-erase, 10:reserved, 11:64KB-erase
+	UINT WriteGranularity:1;		//			0:no, 1:yes
+	UINT WEIR_WVSR:1;				//			00:N/A, 01:use 50h opcode, 11:use 60h opcode
+	UINT WEOS_WVSR:1;				//
+	UINT _res04:3;					//
+	UINT FourKBEraseOpcode:8;		// 31		xx:4KB Erase Support(opcode), FF:not supported
+	UINT Sup112FastRead:1;			// 32		0:not supported, 1:supported
+	UINT AddrByte:2;				//			00:3byte, 01:3-4byte(e.g. defaults to 3byte mode, enters 4byte mode on command) 10:4byte, 11:reserved
+	UINT SupDTRClocking:1;			//			0:not supported, 1:supported
+	UINT Sup122FastRead:1;			//			0:not supported, 1:supported
+	UINT Sup144FastRead:1;			//			0:not supported, 1:supported
+	UINT Sup114FastRead:1;			//			0:not supported, 1:supported
+	UINT _res05:1;					//
+	UINT _res06:8;					// 33
+	UINT FlashMemoryDensity;		// 34:37
+	UINT DummyClock144FR:5;			// 38
+	UINT Modebit144FR:3;			//
+	UINT Op144FR:8;					// 39
+	UINT DummyClock114FR:5;			// 3A
+	UINT Modebit114FR:3;			//
+	UINT Op114FR:8;					// 3B
+	UINT DummyClock112FR:5;			// 3C
+	UINT Modebit112FR:3;			//
+	UINT Op112FR:8;					// 3D
+	UINT DummyClock122FR:5;			// 3E
+	UINT Modebit122FR:3;			//
+	UINT Op122FR:8;					// 3F
+	UINT Sup222FastRead:1;			// 40		0:not supported, 1:supported
+	UINT _res07:3;					//
+	UINT Sup444FastRead:1;			//			0:not supported, 1:supported
+	UINT _res08:3;					//
+	UINT _res09:24;					// 41:43
+	UINT _res10:16;					// 44:45
+	UINT DummyClock222FR:5;			// 46
+	UINT Modebit222FR:3;			//
+	UINT Op222FR:8;					// 47
+	UINT _res11:16;					// 48:49
+	UINT DummyClock444FR:5;			// 4A
+	UINT Modebit444FR:3;			//
+	UINT Op444FR:8;					// 4B
+	BYTE SectorType1Size;			// 4C
+	BYTE SectorType1Op;				// 4D
+	BYTE SectorType2Size;			// 4E
+	BYTE SectorType2Op;				// 4F
+	BYTE SectorType3Size;			// 50
+	BYTE SectorType3Op;				// 51
+	BYTE SectorType4Size;			// 52
+	BYTE SectorType4Op;				// 53
+	UINT _res12[3];					// 54:5F
+	UINT _res13[4];					// 61:6F
+	UINT _res14[4];					// 71:7F
+	BYTE UniqueID[12];				// 80:8B
+	UINT _Res15;					// 8C:8F
+} SFLSsfdp;
 
 //******************************************************************************
 // I2S define
@@ -447,6 +603,25 @@ typedef enum {
 	eI2sTXDW24bit,
 	eI2sTXDW32bit
 } I2S_TX_BIT; // TXDW
+
+//******************************************************************************
+// Checksum/SHA/AES define
+//------------------------------------------------------------------------------
+typedef enum {
+	eSHA224 = 0,	// SHA_MODE=0
+	eSHA256 = 1,	// SHA_MODE=1
+} SHAmode;
+
+typedef enum {				//				bit		type	mode
+	eAES128_ECB_DEC = 0,	// AES_MODE=0	128		ecb		dec
+	eAES128_ECB_ENC = 1,	// AES_MODE=1	128		ecb		enc
+	eAES128_CBC_DEC = 2,	// AES_MODE=2	128		cbc		dec
+	eAES128_CBC_ENC = 3,	// AES_MODE=3	128		cbc		enc
+	eAES256_ECB_DEC = 4,	// AES_MODE=4	256		ecb		dec
+	eAES256_ECB_ENC = 5,	// AES_MODE=5	256		ecb		enc
+	eAES256_CBC_DEC = 6,	// AES_MODE=6	256		cbc		dec
+	eAES256_CBC_ENC = 7,	// AES_MODE=7	256		cbc		enc
+} AESmode;
 
 
 //******************************************************************************

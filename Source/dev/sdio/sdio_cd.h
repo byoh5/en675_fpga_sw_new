@@ -329,6 +329,11 @@ typedef ATTR_MALIGN16 struct {
 	SD_SFS sfs; // 64byte
 	SD_Tuning stuning; // 64byte
 	//ULONG t2[8];
+
+	ULONG time_start;
+	ULONG time_end;
+	UINT semCmdck;
+	UINT semDatck;
 } SDIO_SD;
 
 #endif // __USE_SD__

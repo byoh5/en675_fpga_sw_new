@@ -14,6 +14,7 @@
 //-------------------------------------------------------------------------------------------------
 // Function
 extern void EthRxIrq(void *ctx);
+extern void network_ethif_rx_start(void);
 extern void network_ethif_phy_restart(void);
 extern void network_ethif_start(void);
 

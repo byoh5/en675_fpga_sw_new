@@ -11,7 +11,7 @@ void WaitXus(uint64_t us)
 	if (us < 10) {											// min 10us
 		us = 10;											// min 10us
 	}														// min 10us
-	uint64_t clk_period = MCK_FREQ / 10000000 * (us / 10);	// min 10us
+	uint64_t clk_period = APB_FREQ / 10000000 * (us / 10);	// min 10us
 	uint64_t start_clk = *mtime;
 	uint64_t clk;
 	do {
@@ -112,7 +112,7 @@ void hexDump(char *desc, void *addr, int len)
 			if (i != 0) {
 				strbuff[pos++] = ' ';
 				strbuff[pos++] = ' ';
-				strncpy(&strbuff[pos], (char *)buff, 16);
+				strlcpy(&strbuff[pos], (char *)buff, 17);
 				printf("%s\n", strbuff);
 				pos = 0;
 			}
@@ -146,7 +146,7 @@ void hexDump(char *desc, void *addr, int len)
 	// And print the final ASCII bit.
 	strbuff[pos++] = ' ';
 	strbuff[pos++] = ' ';
-	strncpy(&strbuff[pos], (char *)buff, 16);
+	strlcpy(&strbuff[pos], (char *)buff, 17);
 	pos += 16;
 	printf("%s\n", strbuff);
 }
@@ -163,7 +163,7 @@ void hexCmpDump(char *desc, void *addr1, void*addr2, int len)
 
 	// Output description if given.
 	if (desc != NULL) {
-		printf("%s\n", desc);
+		_Cprintf("%s\n", desc);
 	}
 	printf("Addr1(0x%08X) Addr2(0x%08X) Size(%u)\n", addr1, addr2, len);
 
@@ -176,7 +176,7 @@ void hexCmpDump(char *desc, void *addr1, void*addr2, int len)
 			if (i != 0) {
 				strbuff[pos++] = ' ';
 				strbuff[pos++] = ' ';
-				strncpy(&strbuff[pos], (char *)buff, 16);
+				strlcpy(&strbuff[pos], (char *)buff, 17);
 				if (flag == 1) {
 					printf("%s%s%s\n", TTY_COLOR_YELLOW, strbuff, TTY_COLOR_RESET);
 				} else {
@@ -187,7 +187,7 @@ void hexCmpDump(char *desc, void *addr1, void*addr2, int len)
 				if (flag == 1) {
 					strbuff2[pos2++] = ' ';
 					strbuff2[pos2++] = ' ';
-					strncpy(&strbuff2[pos2], (char *)buff2, 16);
+					strlcpy(&strbuff2[pos2], (char *)buff2, 17);
 					printf("%s%s%s\n", TTY_COLOR_YELLOW, strbuff2, TTY_COLOR_RESET);
 					flag = 0;
 				}
@@ -244,7 +244,7 @@ void hexCmpDump(char *desc, void *addr1, void*addr2, int len)
 	// And print the final ASCII bit.
 	strbuff[pos++] = ' ';
 	strbuff[pos++] = ' ';
-	strncpy(&strbuff[pos], (char *)buff, 16);
+	strlcpy(&strbuff[pos], (char *)buff, 17);
 	pos += 16;
 	if (flag == 1) {
 		printf("%s%s%s\n", TTY_COLOR_YELLOW, strbuff, TTY_COLOR_RESET);
@@ -255,7 +255,7 @@ void hexCmpDump(char *desc, void *addr1, void*addr2, int len)
 	if (flag == 1) {
 		strbuff2[pos2++] = ' ';
 		strbuff2[pos2++] = ' ';
-		strncpy(&strbuff2[pos2], (char *)buff2, 16);
+		strlcpy(&strbuff2[pos2], (char *)buff2, 17);
 		printf("%s%s%s\n", TTY_COLOR_YELLOW, strbuff2, TTY_COLOR_RESET);
 		flag = 0;
 	}

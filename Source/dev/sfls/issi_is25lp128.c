@@ -29,6 +29,8 @@ static SFLScontrol sfls_is25lp128 = {
 #else
 	.cmd_enter_qpi = 0,
 #endif
+	.cmd_enter_4b = 0,
+	.cmd_exit_4b = 0,
 	.cmd_sector_erase = IS25LP128_CMD_SECTOR_ERASE,
 	.cmd_32k_erase = IS25LP128_CMD_32KB_ERASE,
 	.cmd_64k_erase = IS25LP128_CMD_64KB_ERASE,

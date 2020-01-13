@@ -11,7 +11,7 @@ void WaitXus(uint64_t us)
 	if (us < 10) {											// min 10us
 		us = 10;											// min 10us
 	}														// min 10us
-	uint64_t clk_period = MCK_FREQ / 10000000 * (us / 10);	// min 10us
+	uint64_t clk_period = APB_FREQ / 10000000 * (us / 10);	// min 10us
 	uint64_t start_clk = *mtime;
 	uint64_t clk;
 	do {

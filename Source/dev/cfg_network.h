@@ -25,9 +25,9 @@
 #ifdef __ETHERNET__
 
 // IP address
-#define	ETH_IPADDR						"192.169.10.195"	// Ip address(rel)
-#define	ETH_NETMASK						"255.255.255.0"		// Subnet mask
-#define	ETH_GWADDR						"192.169.10.1"		// Gateway
+#define	ETH_IPADDR						"192.168.10.195"	// Ip address(rel)
+#define	ETH_NETMASK						"255.255.0.0"		// Subnet mask
+#define	ETH_GWADDR						"192.168.0.1"		// Gateway
 
 #define ETHPHY_AUTONEG					1			// 0 : No use(Error)
 													//*1 : Ethernet PHY auto negotiation
@@ -73,8 +73,8 @@
 #define WIFI_AP_SSID					"EN675_WIFI_TEST"	// broadcast to SSID
 #endif
 #define WIFI_AP_SWITCH					ENX_ON		// on(DEF_ON)? off(DEF_OFF)?
-#define WIFI_AP_AUTH					wifi_WPA2_PSK	// (wifi_OPEN) or (wifi_WPA2_PSK)
-//#define WIFI_AP_AUTH					wifi_OPEN	// (wifi_OPEN) or (wifi_WPA2_PSK)
+//#define WIFI_AP_AUTH					wifi_WPA2_PSK	// (wifi_OPEN) or (wifi_WPA2_PSK)
+#define WIFI_AP_AUTH					wifi_OPEN	// (wifi_OPEN) or (wifi_WPA2_PSK)
 #define WIFI_AP_KEY						"1234567890"	// KEY
 #define WIFI_AP_CH						5			// default channel
 #define WIFI_AP_MAXUSER					5			// default max user

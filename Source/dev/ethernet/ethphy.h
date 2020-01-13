@@ -35,12 +35,14 @@ typedef struct {
 extern UINT EthphySetting(void);				// submodule
 extern UINT EthphyLinkCheck(void);				// submodule
 extern void EthphyLinkView(void);				// submodule
+extern ENX_OKFAIL EthphyLinkInfo(int log);		// submodule
 extern void EthphyAutoNeg(ETHERNETIF_AUTONEGO autonego);// submodule
 
 extern UINT EthphyReset(void);					// ethphy.c
 extern UINT EthphyLinkState(void);				// ethphy.c
 extern void EthphyInit(BYTE phy_addr, irq_fn irqfn);	// ethphy.c
 extern UINT EthphyGetPHYID(void);				// ethphy.c
+extern void EthphyPrintPHYName(void);			// ethphy.c
 
 #if (DBG_ETHPHY_LOG == ENX_DBG_OFF)
 #define EthphyRegView(Type, Data)
@@ -58,7 +60,7 @@ extern EthphyInfo ethphy_info;
 // Ethernet PHY Loopback
 
 #if (ETHPHY_LOOPBACK_TEST==1)
-#define ETHPHY_LOOPBACK_PACKET_SIZE					1500
+#define ETHPHY_LOOPBACK_PACKET_SIZE					1514
 #define ETHPHY_LOOPBACK_PACKET_CNT					4
 
 typedef enum {

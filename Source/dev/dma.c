@@ -16,6 +16,27 @@ static volatile _DMA_REG2 * const arrCDMADST[CDMA_CNT] = {(_DMA_REG2 *)(REG_BASE
 static volatile _DMA_REG3 * const arrCDMALEN[CDMA_CNT] = {(_DMA_REG3 *)(REG_BASE_CDMA0+(3<<3)), (_DMA_REG3 *)(REG_BASE_CDMA1+(3<<3)), (_DMA_REG3 *)(REG_BASE_CDMA2+(3<<3)), (_DMA_REG3 *)(REG_BASE_CDMA3+(3<<3))};
 ISRD static tIhnd arrCDMAIrq[CDMA_CNT];
 
+void BDmaRegView(UINT nCH)
+{
+	printf("== BDMA%u Register view ==\n", nCH);
+	printf("0:0x%08X:0x%08X\n", arrBDMA[nCH], arrBDMA[nCH]->a);
+	printf("  %-20s: %u\n", "DONE_VAL", arrBDMA[nCH]->DONE_VAL);
+	printf("  %-20s: %u\n", "DONE_PTR", arrBDMA[nCH]->DONE_PTR);
+	printf("  %-20s: %u\n", "JOB_PTR", arrBDMA[nCH]->JOB_PTR);
+	printf("  %-20s: %u\n", "IRQ", arrBDMA[nCH]->IRQ);
+	printf("  %-20s: %u\n", "IRQ_EN", arrBDMA[nCH]->IRQ_EN);
+	printf("  %-20s: %u\n", "IRQ_CLR", arrBDMA[nCH]->IRQ_CLR);
+	printf("  %-20s: %u\n", "VALUE", arrBDMA[nCH]->VALUE);
+	printf("  %-20s: %u\n", "MODE", arrBDMA[nCH]->MODE);
+	printf("  %-20s: %u\n", "GO", arrBDMA[nCH]->GO);
+	printf("1:0x%08X:0x%08X\n", arrBDMASRC[nCH], arrBDMASRC[nCH]->a);
+	printf("  %-20s: 0x%08X, %u\n", "SRC", arrBDMASRC[nCH]->SRC, arrBDMASRC[nCH]->SRC);
+	printf("2:0x%08X:0x%08X\n", arrBDMADST[nCH], arrBDMADST[nCH]->a);
+	printf("  %-20s: 0x%08X, %u\n", "DST", arrBDMADST[nCH]->DST, arrBDMADST[nCH]->DST);
+	printf("3:0x%08X:0x%08X\n", arrBDMALEN[nCH], arrBDMALEN[nCH]->a);
+	printf("  %-20s: 0x%08X, %u\n", "LEN", arrBDMALEN[nCH]->LEN, arrBDMALEN[nCH]->LEN);
+}
+
 void BDmaInit(void)
 {
 	for (uint64_t i = 0; i < BDMA_CNT; i++) {
@@ -173,6 +194,9 @@ ENX_SWITCH BDmaGetIrqEn(UINT nCH)
 void BDmaIrqClear(UINT nCH)
 {
 	arrBDMA[nCH]->IRQ_CLR = 1;
+	if (arrBDMA[nCH]->IRQ_CLR == 1) {
+		printf("BDMA irq clear == 1?\n");
+	}
 }
 
 UINT BDmaIsIrq(UINT nCH)
@@ -183,12 +207,12 @@ UINT BDmaIsIrq(UINT nCH)
 void IrqBDma(UINT nCH)
 {
 	if (BDmaIsIrq(nCH)) {
-//		printf("DMA%d IRQ Get\n", nCH);
 		if (arrBDMAIrq[nCH].irqfn) {
 			arrBDMAIrq[nCH].irqfn(arrBDMAIrq[nCH].arg);
+		} else {
+			printf("DMA%d IRQ Get\n", nCH);
 		}
 		BDmaIrqClear(nCH);
-		arrBDMA[nCH]->IRQ_CLR = 0;
 	}
 }
 

@@ -10,12 +10,21 @@
 static SDIO_SD sdinfo;
 
 //#define sdio_support_1_8v
+//#define sdio_support_cmd_irq
+//#define sdio_support_dat_irq
 
 #define ENX_SDIOCD_DELAY vTaskDelay
 #define DELAY_MS(ms) ENX_SDIOCD_DELAY(ms)
 
 #define ENX_SDIOCD_IRQ_LOCK portENTER_CRITICAL
 #define ENX_SDIOCD_IRQ_UNLOCK portEXIT_CRITICAL
+
+#if defined(sdio_support_cmd_irq)
+SemaphoreHandle_t semSdcdCmd[SDIO_CNT] = {NULL};
+#endif
+#if defined(sdio_support_dat_irq)
+SemaphoreHandle_t semSdcdDat[SDIO_CNT] = {NULL};
+#endif
 
 static void SdioCdLog_hwflush_dcache_range(uint sadr, uint size)
 {
@@ -67,6 +76,9 @@ static void SdioCdLog_hwflush_dcache_range(uint sadr, uint size)
 #define	SD_TRY_CNT			100
 
 BYTE *SDIO_DATA_BASE = NULL;
+
+#define SDIO_CMD_TIME_OUT	200
+#define SDIO_DAT_TIME_OUT	200
 
 //-------------------------------------------------------------------------------------------------
 // SDIO-CD Card Reg
@@ -277,26 +289,117 @@ void SdioPrintSFS(SD_SFS *sfs)
 }
 
 //-------------------------------------------------------------------------------------------------
-// SDIO-CD Command
+// SDIO-CD Irq & Cmd
+#if defined(sdio_support_cmd_irq)
+void SdioCdCmdIrqHdr(void *ctx)
+{
+	SDIO_SD *psdinfo = (SDIO_SD *)ctx;
+	if (psdinfo->semCmdck == 1) {
+		psdinfo->semCmdck = 0;
+		portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
+		xSemaphoreGiveFromISR(semSdcdCmd[psdinfo->nCH], &xHigherPriorityTaskWoken);
+		if (xHigherPriorityTaskWoken) {
+			gbXsrTaskSwitchNeeded = 1;
+		}
+	}
+}
+#endif
 
+#if defined(sdio_support_dat_irq)
+void SdioCdDatIrqHdr(void *ctx)
+{
+	SDIO_SD *psdinfo = (SDIO_SD *)ctx;
+//	psdinfo->time_end = BenchTimeStop(psdinfo->time_start);
+//	psdinfo->time_start = BenchTimeStart();
+//	_Cprintf("D");
+	while (SDIO0_DAT_EN) {
+//		_Rprintf("[EN]");
+		if (SDIO0_CMD_RESP_TOUT) {
+			_Rprintf("[TOUT]");
+		}
+		if (SDIO0_DAT_BUSY) {
+//			_Rprintf("[BUSY]");
+		}
+		SDIO0_DAT_EN = 0;
+	}
+//	_Cprintf("!");
+//	psdinfo->time_end = BenchTimeStop(psdinfo->time_start);
+//	_Yprintf("T(%luus)", psdinfo->time_end);
+
+	if (psdinfo->semDatck == 1) {
+		psdinfo->semDatck = 0;
+		portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
+		xSemaphoreGiveFromISR(semSdcdDat[psdinfo->nCH], &xHigherPriorityTaskWoken);
+		if (xHigherPriorityTaskWoken) {
+			gbXsrTaskSwitchNeeded = 1;
+		}
+	}
+}
+#endif
+
+static ENX_OKFAIL SdioCdCmd(UINT nCH, BYTE Cmd, UINT Arg, UINT *nResp, eCmdRespType cmdType)
+{
+#if defined(sdio_support_cmd_irq)
+	ENX_LOG_START(DBG_SDIO_CD_CMD);
+	SdioCmd_async(nCH, Cmd, Arg, nResp == NULL ? ENX_DISABLED : ENX_ENABLED, cmdType);
+	sdinfo.semCmdck = 1;
+	if (xSemaphoreTake(semSdcdCmd[nCH], SDIO_CMD_TIME_OUT) == pdTRUE) {
+		return SdioCmdResp(nCH, nResp, cmdType);
+	} else {
+		sdinfo.semCmdck = 0;
+		_Rprintf("%s command irq timeout!\n", __func__);
+		ENX_DEBUGF(DBG_SDIO_CD_ERR, "End(FAIL) : RESP(0x%08X)\n", *nResp);
+		ENX_LOG_END(DBG_SDIO_CD_CMD);
+		return ENX_FAIL;
+	}
+#else
+	return SdioCmd(nCH, Cmd, Arg, nResp, cmdType);
+#endif
+}
+
+static ENX_OKFAIL SdioCdDataIO(UINT nCH, eSDIO_DIO_TYPE iotype, ULONG MemDst, UINT BlkAdr, UINT BlkCnt)
+{
+#if defined(sdio_support_dat_irq)
+	ENX_LOG_START(DBG_SDIO_CD_DAT);
+	SdioDataIO_async(nCH, iotype, MemDst, BlkAdr, BlkCnt);
+	sdinfo.semDatck = 1;
+	if (xSemaphoreTake(semSdcdDat[nCH], SDIO_DAT_TIME_OUT) == pdTRUE) {
+//		_Rprintf("@");
+		return SdioDataIO_resp(nCH, iotype);
+	} else {
+		sdinfo.semDatck = 0;
+		_Rprintf("%s data irq timeout!\n", __func__);
+		ENX_DEBUGF(DBG_SDIO_CD_ERR, "End(FAIL)\n");
+		ENX_LOG_END(DBG_SDIO_CD_DAT);
+		return ENX_FAIL;
+	}
+#else
+	return SdioDataIO(nCH, iotype, MemDst, BlkAdr, BlkCnt);
+#endif
+}
+
+//-------------------------------------------------------------------------------------------------
+// SDIO-CD Command
 static UINT SdioCdAppCmd(UINT nRCA)
 {	// CMD55(R1) : Application-Specific Command
 	UINT nResp = 0;
-	return SdioCmd(sdinfo.nCH, SDCMD_APP_CMD, nRCA, &nResp, ecrtR1);
+	return SdioCdCmd(sdinfo.nCH, SDCMD_APP_CMD, nRCA, &nResp, ecrtR1);
 }
 
 static UINT SdioCdReset(void)
 {	// CMD0(R1), 8(R7) : Power on(Reset)
 	UINT nResp = 0, nRes, nArg;
 
-	SdioCmd(sdinfo.nCH, SDCMD_GO_IDLE_STATE, 0x00000000, NULL, ecrtR1);
+	ENX_LOG_START(DBG_SDIO_CD_CMD);
+
+	SdioCdCmd(sdinfo.nCH, SDCMD_GO_IDLE_STATE, 0x00000000, NULL, ecrtR1);
 	DELAY_MS(1);
 
-	SdioCmd(sdinfo.nCH, SDCMD_GO_IDLE_STATE, 0x00000000, NULL, ecrtR1);
+	SdioCdCmd(sdinfo.nCH, SDCMD_GO_IDLE_STATE, 0x00000000, NULL, ecrtR1);
 	DELAY_MS(1);
 
 	nArg = CMD8_VHS | CMD8_PATTERN;
-	nRes = SdioCmd(sdinfo.nCH, SDCMD_SEND_IF_COND, nArg, &nResp, ecrtR7);
+	nRes = SdioCdCmd(sdinfo.nCH, SDCMD_SEND_IF_COND, nArg, &nResp, ecrtR7);
 
 	if ((nRes == ENX_OK) && (nResp & nArg)) {
 		ENX_LOG_END(DBG_SDIO_CD_CMD);
@@ -329,7 +432,7 @@ static UINT SdioCdInitialization(void)
 		}
 
 		SdioCdAppCmd(0);
-		nRes = SdioCmd(sdinfo.nCH, SDCMD_SD_SEND_OP_COND, nArg, pResp, ecrtR3);
+		nRes = SdioCdCmd(sdinfo.nCH, SDCMD_SD_SEND_OP_COND, nArg, pResp, ecrtR3);
 
 		if (nRes == ENX_OK) {
 			if (sdinfo.ocr.busy == 1) {
@@ -358,7 +461,7 @@ static UINT SdioCdSwitchVoltage(void)
 
 	ENX_LOG_START(DBG_SDIO_CD_CMD);
 
-	nRes = SdioCmd(sdinfo.nCH, SDCMD_VOLTAGE_SWITCH, 0x00000000, &nResp, ecrtR1);
+	nRes = SdioCdCmd(sdinfo.nCH, SDCMD_VOLTAGE_SWITCH, 0x00000000, &nResp, ecrtR1);
 
 	// Switch 1.8V
 	if (nRes == ENX_OK) {
@@ -397,9 +500,9 @@ static UINT SdioCdGetCID(int nType)
 	pResp = (UINT *)&sdinfo.cid;
 
 	if (nType == 0) {
-		nRes = SdioCmd(sdinfo.nCH, SDCMD_ALL_SEND_CID, 0x00000000, pResp, ecrtR2);
+		nRes = SdioCdCmd(sdinfo.nCH, SDCMD_ALL_SEND_CID, 0x00000000, pResp, ecrtR2);
 	} else if (nType == 1) {
-		nRes = SdioCmd(sdinfo.nCH, SDCMD_SEND_CID, sdinfo.rca, pResp, ecrtR2);
+		nRes = SdioCdCmd(sdinfo.nCH, SDCMD_SEND_CID, sdinfo.rca, pResp, ecrtR2);
 	}
 
 #if (DBG_SDIO_CD_CMD & ENX_DBG_STATE)
@@ -417,7 +520,7 @@ static UINT SdioCdGetRCA(void)
 
 	ENX_LOG_START(DBG_SDIO_CD_CMD);
 
-	nRes = SdioCmd(sdinfo.nCH, SDCMD_SEND_RELATIVE_ADDR, 0x00000000, &nResp, ecrtR6);
+	nRes = SdioCdCmd(sdinfo.nCH, SDCMD_SEND_RELATIVE_ADDR, 0x00000000, &nResp, ecrtR6);
 
 	sdinfo.rca = nResp & RCA_RCA_MASK;
 
@@ -435,7 +538,7 @@ static UINT SdioCdGetCSD(void)
 
 	pResp = (UINT *)&sdinfo.csd;
 
-	nRes = SdioCmd(sdinfo.nCH, SDCMD_SEND_CSD, sdinfo.rca, pResp, ecrtR2);
+	nRes = SdioCdCmd(sdinfo.nCH, SDCMD_SEND_CSD, sdinfo.rca, pResp, ecrtR2);
 
 #if (DBG_SDIO_CD_CMD & ENX_DBG_STATE)
 	SdioPrintCSD(&sdinfo.csd);
@@ -458,16 +561,16 @@ static UINT SdioCdBusWidthChange(void)
 	ENX_LOG_START(DBG_SDIO_CD_CMD);
 
 	// Select a card
-	nRes = SdioCmd(sdinfo.nCH, SDCMD_SELECT_CARD, sdinfo.rca, &nResp, ecrtR1b);
+	nRes = SdioCdCmd(sdinfo.nCH, SDCMD_SELECT_CARD, sdinfo.rca, &nResp, ecrtR1b);
 #if 0
 	// Unlock
-	nRes = SdioCmd(sdinfo.nCH, SDCMD_LOCK_UNLOCK, 0x00000000, &nResp, ecrtR1b);
+	nRes = SdioCdCmd(sdinfo.nCH, SDCMD_LOCK_UNLOCK, 0x00000000, &nResp, ecrtR1b);
 #endif
 #if 1
 	// ACMD6 : 1bit -> 4bit
 	SdioCdAppCmd(sdinfo.rca);
 	nArg = SD_BUS_WIDTH_4;
-	nRes = SdioCmd(sdinfo.nCH, SDCMD_SET_BUS_WIDTH, nArg, &nResp, ecrtR1);
+	nRes = SdioCdCmd(sdinfo.nCH, SDCMD_SET_BUS_WIDTH, nArg, &nResp, ecrtR1);
 
 	if (nRes == ENX_OK) {
 		SdioSetBitMode(sdinfo.nCH, SDIO_4BIT_MODE);
@@ -483,13 +586,17 @@ static UINT SdioCdRegDataRead(UINT nCmd, UINT nArg, UINT *nResp, eCmdRespType cm
 	UINT nRes, nTemp;
 	UINT *getData = (UINT *)SDIO_DATA_BASE;
 
+#if defined(sdio_support_cmd_irq)
+	SdioSetCmdIrqEn(sdinfo.nCH, ENX_OFF);
+#endif
+
 	nTemp = SdioGetDataBlockByte(sdinfo.nCH);
 	SdioSetDataBlockByte(sdinfo.nCH, nSize);		// Data Block Byte를 설정
 	SdioSetDataCmd(sdinfo.nCH, SDIO_DIO_SINGLE_READ, nCmd);	// Data Read command를 설정
 
 	ENX_SDIOCD_IRQ_LOCK();
 	ENX_SDIOCD_FLUSH_DCACHE((ULONG)getData, nSize);
-	nRes = SdioDataIO(sdinfo.nCH, SDIO_DIO_SINGLE_READ, (ULONG)getData, nArg, 1);
+	nRes = SdioCdDataIO(sdinfo.nCH, SDIO_DIO_SINGLE_READ, (ULONG)getData, nArg, 1);
 	ENX_SDIOCD_FLUSH_DCACHE((ULONG)getData, nSize);
 	memcpy(pSdioReg, getData, nSize);
 	ENX_SDIOCD_IRQ_UNLOCK();
@@ -504,6 +611,10 @@ static UINT SdioCdRegDataRead(UINT nCmd, UINT nArg, UINT *nResp, eCmdRespType cm
 		ENX_DEBUGF(DBG_SDIO_CD_CMD, "[%2d] res(%c) RESP2(0x%08X)\n", nCmd, nRes == ENX_OK ? 'O' : 'X', nResp[2]);
 		ENX_DEBUGF(DBG_SDIO_CD_CMD, "[%2d] res(%c) RESP3(0x%08X)\n", nCmd, nRes == ENX_OK ? 'O' : 'X', nResp[3]);
 	}
+
+#if defined(sdio_support_cmd_irq)
+	SdioSetCmdIrqEn(sdinfo.nCH, ENX_ON);
+#endif
 
 	return nRes;
 }
@@ -621,15 +732,16 @@ static UINT SdioCdSetClock(void)
 //			SdioSetClockDiv(sdinfo.nCH, 0xffff);
 			SdioSetClockDiv(sdinfo.nCH, 0);
 //			SdioSetClockDiv(sdinfo.nCH, 3);
-//			SdioSetClockDiv(sdinfo.nCH, 6);
+//			SdioSetClockDiv(sdinfo.nCH, 50);
 		}
 
 		nRes = ENX_OK;
 	} else {
 if_speed:
 		ENX_DEBUGF(DBG_SDIO_CD_CMD, "Set Default speed mode\n");
-//		SdioSetClockDiv(sdinfo.nCH, 1);
-		SdioSetClockDiv(sdinfo.nCH, 10);
+//		SdioSetClockDiv(sdinfo.nCH, 0);
+		SdioSetClockDiv(sdinfo.nCH, 1);
+//		SdioSetClockDiv(sdinfo.nCH, 10);
 		nRes = ENX_OK;
 	}
 
@@ -682,7 +794,7 @@ static UINT SdioCdSetBlockLength(void)
 	ENX_LOG_START(DBG_SDIO_CD_CMD);
 
 	nArg = SdioGetDataBlockByte(sdinfo.nCH);
-	nRes = SdioCmd(sdinfo.nCH, SDCMD_SET_BLOCKLEN, nArg, &nResp, ecrtR1);
+	nRes = SdioCdCmd(sdinfo.nCH, SDCMD_SET_BLOCKLEN, nArg, &nResp, ecrtR1);
 
 	ENX_LOG_END(DBG_SDIO_CD_CMD);
 
@@ -714,11 +826,29 @@ ENX_OKFAIL SdioCdInitProcess(void)
 	printf("SDIO-SD reg [0x%08X] stuning(%ubyte)\n", (UINT *)&sdinfo.stuning, sizeof(sdinfo.stuning));
 #endif
 
+	UINT wgap;
+	ULONG wstart = BenchTimeStart();
+
 	UINT nCH = sdinfo.nCH;
 	memset(&sdinfo, 0, sizeof(sdinfo));
 	sdinfo.nCH = nCH;
+
+#if defined(sdio_support_cmd_irq)
+	semSdcdCmd[sdinfo.nCH] = xSemaphoreCreateBinary();
+//	xSemaphoreTake(semSdcdCmd[sdinfo.nCH], portMAX_DELAY);
+
+	SdioCmdIrqCallback(sdinfo.nCH, SdioCdCmdIrqHdr, &sdinfo);
+	SdioSetCmdIrqEn(sdinfo.nCH, ENX_ON);
+#endif
+#if defined(sdio_support_dat_irq)
+	semSdcdDat[sdinfo.nCH] = xSemaphoreCreateBinary();
+//	xSemaphoreTake(semSdcdDat[sdinfo.nCH], portMAX_DELAY);
+
+	SdioDatIrqCallback(sdinfo.nCH, SdioCdDatIrqHdr, &sdinfo);
+	SdioSetDatIrqEn(sdinfo.nCH, ENX_ON);
+#endif
+
 #if 1
-	BYTE *pSDIO_DATA_BASE;
 	if (SDIO_DATA_BASE == NULL) {
 		SDIO_DATA_BASE = pvPortMalloc(1024);
 		sdio_data_address = (uint64_t)SDIO_DATA_BASE;
@@ -726,8 +856,8 @@ ENX_OKFAIL SdioCdInitProcess(void)
 			SDIO_DATA_BASE[k] = 0xA5;
 		}
 	}
-	pSDIO_DATA_BASE = SDIO_DATA_BASE;
-	printf("SDIO_DATA_BASE: 0x%08X\n", SDIO_DATA_BASE);
+//	BYTE *pSDIO_DATA_BASE = SDIO_DATA_BASE;
+//	printf("SDIO_DATA_BASE: 0x%08X\n", SDIO_DATA_BASE);
 #endif
 	SdioSetClockDef(sdinfo.nCH);
 	char strClockPrint[40] = {0};
@@ -799,6 +929,7 @@ ENX_OKFAIL SdioCdInitProcess(void)
 		sdinfo.nErrorCode = 10;
 		goto done_fail;
 	}
+#if 0
 	if (sdio_data_address != (uint64_t)SDIO_DATA_BASE) {
 		_Rprintf("Error!!\n");
 		printf("SDIO data address 0x%08X -> 0x%08X\n", sdio_data_address, SDIO_DATA_BASE);
@@ -807,13 +938,15 @@ ENX_OKFAIL SdioCdInitProcess(void)
 		ENX_SDIOCD_FLUSH_DCACHE((ULONG)SDIO_DATA_BASE, 1024);
 		hexDump("SDIO_DATA_BASE", SDIO_DATA_BASE, 1024);
 	}
+#endif
 
 	// CMD 6
+#if 1
 	if (SdioCdSetClock() == ENX_FAIL) {
 		sdinfo.nErrorCode = 11;
 		goto done_fail;
 	}
-
+#endif
 	// CMD 19
 	if(sdinfo.nVoltageMode == 1) {	// UHS-1 1.8v
 		if (SdioCdTuningCommand() == ENX_FAIL) {
@@ -831,13 +964,15 @@ ENX_OKFAIL SdioCdInitProcess(void)
 	sdinfo.nActive = 1;
 
 	SdioClockDivPrint(sdinfo.nCH, strClockPrint);
-	_Gprintf("SDIO%u(MicroSD) Init OK(%s)\n", sdinfo.nCH, strClockPrint);
+	wgap = BenchTimeStop(wstart);
+	_Gprintf("SDIO%u(MicroSD) Init OK(%s) %uus\n", sdinfo.nCH, strClockPrint, wgap);
 
 	ENX_LOG_END(DBG_SDIO_CD_CMD);
 	return ENX_OK;
 done_fail:
 	SdioClockDivPrint(sdinfo.nCH, strClockPrint);
-	_Rprintf("SDIO%u(MicroSD) Init Fail(err:%u)(%s)\n", sdinfo.nCH, sdinfo.nErrorCode, strClockPrint);
+	wgap = BenchTimeStop(wstart);
+	_Rprintf("SDIO%u(MicroSD) Init Fail(err:%u)(%s) %uus\n", sdinfo.nCH, sdinfo.nErrorCode, strClockPrint, wgap);
 
 	ENX_LOG_END(DBG_SDIO_CD_CMD);
 	return ENX_FAIL;
@@ -846,7 +981,21 @@ done_fail:
 void SdioCdClockDown(void)
 {
 	UINT Clkdiv = SdioGetClockDiv(sdinfo.nCH);
-	SdioSetClockDiv(sdinfo.nCH, Clkdiv + 1);
+	if (Clkdiv == 0xffff) {
+		SdioSetClockDiv(sdinfo.nCH, 0);
+	} else {
+		SdioSetClockDiv(sdinfo.nCH, Clkdiv + 1);
+	}
+
+
+	char strClockPrint[40] = {0};
+	SdioClockDivPrint(sdinfo.nCH, strClockPrint);
+	printf("SDIO%u(MicroSD) Change Clock(%s)\n", sdinfo.nCH, strClockPrint);
+}
+
+void SdioCdClockSet(WORD Clkdiv)
+{
+	SdioSetClockDiv(sdinfo.nCH, Clkdiv);
 
 	char strClockPrint[40] = {0};
 	SdioClockDivPrint(sdinfo.nCH, strClockPrint);
@@ -876,7 +1025,13 @@ void SdioCdInit(UINT nCH)
 
 	SdioSetIoMode(sdinfo.nCH, SDIO_CD_MODE);
 
-	GpioSetOut(SD_GPIO_RST, GPIO_OUT_LOW); // LO:ON HI:OFF
+#if 0										// New Peri B/d - LO:OFF HI:ON
+	GpioSetOut(SD_GPIO_RST, GPIO_OUT_LOW);
+	WaitXms(100);
+	GpioSetOut(SD_GPIO_RST, GPIO_OUT_HI);
+#else
+	GpioSetOut(SD_GPIO_RST, GPIO_OUT_LOW);	// Old Peri B/d - LO:ON HI:OFF
+#endif
 	SdioSetDelayfn(sdinfo.nCH, (user_delay_fn)ENX_SDIOCD_DELAY);
 
 //	GpioSetDir(SD_GPIO_IRQ, GPIO_DIR_IN);
@@ -972,13 +1127,13 @@ ENX_OKFAIL SdioCdE(UINT start_sctor, UINT end_sctor)
 	}
 
 	// CMD32 : Erase start address
-	nRes = SdioCmd(sdinfo.nCH, SDCMD_ERASE_WR_BLK_START, nBlocSp, &nResp, ecrtR1);
+	nRes = SdioCdCmd(sdinfo.nCH, SDCMD_ERASE_WR_BLK_START, nBlocSp, &nResp, ecrtR1);
 
 	// CMD33 : Erase end address
-	nRes = SdioCmd(sdinfo.nCH, SDCMD_ERASE_WR_BLK_END, nBlocEp, &nResp, ecrtR1);
+	nRes = SdioCdCmd(sdinfo.nCH, SDCMD_ERASE_WR_BLK_END, nBlocEp, &nResp, ecrtR1);
 
 	// CMD38 : Erase command
-	nRes = SdioCmd(sdinfo.nCH, SDCMD_ERASE, 0x00000000, &nResp, ecrtR1b);
+	nRes = SdioCdCmd(sdinfo.nCH, SDCMD_ERASE, 0x00000000, &nResp, ecrtR1b);
 
 	ENX_LOG_END(DBG_SDIO_CD_CMD);
 
@@ -1010,13 +1165,22 @@ ENX_OKFAIL SdioCdRead(const BYTE *buff, UINT sector, UINT count)
 
 	nGetByte = SdioGetDataBlockByte(sdinfo.nCH) * count;
 
+#if defined(sdio_support_cmd_irq)
+	SdioSetCmdIrqEn(sdinfo.nCH, ENX_OFF);
+#endif
+
 	ENX_SDIOCD_IRQ_LOCK();
 	ENX_SDIOCD_FLUSH_DCACHE((ULONG)getData, nGetByte);
 	//printf("READ(%c)-start, Addr(0x%08X) Size(%u)\n", count == 1 ? 'S' : 'M', getData, nGetByte);
-	nRes = SdioDataIO(sdinfo.nCH, count > 1 ? SDIO_DIO_MULTI_READ : SDIO_DIO_SINGLE_READ, (ULONG)getData, nAddr, count);
+	sdinfo.time_start = BenchTimeStart();
+	nRes = SdioCdDataIO(sdinfo.nCH, count > 1 ? SDIO_DIO_MULTI_READ : SDIO_DIO_SINGLE_READ, (ULONG)getData, nAddr, count);
 	SdioGetResp(sdinfo.nCH, &nResp, ecrtR1);
 	//ENX_SDIOCD_FLUSH_DCACHE((ULONG)getData, nGetByte);
 	ENX_SDIOCD_IRQ_UNLOCK();
+
+#if defined(sdio_support_cmd_irq)
+	SdioSetCmdIrqEn(sdinfo.nCH, ENX_ON);
+#endif
 
 	//if (nGetByte > 1024)
 	//	hexDump("READ-done", getData, 1024);
@@ -1042,25 +1206,37 @@ ENX_OKFAIL SdioCdWrite(const BYTE *buff, UINT sector, UINT count)
 
 	while (SdioIsDataEn(sdinfo.nCH) == 1) {
 		ENX_SDIOCD_DELAY(0);
+//		if (SDIO0_DAT_BUSY == 0) {
+//			SDIO0_DAT_EN = 0;
+//		}
 	}
 
 	nGetByte = SdioGetDataBlockByte(sdinfo.nCH) * count;
 
 	// ACMD23 : Data Write - Pre-erased Setting prior to a Multiple Block Write Operation
-	if(sdinfo.ocr.CCS) {
+	if(count > 1 && sdinfo.ocr.CCS) {
 		SdioCdAppCmd(sdinfo.rca);
-		nRes = SdioCmd(sdinfo.nCH, SDCMD_SET_WR_BLK_ERASE_COUNT, count, &nResp, ecrtR1);
+		nRes = SdioCdCmd(sdinfo.nCH, SDCMD_SET_WR_BLK_ERASE_COUNT, count, &nResp, ecrtR1);
 		if (nRes == ENX_FAIL) {
 			_Rprintf("Error: ACMD23\n");
 		}
 	}
 
-	ENX_SDIOCD_IRQ_LOCK();
+#if defined(sdio_support_cmd_irq)
+	SdioSetCmdIrqEn(sdinfo.nCH, ENX_OFF);
+#endif
+
+//	ENX_SDIOCD_IRQ_LOCK();
 	ENX_SDIOCD_FLUSH_DCACHE((ULONG)getData, nGetByte);
 	//hexDump("WRITE-start", getData, nGetByte);
-	nRes = SdioDataIO(sdinfo.nCH, count > 1 ? SDIO_DIO_MULTI_WRITE : SDIO_DIO_SINGLE_WRITE, (ULONG)getData, nAddr, count);
+	sdinfo.time_start = BenchTimeStart();
+	nRes = SdioCdDataIO(sdinfo.nCH, count > 1 ? SDIO_DIO_MULTI_WRITE : SDIO_DIO_SINGLE_WRITE, (ULONG)getData, nAddr, count);
 	SdioGetResp(sdinfo.nCH, &nResp, ecrtR1);
-	ENX_SDIOCD_IRQ_UNLOCK();
+//	ENX_SDIOCD_IRQ_UNLOCK();
+
+#if defined(sdio_support_cmd_irq)
+	SdioSetCmdIrqEn(sdinfo.nCH, ENX_ON);
+#endif
 
 	//printf("WRITE(%c)-done, Addr(0x%08X) Size(%u)\n", count == 1 ? 'S' : 'M', getData, nGetByte);
 	//ENX_DEBUGF(DBG_SDIO_CD_DAT, "[%2u] res(%d) RESP(0x%08X) \n",

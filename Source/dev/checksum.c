@@ -60,9 +60,10 @@ UINT ChksumIsIrq(void)
 void IrqChksum(void)
 {
 	if (ChksumIsIrq()) {
-		_printf("Chksum IRQ Get\n");
 		if (tCHKSUMIrq.irqfn) {
 			tCHKSUMIrq.irqfn(tCHKSUMIrq.arg);
+		} else {
+			printf("Chksum IRQ Get\n");
 		}
 		ChksumIrqClear();
 	}

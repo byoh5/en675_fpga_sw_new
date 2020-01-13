@@ -11,13 +11,12 @@ ISRD static tIhnd arrUARTTXIrq[UART_CNT];
 
 void UartInit(UINT nCH, UINT Speed_Hz)
 {
-	//arrUART[nCH]->CLK_DIV = (MCK_FREQ / (Speed_Hz << 4)) - 1;
-	arrUART[nCH]->CLK_DIV = ((MCK_FREQ+(Speed_Hz<<3)) / (Speed_Hz<<4)) - 1;
+	//arrUART[nCH]->CLK_DIV = (APB_FREQ / (Speed_Hz << 4)) - 1;
+	arrUART[nCH]->CLK_DIV = ((APB_FREQ+(Speed_Hz<<3)) / (Speed_Hz<<4)) - 1;
 
 	arrUART[nCH]->TX_TYPE = 0; // 0:open-drain 1:push-pull
 	arrUART[nCH]->STOP_BIT = 0; // 0:1bit 1:2bit
-	arrUART[nCH]->PARITY_EN = 0; // 0:off 1:on
-	arrUART[nCH]->PARITY_TYPE = 0; // 0:even 1:odd
+	arrUART[nCH]->PARITY_MODE = UART_PARITY_NONE; // 0,1:none 1:even 2:odd
 	arrUART[nCH]->TX_IRQ_EN = 0; // 0:normal 1:interrupt occurs
 	arrUART[nCH]->RX_IRQ_EN = 0; // 0:normal 1:interrupt occurs
 
@@ -39,7 +38,7 @@ void UartInit(UINT nCH, UINT Speed_Hz)
 		case 8:	UART8_PIN_INIT;	break;
 	}
 
-	//printf("UART%u Init - %uHz(%u)\n", nCH, MCK_FREQ / ((arrUART[nCH]->CLK_DIV + 1) * 16), arrUART[nCH]->CLK_DIV);
+	//printf("UART%u Init - %uHz(%u)\n", nCH, APB_FREQ / ((arrUART[nCH]->CLK_DIV + 1) * 16), arrUART[nCH]->CLK_DIV);
 }
 
 void UartDeinit(UINT nCH)
@@ -47,8 +46,7 @@ void UartDeinit(UINT nCH)
 	arrUART[nCH]->CLK_DIV = 0;
 	arrUART[nCH]->TX_TYPE = 0;
 	arrUART[nCH]->STOP_BIT = 0;
-	arrUART[nCH]->PARITY_EN = 0;
-	arrUART[nCH]->PARITY_TYPE = 0;
+	arrUART[nCH]->PARITY_MODE = UART_PARITY_NONE;
 	arrUART[nCH]->TX_IRQ_EN = 0;
 	arrUART[nCH]->RX_IRQ_EN = 0;
 
@@ -69,6 +67,104 @@ void UartDeinit(UINT nCH)
 		case 7:	UART7_PIN_DEINIT;	break;
 		case 8:	UART8_PIN_DEINIT;	break;
 	}
+}
+
+void UartGetPin(UINT nCH, UINT *pinRx, UINT *pinTx)
+{	//				func2	func3
+	//				rx,tx	rx,tx
+	// uart0: gpio	4,5		0,1
+	// uart1: gpio	12,13	8,9
+	// uart2: gpio	20,21	16,17
+	// uart3: gpio	28,29	24,25
+	// uart4: gpio	36,37	32,33
+	// uart5: gpio	44,45	40,41
+	// uart6: gpio	52,53	48,49
+	// uart7: gpio	60,61	56,57
+	// uart8: gpio	68,69	64,65
+#if 0
+	typedef struct {
+		UINT rx;
+		UINT tx;
+	} func2;
+
+	typedef struct {
+		UINT rx;
+		UINT tx;
+	} func3;
+
+	struct {
+		func2 a;
+		func3 b;
+	} uartpin;
+
+	struct uartpin AA = {
+		.a = {
+			.rx = 10,
+			.tx = 20,
+		},
+		.b = {
+			.rx = 30,
+			.tx = 40,
+		},
+	};
+#endif
+}
+
+void UartSetClkdiv(UINT nCH, UINT Clkdiv)
+{
+	arrUART[nCH]->CLK_DIV = Clkdiv;
+}
+
+UINT UartGetClkdiv(UINT nCH)
+{
+	return arrUART[nCH]->CLK_DIV;
+}
+
+void UartSetClk(UINT nCH, UINT Speed_Hz)
+{
+	UINT u32Cal = ((APB_FREQ + (Speed_Hz << 3)) / (Speed_Hz << 4)) - 1;
+	if (u32Cal > 0xFFF) {
+		arrUART[nCH]->CLK_DIV = 0xFFF;
+		ENX_DEBUGF(DBG_UART_LOG, "UART Clk Min.(%u/%u)\n", u32Cal, arrUART[nCH]->CLK_DIV);
+	} else {
+		arrUART[nCH]->CLK_DIV = u32Cal;
+	}
+}
+
+UINT UartGetClk(UINT nCH)
+{
+//	ENX_DEBUGF(DBG_UART_LOG, "UART Clk Set %uHz(%u)\n", APB_FREQ / (((arrUART[nCH]->CLK_DIV + 1) << 4) - (1 << 3)), arrUART[nCH]->CLK_DIV);
+	return APB_FREQ / (((arrUART[nCH]->CLK_DIV + 1) << 4) - (1 << 3));
+}
+
+void UartSetTxType(UINT nCH, UINT Type)
+{
+	arrUART[nCH]->TX_TYPE = Type;
+}
+
+UINT UartGetTxType(UINT nCH)
+{
+	return arrUART[nCH]->TX_TYPE;
+}
+
+void UartSetStopbit(UINT nCH, UINT Stopbit)
+{
+	arrUART[nCH]->STOP_BIT = Stopbit;
+}
+
+UINT UartGetStopbit(UINT nCH)
+{
+	return arrUART[nCH]->STOP_BIT;
+}
+
+void UartSetParityMode(UINT nCH, UART_PARITY_MODE mode)
+{
+	arrUART[nCH]->PARITY_MODE = mode;
+}
+
+UART_PARITY_MODE UartGetParityMode(UINT nCH)
+{
+	return arrUART[nCH]->PARITY_MODE;
 }
 
 void UartTx(UINT nCH, char data)
@@ -173,7 +269,7 @@ void IrqUart(UINT nCH)
 			if (arrUARTRXIrq[nCH].irqfn) {
 				arrUARTRXIrq[nCH].irqfn(arrUARTRXIrq[nCH].arg);
 			} else {
-				printf("UART%u-RX IRQ Get: [%c]\n", UartRxGetByte(nCH)); // rx drop
+				printf("UART%u-RX IRQ Get: [%c]\n", nCH, UartRxGetByte(nCH)); // rx drop
 			}
 		}
 	}

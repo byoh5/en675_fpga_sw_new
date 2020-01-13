@@ -119,14 +119,27 @@ UINT EthphyGetPHYID(void)
 	MdioRead(ethphy_info.addr, ETHPHY_PI1R_ADR, &getData1); // Read the PHY Identifier I Register.
 	MdioRead(ethphy_info.addr, ETHPHY_PI2R_ADR, &getData2); // Read the PHY Identifier II Register.
 	outData = ((getData1 << 16) | getData2);
+	return outData;
+}
+
+void EthphyPrintPHYName(void)
+{
+	UINT outData = EthphyGetPHYID();
 	if ((outData & ETHPHY_PHY_ID_MASK) == 0x00221560) {
+#if defined(__ETHPHY_KSZ8081MNX__) || defined(__ETHPHY_KSZ8081RNB__)
 		_Gprintf("  >>KSZ8081 Connected...\n");
+#else
+		_Rprintf("  >>KSZ8081 Connected... Error setting & compile\n");
+#endif
 	} else if ((outData & ETHPHY_PHY_ID_MASK) == 0x00221620) {
+#if defined(__ETHPHY_KSZ9031RNX__)
 		_Gprintf("  >>KSZ9031 Connected...\n");
+#else
+		_Rprintf("  >>KSZ9031 Connected... Error setting & compile\n");
+#endif
 	} else {
 		_Rprintf("  >>Unknown Ethernet PHY[0x%08X] Connected...\n", outData);
 	}
-	return outData;
 }
 
 #endif // __ETHERNET__

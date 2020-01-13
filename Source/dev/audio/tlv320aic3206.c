@@ -211,9 +211,9 @@ const BYTE TLV320AIC3206_SetupA[][2] =
 	{0xFE, 0x03},	//	Delay 3 millisecond   // f 30 02 xxxxx1xx # Wait for offset correction to finish
 	{0x00, 0x00},	//	Select Page 0
 	{0x40, 0x00},	//	Unmute LDAC/RDAC
-	{0x41, 0x00},
-	{0x42, 0x00},
-	{0x00, 0x04},	// Page 0
+	{0x41, 0xC0},	//	Left DAC Channel Digital Volume Control Register
+	{0x42, 0xC0},	//	Right DAC Channel Digital Volume Control Register
+	{0x00, 0x04},	//	Page 0
 
 //	MIC Setting
 	{0x00, 0x00},	//	Select Page 0

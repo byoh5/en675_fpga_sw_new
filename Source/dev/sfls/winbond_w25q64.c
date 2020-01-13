@@ -29,6 +29,8 @@ static SFLScontrol sfls_w25q64 = {
 #else
 	.cmd_enter_qpi = 0,
 #endif
+	.cmd_enter_4b = 0,
+	.cmd_exit_4b = 0,
 	.cmd_sector_erase = W25Q64_CMD_SECTOR_ERASE,
 	.cmd_32k_erase = W25Q64_CMD_32KB_ERASE,
 	.cmd_64k_erase = W25Q64_CMD_64KB_ERASE,

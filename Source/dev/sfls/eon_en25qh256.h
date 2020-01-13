@@ -3,6 +3,7 @@
 
 #define EN25QH256_IOMODE			SFLS_QUAD // SFLS_SINGLE // SFLS_DUAL // SFLS_QUAD
 #define EN25QH256_ENABLE_QPI		1
+#define EN25QH256_ENABLE_4B			1
 
 #define EN25QH256_RDLTC			2
 #if (EN25QH256_IOMODE==SFLS_SINGLE)
@@ -54,12 +55,14 @@
 #endif
 
 #define EN25QH256_CMD_READ			0x0B
-#define EN25QH256_CMD_DUAL_READ	0xBB
-#define EN25QH256_CMD_QUAD_READ	0xEB
+#define EN25QH256_CMD_DUAL_READ		0xBB
+#define EN25QH256_CMD_QUAD_READ		0xEB
 #define EN25QH256_CMD_PAGE_PROGRAM	0x02
 #define EN25QH256_CMD_WRITE_ENABLE	0x06
 #define EN25QH256_CMD_READ_STATUS	0x05
-#define EN25QH256_CMD_ENTER_QPI	0x38
+#define EN25QH256_CMD_ENTER_QPI		0x38
+#define EN25QH256_CMD_EN4B			0xB7
+#define EN25QH256_CMD_EX4B			0xE9
 #define EN25QH256_CMD_SECTOR_ERASE	0x20
 #define EN25QH256_CMD_32KB_ERASE	0x52
 #define EN25QH256_CMD_64KB_ERASE	0xD8
@@ -70,6 +73,11 @@ extern void SflsEn25qh256_SecterErase(UINT addr);
 extern void SflsEn25qh256_32kErase(UINT addr);
 extern void SflsEn25qh256_64kErase(UINT addr);
 extern void SflsEn25qh256_ChipErase(UINT addr);
+extern BYTE SflsEn25qh256_ReadIFR(void);
+extern void SflsEn25qh256_Enter4B(void);
+extern void SflsEn25qh256_Exit4B(void);
+extern void SflsEn25qh256_EnterHBL(void);
+extern void SflsEn25qh256_ExitHBL(void);
 
 #if (EN25QH256_ENABLE_QPI==1)
 #if (EN25QH256_IOMODE!=SFLS_QUAD)

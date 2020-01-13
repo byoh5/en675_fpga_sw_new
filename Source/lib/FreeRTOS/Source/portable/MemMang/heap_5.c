@@ -263,8 +263,10 @@ void *pvReturn = NULL;
 		else
 		{
 			mtCOVERAGE_TEST_MARKER();
-			if (xWantedSize >= 256*1024) {
+			if (xWantedSize >= 128*1024) {
 				_Yprintf("Malloc %ubyte\n", xWantedSize);
+			} else {
+//				printf("Malloc %ubyte\n", xWantedSize);
 			}
 		}
 	}

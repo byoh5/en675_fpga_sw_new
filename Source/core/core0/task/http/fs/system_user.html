@@ -1,0 +1,72 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+<title></title>
+<link rel="stylesheet" type="text/css" href="bootstrap.min.css">
+<link rel="stylesheet" type="text/css" href="style.css">
+<script type="text/javascript">
+<!--
+function SetFormDefaults()
+{
+//<!--#sy_user-->
+
+	document.form.s_u_id.value = uid;
+	document.form.s_u_pw.value = pw;
+
+	if(ftpserver != -1)
+	{
+		document.form.s_u_ftp[ftpserver].checked = true;
+	}
+	else
+	{
+		var tgFTP = document.getElementById("set_ftp");
+		tgFTP.style.display = "none";
+	}
+
+	if(audiostm != -1)
+	{
+		document.form.s_u_aud[audiostm^1].checked = true;
+	}
+	else
+	{
+		var tgAUD = document.getElementById("set_aud");
+		tgAUD.style.display = "none";
+	}
+}
+//-->
+</script>
+</head>
+<body onload="SetFormDefaults();">
+<form id="form" name="form" method="get" action="appquery.cgi">
+	<div class="sub-title">
+		<input class="btn btn-default pull-right" style="width:100px" name="btOK" type="submit" value="submit">
+		<h3>User Information</h3>
+	</div>
+	<hr>
+	<div>
+		<label class="sub-label">ID</label>
+		<input name="s_u_id" type="text">
+	</div>
+	<div>
+		<label class="sub-label">Password</label>
+		<input name="s_u_pw" type="password">
+	</div>
+	<div>
+		<label class="sub-label">Confirm</label>
+		<input name="confirm" type="password">
+	</div>
+	<div id="set_ftp">
+		<label class="sub-label">FTP Server</label>
+		<label class="radio-inline"><input type="radio" name="s_u_ftp" value=0>UNUSE</label>
+		<label class="radio-inline"><input type="radio" name="s_u_ftp" value=1>USE</label>
+	</div>
+	<div id="set_aud">
+		<label class="sub-label">Audio Out</label>
+		<label class="radio-inline"><input type="radio" name="s_u_aud" value=1>UNUSE</label>
+		<label class="radio-inline"><input type="radio" name="s_u_aud" value=0>USE</label>
+	</div>
+</div>
+</form>
+</body>
+</html>

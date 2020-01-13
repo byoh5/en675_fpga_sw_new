@@ -29,6 +29,13 @@ static SFLScontrol sfls_en25qh256 = {
 #else
 	.cmd_enter_qpi = 0,
 #endif
+#if (EN25QH256_ENABLE_4B==1)
+	.cmd_enter_4b = EN25QH256_CMD_EN4B,
+	.cmd_exit_4b = EN25QH256_CMD_EX4B,
+#else
+	.cmd_enter_4b = 0,
+	.cmd_exit_4b = 0,
+#endif
 	.cmd_sector_erase = EN25QH256_CMD_SECTOR_ERASE,
 	.cmd_32k_erase = EN25QH256_CMD_32KB_ERASE,
 	.cmd_64k_erase = EN25QH256_CMD_64KB_ERASE,
@@ -72,7 +79,7 @@ static void SflsEn25qh256_Erase(SFLS_ERASE erase_type, UINT addr)
 	SFLS_USR_RD_EN 		= 0;
 	SFLS_USR_WR_EN 		= 0;
 	SFLS_USR_GAP 		= 0;
-	SFLS_USR_ADR_EXT 	= 0;
+	SFLS_USR_ADR_EXT 	= SFLS_BUS_ADR_EXT;
 	SFLS_USR_BUSY_EN 	= 1;
 	SFLS_USR_RDREG_CMD_MODE = sfls_en25qh256.iors_cmd;
 	SFLS_USR_RDREG_DAT_MODE	= sfls_en25qh256.iors_dat;
@@ -116,5 +123,54 @@ void SflsEn25qh256_ChipErase(UINT addr)
 SFLScontrol *SflsEn25qh256_GetControl(void)
 {
 	return &sfls_en25qh256;
+}
+
+BYTE SflsEn25qh256_ReadIFR(void)
+{
+	SFLS_USR_CMD_MODE	= SFLS_BUS_RD_CMD_MODE;
+	SFLS_USR_DAT_MODE	= SFLS_BUS_RD_DAT_MODE;
+	SFLS_USR_ADR_EN		= 0;
+	SFLS_USR_GAP_EN		= 0;
+	SFLS_USR_GAP 		= 0;
+	SFLS_USR_RD_EN		= 1;
+	SFLS_USR_WR_EN		= 0;
+	SFLS_USR_LEN		= 0;
+	SFLS_USR_BUSY_EN	= 0;
+	SFLS_USR_CMD		= 0x2B;
+	SFLS_USR_RDLTC		= SFLS_IO_RDLTC;
+	SFLS_USR_REQ		= 1;
+	while (SFLS_USR_REQ);
+
+	BYTE rdifr = SFLS_USR_RDDAT >> 24;
+	if (rdifr & 0x1)	printf("- Reserved bit\n");
+	if (rdifr & 0x2)	printf("- OTP sector is protected\n");
+	if (rdifr & 0x4)	printf("- 4byte address mode\n");
+	if (rdifr & 0x8)	printf("- Erase suspended\n");
+	if (rdifr & 0x10)	printf("- Program suspended\n");
+	if (rdifr & 0x20)	printf("- Indicate program failed\n");
+	if (rdifr & 0x40)	printf("- Indicate erase failed\n");
+	if (rdifr & 0x80)	printf("- access larger than 128Mb\n");
+
+	return rdifr;
+}
+
+void SflsEn25qh256_Enter4B(void)
+{
+	SflsSingleCommand(0xB7);
+}
+
+void SflsEn25qh256_Exit4B(void)
+{
+	SflsSingleCommand(0xE9);
+}
+
+void SflsEn25qh256_EnterHBL(void)
+{
+	SflsSingleCommand(0x67);
+}
+
+void SflsEn25qh256_ExitHBL(void)
+{
+	SflsSingleCommand(0x98);
 }
 #endif
