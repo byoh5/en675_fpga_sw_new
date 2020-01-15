@@ -355,7 +355,7 @@ UINT _test_crc32;
 
 static struct pbuf *low_level_input(struct netif *netif)
 {
-	TTa = *mtime;
+	TTa = BenchTimeStart();
 	struct pbuf *p = NULL;
 	if (cNRQueue_isempty(&qEthernetRX) == ENX_FAIL) {
 		portENTER_CRITICAL();
@@ -507,9 +507,9 @@ static void network_ethif_pkt_input(void *ctx)
 							pbuf_free(p);
 							p = NULL;
 						}
-						TTb = *mtime;
-						if((TTb - TTa) > 15000) {
-							printf("b-a:%lu\n", TTb-TTa);
+						TTb = BenchTimeStop(TTa); // us 단위 return
+						if(TTb > 500000) {
+							printf("eth_in:%luus\n", TTb);
 						}
 						break;
 					case ETHTYPE_IPV6:

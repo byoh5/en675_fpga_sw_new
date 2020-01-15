@@ -467,9 +467,10 @@ UINT EthIsRxIrq(void)
 void IrqEthTx(void)
 {
 	if (EthIsTxIrq()) {
-		printf("EthTx IRQ Get\n");
 		if (hETHERNETTXIrq.irqfn) {
 			hETHERNETTXIrq.irqfn(hETHERNETTXIrq.arg);
+		} else {
+			printf("EthTx IRQ Get\n");
 		}
 		EthTxIrqClear();
 	}
@@ -478,9 +479,10 @@ void IrqEthTx(void)
 void IrqEthRx(void)
 {
 	if (EthIsRxIrq()) {
-//		printf("EthRx IRQ Get\n");
 		if (hETHERNETRXIrq.irqfn) {
 			hETHERNETRXIrq.irqfn(hETHERNETRXIrq.arg);
+		} else {
+			printf("EthRx IRQ Get\n");
 		}
 		EthRxIrqClear();
 	}

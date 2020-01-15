@@ -396,8 +396,11 @@ extern void AdcSetOselIirInv(UINT oseliirinv);
 extern UINT AdcGetOselIirInv(void);
 extern WORD AdcGet(UINT nCH);
 
-extern WORD Checksum16(BYTE *apbDst, UINT anNum);
+extern void Checksum16_isr_async(BYTE *apbDst, UINT anNum);
+extern WORD Checksum16_isr(BYTE *apbDst, UINT anNum);
+extern void Checksum16_rtos_async(BYTE *apbDst, UINT anNum);
 extern WORD Checksum16_rtos(BYTE *apbDst, UINT anNum);
+extern WORD ChksumGetDat(void);
 extern void ChksumIrqCallback(irq_fn irqfn, void *arg);
 extern void ChksumSetIrqEn(ENX_SWITCH sw);
 extern ENX_SWITCH ChksumGetIrqEn(void);

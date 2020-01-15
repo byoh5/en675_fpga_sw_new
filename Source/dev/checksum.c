@@ -8,28 +8,41 @@
 
 ISRD static tIhnd tCHKSUMIrq;
 
-WORD Checksum16(BYTE *apbDst, UINT anNum)
+inline void Checksum16_isr_async(BYTE *apbDst, UINT anNum)
 {
 	CHKSUM_ADR = (intptr_t)apbDst;
 	CHKSUM_LEN = anNum;
 	CHKSUM_GO = 1;
+}
+
+inline WORD Checksum16_isr(BYTE *apbDst, UINT anNum)
+{
+	Checksum16_isr_async(apbDst, anNum);
 	while (CHKSUM_GO);
-	return SWAP_BYTES_IN_WORD(CHKSUM_DAT);
+	return ChksumGetDat();
 }
 
 #ifdef __FREERTOS__
+void Checksum16_rtos_async(BYTE *apbDst, UINT anNum)
+{
+	portENTER_CRITICAL();
+	Checksum16_isr_async(apbDst, anNum);
+	portEXIT_CRITICAL();
+}
+
 WORD Checksum16_rtos(BYTE *apbDst, UINT anNum)
 {
 	portENTER_CRITICAL();
-	CHKSUM_ADR = (intptr_t)apbDst;
-	CHKSUM_LEN = anNum;
-	CHKSUM_GO = 1;
-	while (CHKSUM_GO);
-	WORD res = SWAP_BYTES_IN_WORD(CHKSUM_DAT);
+	WORD res = Checksum16_isr(apbDst, anNum);
 	portEXIT_CRITICAL();
 	return res;
 }
 #endif
+
+inline WORD ChksumGetDat(void)
+{
+	return SWAP_BYTES_IN_WORD(CHKSUM_DAT);
+}
 
 void ChksumIrqCallback(irq_fn irqfn, void *arg)
 {

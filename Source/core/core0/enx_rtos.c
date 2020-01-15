@@ -24,6 +24,8 @@ void startNetProtocol(void *arg)
 	// Wait for network activation.
 	network_check_netif();
 
+	chargen_init();
+
 #if (NET_LWIPERF==1)
 	lwiperf_init();
 #endif
@@ -39,8 +41,6 @@ void startNetProtocol(void *arg)
 #if (ENX_RTSP_use==1)
 	vTaskCreate("rtspd", rtspd_socket_server, NULL, LV3_STACK_SIZE, LV5_TASK_PRIO);
 #endif
-
-	chargen_init();
 
 	vTaskDelete(NULL);
 	UNUSED(arg);

@@ -66,18 +66,18 @@
 #define __FREERTOS__
 #endif // __FREERTOS__
 
-#if 1
+#if 0
 #define __ECM_STRING__
 #endif // __ECM_STRING__
 
-#if 1
+#if 0
 #define __SENSOR__
 #define SENSOR_RESET_GPIO_CH	1
 #define SENSOR_I2C_CH	0
 #define SENSOR_SPI_CH	0
 #endif // __SENSOR__
 
-#if 1
+#if 0
 #define __HDMI__
 #define HDMI_I2C_CA	0x90
 #define HDMI_I2C_CH	7

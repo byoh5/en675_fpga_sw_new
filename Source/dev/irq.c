@@ -429,7 +429,7 @@ void enx_exirq_source15(void)
 
 void enx_exirq_source16(void)
 {
-	printf("16 ChksumIsIrq(%d/%d) ShaIsIrq(%d/%d) AesIsIrq(%d/%d)\n", IRQ_CHKSUM, ChksumIsIrq(), IRQ_SHA, ShaIsIrq(), IRQ_AES, AesIsIrq());
+//	printf("16 ChksumIsIrq(%d/%d) ShaIsIrq(%d/%d) AesIsIrq(%d/%d)\n", IRQ_CHKSUM, ChksumIsIrq(), IRQ_SHA, ShaIsIrq(), IRQ_AES, AesIsIrq());
 	if (IRQ_SHA) {
 		IrqSha();
 	} else {
@@ -1545,4 +1545,9 @@ void enx_externalirq_init_cpu3(void)
 void enx_wake_cpu(int cpu_id)
 {
 	cpu_msip[cpu_id] = 1;
+}
+
+uint32_t enx_get_wake_cpu(int cpu_id)
+{
+	return cpu_msip[cpu_id];
 }

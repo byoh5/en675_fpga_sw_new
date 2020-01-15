@@ -75,6 +75,8 @@ CHKSUM:
 [CHKSUM:0x8008052E] SW(0xFFFF) HW2(0x55BA) HW(0x12A8) len(  20)
 #endif
 
+#define CHKSUM_TEST_IRQ 1
+
 typedef struct {
 	TaskHandle_t taskHandle;
 
@@ -88,33 +90,49 @@ typedef struct {
 
 static ChksumAutoTestBuffer chksumitem;
 
+#if CHKSUM_TEST_IRQ
+static void ChksumTestIrq(void *ctx)
+{
+	if (chksumitem.taskHandle) {
+		portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
+		vTaskNotifyGiveFromISR(chksumitem.taskHandle, &xHigherPriorityTaskWoken);
+		if (xHigherPriorityTaskWoken) {
+			gbXsrTaskSwitchNeeded = 1;
+		}
+	}
+}
+#endif
+
 void ChksumTestTask(void *ctx)
 {
 	chksumitem.u32Close = 0;
 	chksumitem.arrSrc = pvPortMalloc(ENX_MEM_ALIGN_BUFFER(chksumitem.u32BufSize));
 	if (chksumitem.arrSrc == NULL) {
 		printf("malloc error(arrSrc), size(%u)\n", chksumitem.u32BufSize);
-		chksumitem.taskHandle = NULL;
-		vTaskDelete(NULL);
+		goto done;
 	}
 	hwflush_dcache_range((ULONG)chksumitem.arrSrc, chksumitem.u32BufSize);
 
 	chksumitem.arrDst = pvPortMalloc(ENX_MEM_ALIGN_BUFFER(chksumitem.u32BufSize));
 	if (chksumitem.arrDst == NULL) {
 		printf("malloc error(arrDst), size(%u)\n", chksumitem.u32BufSize);
-		chksumitem.taskHandle = NULL;
-		vTaskDelete(NULL);
+		goto done;
 	}
 
 	BYTE *parrSrc = (BYTE *)ENX_MEM_ALIGN(chksumitem.arrSrc);
 	BYTE *parrDst = (BYTE *)ENX_MEM_ALIGN(chksumitem.arrDst);
 
+#if CHKSUM_TEST_IRQ
+	ChksumIrqCallback(ChksumTestIrq, NULL);
+	ChksumSetIrqEn(ENX_ON);
+#endif
+
 	printf("CHECKSUM Test Task(Src: 0x%08X)(Dst: 0x%08X)(Buffer Size: %u)(Loop: %u)\n", (UINT)(intptr_t)parrSrc, (UINT)(intptr_t)parrDst, chksumitem.u32BufSize, chksumitem.u32TestLoop);
 
 	UINT pass = 0, fail = 0;
-	ULONG stime, hwsum, swsum, flag;
+	ULONG stime, hwsum, swsum, flag = 0;
 	for (UINT i = 1; i <= chksumitem.u32BufSize; i++) {
-		if (chksumitem.u32Close == 1){
+		if (flag | (chksumitem.u32Close == 1)) {
 			break;
 		}
 		hwsum = swsum = flag = 0;
@@ -122,7 +140,7 @@ void ChksumTestTask(void *ctx)
 		printf("HW(avg:%5lu) SW(avg:%8lu) -     ", 0, 0);
 		UINT j;
 		for (j = 0; j < chksumitem.u32TestLoop; j++) {
-			if (flag | chksumitem.u32Close){
+			if (flag | (chksumitem.u32Close == 1)) {
 				break;
 			}
 			for (UINT k = 0; k < i+4; k++) {
@@ -136,27 +154,46 @@ void ChksumTestTask(void *ctx)
 			stime = BenchTimeStart();
 			hwflush_dcache_range((ULONG)parrSrc, i);
 			BDmaMemCpy_isr(0, parrDst, parrSrc, i);
-			WORD hw_chksum = Checksum16(parrDst, i);
-			hwsum += BenchTimeStop(stime);
+#if CHKSUM_TEST_IRQ
+			Checksum16_rtos_async(parrDst, i);
+#else
+			WORD hw_chksum = Checksum16_rtos(parrDst, i);
+#endif
 
-			if (hw_chksum != sw_chksum) {
-				flag = 1;
-			}
+#if CHKSUM_TEST_IRQ
+			if (ulTaskNotifyTake(pdTRUE, 300)) { // Timeout 3sec
+				WORD hw_chksum = ChksumGetDat();
+#endif
+				hwsum += BenchTimeStop(stime);
 
-			static UINT processrate = 0;
-			if (processrate != (j * 100 / chksumitem.u32TestLoop)) {
-				processrate = j * 100 / chksumitem.u32TestLoop;
-				char buf[8] = {0};
-				snprintf(buf, 8, "%3u%%", processrate);
-				printf("\b\b\b\b");
-				printf("%s", buf);
+				if (hw_chksum != sw_chksum) {
+					flag = 1;
+				}
+
+				static UINT processrate = 0;
+				if (processrate != (j * 100 / chksumitem.u32TestLoop)) {
+					processrate = j * 100 / chksumitem.u32TestLoop;
+					char buf[8] = {0};
+					snprintf(buf, 8, "%3u%%", processrate);
+					printf("\b\b\b\b");
+					printf("%s", buf);
+				}
+#if CHKSUM_TEST_IRQ
+			} else {
+				flag = 2;
 			}
+#endif
 		}
 		printf("\r%3u%% %5u/%5u ", ((i) * 100) / chksumitem.u32BufSize, i, chksumitem.u32BufSize);
 		printf("HW(avg:%5lu) SW(avg:%8lu) - ", hwsum / j, swsum / j);
 		if (flag == 1) {
 			_Rprintf("Fail\n");
 			fail++;
+#if CHKSUM_TEST_IRQ
+		} else if (flag == 2) {
+			_Rprintf("Timeout\n");
+			fail++;
+#endif
 		} else {
 			_Gprintf(" OK \n");
 			pass++;
@@ -165,6 +202,11 @@ void ChksumTestTask(void *ctx)
 
 	printf("\nTest End. Pass(%d) Fail(%d)\n", pass, fail);
 
+done:
+#if CHKSUM_TEST_IRQ
+	ChksumSetIrqEn(ENX_OFF);
+	ChksumIrqCallback(NULL, NULL);
+#endif
 	if (chksumitem.arrSrc) {
 		vPortFree(chksumitem.arrSrc);
 	}
@@ -194,7 +236,7 @@ int cmd_test_checksum(int argc, char *argv[])
 		}
 		chksumitem.u32BufSize = 2048;
 		chksumitem.u32TestLoop = u32TestLoop;
-		vTaskCreate("ChksumT", ChksumTestTask, NULL, LV3_STACK_SIZE, LV5_TASK_PRIO);
+		chksumitem.taskHandle = vTaskCreate("ChksumT", ChksumTestTask, NULL, LV3_STACK_SIZE, LV5_TASK_PRIO);
 	} else if (strcmp(argv[1], "stop") == 0) {
 		chksumitem.u32Close = 1;
 	}
@@ -280,6 +322,8 @@ int cmd_test_checksum(int argc, char *argv[])
 
 //-------------------------------------------------------------------------------------------------
 // SHA
+#define SHA_TEST_IRQ 1
+
 typedef struct {
 	TaskHandle_t taskHandle;
 	SHAmode mode;
@@ -296,34 +340,50 @@ typedef struct {
 
 static ShaAutoTestBuffer shaitem;
 
+#if SHA_TEST_IRQ
+static void ShaTestIrq(void *ctx)
+{
+	if (shaitem.taskHandle) {
+		portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
+		vTaskNotifyGiveFromISR(shaitem.taskHandle, &xHigherPriorityTaskWoken);
+		if (xHigherPriorityTaskWoken) {
+			gbXsrTaskSwitchNeeded = 1;
+		}
+	}
+}
+#endif
+
 void ShaTestTask(void *ctx)
 {
 	shaitem.u32Close = 0;
 	shaitem.arrSrc = pvPortMalloc(ENX_MEM_ALIGN_BUFFER(shaitem.u32BufSize));
 	if (shaitem.arrSrc == NULL) {
 		printf("malloc error(arrSrc), size(%u)\n", shaitem.u32BufSize);
-		shaitem.taskHandle = NULL;
-		vTaskDelete(NULL);
+		goto done;
 	}
 	hwflush_dcache_range((ULONG)shaitem.arrSrc, ENX_MEM_ALIGN_BUFFER(shaitem.u32BufSize));
 
 	shaitem.arrALIGNSrc = pvPortMalloc(ENX_MEM_ALIGN_BUFFER(shaitem.u32BufSize));
 	if (shaitem.arrALIGNSrc == NULL) {
-		printf("malloc error(arrSrc), size(%u)\n", shaitem.u32BufSize);
-		shaitem.taskHandle = NULL;
-		vTaskDelete(NULL);
+		printf("malloc error(arrALIGNSrc), size(%u)\n", shaitem.u32BufSize);
+		goto done;
 	}
 
 	BYTE *parrSrc = (BYTE *)ENX_MEM_ALIGN(shaitem.arrSrc);
 	BYTE *parrHwSrc = (BYTE *)ENX_MEM_ALIGN(shaitem.arrALIGNSrc);
 
+#if SHA_TEST_IRQ
+	ShaIrqCallback(ShaTestIrq, NULL);
+	ShaSetIrqEn(ENX_ON);
+#endif
+
 	printf("SHA%u Test Task(Src: 0x%08X)(HwSrc: 0x%08X)(Buffer Size: %u)(Loop: %u)\n",
 			shaitem.mode == eSHA256 ? 256 : 224, (UINT)(intptr_t)parrSrc, (UINT)(intptr_t)parrHwSrc, shaitem.u32BufSize, shaitem.u32TestLoop);
 
 	UINT pass = 0, fail = 0;
-	ULONG stime, hwsum, swsum, flag;
+	ULONG stime, hwsum, swsum, flag = 0;
 	for (UINT i = 1; i <= shaitem.u32BufSize; i++) {
-		if (shaitem.u32Close == 1){
+		if (flag | (shaitem.u32Close == 1)) {
 			break;
 		}
 		hwsum = swsum = flag = 0;
@@ -333,7 +393,7 @@ void ShaTestTask(void *ctx)
 		printf("HW(avg:%5lu) SW(avg:%8lu) -     ", 0, 0);
 		UINT j;
 		for (j = 0; j < shaitem.u32TestLoop; j++) {
-			if (flag | (shaitem.u32Close == 1)){
+			if (flag | (shaitem.u32Close == 1)) {
 				break;
 			}
 			for (UINT k = 0; k < i+4; k++) {
@@ -351,31 +411,49 @@ void ShaTestTask(void *ctx)
 			stime = BenchTimeStart();
 			hwflush_dcache_range((ULONG)parrSrc, i);
 			BDmaMemCpy_rtos(0, parrHwSrc, parrSrc, i);
+#if SHA_TEST_IRQ
+			ShaCalc_rtos_async(parrHwSrc, i, shaitem.mode);	// HW sha
+#else
 			ShaCalc_rtos(parrHwSrc, i, shaitem.mode);	// HW sha
-			ShaGetDigest(shaitem.arrHwHash, shaitem.mode);
-			hwsum += BenchTimeStop(stime);
+#endif
 
-			for (int lop = 0; lop < sizeof(shaitem.arrHwHash); lop++) {
-				if (shaitem.arrSwHash[lop] != shaitem.arrHwHash[lop]) {
-					flag = 1;
-					break;
+#if SHA_TEST_IRQ
+			if (ulTaskNotifyTake(pdTRUE, 300)) { // Timeout 3sec
+#endif
+				ShaGetDigest(shaitem.arrHwHash, shaitem.mode);
+				hwsum += BenchTimeStop(stime);
+
+				for (int lop = 0; lop < sizeof(shaitem.arrHwHash); lop++) {
+					if (shaitem.arrSwHash[lop] != shaitem.arrHwHash[lop]) {
+						flag = 1;
+						break;
+					}
 				}
-			}
 
-			static UINT processrate = 0;
-			if (processrate != (j * 100 / shaitem.u32TestLoop)) {
-				processrate = j * 100 / shaitem.u32TestLoop;
-				char buf[8] = {0};
-				snprintf(buf, 8, "%3u%%", processrate);
-				printf("\b\b\b\b");
-				printf("%s", buf);
+				static UINT processrate = 0;
+				if (processrate != (j * 100 / shaitem.u32TestLoop)) {
+					processrate = j * 100 / shaitem.u32TestLoop;
+					char buf[8] = {0};
+					snprintf(buf, 8, "%3u%%", processrate);
+					printf("\b\b\b\b");
+					printf("%s", buf);
+				}
+#if SHA_TEST_IRQ
+			} else {
+				flag = 2;
 			}
+#endif
 		}
 		printf("\r%3u%% %5u/%5u ", ((i) * 100) / shaitem.u32BufSize, i, shaitem.u32BufSize);
 		printf("HW(avg:%5lu) SW(avg:%8lu) - ", hwsum / j, swsum / j);
 		if (flag == 1) {
 			_Rprintf("Fail\n");
 			fail++;
+#if SHA_TEST_IRQ
+		} else if (flag == 2) {
+			_Rprintf("Timeout\n");
+			fail++;
+#endif
 		} else {
 			_Gprintf(" OK \n");
 			pass++;
@@ -384,6 +462,11 @@ void ShaTestTask(void *ctx)
 
 	printf("\nTest End. Pass(%d) Fail(%d)\n", pass, fail);
 
+done:
+#if SHA_TEST_IRQ
+	ShaSetIrqEn(ENX_OFF);
+	ShaIrqCallback(NULL, NULL);
+#endif
 	if (shaitem.arrSrc) {
 		vPortFree(shaitem.arrSrc);
 	}
@@ -572,44 +655,38 @@ void AesTestTask(void *ctx)
 	aesitem.arrSource = pvPortMalloc(ENX_MEM_ALIGN_BUFFER(aesitem.u32BufSize));
 	if (aesitem.arrSource == NULL) {
 		printf("malloc error(arrSource), size(%u)\n", aesitem.u32BufSize);
-		aesitem.taskHandle = NULL;
-		vTaskDelete(NULL);
+		goto done;
 	}
 	hwflush_dcache_range((ULONG)aesitem.arrSource, ENX_MEM_ALIGN_BUFFER(aesitem.u32BufSize));
 
 	aesitem.arrAlignSource = pvPortMalloc(ENX_MEM_ALIGN_BUFFER(aesitem.u32BufSize));
 	if (aesitem.arrAlignSource == NULL) {
 		printf("malloc error(arrAlignSource), size(%u)\n", aesitem.u32BufSize);
-		aesitem.taskHandle = NULL;
-		vTaskDelete(NULL);
+		goto done;
 	}
 
 	aesitem.arrSWEnc = pvPortMalloc(ENX_MEM_ALIGN_BUFFER(aesitem.u32BufSize));
 	if (aesitem.arrSWEnc == NULL) {
 		printf("malloc error(arrSWEnc), size(%u)\n", aesitem.u32BufSize);
-		aesitem.taskHandle = NULL;
-		vTaskDelete(NULL);
+		goto done;
 	}
 
 	aesitem.arrSWDec = pvPortMalloc(ENX_MEM_ALIGN_BUFFER(aesitem.u32BufSize));
 	if (aesitem.arrSWDec == NULL) {
 		printf("malloc error(arrSWDec), size(%u)\n", aesitem.u32BufSize);
-		aesitem.taskHandle = NULL;
-		vTaskDelete(NULL);
+		goto done;
 	}
 
 	aesitem.arrHWEnc = pvPortMalloc(ENX_MEM_ALIGN_BUFFER(aesitem.u32BufSize));
 	if (aesitem.arrHWEnc == NULL) {
 		printf("malloc error(arrHWEnc), size(%u)\n", aesitem.u32BufSize);
-		aesitem.taskHandle = NULL;
-		vTaskDelete(NULL);
+		goto done;
 	}
 
 	aesitem.arrHWDec = pvPortMalloc(ENX_MEM_ALIGN_BUFFER(aesitem.u32BufSize));
 	if (aesitem.arrHWDec == NULL) {
 		printf("malloc error(arrHWDec), size(%u)\n", aesitem.u32BufSize);
-		aesitem.taskHandle = NULL;
-		vTaskDelete(NULL);
+		goto done;
 	}
 
 	BYTE *parrSource = (BYTE *)ENX_MEM_ALIGN(aesitem.arrSource);
@@ -654,9 +731,9 @@ void AesTestTask(void *ctx)
 	printf("              H/W (Enc: 0x%08X) (Dec: 0x%08X)\n", parrHWEnc, parrHWDec);
 
 	UINT pass = 0, fail = 0;
-	ULONG stime, hwsum, swsum, flag;
+	ULONG stime, hwsum, swsum, flag = 0;
 	for (UINT i = 16; i <= aesitem.u32BufSize; i+=16) {
-		if (aesitem.u32Close == 1){
+		if (flag | (aesitem.u32Close == 1)) {
 			break;
 		}
 		hwsum = swsum = flag = 0;
@@ -667,7 +744,7 @@ void AesTestTask(void *ctx)
 			AES_KEY aes_swkey;
 			BYTE iv[32];
 
-			if (flag | (aesitem.u32Close == 1)){
+			if (flag | (aesitem.u32Close == 1)) {
 				break;
 			}
 
@@ -732,15 +809,13 @@ void AesTestTask(void *ctx)
 			AesCalc_rtos_async(parrHWEnc, parrHwSource, i, aesitem.mode);
 #else
 			AesCalc_rtos(parrHWEnc, parrHwSource, i, aesitem.mode);
-//			hwflush_dcache_range((ULONG)parrHWEnc, i);
-			hwsum += BenchTimeStop(stime);
 #endif
 
 #if AES_TEST_IRQ
 			if (ulTaskNotifyTake(pdTRUE, 300)) { // Timeout 3sec
-//				hwflush_dcache_range((ULONG)parrHWEnc, i);
-				hwsum += BenchTimeStop(stime);
 #endif
+				hwsum += BenchTimeStop(stime);
+
 				// Comp
 				for (int lop = 0; lop < i; lop++) {
 					if (parrSWEnc[lop] != parrHWEnc[lop]) {
@@ -791,15 +866,13 @@ void AesTestTask(void *ctx)
 					AesCalc_rtos_async(parrHWDec, parrHWEnc, i, aesitem.mode - 1);
 #else
 					AesCalc_rtos(parrHWDec, parrHWEnc, i, aesitem.mode - 1);
-//					hwflush_dcache_range((ULONG)parrHWDec, i);
-					hwsum += BenchTimeStop(stime);
 #endif
 
 #if AES_TEST_IRQ
 					if (ulTaskNotifyTake(pdTRUE, 300)) { // Timeout 3sec
 						hwflush_dcache_range((ULONG)parrHWDec, i);
-						hwsum += BenchTimeStop(stime);
 #endif
+						hwsum += BenchTimeStop(stime);
 						for (int lop = 0; lop < i; lop++) {
 							if (parrSWDec[lop] != parrHWDec[lop] || parrSource[lop] != parrHWDec[lop]) {
 								flag = 1;
@@ -832,9 +905,11 @@ void AesTestTask(void *ctx)
 		if (flag == 1) {
 			_Rprintf("Fail\n");
 			fail++;
+#if AES_TEST_IRQ
 		} else if (flag == 2) {
 			_Rprintf("Timeout\n");
 			fail++;
+#endif
 		} else {
 			char buf[32] = {0};
 			ULONG hwavg = hwsum / j;
@@ -848,6 +923,11 @@ void AesTestTask(void *ctx)
 
 	printf("\nTest End. Pass(%d) Fail(%d)\n", pass, fail);
 
+done:
+#if AES_TEST_IRQ
+	AesSetIrqEn(ENX_OFF);
+	AesIrqCallback(NULL, NULL);
+#endif
 	if (aesitem.arrSource) {
 		vPortFree(aesitem.arrSource);
 	}
@@ -875,13 +955,6 @@ void AesTestTask(void *ctx)
 	aesitem.taskHandle = NULL;
 	vTaskDelete(NULL);
 }
-
-
-
-
-
-
-
 
 
 #include "enx_freertos.h"
