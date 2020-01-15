@@ -30,6 +30,8 @@
 	#define SP(a) a##__##SENS_OS08A10
 #elif model_Sens ==      SENS_IMX225
 	#define SP(a) a##__##SENS_IMX225
+#elif model_Sens ==      SENS_IMX323
+	#define SP(a) a##__##SENS_IMX323
 #elif model_Sens ==      SENS_OV2718
 	#define SP(a) a##__##SENS_OV2718
 #elif model_Sens ==      SENS_OV4689
@@ -55,12 +57,12 @@
 // Sensor Parameter
 #define SP_SET(NAME,V1,V2,V3,V4,V5,V6,V7,V8,V9,V10,V11,V12,V13,V14,V15,V16,V17,V18,V19,V20) SENS_SEL(NAME,V1,V2,V3,V4,V5,V6,V7,V8,V9,V10,V11,V12,V13,V14,V15,V16,V17,V18,V19,V20,\
 \
-					OV2718, IMX291,OS08A10, IMX225, IMX335, IMX274, OV4689, IMX415, none09, none10, none11, none12, none13, none14, none15, none16, none17, none18, none19, none20)
+					OV2718, IMX291,OS08A10, IMX225, IMX335, IMX274, OV4689, IMX415, IMX323, none10, none11, none12, none13, none14, none15, none16, none17, none18, none19, none20)
 SP_SET(LvdsPNSel,	     0,      1,      1,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 0 : Negative Start, 1 : Positive Start,  입력 data의 latch start point를 설정
-SP_SET(LvdsSofNo,	     1,      1,      1,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 0 : usually Panasonic sensor, 1 : others
-SP_SET(LvdsBit,		    12,     12,     10,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)
+SP_SET(LvdsSofNo,	     1,      1,      1,      0,      0,      0,      0,      0,      1,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 0 : usually Panasonic sensor, 1 : others
+SP_SET(LvdsBit,		    12,     12,     10,      0,      0,      0,      0,      0,     12,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)
 
-SP_SET(LckDly,		     7,      4,      1,      2,      2,      6,      4,      4,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 0 ~ 7,  Lvds/Mipi input clock delay adjust
+SP_SET(LckDly,		     7,      4,      1,      2,      2,      6,      4,      4,      7,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 0 ~ 7,  Lvds/Mipi input clock delay adjust
 SP_SET(LdiDly0,		     0,      0,      2,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 0 ~ 7,  Lvds/Mipi channel 0 delay adjust
 SP_SET(LdiDly1,		     0,      0,      2,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 0 ~ 7,  Lvds/Mipi channel 1 delay adjust
 SP_SET(LdiDly2,		     0,      0,      2,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 0 ~ 7,  Lvds/Mipi channel 2 delay adjust
@@ -71,48 +73,49 @@ SP_SET(MipiBit,		     0,      0,      0,     10,     12,     12,     10,     12,
 SP_SET(MipiHSyncOfs,     0,      0,      0,      7,      7,      7,      8,      7,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// Very Important!!! For Image Phase
 SP_SET(MipiUseWcl,	     0,      0,      0,      0,      0,      0,      1,      1,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// use long packet word counter check function
 
-SP_SET(IsSlave,		     1,      0,      1,      1,      1,      1,      1,      1,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 0 : Master Mode, 1 : Slave Mode,  Isp master/slave mode를 설정
+SP_SET(IsSlave,		     1,      0,      1,      1,      1,      1,      1,      1,      1,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 0 : Master Mode, 1 : Slave Mode,  Isp master/slave mode를 설정
 SP_SET(IsASync,		     1,      0,      1,      0,      1,      0,      1,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// Auto sync generation, omni sensor와 같이 Active 이외의 구간에서 sync가 나오지 않는 sensor에서 1로 설정
 SP_SET(IsNSync,		     1,      0,      0,      1,      1,      0,      1,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 입력 sync의 H/V 위상이 일치하지 않는 상황에서 1로 설정
-SP_SET(PreHSyncOfs,	  0x16,   0x12,   0xa8,   0xb8,   0xb8,   0x12,   0xb8,   0xa8,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// Pre module Horizontal Sync Offset, Hsp 인자로 Image 위치가 맞지 않을때 Sync의 위치를 이동하여 image 위치를 맞추는데 사용
-SP_SET(PreVSyncOfs,	   0xa,    0xa,    0xa,    0xa,    0xa,    0xa,    0xa,    0xa,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// Pre module Vertical Sync Offset, Vsp 인자로 Image 위치가 맞지 않을때 Sync의 위치를 이동하여 image 위치를 맞추는데 사용
-SP_SET(PreHsp,		  0x13,   0x15,   0x15,    0x8,    0x8,   0x15,    0x8,   0x15,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// Pre module Horizontal image start position
-SP_SET(PreVsp,		   0x9,    0x7,    0x3,    0x5,    0x5,    0x7,    0x5,    0x3,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// Pre module Vertical image start position
+SP_SET(PreHSyncOfs,	  0x16,   0x12,   0xa8,   0xb8,   0xb8,   0x12,   0xb8,   0xa8,   0x16,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// Pre module Horizontal Sync Offset, Hsp 인자로 Image 위치가 맞지 않을때 Sync의 위치를 이동하여 image 위치를 맞추는데 사용
+SP_SET(PreVSyncOfs,	   0xa,    0xa,    0xa,    0xa,    0xa,    0xa,    0xa,    0xa,    0xa,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// Pre module Vertical Sync Offset, Vsp 인자로 Image 위치가 맞지 않을때 Sync의 위치를 이동하여 image 위치를 맞추는데 사용
+SP_SET(PreHsp,		  0x13,   0x15,   0x15,    0x8,    0x8,   0x15,    0x8,   0x15,   0x13,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// Pre module Horizontal image start position
+SP_SET(PreVsp,		   0x9,    0x7,    0x3,    0x5,    0x5,    0x7,    0x5,    0x3,    0x9,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// Pre module Vertical image start position
 SP_SET(PreHSyncPol,	     0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 0 : Falling position, 1 : Rising position, Pre module Horizontal sync input polarity
 SP_SET(PreVSyncPol,	     0,      0,      1,      1,      1,      1,      1,      1,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 0 : Falling position, 1 : Rising position, Pre module Vertical sync input polarity
 SP_SET(ICSel,		     0,      0,      3,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 0 ~ 3,  Pre module color phase selection, RGB interpolator의 위상을 조절, AWB ODM 값으로 올바른지 확인(AWBLNOR_SEL:1, 청색필터:CRDR- CBDB+, 황색필터:CRDR+ CBDB-)		TODO KSH ◆ ICSEL 설정 필요
-SP_SET(OCSel,		     0,      2,      1,      3,      3,      2,      2,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 0 ~ 3,  Post module color phase selection, RGB interpolator의 위상을 조절, 출력단 VLOCKO_IT_POS0w(OutVSyncOfs) & HLOCKO_IT_POS0w(OutHSyncOfs) 설정에 따라 OCSel값을 잘못 설정할 수 있으니 주의!!!	TODO KSH ◆ OCSEL 설정 필요, IMX291 검증 완료
+SP_SET(OCSel,		     0,      2,      1,      3,      3,      2,      2,      0,      2,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 0 ~ 3,  Post module color phase selection, RGB interpolator의 위상을 조절, 출력단 VLOCKO_IT_POS0w(OutVSyncOfs) & HLOCKO_IT_POS0w(OutHSyncOfs) 설정에 따라 OCSel값을 잘못 설정할 수 있으니 주의!!!	TODO KSH ◆ OCSEL 설정 필요, IMX291 검증 완료
 
 SP_SET(Dnr2dICSel,	     0,      0,      3,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 0 ~ 3,  2D-DNR ICSEL, DNR2D_ON ON/OFF 시 Color 변화 없어야 함		TODO KSH ◆ 2D-DNR ICSEL 설정 필요, IMX291 검증 완료
 SP_SET(Dnr2dOCSel,	     0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 0 ~ 3,  2D-DNR OCSEL, 육안으로 확인 가능, 항상 0으로 설정
 
 //SP_SET(HSUP_TH,	  0x74,   0x70,   0x72,   0x78,   0x72,   0x72,   0x72,   0x72,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// High Light color suppression threshold (Y domain control) (0 ~ 0xFF)
-SP_SET(HSUP_TH,		  0xb4,   0xb8,   0xc0,   0xb8,   0xb2,   0xb2,   0xb2,   0xb2,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// High Light color suppression threshold (Y domain control) (0 ~ 0xFF)
+SP_SET(HSUP_TH,		  0xb4,   0xb8,   0xc0,   0xb8,   0xb2,   0xb2,   0xb2,   0xb2,   0xb8,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// High Light color suppression threshold (Y domain control) (0 ~ 0xFF)
 //SP_SET(HSUP_TH,	  0xa4,   0xa0,   0xa2,   0xa8,   0xa2,   0xa2,   0xa2,   0xa2,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// High Light color suppression threshold (Y domain control) (0 ~ 0xFF)
 
-SP_SET(AWB_DB_MAX,	    32,     69,    -78,    -78,   -177,   -154,   0x00,   0x00,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// TODO KSH ◆ OV4689 와 IMX415 의 AWB_DB_MAX 값 확인 필요
-SP_SET(AWB_DB_MIN,	  -787,   -808,   -720,   -768,   -744,   -745,   0x00,   0x00,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 		"
-SP_SET(AWB_DR_MAX,	   544,    610,    392,    452,    478,    482,   0x00,   0x00,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 		"
-SP_SET(AWB_DR_MIN,	  -346,   -405,   -346,   -299,   -145,   -178,   0x00,   0x00,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 		"
+SP_SET(AWB_DB_MAX,	    32,     69,    -78,    -78,   -177,   -154,   0x00,   0x00,    -19,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// TODO KSH ◆ OV4689 와 IMX415 의 AWB_DB_MAX 값 확인 필요
+SP_SET(AWB_DB_MIN,	  -787,   -808,   -720,   -768,   -744,   -745,   0x00,   0x00,   -756,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 		"
+SP_SET(AWB_DR_MAX,	   544,    610,    392,    452,    478,    482,   0x00,   0x00,    592,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 		"
+SP_SET(AWB_DR_MIN,	  -346,   -405,   -346,   -299,   -145,   -178,   0x00,   0x00,   -269,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 		"
 
 // 191010 KSH OS08A10 OFFSET 0x39,0xed -> 0x60,0xa7
-SP_SET(AWB_DBOFFSET,  0x26,   0x51,   0x60,   0x22,   0x10,   0x2e,   0x00,   0x00,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 		"
-SP_SET(AWB_DROFFSET,  0xc5,   0xa1,   0xa7,   0xc5,  0x102,  0x10e,   0x00,   0x00,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 		"
-SP_SET(AWB_DBGAIN,	  0x0d,   0x0e,   0x0f,   0x0e,   0x0f,   0x0f,   0x00,   0x00,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 		"
-SP_SET(AWB_DRGAIN,	  0x0c,   0x0d,   0x0d,   0x0c,   0x0d,   0x0d,   0x00,   0x00,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 		"
+SP_SET(AWB_DBOFFSET,  0x26,   0x51,   0x60,   0x22,   0x10,   0x2e,   0x00,   0x00,   0x46,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 		"
+SP_SET(AWB_DROFFSET,  0xc5,   0xa1,   0xa7,   0xc5,  0x102,  0x10e,   0x00,   0x00,  0x118,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 		"
+SP_SET(AWB_DBGAIN,	  0x0d,   0x0e,   0x0f,   0x0e,   0x0f,   0x0f,   0x00,   0x00,   0x10,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 		"
+SP_SET(AWB_DRGAIN,	  0x0c,   0x0d,   0x0d,   0x0c,   0x0d,   0x0d,   0x00,   0x00,    0xd,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 		"
 
-SP_SET(ShtBrtSpeed,	   300,    350,    350,    350,    350,    350,    350,    350,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// AE SPEED → SHT. SPEED → BRIGHTEN : 1 ~ 999 (3E7h), Sensor의 실제 밝기가 클수록(또는 FPS가 낮아질 수록) Shutter 제어 Speed 설정값은 낮아짐
-SP_SET(ShtDrkSpeed,	   160,    350,    300,    350,    350,    350,    350,    350,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// AE SPEED → SHT. SPEED → DARKEN : 1 ~ 999 (3E7h), Sensor의 실제 밝기가 클수록(또는 FPS가 낮아질 수록) Shutter 제어 Speed 설정값은 낮아짐
-SP_SET(AgcBrtSpeed,	   384,     42,    150,     42,     42,     42,     42,     42,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// AE SPEED → AGC SPEED → BRIGHTEN : 1 ~ 999 (3E7h), AGC의 실제 최대 밝기가 크고 AGC_MAX값이 작을수록 AGC 제어 Speed는 낮아짐, EN675설정값 = EN673설정값*0.2
-SP_SET(AgcDrkSpeed,	   384,     26,    150,     26,     26,     26,     26,     26,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// AE SPEED → AGC SPEED → DARKEN : 1 ~ 999 (3E7h), AGC의 실제 최대 밝기가 크고 AGC_MAX값이 작을수록 AGC 제어 Speed는 낮아짐, EN675설정값 = EN673설정값*0.2
+SP_SET(ShtBrtSpeed,	   300,    350,    350,    350,    350,    350,    350,    350,    350,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// AE SPEED → SHT. SPEED → BRIGHTEN : 1 ~ 999 (3E7h), Sensor의 실제 밝기가 클수록(또는 FPS가 낮아질 수록) Shutter 제어 Speed 설정값은 낮아짐
+SP_SET(ShtDrkSpeed,	   160,    350,    300,    350,    350,    350,    350,    350,    350,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// AE SPEED → SHT. SPEED → DARKEN : 1 ~ 999 (3E7h), Sensor의 실제 밝기가 클수록(또는 FPS가 낮아질 수록) Shutter 제어 Speed 설정값은 낮아짐
+SP_SET(AgcBrtSpeed,	   384,     42,    150,     42,     42,     42,     42,     42,     42,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// AE SPEED → AGC SPEED → BRIGHTEN : 1 ~ 999 (3E7h), AGC의 실제 최대 밝기가 크고 AGC_MAX값이 작을수록 AGC 제어 Speed는 낮아짐, EN675설정값 = EN673설정값*0.2
+SP_SET(AgcDrkSpeed,	   384,     26,    150,     26,     26,     26,     26,     26,     26,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// AE SPEED → AGC SPEED → DARKEN : 1 ~ 999 (3E7h), AGC의 실제 최대 밝기가 크고 AGC_MAX값이 작을수록 AGC 제어 Speed는 낮아짐, EN675설정값 = EN673설정값*0.2
 
+SP_SET(LWDR_2P_SGAIN_ALP,0,      0,      0,      0,   0x80,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// EN781의 AE_LWDR_SGAIN_ALP : IMX290 & IMX327 & IMX307 = 0x700 / IMX335 5M = 0x100		TODO KSH ◆ WDR - LWDR_2P_SGAIN_ALP 값 Sensor 별로 튜닝 필요
 
-SP_SET(SyncCode0,	 0xfff,  0xfff,  0xfff,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)
+SP_SET(SyncCode0,	 0xfff,  0xfff,  0xfff,      0,      0,      0,      0,      0,  0xfff,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)
 SP_SET(SyncCode1,	     0,      0,      0,      1,      1,      1,      1,      1,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)
 SP_SET(SyncCode2,	     0,      0,      0,      2,      2,      2,      2,      2,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)
 SP_SET(SyncCode3_0,	     0,      0,      0,      3,      3,      3,      3,      3,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)
-SP_SET(SyncCode3_1,	 0x800,  0x800,  0x200,   0xb8,   0xb8,   0xb8,   0xb8,   0xb8,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)
-SP_SET(SyncCode3_2,	 0xab0,  0xab0,  0x280,  0xf30,  0xf30,  0xf30,  0xd20, 0x16a4,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)
+SP_SET(SyncCode3_1,	 0x800,  0x800,  0x200,   0xb8,   0xb8,   0xb8,   0xb8,   0xb8,  0x800,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)
+SP_SET(SyncCode3_2,	 0xab0,  0xab0,  0x280,  0xf30,  0xf30,  0xf30,  0xd20, 0x16a4,  0xab0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)
 SP_SET(SyncS0Code3_0,    0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)
 SP_SET(SyncS0Code3_1,    0,      0,      0, 0x2000, 0x2000, 0x2000, 0x2000, 0x2000,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)
 SP_SET(SyncS0Code3_2,    0,      0,      0,   0x2b,   0x2c,   0x2c,   0x2b,   0x2c,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)
@@ -124,8 +127,8 @@ SP_SET(SyncS1Code3_2,    0,      0,      0,      3,      3,      3,  0xd20,     
 SP_SET(SensorClk,	     0,     37,      0,     27,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 148, 74, 37, 18, 27, 13, 6 MHz
 SP_SET(PreClk,		     0, C_148M,      0,  C_74M,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// C_PLL, C_148M, C_74M, C_PCK, C_PCKD2, C_PLLD0
 #elif (model_Sens_Fps==30)
-SP_SET(SensorClk,	    13,     37,      0,      0,     13,      0,     27,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 148, 74, 37, 18, 27, 13, 6 MHz
-SP_SET(PreClk,		 C_74M,  C_74M,      0,      0,  C_74M,      0,  C_74M,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// C_PLL, C_148M, C_74M, C_PCK, C_PCKD2, C_PLLD0
+SP_SET(SensorClk,	    13,     37,      0,      0,     13,      0,     27,      0,     37,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 148, 74, 37, 18, 27, 13, 6 MHz
+SP_SET(PreClk,		 C_74M,  C_74M,      0,      0,  C_74M,      0,  C_74M,      0,  C_74M,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// C_PLL, C_148M, C_74M, C_PCK, C_PCKD2, C_PLLD0
 #elif (model_Sens_Fps==20)
 SP_SET(SensorClk,	     0,      0,      0,      0,     13,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 148, 74, 37, 18, 27, 13, 6 MHz
 SP_SET(PreClk,		     0,      0,      0,      0,  C_74M,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// C_PLL, C_148M, C_74M, C_PCK, C_PCKD2, C_PLLD0
@@ -137,7 +140,7 @@ SP_SET(SensorClk,	     0,      0,      0,      0,     13,      0,      0,      0
 SP_SET(PreClk,		     0,      0,      0,      0,  C_74M,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// C_PLL, C_148M, C_74M, C_PCK, C_PCKD2, C_PLLD0
 #endif
 
-SP_SET(PostClk,		 C_74M,  C_74M,  C_74M,  C_74M,  C_74M,  C_74M,  C_74M,  C_74M,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// C_PLL, C_148M, C_74M, C_PCK, C_PCKD2, C_PLLD0
+SP_SET(PostClk,		 C_74M,  C_74M,  C_74M,  C_74M,  C_74M,  C_74M,  C_74M,  C_74M,  C_74M,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// C_PLL, C_148M, C_74M, C_PCK, C_PCKD2, C_PLLD0
 
 
 //------------------------------------------------------------------------------
@@ -321,23 +324,31 @@ RP_SET(FONT_OFY,	  0x36,    0xf,    0xf,   0x30,      0)	// Font Vertical Positi
 #define SensFlip			SP(SensFlip)
 #define SensMirror			SP(SensMirror)
 
-#define AE_GAIN_TOTAL		SP(AE_GAIN_TOTAL)
-#define AE_GAIN_TOTAL2		SP(AE_GAIN_TOTAL2)
+#define AGC_POS_MAX			SP(AGC_POS_MAX)
 
 #define gbSensShtDly		SP(gbSensShtDly)
 #define gbSensAgcDly		SP(gbSensAgcDly)
 #define gbVHssAgcTbl		SP(gbVHssAgcTbl)
 #define gVHssAgcTblEa		SP(gVHssAgcTblEa)
 #define AeSHT0				SP(AeSHT0)
+#define AeSHT1				SP(AeSHT1)
 #define AeAGC0				SP(AeAGC0)
 #define AGC2POS				SP(AGC2POS)
 #define POS2AGC				SP(POS2AGC)
+
+#define AeSHT_LWDR			SP(AeSHT_LWDR)
+#define FrameSetCount		SP(FrameSetCount)
+#define WdrSShtMax			SP(WdrSShtMax)
+#define WdrLShtMax			SP(WdrLShtMax)
+#define WdrMShtMax			SP(WdrMShtMax)
+#define AeAGC_LWDR			SP(AeAGC_LWDR)
 
 #define AE_SHTw				SP(AE_SHTw)
 #define AE_DSSw				SP(AE_DSSw)
 #define AE_AGCw				SP(AE_AGCw)
 #define AE_FREQw			SP(AE_FREQw)
 #define AE_ETCw				SP(AE_ETCw)
+#define SensUpdate			SP(SensUpdate)
 
 #define glMtxCf				SP(glMtxCf)
 

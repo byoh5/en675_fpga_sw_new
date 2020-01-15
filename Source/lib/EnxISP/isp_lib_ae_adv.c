@@ -154,9 +154,15 @@ int ISRT LinePos0(const BYTE abCH, const int aiLine)		// 131070 is MAX of LinePo
 // 1024(AE error MAX) * 3000 (Gain MAX) = 3072000, (0xffffffff/2) / 3072000 = 699 ≥ 2^9
 // giShtPos + iErrPos = 131070*2^9 + 1024*3000*2^9 = 67107840 + 1572864000 = 1639971840 ≤ (0xffffffff/2)
 #define SHT_POS_GAB		9
+
+// V가 1이면 0 line -> 1 line까지 가는데 필요한 크기(실제 밝기 증가는 알수 없음)
+// V가 2이면 1 line -> 2 line까지 가는데 필요한 크기(실제 밝기 증가는 1배)
+// V가 3이면 2 line -> 3 line까지 가는데 필요한 크기(실제 밝기 증가는 0.5배)
+// V가 4이면 3 line -> 4 line까지 가는데 필요한 크기(실제 밝기 증가는 0.333배)
 //#define LinePos(CH,V)	(LinePos0(CH,V)<<SHT_POS_GAB)
 //#define LinePos(CH,V)	(((65535<<1) / (V-1))<<SHT_POS_GAB)
-#define LinePos(CH,V)	((65535<<(1+SHT_POS_GAB)) / (V-1))
+//#define LinePos(CH,V)	((65535<<(1+SHT_POS_GAB)) / (V-1))
+#define LinePos(CH,V)	(((V) < 2) ? (65535<<(1+SHT_POS_GAB)) : ((65535<<(1+SHT_POS_GAB)) / ((V)-1)))
 
 BYTE SHT_DLY = 2;
 BYTE AGC_DLY = 2;
@@ -306,7 +312,11 @@ int ISRT ShtCtrl(const BYTE abCH, const int aaiErr, const int aiMargin, const in
 		iErr1d = 0;
 		iErrEstAc = 0;
 		for(i=0; i<=SHT_DLY; i++) iErrEstDly[i] = 0;
-		if(aiShtManual) goto ShtCtrlEnd_2;
+
+		if(aiShtManual) {
+			gbVHssAgc = (giShtVal<giVHssAgcTblEa) ? ((giShtPos>>SHT_POS_GAB) * (gpbVHssAgcTbl[giShtVal]+1)) / (giShtPosP>>SHT_POS_GAB) : 0;
+			goto ShtCtrlEnd_2;
+		}
 	}
 
 	//--------------------------------------------------------------------------------
@@ -366,6 +376,10 @@ int ISRT ShtCtrl(const BYTE abCH, const int aaiErr, const int aiMargin, const in
 #else
 	iErrEst = (550*aiErr + 275*iErrEstDly[SHT_DLY] + 550*iErrChg) / 1000;
 #endif
+
+	//UartTxGrpSet(1, aiErr);
+	//UartTxGrpSet(2, iErrEstDly[SHT_DLY]);
+	//UartTxGrpSet(3, iErrChg);
 
 	//GrpAe(GA_SHT_ERR_EST) = iErrEst;
 	//GrpAe(GA_SHT_ERR_CHG) = iErrChg;
@@ -438,6 +452,9 @@ int ISRT ShtCtrl(const BYTE abCH, const int aaiErr, const int aiMargin, const in
 		}
 	}
 
+	const BYTE bVHssAgc1d = gbVHssAgc;
+	gbVHssAgc = (giShtVal<giVHssAgcTblEa) ? ((giShtPos>>SHT_POS_GAB) * (gpbVHssAgcTbl[giShtVal]+1)) / (giShtPosP>>SHT_POS_GAB) : 0;
+
 	//GRP0 = aiErr;
 	//GRP1 = iShtVal1d;
 	//GRP2 = iErrChg;
@@ -449,7 +466,7 @@ int ISRT ShtCtrl(const BYTE abCH, const int aaiErr, const int aiMargin, const in
 
 	iErrEstAc += iErrEst;
 
-	if(iShtVal1d != giShtVal) {
+	if(iShtVal1d != giShtVal || bVHssAgc1d != gbVHssAgc) {
 		iErrEstNew = iErrEstAc;
 		iErrEstAc = 0;
 		if(ParAe(PA_ERR_EST_OFF) || abDlyOn) gbShtDly = SHT_DLY;
@@ -462,7 +479,7 @@ ShtCtrlEnd:
 	for(i=SHT_DLY; i>0; i--) iErrEstDly[i] = (abEstOn) ? iErrEstDly[i-1] : 0 ;
 	iErrEstDly[0] = (abEstOn) ? iErrEstNew/*iErrEst*/ : 0 ;
 
-	if(abAgcOn) {
+	if(abAgcOn) {	// Long Ch.의 AE_STG_SHT일 때만 abAgcOn=1로써 AGC까지 제어
 		if(bAgcCtrlOn)	AgcCtrl(aiErr, aiMargin, (aiErr<0) ? (ParAe(PA_AGC_DOWN_SPEED) ? ParAe(PA_AGC_DOWN_SPEED) : 200) : (ParAe(PA_AGC_UP_SPEED) ? ParAe(PA_AGC_UP_SPEED) : 20), 0, AGC_MIN, abEstOn, 0, 0, 0);
 		else			AgcCtrl(0, aiMargin, 0, 0, AGC_MIN, abEstOn, 0, 0, 0);	// AGC_DLY 감소용
 	}
@@ -471,8 +488,8 @@ ShtCtrlEnd:
 
 ShtCtrlEnd_2:
 
-	if (giShtVal<giVHssAgcTblEa)	gbVHssAgc = ((giShtPos>>SHT_POS_GAB) * (gpbVHssAgcTbl[giShtVal]+1)) / (giShtPosP>>SHT_POS_GAB);//LibUtlInterp1D(giShtPos, 0, giShtPosP, 0, gbVHssAgcTbl[giShtVal]+1);
-	else 							gbVHssAgc = 0;
+	//if (giShtVal<giVHssAgcTblEa)	gbVHssAgc = ((giShtPos>>SHT_POS_GAB) * (gpbVHssAgcTbl[giShtVal]+1)) / (giShtPosP>>SHT_POS_GAB);//LibUtlInterp1D(giShtPos, 0, giShtPosP, 0, gbVHssAgcTbl[giShtVal]+1);
+	//else 							gbVHssAgc = 0;
 
 	//GrpAe(GA_SHT_POS) = giShtPos;
 	//GrpAe(GA_SHT_POS_N) = gbVHssAgc/*giShtPosN*/;
@@ -717,7 +734,7 @@ int ISRT IrsCent(const int aiErr, const int aiMargin, const int aiIrisOpenMax, c
 						 (giIrsPos <= (aiIrsPosMax>>1)+(aiIrsPosMax>>2)) ? 2 : 1 ;	// Open End
 
 	static UINT gnIrsInitCnt;
-	#define	IrsInitCntMax	500
+	#define	IrsInitCntMax	500		// TODO KSH ◆ IrsCent()에서 initialize center 시간 올바른 FPS 적용 필요
 	gnIrsInitCnt++;
 	gnIrsInitCnt = MIN(gnIrsInitCnt, IrsInitCntMax);
 
@@ -1082,6 +1099,42 @@ int ISRT LtPos(const int aiVal0, const int aiVal1)
 	return iVal;
 }
 
+
+// ISP Gain By Ace ---------------------------------------------------------------------------------
+extern int giPreAgcMax;
+extern int giIspAgcMax;
+
+int64 gLAceCurR = 0;
+
+void ISRT AceGmgnSet(const BYTE abAceGmgnMin)
+{
+	const BYTE bACE_GMGN_MAX = MAX(abAceGmgnMin, UP(IspGain));
+	#define ACE_GMGN_MIN	abAceGmgnMin
+	#define ACE_GMGN_MAX	bACE_GMGN_MAX
+
+	const int iAgcCtrlCmp = (giAgcCtrl > ((giPreAgcMax + giIspAgcMax)<<AGC_VAL_GAB)) ? (giIspAgcMax<<AGC_VAL_GAB) :
+							(giAgcCtrl < (giPreAgcMax<<AGC_VAL_GAB)) ? 0 : giAgcCtrl - (giPreAgcMax<<AGC_VAL_GAB) ;
+
+	const int bACE_GMGN = (giIspAgcMax) ? ((iAgcCtrlCmp>>8) * (ACE_GMGN_MAX - ACE_GMGN_MIN)) / ((giIspAgcMax<<(AGC_VAL_GAB-8))) : 0;
+
+	ACE_GMGNw(bACE_GMGN + ACE_GMGN_MIN/*UP(AceGmgn)*//*0x20*/);
+
+	gLAceCurR = (int64)iAgcCtrlCmp * (ACE_GMGN_MAX-ACE_GMGN_MIN) * UP(IspGainAeCur);
+
+	/*UartTxGrpSet(0, iAgcCtrlCmp);
+	UartTxGrpSet(1, giIspAgcMax<<AGC_VAL_GAB);
+	UartTxGrpSet(2, abAceGmgnMin);
+	UartTxGrpSet(3, UP(IspGain));
+	UartTxGrpSet(7, bACE_GMGN);*/
+}
+
+int ISRT AceCurGet(const int aiCur)
+{
+	return (giIspAgcMax) ? (gLAceCurR * aiCur) / ((int64)(giIspAgcMax<<AGC_VAL_GAB)*255*32) : 0;
+}
+
+
+// -------------------------------------------------------------------------------------------------
 int iCurBg=0, iErrBg=0;
 int iTgtSpotBg = 0;
 int iCurBgSum1=0, iErrBgSum1=0;
@@ -1103,9 +1156,11 @@ int ISRT CurBg(const int aiTgt, const UINT nSlicLvl, const UINT nSlicCnt, const 
 	//iCurBg = (int)(((nAe3SlicCnt*nAe3SlicLvl) + nAe3Sum1 + (nAe3ClipCntBg*nAe3ClipLvl)) / (nAe3PxCnt-nAe3ClipCnt+nAe3ClipCntBg));
 
 	iCurBg = udiv4x((nSlicCnt*nSlicLvl) + nSum1 + (nClipCnt*nClipLvl), nPxCnt, 0);
+	iCurBg += AceCurGet(iCurBg);
 	iErrBg = aiTgt - iCurBg;
 
 	iCurBgSum1 = udiv4x((nSlicCnt*nSlicLvl) + nSum1, (nPxCnt-nClipCnt), 0);
+ 	iCurBgSum1 += AceCurGet(iCurBgSum1);
 	iErrBgSum1 = aiTgt - (iCurBgSum1);
 
 #if 1
@@ -1526,21 +1581,24 @@ void ISRT SatCtrl(const BYTE abSatOff, int *apiErr, const int iErrMgn, const int
 	GrpAe(GA_ERR_NIGHT_CNT) = (bErrNightCnt>>((ERR_CHG_CNT_BIT>3) ? ERR_CHG_CNT_BIT-3 : ERR_CHG_CNT_BIT))*100 + bErrOfsCnt;
 }
 
-int ISRT WdrAgcWgt(const BYTE abWdrAgcWgtOn, const int aiWdrAgcWgt, const int aiOffCnt, const int aiCtrlSpd)
+int ISRT WdrAgcWgt(const int aiHoldOn, const int aiWdrAgcWgtOn, const int aiWdrAgcWgt, const int aiShtSMax, const int aiOffCnt, const int aiCtrlSpd)
 {
-	const int iShtSVal = ((giShtSVal*aiWdrAgcWgt)+((0x100-aiWdrAgcWgt)*(giShtVal-1)))>>8;	// AGC wgt
-	//SHT_SET1(((giShtSVal*iWdrAgcWgt)+((0x100-iWdrAgcWgt)*(giShtVal-1)))>>8);
-
-	static BYTE bShtSValCnt = 0;
-	if(abWdrAgcWgtOn) { if(bShtSValCnt<aiOffCnt) bShtSValCnt++; }
-	else { if(bShtSValCnt) bShtSValCnt--; }
-
-	//GrpAe(GA_WDR_SHT_S_VAL) = iShtSVal;
-	//GrpAe(GA_WDR_SHT_S_VAL_CNT) = bShtSValCnt;
-
 	static int IIRI(iShtSValDly,500);
-	if(bShtSValCnt==0) IIRI(iShtSValDly,iShtSVal);
-	else			   IIRR(iShtSValDly,aiCtrlSpd,iShtSVal,iShtSValDly);
+
+	if(!aiHoldOn) {
+		const int iShtSVal = ((giShtSVal*aiWdrAgcWgt)+((0x100-aiWdrAgcWgt)*aiShtSMax))>>8;	// AGC wgt
+		//SHT_SET1(((giShtSVal*iWdrAgcWgt)+((0x100-iWdrAgcWgt)*aiShtSMax))>>8);
+
+		static BYTE bShtSValCnt = 0;
+		if(aiWdrAgcWgtOn) { if(bShtSValCnt<aiOffCnt) bShtSValCnt++; }
+		else { if(bShtSValCnt) bShtSValCnt--; }
+
+		//GrpAe(GA_WDR_SHT_S_VAL) = iShtSVal;
+		//GrpAe(GA_WDR_SHT_S_VAL_CNT) = bShtSValCnt;
+
+		if(bShtSValCnt==0) IIRI(iShtSValDly,iShtSVal);
+		else			   IIRR(iShtSValDly,aiCtrlSpd,iShtSVal,iShtSValDly);
+	}
 
 	return iShtSValDly>>(IIG+IKG);
 }
@@ -1857,10 +1915,11 @@ void AeMonOn(const int ai)
 	#define BOX_ID_TGT_SPOT	6//26
 
 	#define BOX_ID_SHT		7//27
-	#define BOX_ID_AGC		8//28
-	#define BOX_ID_DEBLUR	9//29
-	#define BOX_ID_IRIS		10//30
-	#define BOX_ID_DSS		11//31
+	#define BOX_ID_ISP_AGC	8//28
+	#define BOX_ID_AGC		9//28
+	#define BOX_ID_DEBLUR	10//29
+	#define BOX_ID_IRIS		11//30
+	#define BOX_ID_DSS		12//31
 
 	BOX_ATT(BOX_ID_AE_POS,	1,BOX_TONE_100,0xff,0x80,0x80/*WHT*/);
 	BOX_ATT(BOX_ID_CUR_BG,	1,BOX_TONE_100,0xff,0x80,0x80/*WHT*/);
@@ -1872,6 +1931,7 @@ void AeMonOn(const int ai)
 	BOX_ATT(BOX_ID_IRIS,	1,BOX_TONE_25,185,155,8/*CYN*/);
 	BOX_ATT(BOX_ID_SHT,		1,BOX_TONE_25,17,248,117/*BLU*/);
 	BOX_ATT(BOX_ID_DEBLUR,	1,BOX_TONE_25,67,221,237/*MAG*/);
+	BOX_ATT(BOX_ID_ISP_AGC,	1,BOX_TONE_25,200,101,248/*RED*/);
 	BOX_ATT(BOX_ID_AGC,		1,BOX_TONE_25,50,101,248/*RED*/);
 	BOX_ATT(BOX_ID_DSS,		1,BOX_TONE_25,168,35,19/*GRN*/);
 
@@ -1891,7 +1951,7 @@ void ISRT AeMon(const BYTE bSatOff, const BYTE bLSflag, const int iErrMgn, const
 {
 	if(gpw!=173829904 || grr==0) return;
 
-	extern UINT gnAeVtw;
+	extern UINT gnAeFsc;
 	extern BYTE gbDssRatioLmt;
 
 	#define AE_GRAPH_SX		1200
@@ -1901,7 +1961,7 @@ void ISRT AeMon(const BYTE bSatOff, const BYTE bLSflag, const int iErrMgn, const
 
 	#define AE_GRAPH_IRS_W	100
 	#define AE_GRAPH_SHT_W	200
-	#define AE_GRAPH_AGC_W	200
+	#define AE_GRAPH_AGC_W	300
 	#define AE_GRAPH_DSS_W	40
 
 	#define BOX_H(ID,X,W)	gnBoxOnAeMon |= (1<<ID); BOX(ID, X, AE_GRAPH_SY, X+W, AE_GRAPH_EY)
@@ -1909,7 +1969,7 @@ void ISRT AeMon(const BYTE bSatOff, const BYTE bLSflag, const int iErrMgn, const
 
 	static WORD wX = AE_GRAPH_SX;
 
-	if(gbWdrOn&&(bLSflag==AeLONG)) {
+	if((gbWdrOn==WDR_FRAME)&&(bLSflag==AeLONG)) {
 		const WORD wCurY = AE_GRAPH_EY - (iCur>>(10-AE_GRAPH_H_BIT));
 		BOX(BOX_ID_CUR_SPOT, AE_GRAPH_SX, wCurY, wX, wCurY)
 
@@ -1929,7 +1989,7 @@ void ISRT AeMon(const BYTE bSatOff, const BYTE bLSflag, const int iErrMgn, const
 			wX += AE_GRAPH_IRS_W;
 		}
 		if(bShtOn) {
-			const WORD wShtW = ((SHT_MAX - SHT_MIN) * AE_GRAPH_SHT_W) / gnAeVtw + 1;
+			const WORD wShtW = ((SHT_MAX - SHT_MIN) * AE_GRAPH_SHT_W) / gnAeFsc + 1;
 			if(gbAeStg == AE_STG_SHT) wPos = wX + ((giShtVal - SHT_MIN) * wShtW) / (SHT_MAX - SHT_MIN);
 			BOX_H(BOX_ID_SHT, wX, wShtW);
 			wX += wShtW;
@@ -1938,23 +1998,32 @@ void ISRT AeMon(const BYTE bSatOff, const BYTE bLSflag, const int iErrMgn, const
 
 		}
 		if(bDeblurOn) {
-			const WORD wDblW = ((SHT_DBL_MAX - SHT_MAX) * AE_GRAPH_SHT_W) / gnAeVtw + 1;
+			const WORD wDblW = ((SHT_DBL_MAX - SHT_MAX) * AE_GRAPH_SHT_W) / gnAeFsc + 1;
 			if(gbAeStg == AE_STG_DBL) wPos = wX + ((giShtVal - SHT_MAX) * wDblW) / (SHT_DBL_MAX - SHT_MAX);
 			BOX_H(BOX_ID_DEBLUR, wX, wDblW);
 			wX += wDblW;
 		}
 		if(bAgcOn) {
-			const WORD wAgcW = ((AGC_MAX - iAgcMin_Agc) * AE_GRAPH_AGC_W) / iAgcDevMax/*POS2AGC(gnAeAgcTVal+1)*/ + 1;
+			const WORD wAgcW = ((AGC_MAX - iAgcMin_Agc) * AE_GRAPH_AGC_W) / iAgcDevMax/*POS2AGC(AGC_POS_MAX+1)*/ + 1;
 			if(gbAeStg == AE_STG_AGC) wPos = wX + ((giAgcVal - iAgcMin_Agc) * wAgcW) / (AGC_MAX - iAgcMin_Agc);
 			BOX_H(BOX_ID_AGC, wX, wAgcW);
+
+			extern int giPreAgcMax;
+			extern int giIspAgcMax;
+			if(giIspAgcMax) {
+				const WORD wIspAgcX = wX + ((giPreAgcMax - iAgcMin_Agc) * wAgcW) / (AGC_MAX - iAgcMin_Agc);
+				const WORD wIspAgcW = (giIspAgcMax * wAgcW) / (AGC_MAX - iAgcMin_Agc);
+				BOX_H(BOX_ID_ISP_AGC, wIspAgcX, wIspAgcW);
+			}
+
 			wX += wAgcW;
 		}
 		if(bDssOn) {
-			const WORD wShtW = ((gnAeVtw - iShtMax_Agc) * AE_GRAPH_SHT_W) / gnAeVtw;
+			const WORD wShtW = ((gnAeFsc - iShtMax_Agc) * AE_GRAPH_SHT_W) / gnAeFsc;
 			const WORD wDssW = (gbDssRatioLmt > 1) ? bMpDss/*UP(Dss)*/ * AE_GRAPH_DSS_W : 0 ;
 
-			if(gbAeStg == AE_STG_DSS) wPos = wX + ((giShtVal>(int)gnAeVtw) ? wShtW + ((giShtVal - gnAeVtw) * wDssW) / (iShtMax_Dss - gnAeVtw) :
-																			 ((giShtVal - iShtMax_Agc) * wShtW) / (gnAeVtw - iShtMax_Agc)) ;
+			if(gbAeStg == AE_STG_DSS) wPos = wX + ((giShtVal>(int)gnAeFsc) ? wShtW + ((giShtVal - gnAeFsc) * wDssW) / (iShtMax_Dss - gnAeFsc) :
+																			 ((giShtVal - iShtMax_Agc) * wShtW) / (gnAeFsc - iShtMax_Agc)) ;
 			BOX_H(BOX_ID_DSS, wX, wShtW+wDssW);
 			wX += wShtW+wDssW;
 		}
@@ -1987,7 +2056,7 @@ void ISRT AeMon(const BYTE bSatOff, const BYTE bLSflag, const int iErrMgn, const
 			BOX_W(BOX_ID_OFS_CNT,wErrOfsCntY,wErrOfsCntY);
 		}
 
-		if(gbWdrOn) gnBoxOnAeMon |= (1<<BOX_ID_CUR_SPOT)|(1<<BOX_ID_TGT_SPOT);
+		if(gbWdrOn==WDR_FRAME) gnBoxOnAeMon |= (1<<BOX_ID_CUR_SPOT)|(1<<BOX_ID_TGT_SPOT);
 
 		BOSD_ON0w(gnBoxOnAeMon);
 	}

@@ -300,6 +300,19 @@ void ISRT0 AE_ETCw(UINT val)
 	SetSens(0x350B,(val&0xFF));
 }
 
+void ISRT0 SensUpdate(void)
+{
+	gbSensUpdate = 1;
+
+	AE_ETCw(0);
+	AE_FREQw(0,0);
+	AE_DSSw(0);
+	AE_SHTw(0);
+	AE_AGCw(0);
+
+	gbSensUpdate = 0;
+}
+
 
 #undef SetSensBurst		// 아래의 코드(AeSHT(), AeAGC() 등) 에서 SetSensBurst 나 SetSens 의 사용을 방지 -> CHANGE_VAL(...) 적용 불가 -> AeDev() 사용 안됨
 #undef SetSens			//		"
@@ -310,9 +323,7 @@ void ISRT0 AE_ETCw(UINT val)
 #define AE_GAIN_UNIT_OVR		(241-3)													// Sensor gain extended step	GetDgcVal()에서 AGC POS가 241일때 DGC VAL이 0x3FFF 이며 AeAGC0()에서 GetDgcVal(aiPos-237)이므로 241+237=478이 됨		TODO KSH> OS08A10 : AE_GAIN_UNIT_OVR 에 -3 추가
 #define AE_GAIN_UNIT_OVR2		(0)	    												// ISP gain extended step
 
-const int AE_GAIN_TOTAL = (((AE_GAIN_UNIT_MAX*AE_GAIN_UNIT_EA)+AE_GAIN_UNIT_OVR)*1);	//Modified gain per step		TODO KSH> OS08A10 : giCurAgc의 최대값이 AE_GAIN_TOTAL=478 이므로 800 가까이 되지 않음
-const int AE_GAIN_TOTAL2 = 0;
-
+const int AGC_POS_MAX = (((AE_GAIN_UNIT_MAX*AE_GAIN_UNIT_EA)+AE_GAIN_UNIT_OVR)*1);	//Modified gain per step		TODO KSH> OS08A10 : giCurAgc의 최대값이 AGC_POS_MAX=478 이므로 800 가까이 되지 않음
 
 const BYTE gbSensShtDly = 2;	// ShtCtrl()에서 8이하, 0 : 1Frame 후 AE ODM적용, 1 : 2Frame 후 AE ODM적용, 2 : 3Frame 후 AE ODM적용, 3 : 4Frame 후 AE ODM적용
 const BYTE gbSensAgcDly = 2;	// AgcCtrl()에서 8이하, 0 : 1Frame 후 AE ODM적용, 1 : 2Frame 후 AE ODM적용, 2 : 3Frame 후 AE ODM적용, 3 : 4Frame 후 AE ODM적용

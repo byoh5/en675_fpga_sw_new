@@ -31,12 +31,12 @@
 	#define IMD_TEXT_Y		14
 #endif
 
-#define wRectIMD(INDEX)	((wRECT*)(gnBoxPosIMD + (((INDEX)  )<<1)))			// INDEX=1~11 -> Rect=0~10
-#define bRectIMD(INDEX)	((bRECT*)(gnBoxPosIMD + (((INDEX)  )   )))			// (LIB) INDEX=1~11 -> Rect=0~10
+#define wRectIMD(INDEX)	((wRECT*)(gnBoxPosIMD + (((INDEX)  )<<1)))
+#define bRectIMD(INDEX)	((bRECT*)(gnBoxPosIMD + (((INDEX)  )   )))
 
-#define bRectOri(INDEX)	((bRECT*)(pnIMD_IMG   + (((INDEX)  )   )))			// (LIB) INDEX=1~11 -> Rect=0~10
+#define bRectOri(INDEX)	((bRECT*)(pnIMD_IMG   + (((INDEX)  )   )))
 
-#define bRectMsk(INDEX)	((bRECT*)(gnBoxMskPos + (((INDEX)  )   )))			// (LIB) INDEX=0~3 -> Rect=0~3
+#define bRectMsk(INDEX)	((bRECT*)(gnBoxMskPos + (((INDEX)  )   )))
 
 extern UINT gnBoxPosIMD[];
 extern UINT gnBoxOnIMD;

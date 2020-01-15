@@ -32,13 +32,10 @@ BYTE gbIspAgcEnd=0;
 
 void IspAgcSet(void)
 {
-	extern int AE_GAIN_TOTAL;
-	extern int AE_GAIN_TOTAL2;
-	const int iAeAgcTVal = AE_GAIN_TOTAL + AE_GAIN_TOTAL2;
-
-	ADNR_AGC_MIN = (UP(ShpAgcLow)  * iAeAgcTVal) / 100;
-	ADNR_AGC_MID = (UP(ShpAgcMid)  * iAeAgcTVal) / 100;
-	ADNR_AGC_MAX = (UP(ShpAgcHigh) * iAeAgcTVal) / 100;
+	extern int AGC_POS_MAX;
+	ADNR_AGC_MIN = (UP(ShpAgcLow)  * AGC_POS_MAX) / 100;
+	ADNR_AGC_MID = (UP(ShpAgcMid)  * AGC_POS_MAX) / 100;
+	ADNR_AGC_MAX = (UP(ShpAgcHigh) * AGC_POS_MAX) / 100;
 	if(ADNR_AGC_MID < ADNR_AGC_MIN) ADNR_AGC_MID = ADNR_AGC_MIN;
 	if(ADNR_AGC_MAX < ADNR_AGC_MID) ADNR_AGC_MAX = ADNR_AGC_MID;
 
@@ -123,7 +120,7 @@ void Adnr_CmdCheck(void) // 180320 LWH
 #if (model_Sens == SENS_OV2718)		// OV2718 Parallel 27MHz 동작 시 Sensor 출력의 HLOCK이 흔들림 -> VLOCK이 흔들림 -> DNR 시 간헐적으로 영상이 깨지는 경우 발생 -> HLOCK이 흔들리지 않는 Sensor initial setting이 필요
 	const BYTE bMpAdnr = UP_4sOFF;
 #else
-	const BYTE bMpAdnr = ((UP(BackLight) == UP_BL_WDR) || (gbWdrOn==UP_ON) || (gbWdrOnBuf2==UP_ON) || FPS_HI || NOR_MODE) ? UP_4sOFF : UP(Adnr3D) ;
+	const BYTE bMpAdnr = ((UP(BackLight) == UP_BL_WDR) || (gbWdrOn!=WDR_OFF) || (gbWdrOnBuf2!=WDR_OFF) || FPS_HI || NOR_MODE) ? UP_4sOFF : UP(Adnr3D) ;
 #endif
 
 	if(bMpAdnr == UP_4sOFF) gbAdnr_WaitCnt=3; // Priority : WDR > DNR
@@ -333,23 +330,23 @@ const int LowCSupGaTbl[3] = {0x38,		0x24,		0x10	}; // 14.2.10
 const int LowCSupGaTbl[3] = {0x20,		0x18,		0x10	}; // 14.2.10
 #endif
 
-void ISRT CSup(void)
+void ISRT CSup(void)	// TODO KSH ◆ WDR - CSup()에서 Line WDR 설정을 Frame WDR로 하는게 더 좋은지 확인 필요
 {
 	// Low light color suppression ----------------------------
 	int iGain = (gbIspAgcSta < gbIspAgcEnd) ? LibUtlInterp1D(giCurAgc, ADNR_AGC_STA, ADNR_AGC_END, LowCSupGaTbl[gbIspAgcSta], LowCSupGaTbl[gbIspAgcEnd]) : LowCSupGaTbl[gbIspAgcSta];
 	iGain = MIN((iGain * UP(LSUP_GA))>>7, 0x3F);	// 15.06.13 KSH
 
-	LSUP_ONw(!(!UP(LSUP_ON)||gbWdrOn));		// 141209 (gbWdrOn&&UpLSUP_ON) ? 0: 1	//HTY 20150613
+	LSUP_ONw(UP(LSUP_ON)&&(gbWdrOn!=WDR_FRAME));
 	LSUP_GAw(iGain);
 
 	// Edge color suppression -------------------------------
-	const BYTE bMpCES_ON = (gbWdrOn==1) ? UP(CES_WDR) : UP(CES_NOR);
+	const BYTE bMpCES_ON = (gbWdrOn==WDR_FRAME) ? UP(CES_WDR) : UP(CES_NOR);
 	const BYTE bMpCES_ONrv = (40 < bMpCES_ON) ? 40 : 40 - bMpCES_ON;
 	const BYTE bCES_LCLIP = (bMpCES_ONrv > 20) ? bMpCES_ONrv + (((bMpCES_ONrv-19)*(bMpCES_ONrv-20))>>1) : bMpCES_ONrv;
 
 	CES_ONw(bMpCES_ON>0);				//WHL 20180807
-	CES_GAINw((gbWdrOn==1) ? UP(CES_WGAIN) : UP(CES_GAIN));
-	CES_LCLIPw((gbWdrOn==1) ? (bCES_LCLIP>>1)/*UP(CES_WLCLP)*/ : bCES_LCLIP/*UP(CES_LCLP)*/);
+	CES_GAINw((gbWdrOn==WDR_FRAME) ? UP(CES_WGAIN) : UP(CES_GAIN));
+	CES_LCLIPw((gbWdrOn==WDR_FRAME) ? (bCES_LCLIP>>1)/*UP(CES_WLCLP)*/ : bCES_LCLIP/*UP(CES_LCLP)*/);
 }
 
 //-------------------------------------------------------------------------------------------------

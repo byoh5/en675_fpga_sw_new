@@ -110,7 +110,7 @@ void InitContrast(void)
 	HEQ_ONw(1);
 	HEQ_IIRKw(0xd0);	// IIR Speed
 
-	ACE_VSPw(0x1c);		// TODO KSH - ACE_VSP : EN673버전만 0x1c, EN781버전은 확인 필요
+	ACE_VSPw(0x1c);		// TODO KSH - ACE_VSP : EN673버전만 0x1c, EN781버전은 확인 필요, 튜닝 시 ACE_OSD 로 확인
 	ACE_HBw(RP(ACE_HB));
 	ACE_VBw(RP(ACE_VB));
 	ACE_HBSw(((model_4M)||(model_8M))?(0x3):(0x2));				// ACE block size
@@ -181,7 +181,7 @@ void ISRT Gamma(void) // 180320 LWH
 	static WORD wWdrGmkBuf = 0xFFFF;
 	static BYTE bUpAE_WDR_STYLE_SEL = 0xAA;
 
-	const BYTE bMpGamma = (gbWdrOn) ? UP(GammaWdr) : UP(Gamma);
+	const BYTE bMpGamma = (gbWdrOn!=WDR_OFF) ? UP(GammaWdr) : UP(Gamma);	// TODO KSH ◆ WDR - Gamma()에서 Line WDR 설정을 Frame WDR로 하는게 더 좋은지 확인 필요
 
 	const BYTE bAutoGammaOff = (UP(GammaDay) <= UP(GammaNgt)) || (UP(GammaDay) == 0) || (bMpGamma != UP_GAMMA_AUTO);
 
@@ -192,7 +192,7 @@ void ISRT Gamma(void) // 180320 LWH
 		const BYTE bYGMA_ON = YGMA_ONr;
 		const BYTE bCGMA_ON = CGMA_ONr;
 
-		if(gbWdrOn && (bMpGamma >= UP_GAMMA_WDR)) { // WDR Gamma
+		if((gbWdrOn!=WDR_OFF) && (bMpGamma >= UP_GAMMA_WDR)) { // WDR Gamma
 			const UINT nWdrGmk = gwWdrGmk>>4;
 
 			if (UP(AE_WDR_STYLE_SEL)==0) {	// 141209
@@ -211,7 +211,7 @@ void ISRT Gamma(void) // 180320 LWH
 				const BYTE bMpGammaO = (bMpGamma < UP_GAMMA_AUTO) ? bMpGamma : UP(GammaDay) ;	// GAMMA가 AUTO로 설정되어 있지만 bAutoGammaOff 조건인 경우 UP(GammaDay) 사용
 
 				const UINT *pnTblGmaY = gpTblGamma[bMpGammaO+3];
-				const UINT *pnTblGmaC = (gbWdrOn) ? pnTblGmaY : gpTblGamma[bMpGammaO+0];
+				const UINT *pnTblGmaC = (gbWdrOn!=WDR_OFF) ? pnTblGmaY : gpTblGamma[bMpGammaO+0];
 
 				for (i=0; i<9; i++) SetIsp(YGAMMA_BASE+i, *(pnTblGmaY+i));	// y gamma exchange
 				for (i=0; i<9; i++) SetIsp(CGAMMA_BASE+i, *(pnTblGmaC+i));	// c gamma exchange
@@ -230,8 +230,8 @@ void ISRT Gamma(void) // 180320 LWH
 				UINT nAutoGmK = AutoGamma(iTgtSpotBgOri, iTgtOriMin, UP(GammaDay), UP(GammaNgt), &bGammaIdx);
 				const UINT *pnTblGmaY0 = gpTblGamma[bGammaIdx+4];
 				const UINT *pnTblGmaY1 = gpTblGamma[bGammaIdx+3];
-				const UINT *pnTblGmaC0 = (gbWdrOn) ? pnTblGmaY0 : gpTblGamma[bGammaIdx+1];
-				const UINT *pnTblGmaC1 = (gbWdrOn) ? pnTblGmaY1 : gpTblGamma[bGammaIdx+0];
+				const UINT *pnTblGmaC0 = (gbWdrOn!=WDR_OFF) ? pnTblGmaY0 : gpTblGamma[bGammaIdx+1];
+				const UINT *pnTblGmaC1 = (gbWdrOn!=WDR_OFF) ? pnTblGmaY1 : gpTblGamma[bGammaIdx+0];
 
 				for (i=0; i<9; i++) {
 					const UINT nGmaY = GetGamma(*(pnTblGmaY0+i), *(pnTblGmaY1+i), nAutoGmK);
@@ -310,6 +310,7 @@ void ISRT AceDefog(void)
 	int 	iAceTh1=0, iAceTh2=0, iAceDth=3;
 	int		iAceTh1S, iAceTh2S, iAceTh1E, iAceTh2E;
 	BYTE 	bAceTblSel=0;
+	BYTE	bAceGmgnMin=0;
 
 #if 0
 	#if (model_1M)
@@ -330,28 +331,28 @@ void ISRT AceDefog(void)
 #endif
 
 
-	if (gbWdrOn==UP_ON) {									// WDR on
+	if (gbWdrOn!=WDR_OFF) {									// WDR on	// TODO KSH ◆ WDR - AceDefog()에서 Line WDR 설정을 Frame WDR로 하는게 더 좋은지 확인 필요
 
 		ACE_BPw(0);			// Block bypass ON
 
-		ACE_GMGNw(0x0);
+		bAceGmgnMin = 0;
 //		ACE_DTHw(0x4);
 
 		iAceDth = 0x7;
 		iAceTh1 = UP(ACEWDR1_TH);
 		iAceTh2 = UP(ACEWDR2_TH);
 	}
-	else {															// WDR off
-		if ((UP(Defog)==UP_ON) || (UP(Ace) != UP_4sOFF)) {		// ACE, Defog condition
+	else {													// WDR off
+		if ((UP(Defog)==UP_ON) || (UP(Ace) != UP_4sOFF)) {	// ACE, Defog condition
 
 			ACE_BPw(0);		// Block bypass OFF
 
 			if (UP(Defog)==UP_ON)	{
-				ACE_GMGNw(0x0);
+				bAceGmgnMin = 0;
 				bAceTblSel = UP_4sMID;
 			}
 			else {
-				ACE_GMGNw(UP(AceGmgn)/*0x20*/);
+				bAceGmgnMin = UP(AceGmgn);
 				bAceTblSel = UP(Ace);
 			}
 
@@ -382,7 +383,7 @@ void ISRT AceDefog(void)
 
 			ACE_BPw(1);		// Block bypass ON
 
-			ACE_GMGNw(0x0);
+			bAceGmgnMin = 0;
 
 			iAceDth = 0x3;
 			iAceTh1 = 0;
@@ -399,6 +400,8 @@ void ISRT AceDefog(void)
 
 	DebugDisp(gbContDebugOn, , "ACE_TH1_", 4, 24, ACE_TH1r);
 	DebugDisp(gbContDebugOn, , "ACE_TH2_", 5, 24, ACE_TH2r);
+
+	void AceGmgnSet(const BYTE);	AceGmgnSet(bAceGmgnMin);
 
 	// Defog -------------------------------------------------------------------------------
 	//if (UP(ShdDet))		return;							// because AE Window
@@ -515,7 +518,7 @@ void ISRT AceDefog(void)
 //	else nDefogWeight = 1;	// 2015921 - WHL : 25% at EN771								// Defog off
 	else nDefogWeight = 64;	// 2015921 - WHL : 25% at EN673								// Defog off
 
-	if (gbWdrOn==UP_ON) nDefogWeight = 1;	// 180426 KSH
+	if (gbWdrOn!=WDR_OFF) nDefogWeight = 1;	// 180426 KSH
 
 	DebugDisp(gbContDebugOn, , "DFG_THRS", 7, 24, nDefogThres);
 

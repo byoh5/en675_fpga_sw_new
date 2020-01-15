@@ -177,6 +177,8 @@ enum {	// UP(CamTitleOn)
 \
 UP_LIB(Brightness)\
 UP_LIB(ColorBar)\
+UP_LIB(IspGain)\
+UP_LIB(IspGainAeCur)\
 \
 UP_LIB(ErrChgStep)\
 UP_LIB(SpotSpd)\
@@ -221,7 +223,15 @@ UP_STYLE(Ace,           UP_4sHI,         UP_4sOFF,        UP_4sHI,         UP_4s
 //-------------------------------------------------------------------------------------------------
 #define USR_PAR_LIST/* User Parameter List */\
 \
-/*--　SENSOR　--*/\
+UP_TITLE(ISP_BINARY_INFO)/*--　ISP　BINARY　INFO.　--*/\
+UP_SET(2, ISP_FW_Ver, model_ver, INIT_RUN, UP(ISP_FW_Ver) = model_ver; )/* ISP Firmware Ver. (Read Only) */\
+UP_SET(2, ISP_FW_Build_Year, 0, , UsrParDateTime(); )/* Year of Build ISP Firmware (Read Only) */\
+UP_SET(2, ISP_FW_Build_MonthDay, 0, , UsrParDateTime(); )/* Month & Day of Build ISP Firmware (Read Only) */\
+UP_SET(2, ISP_FW_Build_Time, 0, INIT_RUN, UsrParDateTime(); )/* Time when Build ISP Firmware (Read Only) */\
+UP_SET(1, Sensor_ID, model_Sens, INIT_RUN, UP(Sensor_ID) = model_Sens; )/* Sensor ID (Read Only) */\
+UP_SET(1, Sensor_Ctrl, model_Sens_Ctrl, INIT_RUN, UP(Sensor_Ctrl) = model_Sens_Ctrl; )/* Sensor Control Interface, 0 : SPI, 1 : TWI (Read Only) */\
+UP_SET(1, Sensor_FPS, model_Sens_Fps, INIT_RUN, UP(Sensor_FPS) = model_Sens_Fps; )/* Sensor Initial FPS (Read Only) */\
+UP_TITLE(SENSOR)/*--　SENSOR　--*/\
 UP_SET(1, LvdsPNSel, SP(LvdsPNSel), , RDES_PNSELw(UP(LvdsPNSel)); )/* 0 ~ 1,  0 : Negative Start, 1 : Positive Start,  입력 data의 latch start point를 설정 */\
 UP_SET(1, LckDly, SP(LckDly), ,  LCK_DLYw(UP(LckDly)); )/* 0 ~ 7,  Lvds/Mipi input clock delay adjust */\
 UP_SET(1, LdiDly0, SP(LdiDly0), , LDIDLY0w(UP(LdiDly0)); )/* 0 ~ 7,  Lvds/Mipi channel 0 delay adjust */\
@@ -240,10 +250,10 @@ UP_SET(1, ICSel, SP(ICSel), , Flip(); )/* 0 ~ 3,  Pre module color phase selecti
 UP_SET(1, OCSel, SP(OCSel), , Flip(); )/* 0 ~ 3,  Post module color phase selection, RGB interpolator의 위상을 조절, 출력단 VLOCKO_IT_POS0w(UP(OutVSyncOfs)) & HLOCKO_IT_POS0w(UP(OutHSyncOfs)) 설정에 따라 OCSel값을 잘못 설정할 수 있으니 주의!!! */\
 UP_SET(2, OutHSyncOfs, RP(OutHSyncOfs), , HLOCKO_IT_POS0w(UP(OutHSyncOfs)); )/* 0 ~ 0x1fff,  Digital Output formatter Horizontal sync offset, OCSel에 영향을 주므로 가능한 변경하지 않는 것을 권장, 이 값을 조절해도 영상이 화면에 채워지지 않으면 pre/post단의 Hsync offse이나 Hsp를 조절해야 함 */\
 UP_SET(2, OutVSyncOfs, RP(OutVSyncOfs), , VLOCKO_IT_POS0w(UP(OutVSyncOfs)); )/* 0 ~ 0xfff,  Digital Output formatter Vertical sync offset, OCSel에 영향을 주므로 가능한 변경하지 않는 것을 권장, 이 값을 조절해도 영상이 화면에 채워지지 않으면 pre/post단의 Vsync offse이나 Vsp를 조절해야 함 */\
-/*--　MENU:　OUTPUT　SET　--*/\
+UP_TITLE(MENU_OUTPUT_SET)/*--　MENU:　OUTPUT　SET　--*/\
 UP_SET(1, OutFps, OUT_FPS_DEF, , OutMode(); )/* SYSTEM → OUTPUT → FRAMERATE : */\
 UP_SET(1, SysFreq, UP_SYSFREQ_60, , OutMode(); )/* FREQ : 0 = 25Hz, 1 = 30Hz */\
-/*--　AE　--*/\
+UP_TITLE(AE)/*--　AE　--*/\
 UP_SET(2, AE_SHT_SLICE_LINE, UpAE_SHT_SLICE_LINE, , )/* Shutter limit to minimum (line value : spec min ~ 1123) */\
 UP_SET(1, AE_OUTDOOR_THRS_VAL, UpAE_OUTDOOR_THRS_VAL, , )/* Shutter threshold in OUTDOOR mode (ex. 1125>>3 =  375 => 1/240s) */\
 UP_SET(1, AE_DEBLUR_THRS_VAL, UpAE_DEBLUR_THRS_VAL, , )/* Shutter threshold in DEBLUR mode (ex. 1125>>3 =  375 => 1/240s) */\
@@ -263,7 +273,7 @@ UP_SET(2, AE_WDR_STGT_OFST2, UpAE_WDR_STGT_OFST2, , )/* WDR Short Brightness tar
 UP_SET(1, AE_WDR_SWGT_L, UpAE_WDR_SWGT_L, , )/* WDR weight adjust for menu Low (0x40 = x0.5, 0x80 = x1, 0xC0 = x1.5, 0xff = x2) */\
 UP_SET(1, AE_WDR_SWGT_M, UpAE_WDR_SWGT_M, , )/* WDR weight adjust for menu Middle (0x40 = x0.5, 0x80 = x1, 0xC0 = x1.5, 0xff = x2) */\
 UP_SET(1, AE_WDR_SWGT_H, UpAE_WDR_SWGT_H, , )/* WDR weight adjust for menu High (0x40 = x0.5, 0x80 = x1, 0xC0 = x1.5, 0xff = x2) */\
-/*--　MENU:　EXPOSURE　--*/\
+UP_TITLE(MENU_EXPOSURE)/*--　MENU:　EXPOSURE　--*/\
 UP_SET(1, Brightness, 5/*10*/, , )/* BRIGHTNESS → DAY : 0 ~ 20 */\
 UP_SET(1, BrightnessMin, 20/*17*/, , )/* BRIGHTNESS → NIGHT : 0 ~ 20 */\
 UP_SET(1, Iris, UP_LENS_MNL, INIT_RUN, ShutterMenuGet(); )/* IRIS (DC iris) : 0 = ELC, 1 = ALC,  (piris & AF iris) : 0 = MANUAL, 1 = AUTO */\
@@ -293,10 +303,14 @@ UP_SET(1, ShtMax, UP_MNL_SHUT_DIV1, , gbUpShtMax = UP(ShtMax); ShutterMenuSet();
 UP_SET(1, DcMode, UP_DC_IN, , ShutterMenuGet(); )/* IRIS:ALC & SHUTTER:AUTO → MODE : 0 = INDOOR, 1 = OUTDOOR, 2 = DEBLUR */\
 UP_SET(1, ShtMode, UP_SHT_NORMAL, , ShutterMenuGet(); )/* IRIS:ELC/MANUAL/AUTO & SHUTTER:AUTO → MODE : 0 = NORMAL, 1 = DEBLUR */\
 UP_SET(1, Dss, UP_DSS_OFF, , )/* SEMS-UP : 0 = OFF, 1 = X2, 2 = X4, 3 = X8, 4 = X16, 5 = X32, 6 = X64(Must be set OUTPUT SET→MODE:60P_NOMAL｜30P_WDR｜60P_DNR) */\
-UP_SET(1, Agc, 100, , )/* AGC MAX : 0 ~ 255 */\
+UP_SET(1, Agc, 91, , )/* AGC MAX : 0 ~ 255 */\
 UP_SET(1, AgcMin, 0, , )/* AGC MIN : 0 ~ 255 */\
-/*--　MENU:　BACKLIGHT　--*/\
-UP_SET(1, BackLight, UP_BL_OFF, , HlMask(); )/* BACKLIGHT : 0 = OFF, 1 = HLC, 2 = BLC, 3 = WDR  */\
+UP_SET(1, IspGain, 100, , )/* ISP GAIN MAX : 0 ~ 255 */\
+UP_SET(1, IspGainAeCur, 96, , )/* AE CURRENT BY ISP GAIN : 0 ~ 128 */\
+UP_SET(1, IspGainAePos, 0, , )/* AE CURRENT BY ISP GAIN : 0 ~ 128 */\
+UP_SET(1, ExtraGain, 164, , )/* EXTRA GAIN MAX : 0 ~ (255-AGC_MAX) */\
+UP_TITLE(MENU_BACKLIGHT)/*--　MENU:　BACKLIGHT　--*/\
+UP_SET(1, BackLight, UP_BL_OFF, , HlMask(); InMode(); )/* BACKLIGHT : 0 = OFF, 1 = HLC, 2 = BLC, 3 = WDR  */\
 UP_SET(1, HlMaskThrs, 18, , HlMask(); )/* BACKLIGHT:HLC → LEVEL : 0 ~ 20 */\
 UP_SET(1, HlMaskColorSel, 7, , HlMask(); )/* BACKLIGHT:HLC → COLOR : 0 = WHT, 1 = YEL, 2 = CYN, 3 = GRN, 4 = MAG, 5 = RED, 6 = BLU, 7 = BLK, 8 = CUSTOMIZE */\
 UP_SET(1, HlMaskColorCY, 100, , HlMask(); )/* HLMASK CY of Color for Customize Color Menu (0 ~ 0xFF) */\
@@ -308,12 +322,12 @@ UP_SET(1, BlcPosY, /*10*/7, , )/* BACKLIGHT:BLC → V-POS : 0 ~ 20 */\
 UP_SET(1, BlcSizX, /*14*/3, , )/* BACKLIGHT:BLC → H-SIZE : 0 ~ 20 */\
 UP_SET(1, BlcSizY, /*4*/3, , )/* BACKLIGHT:BLC → V-SIZE : 0 ~ 20 */\
 UP_SET(1, WdrWgt, UP_3sHI, , )/* WDR : 0 = LOW, 1 = MIDDLE, 2 = HIGH */\
-UP_SET(1, WdrMode, UP_WDR_FRAME, , )/* WDR : 0 = FRAME, 1 = LINE */\
-/*--　MENU:　FOCUS　--*/\
+UP_SET(1, WdrMode, UP_WDR_FRAME, , InMode(); )/* WDR : 0 = FRAME, 1 = LINE */\
+UP_TITLE(MENU_FOCUS)/*--　MENU:　FOCUS　--*/\
 UP_SET(1, FocusAdj_On, 0, , )/* FOCUS ADJ : 0 = OFF, 1 ON */\
 UP_SET(1, FocusThrs, 10, , )/* Edge Level : 0 ~ 20 */\
 UP_SET(1, FocusAdjColorSel, 1, , )/* FOCUS ADJ → COLOR : 0 = WHT, 1 = YEL, 2 = CYN, 3 = GRN, 4 = MAG, 5 = RED, 6 = BLU, 7 = BLK, 8 = CUSTOMIZE */\
-/*--　MENU:　DAY&NIGHT　--*/\
+UP_TITLE(MENU_DAYnNIGHT)/*--　MENU:　DAY&NIGHT　--*/\
 UP_SET(1, Tdn, UP_TDN_DAY, , )/* DAY&NIGHT : 0 = AUTO, 1 = COLOR, 2 = B&W, 3 = EXTERN */\
 UP_SET(1, TdnThrs, 10, , )/* DAY&NIGHT:AUTO → AGC THRES : 0 ~ 20 */\
 UP_SET(1, TdnMarg, 10, , )/* DAY&NIGHT:AUTO → AGC MARGIN : 0 ~ 20 */\
@@ -322,16 +336,7 @@ UP_SET(1, LedOn, UP_OFF, , )/* DAY&NIGHT → IR LED : 0 = OFF, 1 = ON */\
 UP_SET(1, TdnSw, 0, , )/* DAY&NIGHT:EXTERN → EXTERN SW : 0 = HIGH, 1 = LOW */\
 UP_SET(1, TdnDNThres, 13, , )/* DAY&NIGHT:EXTERN → D>N THRES : 0 ~ 20 */\
 UP_SET(1, TdnNDThres, 7, , )/* DAY&NIGHT:EXTERN → N>D THRES : 0 ~ 20 */\
-/*--　MENU:　COLOR　--*/\
-UP_SET(1, Awb, /*UP_AWB_MNL*/UP_AWB_AUTO, , )/* AWB : 0 = AUTO, 1 = AUTOext, 2 = PRESET, 3 = MANUAL */\
-UP_SET(1, AwbStyle, 0, , )/* AWB:STYLE */\
-UP_SET(1, AwbMnl, UP_5000K, , )/* AWB:MANUAL → C-TEMP : 0 = 3000K, 1 = 5000K, 2 = 8000K */\
-UP_SET(1, Rgain, 10, , )/* AWB:MANUAL → R-GAIN : 0 ~ 20 */\
-UP_SET(1, Bgain, 10, , )/* AWB:MANUAL → B-GAIN : 0 ~ 20 */\
-UP_SET(1, SaturationR, 36/*30*//*32*/, , )/* R-GAIN : 0 ~ 64 */\
-UP_SET(1, Saturation,  34/*34*//*32*/, , )/* G-GAIN : 0 ~ 64 */\
-UP_SET(1, SaturationB, 38/*40*//*32*/, , )/* B-GAIN : 0 ~ 64 */\
-/*--　AWB　--*/\
+UP_TITLE(AWB)/*--　AWB　--*/\
 UP_SET(2, AWB_TCNT_LMT, UpAWB_TCNT_LMT, , )/* White pixel cnt limit to minimum (under 0x10000) */\
 UP_SET(2, AWB_DBOFFSET, SP(AWB_DBOFFSET), INIT_RUN, AWBL0_DBOFFSETw(UP(AWB_DBOFFSET)/*>>2*/);/* AWB 8BIT */ )/* Color map coordinate x offset (default +- value) */\
 UP_SET(2, AWB_DROFFSET, SP(AWB_DROFFSET), INIT_RUN, AWBL0_DROFFSETw(UP(AWB_DROFFSET)/*>>2*/);/* AWB 8BIT */ )/* Color map coordinate y offset (default +- value) */\
@@ -341,7 +346,16 @@ UP_SET(1, AWB_SPEED_MTRX, UpAWB_SPEED_MTRX, ,   /* MP(MpAwbSpeed)     */ )/* Mat
 UP_SET(2, AWB_YSLICE, UpAWB_YSLICE, INIT_RUN,   /* MP(MpAwbYSliceMax) */ /*AWBL_CYSLICEw(UP(AWB_YSLICE)>>2);*/ /* AWB 8BIT */ )/* White Y slice (under 0x3ff) */\
 UP_SET(2, AWB_YCLIP, UpAWB_YCLIP, INIT_RUN, AWBL_CYCLIPw(UP(AWB_YCLIP)>>2); /* AWB 8BIT */ )/* White Y clip (under 0x3ff, more than UpAWB_YSLICE) */\
 UP_SET(1, AWB_GAIN_TIMES, UpAWB_GAIN_TIMES, , )/* RGB Gain limit (X times, under 4) */\
-/*--　Color　suppression　--*/\
+UP_TITLE(MENU_COLOR)/*--　MENU:　COLOR　--*/\
+UP_SET(1, Awb, /*UP_AWB_MNL*/UP_AWB_AUTO, , )/* AWB : 0 = AUTO, 1 = AUTOext, 2 = PRESET, 3 = MANUAL */\
+UP_SET(1, AwbStyle, 0, , )/* AWB:STYLE */\
+UP_SET(1, AwbMnl, UP_5000K, , )/* AWB:MANUAL → C-TEMP : 0 = 3000K, 1 = 5000K, 2 = 8000K */\
+UP_SET(1, Rgain, 10, , )/* AWB:MANUAL → R-GAIN : 0 ~ 20 */\
+UP_SET(1, Bgain, 10, , )/* AWB:MANUAL → B-GAIN : 0 ~ 20 */\
+UP_SET(1, SaturationR, 36/*30*//*32*/, , )/* R-GAIN : 0 ~ 64 */\
+UP_SET(1, Saturation,  34/*34*//*32*/, , )/* G-GAIN : 0 ~ 64 */\
+UP_SET(1, SaturationB, 38/*40*//*32*/, , )/* B-GAIN : 0 ~ 64 */\
+UP_TITLE(ColorSuppression)/*--　Color　suppression　--*/\
 UP_SET(1, LSUP_ON, 1, , )/* Low Light color suppression on/off (0: off, 1: on) */\
 UP_SET(1, LSUP_GA, /*0xff*/0x80, , )/* Low Light color suppression gain (0x40 = x0.5, 0x80 = x1, 0xC0 = x1.5, 0xff = x2) */\
 UP_SET(1, LSUP_TH, 0/*1*/, INIT_RUN, LSUP_THw(UP(LSUP_TH)); )/* Low Light color suppression threshold (0 ~ 0xFF) */\
@@ -352,7 +366,7 @@ UP_SET(1, CES_NOR, 2/* TODO KSH ◆ Edge Color Sup. */, , )/* Edge color suppress
 UP_SET(1, CES_WDR, 20, , )/* Edge color suppression weight in WDR(0 ~ 40) */\
 UP_SET(1, CES_GAIN, 0x10, , )/* Edge color suppression normal gain (0 ~ 0x3F) */\
 UP_SET(1, CES_WGAIN, 0x20, , )/* Edge color suppression WDR gain (0 ~ 0x3F) */\
-/*--　Hue　&　Gain　--*/\
+UP_TITLE(HUEnGAIN)/*--　Hue　&　Gain　--*/\
 UP_SET(1, HueChromaMode, 1, , HueChroma(); )/* 0 = NEW, 1 = OLD */\
 UP_SET(1, Yellow_HUE_RedToGreen,  0x7c/*0x80*/, , HueChroma(); )/* Adjust Yellow Hue from Red to Green (0x1:Red, 0x80:Default, 0xFF:Green) */\
 UP_SET(1, Yellow_GAIN,            0x60/*0x60*/, , HueChroma(); )/* Adjust Yellow Gain (0 ~ 0xFF, Default:0x60) */\
@@ -378,7 +392,7 @@ UP_SET(1, Green_Yellow_HUE_BlueToYellow, 0x80/*0x80*//*0x80*/, , HueChroma(); )/
 UP_SET(1, Green_Yellow_HUE_RedToGreen,   0x80/*0x80*//*0x80*/, , HueChroma(); )/* Adjust Hue of 'Green & Yellow' from Red to Green (0x1:Red, 0x80:Default, 0xFF:Green) */\
 UP_SET(1, Green_Yellow_GAIN_Green,       0x60/*0x60*//*0x40*/, , HueChroma(); )/* Adjust Green Gain of 'Green & Yellow' (0 ~ 0xFF, Default:0x60) */\
 UP_SET(1, Green_Yellow_GAIN_Yellow,      0x60/*0x60*//*0x40*/, , HueChroma(); )/* Adjust Yellow Gain of 'Green & Yellow' (0 ~ 0xFF, Default:0x60) */\
-/*--　Defog　--*/\
+UP_TITLE(DEFOG)/*--　Defog　--*/\
 UP_SET(1, Defog, UP_OFF, , )/* DEFOG : 0 = OFF, 1 = ON */\
 UP_SET(1, DefogMode, UP_DEFOG_MANUAL, , )/* DEFOG:ON → MODE : 0 = MANUAL, 1 = AUTO */\
 UP_SET(1, DefogLevel, UP_3sHI/*UP_3sLOW*/, , )/* DEFOG:ON → LEVEL : 0 = LOW, 1 = MIDDLE, 2 = HIGH */\
@@ -390,7 +404,7 @@ UP_SET(2, DEFOG_VSP, RP(DEFOG_VSP), INIT_RUN, HEQ_VSPw(UP(DEFOG_VSP)); )/* Defog
 UP_SET(2, DEFOG_TH_LOW, UpDEFOG_TH_LOW, , )/* Defog Maximum Strength for menu LOW (0x0 ~ 0xffff) */\
 UP_SET(2, DEFOG_TH_MID, UpDEFOG_TH_MID, , )/* Defog Maximum Strength for menu MIDDLE (LOW ~ 0xffff) */\
 UP_SET(2, DEFOG_TH_HIGH, UpDEFOG_TH_HIGH, , )/* Defog Maximum Strength for menu HIGH (MIDDLE ~ 0xffff) */\
-/*--　ACE　--*/\
+UP_TITLE(ACE)/*--　ACE　--*/\
 UP_SET(1, Ace, /*UP_4sMID*//*UP_4sOFF*/UP_4sHI, , )/* ACE : 0 = OFF, 1 = LOW, 2 = MIDDLE, 3 = HIGH (Must be set DEFOG:OFF) */\
 UP_SET(1, AceGmgn, /*0x20*/63, , )/* ACE → WEIGHT : 0 ~ 255 */\
 UP_SET(1, AceBrt, 0/*32*/, , )/* ACE & DEFOG → DIGITAL BRIGHTNESS : 0 ~ 64 */\
@@ -403,12 +417,12 @@ UP_SET(1, ACETBL2_MID, UpACETBL2_MID, , )/* ACE Bright Area Strength for menu MI
 UP_SET(1, ACETBL2_HIGH, UpACETBL2_HIGH, , )/* ACE Bright Area Strength for menu HIGH (MIDDLE ~ 0xff) */\
 UP_SET(1, ACEWDR1_TH, UpACEWDR1_TH, , )/* ACE Dark Area Strength of WDR (0x0 ~ 0xff) */\
 UP_SET(1, ACEWDR2_TH, UpACEWDR2_TH, , )/*  ACE Bright Area Strength of WDR (0x0 ~ 0xff) */\
-/*--　Defect　correction　--*/\
+UP_TITLE(DefectCorrection)/*--　Defect　correction　--*/\
 UP_SET(1, DEFECT_DIFTH, 0, INIT_RUN, DF_DIFTH_LEw(UP(DEFECT_DIFTH)); DF_DIFTH_SE0w(UP(DEFECT_DIFTH)); )/* Within the pattern, this register uses to detect directional defect. Difference threshold for isolated point determination. (0x0 ~ 0xff) */\
 UP_SET(1, DEFECT_GA, 0x80, , )/* Within the pattern, this parameter uses to detect directional defect. Difference gain for isolated point determination. (0x40 = x0.5, 0x80 = x1, 0xC0 = x1.5, 0xff = x2) */\
 UP_SET(1, DEFECT_SPOT_GA, 0x80, , )/* Spot pattern area gain. (0x40 = x0.5, 0x80 = x1, 0xC0 = x1.5, 0xff = x2) */\
 UP_SET(1, DEFECT_TSEL, 0, INIT_RUN, DF_TSEL_LEw(UP(DEFECT_TSEL)); DF_TSEL_SE0w(UP(DEFECT_TSEL)); )/* Select test image in core for directional defect correction. (VLOCKI)  "0" : Normal operation  "1" : Difference values for isolated points  "2" : Image before correction  "3" : Complete correction image (100% correction image except weight).  "4" : Defect pattern detection value */\
-/*--　MENU:　IMAGE　--*/\
+UP_TITLE(MENU_IMAGE)/*--　MENU:　IMAGE　--*/\
 UP_SET(1, Adnr2D, 8, , )/* 2D DNR : 0 ~ 16, 0 = OFF, 2 = LOW, 4 = MIDDLE, 8 = HIGH */\
 UP_SET(1, Adnr3D, UP_4sOFF/*UP_4sMID*/, , )/* 3D DNR : 0 = OFF, 1 = LOW, 2 = MIDDLE, 3 = HIGH */\
 UP_SET(1, DnrIncrease, UP_OFF, , )/* 3D DNR  → INCR.BY AGC : 0 = OFF, 1 = ON */\
@@ -424,14 +438,14 @@ UP_SET(1, GammaNgt, UP_GAMMA_045, , )/* GAMMA NIGHT : 0 = 0.45, 1 = 0.55, 2 = 0.
 UP_SET(1, GammaWdr, UP_GAMMA_045, , )/* GAMMA WDR : 0 = 0.45, 1 = 0.55, 2 = 0.65, 3 = 0.75 */\
 UP_SET(1, Flip, UP_ON, INIT_RUN, Flip(); )/* FLIP : 0 = OFF, 1 = ON */\
 UP_SET(1, Mirror, UP_ON, INIT_RUN, if(UP(Mirror)<2) { SensMirror(UP(Mirror)); } )/* MIRROR : 0 = OFF, 1 = ON */\
-/*--　MENU:　PRIVACY　--*/\
+UP_TITLE(MENU_PRIVACY)/*--　MENU:　PRIVACY　--*/\
 UP_SET(1, PvcOn, UP_OFF, , PrivacyBox(); )/* PRIVACY : 0 = OFF, 1 = ON */\
 UP_SET(1, PvcFormat, 1, , PrivacyBox(); )/* PRIVACY:ON → MASK MODE : 0 = FILL, 1 = FORMAT */\
 UP_SET(1, PvcTrans, 0, , PrivacyBox(); )/* PRIVACY:ON → TRANS : 0 ~ 3 */\
 UP_SET(1, PvcYLevel, 18, , PrivacyBox(); )/* PRIVACY:ON → Y LEVEL : 0 ~ 20 (Must be set MASK MODE:FILL) */\
 UP_SET(1, PvcCRLevel, 11, , PrivacyBox(); )/* PRIVACY:ON → CB LEVEL : 0 ~ 20 (Must be set MASK MODE:FILL) */\
 UP_SET(1, PvcCBLevel, 20, , PrivacyBox(); )/* PRIVACY:ON → CR LEVEL : 0 ~ 20 (Must be set MASK MODE:FILL) */\
-/*--　MENU:　MOTION　--*/\
+UP_TITLE(MENU_MOTION)/*--　MENU:　MOTION　--*/\
 UP_SET(1, Itl, UP_OFF, , IMD_CK_PDw(UP(Itl)); )/* MOTION : 0 = OFF, 1 = ON */\
 UP_SET(1, ItlSens, 5, , )/* MOTION:ON → SENSITIVITY : 0 ~ 10 */\
 UP_SET(1, ItlDettone, 4/*2*/, , )/* MOTION:ON → DET TONE : 0 ~ 4 */\
@@ -441,7 +455,7 @@ UP_SET(1, ItlAlarm, UP_ON, , )/* MOTION:ON → TEXT ALARM : 0 = OFF, 1 = ON */\
 UP_SET(1, ItlSigno, UP_OFF, , )/* MOTION:ON → SIGNAL OUT : 0 = OFF, 1 = ON */\
 UP_SET(1, ItlCamMovingTH, 13/*16*/, INIT_RUN, CamMovTh(24-UP(ItlCamMovingTH)); )/* MOTION:ON → SENSITIVITY → CAM. MOVING : 0 ~ 20 */\
 UP_SET(1, ItlBrightChgTH, 175, INIT_RUN, const int iItlBrtChgTH = 255-UP(ItlBrightChgTH); BrtChgTh(iItlBrtChgTH, -(iItlBrtChgTH>>1), ((iItlBrtChgTH*3)>>2), -((iItlBrtChgTH*3)>>3)); )/* MOTION:ON → SENSITIVITY → BRIGHT CHG. : 0 ~ 200 */\
-/*--　MENU:　SYSTEM　--*/\
+UP_TITLE(MENU_SYSTEM)/*--　MENU:　SYSTEM　--*/\
 UP_SET(1, CamTitleOn, UP_CT_RIGHT_UP, , OsdCamTitle(); )/* CAM TITLE : 0 = OFF, 1 = RIGHT UP, 2 = LEFT DOWN */\
 UP_SET(1, CamTitle0, 'E', , OsdCamTitle(); )/* The first letter of the CAM TITLE, Use ASCII code. */\
 UP_SET(1, CamTitle1, 'N', , OsdCamTitle(); )/* The second letter of the CAM TITLE, Use ASCII code. */\

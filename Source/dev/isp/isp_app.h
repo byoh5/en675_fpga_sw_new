@@ -136,7 +136,9 @@ extern void AE_DSSw(UINT val);
 extern void AE_AGCw(UINT val);
 extern void AE_FREQw(UINT val, UINT val1);
 extern void AE_ETCw(UINT val);
+extern void SensUpdate(void);
 extern int LibUtlInterp1D(int aiXCur, int aiXPos1, int aiXPos2, int aiYPos1, int aiYPos2);
+extern int LibUtlInterp1D_CLAMP(int aiXCur, int aiXPos1, int aiXPos2, int aiYPos1, int aiYPos2);
 extern BYTE LibUtlKeyPass(const BYTE* abpPassKeys, BYTE abKeySize, BYTE* abpPassCnt);
 
 

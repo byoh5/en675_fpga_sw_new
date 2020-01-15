@@ -137,10 +137,10 @@
 #define UART_TX_IRQ_END			{ giTxOn = 0; UartTxSetIrqEn(DEBUG_UART_NUM, ENX_ON); IRQ_ENABLE }
 #else
 #define IRQ_DISABLE				{ UartTxSetIrqEn(DEBUG_UART_NUM, ENX_OFF); }
-#define IRQ_ENABLE				if(gnCommOn == 0) { UartTxSetIrqEn(DEBUG_UART_NUM, ENX_ON); }
+#define IRQ_ENABLE				/*if(gnCommOn == 0 && giTxIrqHold == 0)*/ { UartTxSetIrqEn(DEBUG_UART_NUM, ENX_ON); }
 
 #define UART_TX_IRQ_STA			{ IRQ_DISABLE giTxOn = 1; }
-#define UART_TX_IRQ_END			{ giTxOn = 0; IRQ_ENABLE }
+#define UART_TX_IRQ_END			{ giTxOn = 0; /*gpbTxRegOn = gtUartQue.pbTxHead;*/ IRQ_ENABLE }
 #endif
 
 #define UART_IRQ_OSD_Y	24
@@ -153,7 +153,7 @@
 
 //-------------------------------------------------------------------------------------------------
 // Variables
-UINT	gnCommOn = 0;
+//UINT	gnCommOn = 0;
 
 BYTE	gbETX = 0;
 BYTE	gbRxStg = 0;
@@ -186,7 +186,8 @@ TUartQue gtUartQue;
 volatile int giTxOn = 0;
 //volatile int giTxCnt = 0;
 //volatile BYTE* gpbTxCont = 0;
-volatile BYTE* gpbTxRegOn = 0;
+//volatile BYTE* gpbTxRegOn = 0;
+//volatile int giTxIrqHold = 0;
 
 //-------------------------------------------------------------------------------------------------
 // Functions
@@ -268,11 +269,11 @@ void UartDebugTxIrq(void *ctx)
 		while(gtUartQue.wTxLen)
 		{
 			if(UartTxIsFull(DEBUG_UART_NUM)) {
-				if(gpbTxRegOn) {
+				/*if(gpbTxRegOn) {
 					WaitXus(10);
 					continue;
 				}
-				else break;
+				else*/ break;
 			}
 
 			UIO(
@@ -290,7 +291,14 @@ void UartDebugTxIrq(void *ctx)
 			gtUartQue.wTxLen--;
 
 			//if(gpbTxCont == gtUartQue.pbTxTail) gpbTxCont = 0;
-			if(gpbTxRegOn == gtUartQue.pbTxTail) gpbTxRegOn = 0;
+
+			/*if(gpbTxRegOn == gtUartQue.pbTxTail) {
+				gpbTxRegOn = 0;
+				if(giTxIrqHold == 1) {
+					UartTxSetIrqEn(DEBUG_UART_NUM, ENX_OFF);
+					giTxIrqHold = 2;
+				}
+			}*/
 		}
 
 		if(gtUartQue.wTxLen == 0) { UartTxSetIrqEn(DEBUG_UART_NUM, ENX_OFF); }
@@ -365,7 +373,7 @@ void UartTxReg(UINT anAddr, UINT anData)
 
 	UartTxIrq(PC_ETX);
 
-	gpbTxRegOn = gtUartQue.pbTxHead;
+	//gpbTxRegOn = gtUartQue.pbTxHead;
 
 	UART_TX_IRQ_END
 }
@@ -389,6 +397,13 @@ void ISRT0 UartTxGrp(void)
 	for(int i=0; i<GRP_NUMBER; i++) {
 		gnTxGrp0[i].m_UINT = gnTxGrp[i].m_UINT;
 	}
+	giUartTxGrpOn = 1;
+}
+
+void ISRT0 UartTxGrpSet(UINT anNum, UINT anData)
+{
+	if(anNum >= GRP_NUMBER) return;
+	gnTxGrp0[anNum].m_UINT = anData;
 	giUartTxGrpOn = 1;
 }
 
@@ -462,6 +477,12 @@ void UartTxStrEx(const UINT nCH, const char* apbStr0, const char* apbStr1, UINT 
 			while(gtUartQue.wTxLen || UART0_TX_IRQ_EN) { NOP4 };
 			SetSt(nSt,&nStNum);
 		}
+#else
+		while(gtUartQue.wTxLen || UartTxGetIrqEn(DEBUG_UART_NUM)) WaitXus(10);
+		/*if(gtUartQue.wTxLen && UartTxGetIrqEn(DEBUG_UART_NUM)) {
+			giTxIrqHold = 1;
+			while(giTxIrqHold != 2) WaitXus(10);
+		}*/
 #endif
 		UartTx(nCH, PC_STX);
 		UartTx(nCH, PC_CMD_STR);
@@ -476,6 +497,11 @@ void UartTxStrEx(const UINT nCH, const char* apbStr0, const char* apbStr1, UINT 
 		}
 
 		UartTx(nCH, PC_ETX);
+
+		/*if(giTxIrqHold == 2) {
+			giTxIrqHold = 0;
+			if(gtUartQue.wTxLen) UartTxSetIrqEn(DEBUG_UART_NUM, ENX_ON);
+		}*/
 	}
 	else {
 		UART_TX_IRQ_STA
@@ -735,11 +761,11 @@ void Comm(void)
 {
 	BYTE bIn;
 
-	gnCommOn = 1;
+	//gnCommOn = 1;
 
 	while(gtUartQue.wRxLen > 0)
 	{
-		if(gpbTxRegOn != 0) break;
+		//if(gpbTxRegOn != 0) break;
 
 		bIn = *gtUartQue.pbRxTail++;
 		if( gtUartQue.pbRxTail == (gtUartQue.bRxQue+UART_BUF_SIZE) ) {
@@ -831,11 +857,11 @@ void Comm(void)
 // Console process : Send CPU1
 			case PC_CMD_STR:
 				if (gptMsgShell.index != 0 && bIn == PC_ETX) {
+					UART_TX_ECM_DLY;
 					gptMsgShell.index = 0;
 					num_loop(gptMsgShell.tail, gptMsgShell.tot_num);
 //					CPU_SHARED1 |= eIP1_SHELL_RX;
 //					CPU_IRQ1 = 1;
-					UART_TX_ECM_DLY;
 					SetEnd();
 				} else {
 					if (gptMsgShell.index == MSG_SHELL_MAXLEN) {
@@ -856,8 +882,8 @@ err_proc:
 		 }
 	 }
 
-	gnCommOn = 0;
-	IRQ_ENABLE
+	//gnCommOn = 0;
+	//IRQ_ENABLE
 
 }
 #else

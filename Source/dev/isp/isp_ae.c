@@ -23,7 +23,7 @@
 
 #define WDR_OLD				0
 
-#define AE_FUNC_FPS			FPS_VDI
+#define AE_LONG_FPS			((gbWdrOn==WDR_FRAME) ? FPS_VDI>>1 : FPS_VDI)	// !!! Long proc 안에서만 사용해야 함 !!!
 
 //*******************************************************************************
 // Reserved define & tables
@@ -66,7 +66,7 @@
 #elif (model_Iris==2) //-----------------------------------------------------------
 	#define AE_IRS_OPN_Max		0x145/*0x1c5*//*0x180*/
 	#define AE_IRS_CLS_Max		0x345/*0x2c5*//*0x380*/
-	#define AE_IRS_STAT_Max		/*1800*/(1200/*<<(AE_FUNC_FPS>30)*/)
+	#define AE_IRS_STAT_Max		/*1800*/(1200/*<<(AE_LONG_FPS>30)*/)
 
 #endif
 
@@ -82,8 +82,7 @@
 
 // Lib link ---------------------------------------
 
-extern int AE_GAIN_TOTAL;
-extern int AE_GAIN_TOTAL2;
+extern int AGC_POS_MAX;
 
 extern const BYTE gbSensShtDly;
 extern const BYTE gbSensAgcDly;
@@ -110,9 +109,17 @@ extern int iCurSpot;
 extern int iTgtSpotBg;
 
 extern WORD AeSHT0(int aiVal, UINT anManual, UINT anManualVal);
+extern WORD AeSHT1(int aiVal, UINT anManual, UINT anManualVal);
 extern void AeAGC0(int aiVal);
 extern int AGC2POS(int aiAgc);
 extern int POS2AGC(int aiPos);
+
+extern void AeSHT_LWDR(int, int, int);
+extern int FrameSetCount(const BYTE abDssRatioLmt);
+extern int WdrSShtMax(const BYTE abDssRatioLmt);
+extern int WdrLShtMax(const BYTE abDssRatioLmt);
+extern int WdrMShtMax(const BYTE abDssRatioLmt);
+extern void AeAGC_LWDR(int, int, int, int);
 
 extern void SetAeDevDly(const BYTE, const BYTE);
 extern void InitAeCtrl(const BYTE, const BYTE, const BYTE*, const UINT, const WORD);
@@ -128,7 +135,8 @@ extern int LtPos(const int aiVal0, const int aiVal1);
 extern int CurBg(const int aiTgt, const UINT nSlicLvl, const UINT nSlicCnt, const UINT nClipLvl, const UINT nClipCnt, const UINT nSum1, const UINT nPxCnt, const int aiTgtMin);
 extern void CurSat(const UINT nClipLvl, const UINT nClipCnt, const UINT nSum2, const int iTgtOfs);
 extern void SatCtrl(const BYTE abSatOff, int *apiErr, const int iErrMgn, const int nClipCnt);
-extern int WdrAgcWgt(const BYTE abWdrAgcWgtOn, const int aiWdrAgcWgt, const int aiOffCnt, const int aiCtrlSpd);
+extern int AceCurGet(const int);
+extern int WdrAgcWgt(const int aiHoldOn, const int aiWdrAgcWgtOn, const int aiWdrAgcWgt, const int aiShtSMax, const int aiOffCnt, const int aiCtrlSpd);
 extern void LibWdrCtrl(const UINT );
 extern void AeMon(const BYTE, const BYTE, const int, const int, const int, const BYTE, const BYTE, const BYTE, const BYTE, const BYTE, const BYTE,	const int, const int, const int, const int, const int, const BYTE);
 
@@ -140,24 +148,23 @@ extern void AeMon(const BYTE, const BYTE, const int, const int, const int, const
 int		giCurAgc, giCurDss;
 int		giCurDssStg;
 
-BYTE	gbWdrOn=0, gbWdrOnBuf=0/*, gbWdrOnBuf2=0*//*, gbWdrOnBuf3=0*/;	// 170530 KSH
+BYTE	gbWdrOn=WDR_OFF, gbWdrOnBuf=WDR_OFF/*, gbWdrOnBuf2=WDR_OFF*//*, gbWdrOnBuf3=WDR_OFF*/;	// 170530 KSH
 WORD 	/*gwWdrCnt=0,*/ gwWdrGmk=0x80<<4;
 
-UINT	gnLSflag;
+UINT	gnLSflag = AeLONG;
 
-UINT 	gnAeAgcTVal;
-
-UINT 	gnAeVtw = RP(FR_VTW60);
 UINT	gnAeHtw = RP(FR_HTW60);
+UINT 	gnAeVtw = RP(FR_VTW60);
+UINT 	gnAeFsc = RP(FR_VTW60);
 
 int 	giErr1d,giErr2d;
 
 BYTE 	gbAeDebugOn;
-BYTE 	gbDssRatioLmt = 0;
+BYTE 	gbDssRatioLmt = 1;
 
 int 	giIrsCent = /*0x1E5*/(AE_IRS_CLS_Max+AE_IRS_OPN_Max)<<(6-1);	// mean		Enx EV38 AR0230 = 0x1E5
 int 	giIrsPos = AE_IRS_STAT_Max/*/2*/;
-int		giIrsValBuf;
+int		giIrsValOut;		// IrisOpenAdj() 적용을 위해 giIrsVal를 바로 사용하지 않고 giIrsValOut를 사용
 
 int iTgtMax = 0;
 int iTgtMin = 0;
@@ -172,8 +179,16 @@ int giShtMax = 0;
 int giAgcMin = 0;
 int giAgcMax = 0;
 
+int giPreAgcMax = 0;
+int giIspAgcMax = 0;
+int giSenAgcVal = 0;
+
 int giShtDblMax = 0;
 int giAgcDblMax = 0;
+
+int giSht_L = 0;
+int giSht_S = 0;
+int giSht_M = 0;
 
 BYTE gbAeStg = AE_STG_SHT;
 
@@ -280,6 +295,92 @@ void TestCur10bit(void)
 }
 #endif
 
+#if 0
+void TestInterp1D(void)
+{
+	#define FncInterp1D	LibUtlInterp1D
+	printf("\r\n");
+	{ const int d[] = { 15, 10, 20, 300, 400}; printf("** Interp(%d, %d,%d, %d,%d)=%d\r\n", d[0], d[1], d[2], d[3], d[4], FncInterp1D(d[0], d[1], d[2], d[3], d[4])); }
+	{ const int d[] = { 15, 20, 10, 400, 300}; printf("** Interp(%d, %d,%d, %d,%d)=%d\r\n", d[0], d[1], d[2], d[3], d[4], FncInterp1D(d[0], d[1], d[2], d[3], d[4])); }
+	printf("\r\n");
+	{ const int d[] = { -9,-10, 20,-300, 400}; printf("** Interp(%d, %d,%d, %d,%d)=%d\r\n", d[0], d[1], d[2], d[3], d[4], FncInterp1D(d[0], d[1], d[2], d[3], d[4])); }
+	{ const int d[] = { -9, 20,-10, 400,-300}; printf("** Interp(%d, %d,%d, %d,%d)=%d\r\n", d[0], d[1], d[2], d[3], d[4], FncInterp1D(d[0], d[1], d[2], d[3], d[4])); }
+	{ const int d[] = { 19,-10, 20,-300, 400}; printf("** Interp(%d, %d,%d, %d,%d)=%d\r\n", d[0], d[1], d[2], d[3], d[4], FncInterp1D(d[0], d[1], d[2], d[3], d[4])); }
+	{ const int d[] = { 19, 20,-10, 400,-300}; printf("** Interp(%d, %d,%d, %d,%d)=%d\r\n", d[0], d[1], d[2], d[3], d[4], FncInterp1D(d[0], d[1], d[2], d[3], d[4])); }
+	printf("\r\n");
+	{ const int d[] = {-19,-10,-20,-300, 400}; printf("** Interp(%d, %d,%d, %d,%d)=%d\r\n", d[0], d[1], d[2], d[3], d[4], FncInterp1D(d[0], d[1], d[2], d[3], d[4])); }
+	{ const int d[] = {-11,-20,-10,-400, 300}; printf("** Interp(%d, %d,%d, %d,%d)=%d\r\n", d[0], d[1], d[2], d[3], d[4], FncInterp1D(d[0], d[1], d[2], d[3], d[4])); }
+	{ const int d[] = { 30,-10, 20,-300, 400}; printf("** Interp(%d, %d,%d, %d,%d)=%d\r\n", d[0], d[1], d[2], d[3], d[4], FncInterp1D(d[0], d[1], d[2], d[3], d[4])); }
+	{ const int d[] = { 30, 20,-10, 400,-300}; printf("** Interp(%d, %d,%d, %d,%d)=%d\r\n", d[0], d[1], d[2], d[3], d[4], FncInterp1D(d[0], d[1], d[2], d[3], d[4])); }
+
+	#undef FncInterp1D
+	#define FncInterp1D	LibUtlInterp1D_CLAMP
+	printf("\r\n");
+	{ const int d[] = { 15, 10, 20, 300, 400}; printf("** Interp(%d, %d,%d, %d,%d)=%d\r\n", d[0], d[1], d[2], d[3], d[4], FncInterp1D(d[0], d[1], d[2], d[3], d[4])); }
+	{ const int d[] = { 15, 20, 10, 400, 300}; printf("** Interp(%d, %d,%d, %d,%d)=%d\r\n", d[0], d[1], d[2], d[3], d[4], FncInterp1D(d[0], d[1], d[2], d[3], d[4])); }
+	printf("%d, %d\r\n", 19/10, -19/10);
+	{ const int d[] = { -9,-10, 20,-300, 400}; printf("** Interp(%d, %d,%d, %d,%d)=%d\r\n", d[0], d[1], d[2], d[3], d[4], FncInterp1D(d[0], d[1], d[2], d[3], d[4])); }
+	{ const int d[] = { -9, 20,-10, 400,-300}; printf("** Interp(%d, %d,%d, %d,%d)=%d\r\n", d[0], d[1], d[2], d[3], d[4], FncInterp1D(d[0], d[1], d[2], d[3], d[4])); }
+	{ const int d[] = { 19,-10, 20,-300, 400}; printf("** Interp(%d, %d,%d, %d,%d)=%d\r\n", d[0], d[1], d[2], d[3], d[4], FncInterp1D(d[0], d[1], d[2], d[3], d[4])); }
+	{ const int d[] = { 19, 20,-10, 400,-300}; printf("** Interp(%d, %d,%d, %d,%d)=%d\r\n", d[0], d[1], d[2], d[3], d[4], FncInterp1D(d[0], d[1], d[2], d[3], d[4])); }
+	printf("\r\n");
+	{ const int d[] = {-19,-10,-20,-300, 400}; printf("** Interp(%d, %d,%d, %d,%d)=%d\r\n", d[0], d[1], d[2], d[3], d[4], FncInterp1D(d[0], d[1], d[2], d[3], d[4])); }
+	{ const int d[] = {-11,-20,-10,-400, 300}; printf("** Interp(%d, %d,%d, %d,%d)=%d\r\n", d[0], d[1], d[2], d[3], d[4], FncInterp1D(d[0], d[1], d[2], d[3], d[4])); }
+	{ const int d[] = { 30,-10, 20,-300, 400}; printf("** Interp(%d, %d,%d, %d,%d)=%d\r\n", d[0], d[1], d[2], d[3], d[4], FncInterp1D(d[0], d[1], d[2], d[3], d[4])); }
+	{ const int d[] = { 30, 20,-10, 400,-300}; printf("** Interp(%d, %d,%d, %d,%d)=%d\r\n", d[0], d[1], d[2], d[3], d[4], FncInterp1D(d[0], d[1], d[2], d[3], d[4])); }
+}
+#endif
+
+
+UINT gnMnLensChg = 0;
+
+void ISRT MnLensChg(const int aiChgOn)
+{
+	if(aiChgOn) gnMnLensChg = (AE_LONG_FPS<<2);		// IRIS 설정 메뉴 변경 시 4초 동안 IRIS Center 업데이트 하지 않음
+	else if(gnMnLensChg) gnMnLensChg--;
+}
+
+int ISRT IrisOpenAdj(const BYTE abShtOn, const BYTE abDeblurOn, const int aiAgcMin_Agc)
+{
+	static int iShtValDly = 0;
+	if(iShtValDly < giShtVal) iShtValDly++;
+	else					  iShtValDly = giShtVal;
+
+	static int iTgtValDly = 0;
+	if(iTgtValDly > iTgtVal) iTgtValDly--;
+	else					 iTgtValDly = iTgtVal;
+
+
+	int iIrsVal = 0;
+#ifdef ENABLE_PA
+	if(ParAe(PA_IRS_MANUAL)) {	// for IRIS test
+		static BYTE bIrsCnt = 0;
+		iIrsVal = (giIrsCent>>6)/*0x270*/ + (int)ParAe(PA_IRS_MANUAL) - 1000;
+		if(ParAe(PA_IRS_MANUAL) != 1000 && bIrsCnt==0) bIrsCnt = ParAe(PA_IRS_CNT)+1;
+
+		if(bIrsCnt) bIrsCnt--;
+		if(bIrsCnt==0) ParAe(PA_IRS_MANUAL) = 1000;
+	} else
+#endif
+	{
+		// increse open step
+		static BYTE iIncreseOpenCnt = 0;
+		const int iIncreseOpen = ( ((iTgtMax-iTgtValDly)>>1) + ((abShtOn || abDeblurOn) ? (iShtValDly - SHT_MIN) : 0) + ((gbAeStg==AE_STG_AGC) ? ((giAgcVal - aiAgcMin_Agc)<<2) : 0) ) ;
+		iIrsVal = (UP(Iris)==UP_LENS_MNL) || (gbAeStg==AE_STG_DSS) ? 0 :
+				  giIrsValOut - iIncreseOpen;	// gbAeStg==AE_STG_IRS 일 때 IRIS를 제어하고, 다른 Stage일 때 IRIS를 0(Open)으로 제어하면 IRIS 다시 제어 시 IRIS가 튀는(?) 현상 발생하므로 increse open step 필요
+
+		if(giIrsValOut && (gbAeStg!=AE_STG_IRS))
+		{
+			if(iIncreseOpen) iIncreseOpenCnt++;
+			if(iIncreseOpenCnt==(AE_LONG_FPS>>2)) {	// 초당 4씩 giIrsValOut 감소 - 너무 빠르게 감소하면 다른 Stage일 때 IRIS를 0(Open)으로 제어하는 것과 동일하게 IRIS가 튀는 현상 발생하므로 천천히 감소해야 함
+				iIncreseOpenCnt = 0;
+				giIrsValOut--;
+			}
+		}
+	}
+
+	return CLAMP(iIrsVal, 0, 0x3fe);
+}
 
 void ISRT AeIRS(const int aiVal)	// Fixed
 {	// IRIS driver
@@ -309,25 +410,13 @@ void ISRT AeIRS(const int aiVal)	// Fixed
 void ISRT AeDev(void)
 {
 #if AE_DEV_ON
-	gbSensUpdate = 1;
-
 //	FUNC_TIME_OSD(gbMnDebugFnc==1, AeDev, 16, 24,
 	//const ULONG AeDevTimeSta = BenchTimeStart();
 
-		AE_ETCw(0);
-		AE_FREQw(0,0);
-		AE_DSSw(0);
-		AE_SHTw(0);
-		AE_AGCw(0);
-		//AE_DGCw(0);
+		SensUpdate();
 //	)
 	//FontBenchTime(gbMnDebugFnc==1, 16, 0, "AeDev", AeDevTimeSta, 6);
-
-	gbSensUpdate = 0;
 #endif
-
-	//extern void SensorIn(const BYTE abOn);
-	//SensorIn(1);
 }
 
 void ISRT FreqAdjust(void)
@@ -348,6 +437,8 @@ void ISRT FreqAdjust(void)
 	if(FPS_HI) { AE_ETCw(1); }
 	else	   { AE_ETCw(2); }
 	AE_FREQw(gnAeVtw, gnAeHtw);
+#elif (model_Sens == SENS_IMX323)
+	AE_FREQw(gnAeVtw, gnAeHtw>>1);
 #elif model_2M
 	AE_FREQw(gnAeVtw, (FPS_HI) ? gnAeHtw : (gnAeHtw<<1));
 #else
@@ -394,7 +485,7 @@ void InitAe(void)
 	AE_DSSw(gnAeVtw);
 #endif
 
-	AeSHT0(0, 1, gnAeVtw);
+	AeSHT0(gnAeVtw, 1, gnAeVtw);
 
 	//AeDev();
 
@@ -426,7 +517,7 @@ void InitAe(void)
 	//ParAe(PA_ERR_UP_GAIN)		= 2;
 	//ParAe(PA_ERR_DOWN_GAIN)		= 1;
 
-#if 1	// NORMAL
+  #if 1	// NORMAL
 	ParAe(PA_IRS_GAIN_MIN_BIT)	= 2;
 	//ParAe(PA_AGC_GAIN_MIN_BIT)	= 2;
 	//ParAe(PA_SHT_UP_SPEED)		= 200;
@@ -435,7 +526,7 @@ void InitAe(void)
 	ParAe(PA_AGC_DOWN_SPEED)	= 200/*400*/;
 	ParAe(PA_IRS_OPEN_SPEED)	= 1024;
 	ParAe(PA_IRS_CLOSE_SPEED)	= 1024;
-#else	// BLC
+  #else	// BLC
 	ParAe(PA_IRS_GAIN_MIN_BIT)	= 2;
 	//ParAe(PA_AGC_GAIN_MIN_BIT)	= 2;
 	//ParAe(PA_SHT_UP_SPEED)		= 200;
@@ -444,7 +535,7 @@ void InitAe(void)
 	ParAe(PA_AGC_DOWN_SPEED)	= 400;
 	ParAe(PA_IRS_OPEN_SPEED)	= 512;
 	ParAe(PA_IRS_CLOSE_SPEED)	= 512;
-#endif
+  #endif
 
 	ParAe(PA_TGT_NIGHT_OFS)		= 64;
 
@@ -475,7 +566,7 @@ void InitAe(void)
 	if(AE_IRS_OPN_Max <= iIrsCent && iIrsCent <= AE_IRS_CLS_Max) giIrsCent = iIrsCent;
 
 	const int iIrsVal = cat2(gUdAeStat->bIrsValBuf);
-	if(0 <= iIrsVal && iIrsVal <= 0x3fe) giIrsValBuf = iIrsVal;
+	if(0 <= iIrsVal && iIrsVal <= 0x3fe) giIrsValOut = iIrsVal;
 
 
 	if(SHT_MIN==0) SHT_MIN = 1;				// TODO KSH> 초기값 설정 어디서?
@@ -484,7 +575,7 @@ void InitAe(void)
 	const int iShtVal = cat2(gUdAeStat->bShtVal);
 	if(SHT_MIN <= iShtVal && iShtVal <= SHT_MAX) {
 		SHT_SET(iShtVal);//giShtVal = iShtVal;
-		AeSHT0(ParAe(PA_SHT_MANUAL) ? (int)ParAe(PA_SHT_MANUAL) : giShtVal, (UP(Shutter)==UP_SHUT_MNL), (gnAeVtw>>UP(ShutSpd)) );
+		AeSHT0(/*ParAe(PA_SHT_MANUAL) ? (int)ParAe(PA_SHT_MANUAL) :*/ giShtVal, 0/*(UP(Shutter)==UP_SHUT_MNL)*/, 0/*(gnAeVtw>>UP(ShutSpd))*/ );
 	}
 
 	const int iTgtVal0 = cat2(gUdAeStat->bTgtVal);
@@ -512,6 +603,7 @@ void InitAe(void)
 	AeDev();
 
 	//TestCur10bit();
+	//TestInterp1D();
 }
 
 void ISRT AntiSatStabilizingSet(void)
@@ -582,18 +674,29 @@ void ISRT AeODM(void)
 		AE_AREA_INIT(2)
 	}
 
-	if(UP(BackLight) == UP_BL_WDR/*gbWdrOn*/) {		// for Short in WDR
+	if(UP(BackLight) == UP_BL_WDR/*gbWdrOn!=WDR_OFF*/) {		// for Short in WDR
 		LBUFS0_ONw(1);
+
 		AE3_WIN_CHw(1);
 		AE3_HSPw(AE2_HSPr);
 		AE3_HEPw(AE2_HEPr);
 		AE3_VSPw(AE2_VSPr);
 		AE3_VEPw(AE2_VEPr);
+
+		/*AE4_WIN_CHw(2);
+		AE4_HSPw(AE2_HSPr);
+		AE4_HEPw(AE2_HEPr);
+		AE4_VSPw(AE2_VSPr);
+		AE4_VEPw(AE2_VEPr);*/
 	}
 	else {											// for All Area & Original Clip
 		LBUFS0_ONw(0);
+
 		AE3_WIN_CHw(0);
 		AE_AREA_INIT(3)
+
+		/*AE4_WIN_CHw(0);
+		AE_AREA_INIT(4)*/
 	}
 
 #if model_LED_ASAT
@@ -636,12 +739,12 @@ int ISRT TgtMaxGet(const BYTE abWdrOn, const UINT anLSflag)
 	return iTgtOut;
 }
 
-void ISRT CurWDR(int *apiCur, int *apiTgt, int *apiErr,	const UINT anSum1, const UINT anClipLvLong, const UINT anClipCntLong, const UINT anPxCntLong,
+void ISRT CurWDR(int *apiCur, int *apiTgt, int *apiErr,	const UINT anSum1, const UINT anSlicLvLong, const UINT anSlicCntLong, const UINT anClipLvLong, const UINT anClipCntLong, const UINT anPxCntLong,
 		   int *apiCurS1, int *apiTgtS1, int *apiErrS1, const UINT anSum2, const UINT anClipLvShort, const UINT anClipCntShort, const UINT anPxCntShort)
 {
 	int iCur, iTgt, iErr;
 
-	if(gbWdrOn&&(gnLSflag==AeLONG)) {
+	if((gbWdrOn==WDR_FRAME)&&(gnLSflag==AeLONG)) {
 		*apiCur = 0;
 		*apiTgt = 0;
 		*apiErr = 0;
@@ -652,16 +755,17 @@ void ISRT CurWDR(int *apiCur, int *apiTgt, int *apiErr,	const UINT anSum1, const
 	}
 
 	// Long proc ----------------------------------------------------------------------------------
-	iCur = udiv4x(anSum1 + (anClipCntLong*anClipLvLong), anPxCntLong, 0);
+	iCur = udiv4x((anSlicCntLong*anSlicLvLong) + anSum1 + (anClipCntLong*anClipLvLong), anPxCntLong, 0);	// EN781 WDR Slice 추가
+	iCur += AceCurGet(iCur);
 
 	iTgt = TgtMaxGet(UP_ON, AeSHORT);
-	iTgt = MAX(iTgt-(giCurAgc/2), (iTgt/2));	// 13. 8. 4		// EN781 diff
+	iTgt = MAX(iTgt-(giCurAgc/2), (iTgt/2));	// 13. 8. 4
 
 	iErr = iTgt - iCur;
 
 	//if(AE_CTRL_ORIGINAL&&(UP(Shutter)==UP_SHUT_MNL)&&(iErr<0)&&(gnAeState==0)) iErr = 0;	// 170331 KSH
 
-	AE2_SLICE0w(iTgt/3);		// 150802		// EN781 diff
+	AE2_SLICE0w(iTgt/2);		// 150802		// EN781 WDR 3 -> 2
 	AE2_CLIP0w(iTgt + AE_WDR_LCLIP_OFST);							// next long
 
 	//GrpAe(GA_WDR_LONG_CLIP) = iTgt + AE_WDR_LCLIP_OFST;
@@ -673,9 +777,9 @@ void ISRT CurWDR(int *apiCur, int *apiTgt, int *apiErr,	const UINT anSum1, const
 
 	// Short proc ---------------------------------------------------------------------------------
 #if 0
-	iCur = LibUtlInterp1D(MIN(anClipCntShort, AE_WDR_SWGT_MAXCNT), 0, AE_WDR_SWGT_MAXCNT, anClipLvShort, (anClipCntShort==0) ? 0 : anSum2 / anClipCntShort );
+	iCur = LibUtlInterp1D_CLAMP(anClipCntShort, 0, AE_WDR_SWGT_MAXCNT, anClipLvShort, (anClipCntShort==0) ? 0 : anSum2 / anClipCntShort );
 #else
-	const int iSClipWgt = LibUtlInterp1D(MIN(anClipCntShort, AE_WDR_SWGT_MAXCNT), 0, AE_WDR_SWGT_MAXCNT, 0, 0x100);
+	const int iSClipWgt = LibUtlInterp1D_CLAMP(anClipCntShort, 0, AE_WDR_SWGT_MAXCNT, 0, 0x100);
 	iCur = ( (iSClipWgt * udiv4x(anSum2, anClipCntShort, anClipLvShort<<2)) + ((0x100-iSClipWgt) * (anClipLvShort<<2)) ) >> 8;
 
 	DebugDisp2(gbAeDebugOn, Dec, "WdrSCpW", AE_WDR_DEBUG_Y+6/*23*/, AE_DEBUG_X, iSClipWgt, 4)
@@ -684,7 +788,7 @@ void ISRT CurWDR(int *apiCur, int *apiTgt, int *apiErr,	const UINT anSum1, const
 	//GrpAe(GA_WDR_SHORT_CLIP_1D) = anClipLvShort;
 
 	iTgt = TgtMaxGet(UP_ON, AeLONG);
-	iTgt = MAX(iTgt-(giCurAgc/2), (iTgt/2));	// 13. 8. 4		// EN781 diff
+	iTgt = MAX(iTgt-(giCurAgc/2), (iTgt/2));	// 13. 8. 4
 
 	iErr = iTgt - iCur;
 
@@ -699,17 +803,54 @@ void ISRT CurWDR(int *apiCur, int *apiTgt, int *apiErr,	const UINT anSum1, const
 	*apiErrS1 = iErr;
 }
 
-int ISRT WdrCtrl(WORD *apwShtInt)
+void InMode(void)
 {
-	#define AE_WDR_ON_COND	((gnLSflag==AeLONG)&&(UP(BackLight)==UP_BL_WDR)/*&&(UP(Shutter)==UP_SHUT_AUTO)*/)
-	#define AE_WDR_OFF_COND	(((gnLSflag==AeLONG/*AeSHORT*/)&&(UP(BackLight)!=UP_BL_WDR))/*||(UP(Shutter)!=UP_SHUT_AUTO)*/)
+#if 0
+	static BYTE bBackLight = 0xee;
+	static BYTE bWdrMode = 0xee;
 
+	if(bBackLight!=UP(BackLight) || bWdrMode!=UP(WdrMode)) {
+#endif
+		//extern UINT gnVDI_CHG;	// OutMode() 실행 시
+		//gnVDI_CHG = 2;
+
+		// Ae()에서 Frame Wdr 시 (gnLSflag==AeLONG) 일 때 'Long Set' 실행하고 gbWdrOn 설정되도록 해야 함 -> UP 변경 이벤트 시에만 InMode() 호출되므로 사용 불가
+		//extern UINT gnLSflag;
+
+		#define AE_WDR_ON_COND	(/*(gnLSflag==AeLONG)&&*/(UP(BackLight)==UP_BL_WDR)/*&&(UP(Shutter)==UP_SHUT_AUTO)*/)
+		#define AE_WDR_OFF_COND	((/*(gnLSflag==AeLONG)&&*/(UP(BackLight)!=UP_BL_WDR))/*||(UP(Shutter)!=UP_SHUT_AUTO)*/)
+
+		if(AE_WDR_ON_COND)	{
+		if(UP(WdrMode) == UP_WDR_FRAME)	gbWdrOn = WDR_FRAME;
+		else							gbWdrOn = WDR_LINE_2P;		// TODO KSH ◆ WDR - Line WDR ON 상태 추가 필요
+		}
+		else if(AE_WDR_OFF_COND)		gbWdrOn = WDR_OFF;
+
+		gnAeFsc = FrameSetCount(1);
+
+		AeODM();	// 이번 Frame에서 AE3_WIN_CHw() 설정을 위해 실행, UP(BackLight) 와 UP(WdrMode) 변경 시에만 실행되어야 함!!!
+
+		// Sensor Rst. & Sensor Setting
+
+		// ISP Reg. Setting
+
+		// OutMode()
+
+#if 0
+		bBackLight = UP(BackLight);
+		bWdrMode = UP(WdrMode);
+	}
+#endif
+}
+
+int ISRT WdrCtrl(void)
+{
 	//--------------------------------------------------------------------------------
 	// DNR OFF -> 3 Delay -> WDR ON
 #if 0
 	static BYTE bWaitRd_Cnt = 4;
-	//if(((UP(BackLight)==UP_BL_WDR) != (gbWdrOn==UP_ON)) && (bWaitRd_Cnt == 0)) { bWaitRd_Cnt = 3; return ; }	// Detecting WDR ON/OFF Change
-	if(((UP(BackLight)==UP_BL_WDR) && (gbWdrOn==UP_OFF)) && (bWaitRd_Cnt == 0)) { bWaitRd_Cnt = 3; return 0; }		// Detecting WDR ON only
+	//if(((UP(BackLight)==UP_BL_WDR) != (gbWdrOn==UP _ON)) && (bWaitRd_Cnt == 0)) { bWaitRd_Cnt = 3; return ; }	// Detecting WDR ON/OFF Change
+	if(((UP(BackLight)==UP_BL_WDR) && (gbWdrOn==UP _OFF)) && (bWaitRd_Cnt == 0)) { bWaitRd_Cnt = 3; return 0; }		// Detecting WDR ON only
 	if(bWaitRd_Cnt > 1) { bWaitRd_Cnt--; return 0; }
 
 	if(giCurDssStg > 1) return 0;
@@ -748,13 +889,11 @@ int ISRT WdrCtrl(WORD *apwShtInt)
 	//--------------------------------------------------------------------------------
 	//gbWdrOnBuf3 = gbWdrOnBuf2;	// 170530 KSH
 	//gbWdrOnBuf2 = gbWdrOnBuf;
-	gbWdrOnBuf  = gbWdrOn;
+	gbWdrOnBuf = gbWdrOn;
 
+	//InMode();
 
-	if(AE_WDR_ON_COND)			gbWdrOn = UP_ON;	// 170331 KSH
-	else if(AE_WDR_OFF_COND) 	gbWdrOn = UP_OFF;	// 150729 LH : Out timing	170331 KSH
-
-	if ((gbWdrOn==UP_ON)||(gbWdrOnBuf2==UP_ON)) {
+	if((gbWdrOn!=WDR_OFF) || (gbWdrOnBuf2!=WDR_OFF)) {
 
 		WDR_ONw(1);
 
@@ -777,57 +916,17 @@ int ISRT WdrCtrl(WORD *apwShtInt)
 		WDR_SWGTw(MIN(iSwgt,0x3ff));
 
 //		WDR_SWGTw((0x800>>2)+((UP(WdrWgt)*2)<<6));
-#else
-		TMG_ONw(/*aiModeROI?0:*/1);			// TMG OFF at ROI
-#endif
-		static WORD gwShtIntBuf;
-		WORD wShtInt = *apwShtInt;
 
 		if (gnLSflag==AeSHORT)	{
-#if WDR_OLD == 1
-			wShtInt = (wShtInt>=gwShtIntBuf) ? gwShtIntBuf-1 : wShtInt;			// under long
+			giSht_S = (giSht_S>=giSht_L) ? giSht_L-1 : giSht_S;			// under long
 
-			WDR_SSHUTw(/*ParAe(PA_STA) ? (ParAe(PA_STA)&0xFFF) : */wShtInt);												// Short weight
-#else
-
-			const UINT anWeight = (UP(WdrWgt) == 0) ? 0x100 :
-								  (UP(WdrWgt) == 1) ? 0x200 :
-										  	  	  	  0x400 ;
-
-//			iWdrGainS1 = (gwShtIntBuf*256)/wShtInt;			// WDR S1 gain = (Long * 256)/Short
-//			iWdrGain   = ((0x3fffff*256)/((0x3ff*gwShtIntBuf)/wShtInt));		// WDR last gain
-
-			const int iWdrGainS1 = (gwShtIntBuf/*anLef*/*256)/wShtInt/*anSef1*/;							// WDR S1 gain = (Long * 256)/Short
-			const int iWdrGainS2 = 0;												// WDR S2 gain = dummy
-			UINT SMAX = (0x3ff*gwShtIntBuf/*anLef*/)/wShtInt/*anSef1*/;								// Short max = 1023 * S gain
-
-			SMAX = (SMAX * anWeight)>>8 ;									// 170213 LH : Brightness weight between Dark and Bright area
-//			SMAX = (SMAX * 0x100)>>8 ;										// Brightness weight between Dark and Bright area default
-			const int iWdrGain   = ((0x3fffff*256)/(SMAX));							// WDR last gain
-
-			WDR_3MODEw(0x0);
-
-//			WDR_LGAINw(0x1000);												// WDR_LGAIN  : 12b float offset
-//			WDR_LGAINw(0x100); 												// 180321 LGH : Need to check LH  (WDR_LGAIN  : 12b float offset)
-			WDR_SGAINw(iWdrGainS1);         								// WDR_SGAIN  :  8b "
-			WDR_SGAIN2w(iWdrGainS2);										// WDR_SGAIN2 :  4b "
-
-			WDR_GAINw(iWdrGain>>4);         								// WDR_GAIN	  :  8b "	TMP
-//			WDR_STEPw(4);					// TMP
-
-			WDR_SATVLw(0x3c6);
-			WDR_SATVWw(0x1);
-			TMG_YHLPFw(0);
-
-			LibWdrCtrl(SMAX);
-#endif
+			WDR_SSHUTw(/*ParAe(PA_STA) ? (ParAe(PA_STA)&0xFFF) : */giSht_S);												// Short weight
 		}
 		else {
-#if WDR_OLD == 1
-			wShtInt = MAX(wShtInt, 1);
-			WDR_LSHUTw(/*ParAe(PA_STA) ? ((ParAe(PA_STA)>>16)&0xFFF) : */wShtInt);												// Long weight
+			giSht_L = MAX(giSht_L, 1);
+			WDR_LSHUTw(/*ParAe(PA_STA) ? ((ParAe(PA_STA)>>16)&0xFFF) : */giSht_L);												// Long weight
 
-			WORD wWdrGmkNew = ((256<<4) * gwShtIntBuf) / wShtInt;				// Shutter Rate : 0 ~ 256
+			WORD wWdrGmkNew = ((256<<4) * giSht_S) / giSht_L;				// Shutter Rate : 0 ~ 256
 
 			#if (model_Aptn)													// 151020
 			#define SHT_RT_WG_ON	96
@@ -836,18 +935,67 @@ int ISRT WdrCtrl(WORD *apwShtInt)
 			#define SHT_RT_WG_ON	128											// slce 50%		Shutter Rate of WDR_GAMMA ON
 			#define SHT_RT_WG_OFF	192											// clip 75%		Shutter Rate of WDR_GAMMA OFF
 			#endif
-			wWdrGmkNew = LibUtlInterp1D(CLAMP(wWdrGmkNew, SHT_RT_WG_ON<<4, SHT_RT_WG_OFF<<4), SHT_RT_WG_ON<<4, SHT_RT_WG_OFF<<4, 0x80<<4, 0x0);
+			wWdrGmkNew = LibUtlInterp1D_CLAMP(wWdrGmkNew, SHT_RT_WG_ON<<4, SHT_RT_WG_OFF<<4, 0x80<<4, 0x0);
 			gwWdrGmk = ((0xf0 * gwWdrGmk) + ((0x100-0xf0) * wWdrGmkNew)) >> 8;
 
 			//GrpAe(GA_WDR_GAMMA_WGT) = gwWdrGmk;
+		}
 #else
+		TMG_ONw(/*aiModeROI?0:*/1);			// TMG OFF at ROI
+
+		#define gnAeWdrLSWgt	0x100		// 실제 사용하지 않음
+
+		if((gbWdrOn!=WDR_FRAME)||(gnLSflag==AeSHORT))
+		{
+			const UINT anWeight = (gbWdrOn==WDR_FRAME) ? (UP(WdrWgt)==UP_3sLOW) ? 0x100 :
+														 (UP(WdrWgt)==UP_3sMID) ? 0x200 :
+																				  0x400 :
+														 (UP(WdrWgt)==UP_3sLOW) ? 0x80  :
+														 (UP(WdrWgt)==UP_3sMID) ? 0x180 :
+																				  0x500 ;
+
+//			iWdrGainS1 = (giSht_L*256)/giSht_S;			// WDR S1 gain = (Long * 256)/Short
+//			iWdrGain   = ((0x3fffff*256)/((0x3ff*giSht_L)/giSht_S));		// WDR last gain
+
+			const int iLWdrSGainAlp = (gbWdrOn==WDR_LINE_2P) ? (giCurAgc * (SP(LWDR_2P_SGAIN_ALP)<<4)) / AGC_POS_MAX : 0;	// 190612 LGH : EN781 WDR SGAIN alpha (only line wdr)
+
+			const int iWdrGainS1 = (gbWdrOn==WDR_LINE_3P) ? (giSht_L*256)/giSht_M : (giSht_L*256)/giSht_S + iLWdrSGainAlp;			// WDR S1 gain = (Long * 256)/Short
+			const int iWdrGainS2 = (gbWdrOn==WDR_LINE_3P) ? (giSht_L*16)/giSht_S : 0;												// WDR S2 gain = (Short2 * 256)/Short1
+			UINT SMAX = (0x3ff*giSht_L)/giSht_S;								// Short max = 1023 * S gain
+
+			SMAX = (SMAX * anWeight)>>8 ;									// 170213 LH : Brightness weight between Dark and Bright area
+//			SMAX = (SMAX * 0x100)>>8 ;										// Brightness weight between Dark and Bright area default
+
+		#if gnAeWdrLSWgt != 0x100
+			SMAX = ((gnAeWdrLSWgt*SMAX)+((0x100-gnAeWdrLSWgt)*0x3ff))/0x100;	// 180830 LH : EN781 WDR weight(L<->S) by parameter
+		#endif
+
+			const int iWdrGain   = ((0x3fffff*256)/(SMAX));							// WDR last gain
+
+			WDR_3MODEw(gbWdrOn==WDR_LINE_3P);
+
+//			WDR_LGAINw(0x1000);												// WDR_LGAIN  : 12b float offset
+			//WDR_LGAINw(0x100); 												// 180321 LGH : Need to check LH  (WDR_LGAIN  : 12b float offset)	// TODO KSH ◆ WDR - WDR_LGAINw()
+
+//			WDR_SGAINw(iWdrGainS1);         								// WDR_SGAIN  :  8b "
+//			WDR_SGAIN2w(iWdrGainS2);										// WDR_SGAIN2 :  4b "
+			WDR_SGAINw(MIN(iWdrGainS1,0xffff));		// 190214 LH			// WDR_SGAIN  :  8b "
+			WDR_SGAIN2w(MIN(iWdrGainS2,0xffff));	// 190214 LH			// WDR_SGAIN2 :  4b "
+
+			WDR_GAINw(iWdrGain>>4);         								// WDR_GAIN	  :  8b "	TMP
+			//WDR_STEPw(4);					// TMP	// TODO KSH ◆ WDR - WDR_STEPw()
+
+			WDR_SATVLw(0x3c6);
+			WDR_SATVWw(0x1);
+			TMG_YHLPFw(0);
+
+			LibWdrCtrl(SMAX);
+		}
+		else {
 			gwWdrGmk = 0x80<<4;
-#endif
 		}
 
-		gwShtIntBuf = wShtInt;
-		*apwShtInt = wShtInt;
-
+#endif
 		return 0;
 	}
 	else {
@@ -865,6 +1013,8 @@ BYTE gbUpShtMax    = UP_MNL_SHUT_DIV1;		// 1125 line, 1/30 sec
 
 void ShutterMenuGet(void)
 {
+	MnLensChg(1);
+
 	if(UP(Iris)==UP_LENS_MNL) {
 		switch(UP(ShtMode)) {
 			case UP_SHT_NORMAL:	gbUpShtMin		= UP_MNL_SHUT_DIV512;	// 2 line, 1/15000 sec
@@ -981,7 +1131,7 @@ int ISRT TgtGet(const int aiTgtMax, const int aiTgtMin, const BYTE abAeStg)
 			//}
 			iTgt = iTgtVal;
 
-			//iTgt = LibUtlInterp1D(MAX(giShtVal,SHT_MIN+10), SHT_MIN+10, SHT_MAX, iTgt, iTgt>>2);
+			//iTgt = LibUtlInterp1D_CLAMP(giShtVal, SHT_MIN+10, SHT_MAX, iTgt, iTgt>>2);
 		}
 	}
 
@@ -1032,20 +1182,7 @@ void ISRT AeAdv(void)
 	const UINT	nAe3SlicLvl	= AE3_SLICEr;			// "
 
 	int		/*iTgt=0,*/ iCur=0, iErr=0;
-	int		iTgtS1=0, iCurS1=0, iErrS1=0;
-
-	WORD	wShtInt=0;		// SHT
-
-	static int iShtSVal=0;
-
-	static BYTE gbMpIris=0xff;
-	static BYTE gbMpDcMode=0xff;
-	static UINT gnMnLensChg=0;
-
-	if((gbMpIris!=UP(Iris))||(gbMpDcMode!=UP(DcMode))) gnMnLensChg = (AE_FUNC_FPS<<2);		// IRIS 설정 메뉴 변경 시 4초 동안 IRIS Center 업데이트 하지 않음
-	else if(gnMnLensChg) gnMnLensChg--;
-	gbMpIris = UP(Iris);
-	gbMpDcMode = UP(DcMode);
+	int		iTgtS1=0, iCurS1=0, iErrS1=0;			// iTgtS1 & iCurS1는 AE Monitoring OSD & Graph 에서 사용
 
 	TgtChg();	// ErrMgn() & TgtGet() 호출전에 먼저 실행되야 함
 
@@ -1068,19 +1205,19 @@ void ISRT AeAdv(void)
 	//HLMASK_ONw(!ParAe(PA_SAT_OFF));
 	//HLMASK_THw(AE2_CLIPr>>2);
 
-	const BYTE bWdrOn = (gbWdrOn||gbWdrOnBuf2);
+	const BYTE bWdrOn = ((gbWdrOn!=WDR_OFF) || (gbWdrOnBuf2!=WDR_OFF));		// TODO KSH ◆ WDR - WDR Delay
 
 	//static BYTE bWdrOffCnt = 0;
-	//if((gbWdrOnBuf==UP_OFF) && (gbWdrOnBuf2==UP_ON)) bWdrOffCnt = AE_FUNC_FPS>>1;
-	//else if(bWdrOffCnt) bWdrOffCnt--;
+	//if((gbWdrOnBuf==WDR_OFF) && (gbWdrOnBuf2!=WDR_OFF)) bWdrOffCnt = AE_LONG_FPS>>1;
+	//else if(bWdrOffCnt) bWdrOffCnt--;		// !!! bWdrOffCnt감소 시 AE_LONG_FPS와 동기를 맞춰야 함
 
 	static BYTE bWdrOnCnt = 0;
-	if((bWdrOn==UP_ON) && (gbWdrOnBuf==UP_OFF)) bWdrOnCnt = MAX(gbSensShtDly, gbSensAgcDly)+1;
+	if((bWdrOn!=WDR_OFF) && (gbWdrOnBuf==WDR_OFF)) bWdrOnCnt = MAX(gbSensShtDly, gbSensAgcDly)+1;	// TODO KSH ◆ WDR - WDR Delay
 	else if(bWdrOnCnt) bWdrOnCnt--;
 
 	//extern BYTE gbAdnr_WaitCnt;
 	#define gbAdnr_WaitCnt	3		// EN673에서 DNR ON 시 3 frame 후에 실행
-	if(UP(BackLight) == UP_BL_WDR || gbWdrOn || gbWdrOnBuf2 || (gbAdnr_WaitCnt<3)/*gbAdnr_Excute*//*DNR3D_ONr*/) {
+	if(/*UP(BackLight) == UP_BL_WDR || (gbWdrOn!=WDR_OFF) || (gbWdrOnBuf2!=WDR_OFF) ||*/ (gbAdnr_WaitCnt<3)/*gbAdnr_Excute*//*DNR3D_ONr*/) {
 		gbDssRatioLmt = 1;
 	}
 	else {
@@ -1154,10 +1291,10 @@ void ISRT AeAdv(void)
 // -------------------------------------------------------------------------------
 // Input condition adj
 
-	if(gbWdrOn){	// WDR mode --------------------------------------------------
+	if(gbWdrOn!=WDR_OFF){	// WDR mode --------------------------------------------------
 
 		// CurWDR() 실행전에 gnLSflag 설정되어야 함
-		CurWDR(	&iCur, &iTgt, &iErr, nAe2Sum1, nAe2ClipLvl, nAe2ClipCnt, nAe2PxCnt,
+		CurWDR(	&iCur, &iTgt, &iErr, nAe2Sum1, nAe2SlicLvl, nAe2SlicCnt, nAe2ClipLvl, nAe2ClipCnt, nAe2PxCnt,
 				&iCurS1, &iTgtS1, &iErrS1, nAe3Sum2, nAe3ClipLvl, nAe3ClipCnt, nAe3PxCnt);
 
 #if model_WDR_ROI
@@ -1170,10 +1307,14 @@ void ISRT AeAdv(void)
 		const int iAe2ClipCnt = (UP(BackLight)==UP_BL_HLC) ? LibUtlInterp1D(UP(HlMaskThrs)+8, 0, 28, 0, nAe2ClipCnt) : (int)nAe2ClipCnt ;
 
 		iCur = udiv4x((nAe2SlicCnt*nAe2SlicLvl) + nAe2Sum1 + (iAe2ClipCnt*nAe2ClipLvl), nAe2PxCnt, 0);
+		iCur += AceCurGet(iCur);
 
 		iTgt = TgtGet(iTgtMax, iTgtMin, gbAeStg);
 
 		iErr = iTgt - iCur;
+
+		/*UartTxGrpSet(4, iCur-iAceCur);
+		UartTxGrpSet(5, iAceCur);*/
 
 		// Set Slice
 		const int iSliceLv = CurBg(iTgt, nAe3SlicLvl, nAe3SlicCnt, nAe3ClipLvl, nAe3ClipCnt, nAe3Sum1, nAe3PxCnt, UP(AE_TGT_OFST));
@@ -1206,7 +1347,7 @@ void ISRT AeAdv(void)
 		UartTxStrDec("Ae X:", iCur, 4);
 		//bInitAe--;
 		//giCurAgc = AGC2POS(giAgcVal);
-		//AeSHT0(ParAe(PA_SHT_MANUAL) ? (int)ParAe(PA_SHT_MANUAL) : giShtVal, (UP(Shutter)==UP_SHUT_MNL), (gnAeVtw>>UP(ShutSpd)) );
+		//AeSHT0(ParAe(PA_SHT_MANUAL) ? (int)ParAe(PA_SHT_MANUAL) : giShtVal, (UP(Shutter)==UP_SHUT_MNL), (gnAe Vtw>>UP(ShutSpd)) );
 		//AeAGC0(ParAe(PA_AGC_MANUAL) ? (int)ParAe(PA_AGC_MANUAL) : ((gbAeStg==AE_STG_SHT) ? gbVHssAgc : 0) + giAgcVal);
 		//goto AeMonitoring;
 	}
@@ -1223,40 +1364,34 @@ void ISRT AeAdv(void)
 
 // -------------------------------------------------------------------------------
 // Status mode
-	if(gbWdrOn&&(gnLSflag==AeLONG)){	// ============================================ // Long time, Short proc, Long apply
-
-		// apply control val -------------- // Long
-		wShtInt = AeSHT0(ParAe(PA_SHT_MANUAL) ? (int)ParAe(PA_SHT_MANUAL) : giShtVal, (UP(Shutter)==UP_SHUT_MNL), (gnAeVtw>>UP(ShutSpd)) );
-		AeAGC0(ParAe(PA_AGC_MANUAL) ? (int)ParAe(PA_AGC_MANUAL) : ((gbAeStg==AE_STG_SHT) ? gbVHssAgc : 0) + giAgcVal);
-		//AeIRS(UP(DefDet) ? AE_IRS_CLS_Max : ((model_Iris_DC) ? 0 : AE_IRS_STAT_Max));
-
-		//GrpAeF(GA_WDR_SHORT_POS) = gfAePosWdrflt;
-		//GrpAe(GA_WDR_LONG_POS) = giShtValBuf;
-		//GrpAe(GA_WDR_HSS_T_POS) = gnAeHssTVal;
-		//GrpAe(GA_WDR_SHORT_LMT_POS) = iWdrSLmt;
-		//GrpAe(GA_WDR_AGC_WGT) = iWdrAgcWgt;
-	}
-	else {	// ======================================================================== // Short time, Long proc, Short apply
-
+	if((gbWdrOn!=WDR_FRAME)||(gnLSflag==AeSHORT))	// ======================================================================== // Short time, Long proc, Short apply
+	{
 		if(ParAe(PA_SHT_MANUAL)) {
 			SHT_MAX = (int)ParAe(PA_SHT_MANUAL);
 			SHT_MIN = SHT_MAX;
 			SHT_DBL_MAX = SHT_MAX;
 		}
 		else if(UP(Shutter)==UP_SHUT_MNL) {
-			SHT_MAX = (int)(gnAeVtw>>UP(ShutSpd));
+			SHT_MAX = (int)(gnAeFsc>>UP(ShutSpd));	// !!! gnAeFsc는 UP 변경 이벤트 시에만 업데이트, DSS 적용 X
 			SHT_MIN = SHT_MAX;
 			SHT_DBL_MAX = SHT_MAX;
 		}
 		else if(UP(Shutter)==UP_SHUT_FLICKER) {
-			SHT_MAX = (UP(SysFreq)==UP_SYSFREQ_60) ? (gnAeVtw*30)/50 : (gnAeVtw*25)/60;
+			SHT_MAX = (UP(SysFreq)==UP_SYSFREQ_60) ? (gnAeFsc*30)/50 : (gnAeFsc*25)/60;
 			SHT_MIN = SHT_MAX;
 			SHT_DBL_MAX = SHT_MAX;
 		}
 		else {	// UP(Shutter)==UP_SHUT_AUTO
-			SHT_MIN = gnAeVtw>>gbUpShtMin;
-			SHT_MAX = gnAeVtw>>gbUpDeblurMin;
-			SHT_DBL_MAX = gnAeVtw>>gbUpShtMax;
+			SHT_MIN = gnAeFsc>>gbUpShtMin;
+			SHT_MAX = gnAeFsc>>gbUpDeblurMin;
+			SHT_DBL_MAX = gnAeFsc>>gbUpShtMax;
+		}
+
+		if(ParAe(PA_SHT_MANUAL)==0) {
+			const int LONG_SHT_LMT = WdrLShtMax(1);
+			SHT_MIN = MIN(LONG_SHT_LMT,SHT_MIN);
+			SHT_MAX = MIN(LONG_SHT_LMT,SHT_MAX);
+			SHT_DBL_MAX = MIN(LONG_SHT_LMT,SHT_DBL_MAX);
 		}
 
 		if(ParAe(PA_AGC_MANUAL)) {
@@ -1265,15 +1400,22 @@ void ISRT AeAdv(void)
 			AGC_DBL_MAX = AGC_MIN;
 		}
 		else {
-			gnAeAgcTVal = AE_GAIN_TOTAL + AE_GAIN_TOTAL2;	// gnAeAgcTVal -> gnAgcLim -> TDN에서 사용
+			//---------------------------------------------------------------------------------------------
+			const int iPreAgc = (UP(Agc)>=255) ? (int)AGC_POS_MAX :
+												 (int)((((AGC_POS_MAX-AE_GAIN_TGT_OFST)*UP(Agc))/255)+AE_GAIN_TGT_OFST);
+			giPreAgcMax = POS2AGC(iPreAgc);
 
-			const int iAgcLmt = (UP(Agc)>=255) ? (int)gnAeAgcTVal :
-												 (int)((((gnAeAgcTVal-AE_GAIN_TGT_OFST)*UP(Agc))/255)+AE_GAIN_TGT_OFST);
-			AGC_MAX = POS2AGC(iAgcLmt);
+			giIspAgcMax = POS2AGC(((AGC_POS_MAX>>1)*UP(IspGain))/255);
 
+			const int iAgcLmt = ((UP(Agc)+UP(ExtraGain))>=255) ? (int)AGC_POS_MAX :
+												 (int)((((AGC_POS_MAX-AE_GAIN_TGT_OFST)*(UP(Agc)+UP(ExtraGain)))/255)+AE_GAIN_TGT_OFST);
+
+			AGC_MAX = POS2AGC(iAgcLmt) + giIspAgcMax;
+
+			//---------------------------------------------------------------------------------------------
 			//AGC_MIN = (bWdrOn) ? 0 : ((AGC_MAX*UP(AgcMin))>>5);
-			const int iAgcMin = (UP(AgcMin)>=255) ? (int)(gnAeAgcTVal>>2) :
-													(int)(((gnAeAgcTVal)*UP(AgcMin))/(255<<2));
+			const int iAgcMin = (UP(AgcMin)>=255) ? (int)(AGC_POS_MAX>>2) :
+													(int)(((AGC_POS_MAX)*UP(AgcMin))/(255<<2));
 			AGC_MIN = (bWdrOn) ? 0 : POS2AGC(iAgcMin);
 			AGC_MIN = MIN(AGC_MIN, AGC_MAX);
 
@@ -1291,22 +1433,24 @@ void ISRT AeAdv(void)
 		const BYTE bDeblurOn = (SHT_MAX < SHT_DBL_MAX) && (AGC_MIN < AGC_DBL_MAX);
 		const int iShtMax_Agc = (bDeblurOn) ? SHT_DBL_MAX : SHT_MAX ;
 		const int iAgcMin_Agc = (bDeblurOn) ? AGC_DBL_MAX : AGC_MIN ;
-		const int iShtMax_Dss = (gbDssRatioLmt<2) ? gnAeVtw : (gnAeVtw*gbDssRatioLmt)-1;
+		const int iShtMax_Dss = WdrLShtMax(gbDssRatioLmt);
 		const BYTE bAgcOn = (iAgcMin_Agc < AGC_MAX);
 		const BYTE bShtOn = (SHT_MIN < SHT_MAX);
 		const BYTE bIrsOn = (UP(Iris)!=UP_LENS_MNL) && (ParAe(PA_IRS_MANUAL)==0);
-		const BYTE bDssOn = (UP(Shutter)!=UP_SHUT_MNL) && (iShtMax_Agc < iShtMax_Dss);
+		const BYTE bDssOn = (ParAe(PA_SHT_MANUAL)==0) && (UP(Shutter)!=UP_SHUT_MNL) && (iShtMax_Agc < iShtMax_Dss);
 		const BYTE bTgtOn = (bWdrOn==UP_OFF);
 		//const BYTE bEstOn = (bWdrOn==UP_OFF) && (bWdrOffCnt==0);
 		const BYTE bEstOn = (bWdrOnCnt==0);
 
-		if(gbWdrOnBuf2==UP_ON) SetAeDevDly(gbSensShtDly>>1, gbSensAgcDly>>1);
-		else				   SetAeDevDly(gbSensShtDly, gbSensAgcDly);
+		if(gbWdrOnBuf2==WDR_FRAME) SetAeDevDly(gbSensShtDly>>1, gbSensAgcDly>>1);
+		else					   SetAeDevDly(gbSensShtDly, gbSensAgcDly);
+
+		MnLensChg(0);
 
 		if(bInitAe) goto AeCtrl;
 
 	// Status manage ----------------------------------------------------------------------------------------------------------------------------
-		//if(gbWdrOn==0) GrpAe(GA_ERR_DAY_ORI) = iErr;
+		//if(gbWdrOn!=WDR_FRAME) GrpAe(GA_ERR_DAY_ORI) = iErr;
 
 		if(gbAeStg==AE_STG_IRS) {
 			if(bIrsOn) {
@@ -1358,7 +1502,7 @@ void ISRT AeAdv(void)
 		const BYTE BRIGHT_ON = iErr > iErrMgn;
 		const BYTE DARKEN_ON = iErr < -iErrMgn;
 
-		if(gbWdrOn==0) GrpAe(GA_ERR_DAY_ORI) = 0;
+		if(gbWdrOn!=WDR_FRAME) GrpAe(GA_ERR_DAY_ORI) = 0;
 
 		switch(gbAeStg) {
 			case AE_STG_IRS :	// IRIS
@@ -1422,7 +1566,7 @@ void ISRT AeAdv(void)
 				break;
 			case AE_STG_AGC :	// AGC
 
-				if(gbWdrOn==0) GrpAe(GA_ERR_DAY_ORI) = iErr;
+				if(gbWdrOn!=WDR_FRAME) GrpAe(GA_ERR_DAY_ORI) = iErr;
 
 				SHT_SET(iShtMax_Agc);
 				AgcCtrl(iErr, iErrMgn, iAgcSpd, iAgcMin_Agc, AGC_MAX, /*0*/bEstOn, bDlyOn, 0/*ParAe(PA_AGC_MANUAL)>0*/, 0/*ParAe(PA_AGC_MANUAL)*/);
@@ -1448,8 +1592,11 @@ void ISRT AeAdv(void)
 				break;
 		}
 
+		giSenAgcVal = (giAgcVal > (giPreAgcMax + giIspAgcMax)) ? giAgcVal - giIspAgcMax :
+					  (giAgcVal > giPreAgcMax) ? giPreAgcMax : giAgcVal;
+
 		//GrpAe(GA_ERR_DAY) = AGC_DBL_MAX;
-		//if(gbWdrOn==0) GrpAe(GA_ERR_DAY_ORI) = iErr;
+		//if(gbWdrOn!=WDR_FRAME) GrpAe(GA_ERR_DAY_ORI) = iErr;
 		//GrpAe(GA_ERR) = iErr;
 		GrpAe(GA_ERR) = (AE_SAT_OFF) ? iCur : iCurBg ;
 		//GrpAe(GA_TGT_MAX) = iTgt;
@@ -1464,104 +1611,16 @@ void ISRT AeAdv(void)
 
 		// ------------------------------------------------------------------------------------------------------------ //
 AeCtrl:
-		giCurAgc = AGC2POS(giAgcVal);
+		giCurAgc = AGC2POS(MIN(giSenAgcVal + (((giAgcVal - giSenAgcVal) * UP(IspGainAePos))>>7), POS2AGC(AGC_POS_MAX) )/*giSenAgcVal*/);
 
-		if (bWdrOn) {												// WDR Short /or fill Short to Long because turn off hunting
+		AeIRS(/*UP(DefDet) ? AE_IRS_CLS_Max :*/ IrisOpenAdj(bShtOn, bDeblurOn, iAgcMin_Agc));	// !!! IrisOpenAdj() 시 bInitAe 적용 필요?
 
-			const int iShtSpd = (iErrS1<0) ? (ParAe(PA_SHT_DOWN_SPEED)  ? ParAe(PA_SHT_DOWN_SPEED)  : 1200) : (ParAe(PA_SHT_UP_SPEED)   ? ParAe(PA_SHT_UP_SPEED)   : 200 );
-
-			//iShtSpd = LibUtlInterp1D( CLAMP(giCurAgc, UP(AE_WDR_ON_AGC), AE_WDR_OFF_AGC), UP(AE_WDR_ON_AGC), AE_WDR_OFF_AGC, iShtSpd, iShtSpd>>3);	// Sensor AGC
-			//if(iErrS1 < (-iErrMgn-1)) iErrS1 = -iErrMgn-1 - LibUtlInterp1D( CLAMP(giCurAgc, UP(AE_WDR_ON_AGC), AE_WDR_OFF_AGC), UP(AE_WDR_ON_AGC), AE_WDR_OFF_AGC, (iErrS1+iErrMgn+1)>>0, (iErrS1+iErrMgn+1)>>10);	// Sensor AGC
-			GrpAe(GA_ERR_DAY_ORI) = iErrS1;
-
-#if 1
-		#if (model_Sens==SENS_IMX327) || (model_Sens==SENS_OV2718)
-			#define WDR_SHORT_MIN1	/*8*/ParAe(PA_WDR_SHORT_MIN1)	// 너무 빠른 Shutter에서는 AGC를 써도 SUM2가 크게 변화하여 헌팅이 발생 -> 1에서 8로 변경
-			#define WDR_SHORT_MIN2	40
-			const int iShtSValMax = (giShtVal)>>1;					// WDR Short limit 50% of Long
-		#else
-			#define WDR_SHORT_MIN1	20
-			#define WDR_SHORT_MIN2	40
-			const int iShtSValMax = ((giShtVal<<1) + giShtVal)>>2;	// WDR Short limit 75% of Long
-		#endif
-
-			const int iWdrSLmt = LibUtlInterp1D( CLAMP(giShtVal, (int)(gnAeVtw>>1)/*250*/, (int)(gnAeVtw-1)), gnAeVtw>>1/*250*/, gnAeVtw-1, WDR_SHORT_MIN1, WDR_SHORT_MIN2);	// Sht limit
-
-			const int iShtSMin = MIN(iShtSValMax, iWdrSLmt);
-
-			//if(iShtSValMax<iWdrSLmt && iErrS1 < (-iErrMgn-1)) iErrS1 = (-iErrMgn-1) - ((iErrS1+iErrMgn+1)>>3);
-
-			// ShtCtrl(1, ...)에서 abAgcOn를 1로 사용하기 위해서는 AgcCtrl()의 giAgcVal도 2개가 있어야 함 -> 현재는 gbVHssSAgc + giAgcVal(Long Shutter) 로 동작 -> WDR 사용 시 AGC_MIN 적용하지 않음
-			// 너무 빠른 Shutter에서는 AGC를 써도 SUM2가 크게 변화하여 헌팅이 발생 -> iErrMgn에 +4 적용
-			if(bInitAe==0) ShtCtrl(1, iErrS1, iErrMgn+4, (iShtSpd/*>>NO_EST_SPD_DOWN_BIT*/), MAX(iShtSMin,1), giShtVal-1, 0, 0, 0, 0);	// over than short limit, under than long
-
-			const int iWdrAgcWgt = LibUtlInterp1D( CLAMP(giCurAgc, UP(AE_WDR_ON_AGC), AE_WDR_OFF_AGC), UP(AE_WDR_ON_AGC), AE_WDR_OFF_AGC, AE_WDR_MAX_WGT, UP(AE_WDR_MIN_WGT));	// Sensor AGC
-			iShtSVal = WdrAgcWgt((bInitAe==0) && (UP(AE_WDR_ON_AGC) < giCurAgc), iWdrAgcWgt, 30, 18);	// CAUTION ! -> iShtSVal 와 gbVHssSAgc 는 비동기
-
-			if(iShtSVal > iShtSValMax) iShtSVal = iShtSValMax;//SHT_SET1(iShtSValMax);
-#else
-			iShtSVal = SHT_SET1((giShtVal>1) ? giShtVal-1 : 1);
-#endif
-
-			wShtInt = AeSHT0(ParAe(PA_SHT_MANUAL) ? (int)ParAe(PA_SHT_MANUAL) : iShtSVal, 0/*(UP(Shutter)==UP_SHUT_MNL)*/, 0/*(gnAeVtw>>UP(ShutSpd))*/ );
-			AeAGC0(ParAe(PA_AGC_MANUAL) ? (int)ParAe(PA_AGC_MANUAL) : (((gbAeStg==AE_STG_SHT)&&(giShtSVal==iShtSVal)) ? gbVHssSAgc : 0) + giAgcVal);
-			//AeIRS(UP(DefDet) ? AE_IRS_CLS_Max : ((model_Iris_DC) ? 0 : AE_IRS_STAT_Max));
-
-			AeMon(AE_SAT_OFF, AeLONG, iErrMgn+4, iCurS1, iTgtS1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-		}
-		else {
-			wShtInt = AeSHT0(ParAe(PA_SHT_MANUAL) ? (int)ParAe(PA_SHT_MANUAL) : giShtVal, (UP(Shutter)==UP_SHUT_MNL), (gnAeVtw>>UP(ShutSpd)) );
-			AeAGC0(ParAe(PA_AGC_MANUAL) ? (int)ParAe(PA_AGC_MANUAL) : ((gbAeStg==AE_STG_SHT) ? gbVHssAgc : 0) + giAgcVal);
-		}
-
-
-			// ------------------------------------------------------------------------------------------------------------ //
-			static int iShtValDly = 0;
-			if(iShtValDly < giShtVal) iShtValDly++;
-			else					  iShtValDly = giShtVal;
-
-			static int iTgtValDly = 0;
-			if(iTgtValDly > iTgtVal) iTgtValDly--;
-			else					 iTgtValDly = iTgtVal;
-
-
-			int iIrsVal = 0;
-		#ifdef ENABLE_PA
-			if(ParAe(PA_IRS_MANUAL)) {	// for IRIS test
-				static BYTE bIrsCnt = 0;
-				iIrsVal = (giIrsCent>>6)/*0x270*/ + (int)ParAe(PA_IRS_MANUAL) - 1000;
-				if(ParAe(PA_IRS_MANUAL) != 1000 && bIrsCnt==0) bIrsCnt = ParAe(PA_IRS_CNT)+1;
-
-				if(bIrsCnt) bIrsCnt--;
-				if(bIrsCnt==0) ParAe(PA_IRS_MANUAL) = 1000;
-			} else
-		#endif
-			{
-				// increse open step
-				static BYTE iIncreseOpenCnt = 0;
-				const int iIncreseOpen = ( ((iTgtMax-iTgtValDly)>>1) + ((bShtOn || bDeblurOn) ? (iShtValDly - SHT_MIN) : 0) + ((gbAeStg==AE_STG_AGC) ? ((giAgcVal - iAgcMin_Agc)<<2) : 0) ) ;
-				iIrsVal = (UP(Iris)==UP_LENS_MNL) || (gbAeStg==AE_STG_DSS) ? 0 :
-						  giIrsValBuf - iIncreseOpen;	// gbAeStg==AE_STG_IRS 일 때 IRIS를 제어하고, 다른 Stage일 때 IRIS를 0(Open)으로 제어하면 IRIS 다시 제어 시 IRIS가 튀는(?) 현상 발생하므로 increse open step 필요
-
-				if(giIrsValBuf && (gbAeStg!=AE_STG_IRS))
-				{
-					if(iIncreseOpen) iIncreseOpenCnt++;
-					if(iIncreseOpenCnt==(AE_FUNC_FPS>>2)) {	// 초당 4씩 giIrsValBuf 감소 - 너무 빠르게 감소하면 다른 Stage일 때 IRIS를 0(Open)으로 제어하는 것과 동일하게 IRIS가 튀는 현상 발생하므로 천천히 감소해야 함
-						iIncreseOpenCnt = 0;
-						giIrsValBuf--;
-					}
-				}
-			}
-
-			iIrsVal = CLAMP(iIrsVal, 0, 0x3fe);
-			AeIRS(/*UP(DefDet) ? AE_IRS_CLS_Max :*/ iIrsVal);
-		//}
-
-		AeMon(AE_SAT_OFF, AeSHORT, iErrMgn, iCur, iTgt, bIrsOn, bShtOn, bTgtOn, bDeblurOn, bAgcOn, bDssOn, AE_IRS_STAT_Max, iShtMax_Agc, iAgcMin_Agc, POS2AGC(gnAeAgcTVal), iShtMax_Dss, UP(Dss));
+		AeMon(AE_SAT_OFF, AeSHORT, iErrMgn, iCur, iTgt, bIrsOn, bShtOn, bTgtOn, bDeblurOn, bAgcOn, bDssOn, AE_IRS_STAT_Max, iShtMax_Agc, iAgcMin_Agc, POS2AGC(AGC_POS_MAX+(AGC_POS_MAX>>1)), iShtMax_Dss, UP(Dss));
 
 		// -------------------------------------------------------------------------------
 		// Ae State Auto Save
 		if(bInitAe) bInitAe--;
+
 #if model_ISP_Save == 1
 		//if(bInitAe) bInitAe--;
 		else {
@@ -1577,13 +1636,11 @@ AeCtrl:
 				else if(iStableCnt > -36000) iStableCnt--;		// 36000 = 60FPS * 600sec(=10min)
 			}
 
-			const UINT nAE_FUNC_FPS = gbWdrOn ? AE_FUNC_FPS>>1 : AE_FUNC_FPS;
-
-			if((iStableCnt < -(int)(nAE_FUNC_FPS>>2)) && (bSaveDone == 1)) {	// >>2 = 0.25sec
+			if((iStableCnt < -(int)(AE_LONG_FPS>>2)) && (bSaveDone == 1)) {	// >>2 = 0.25sec
 				bSaveDone = 0;
 				TxStr("AE error occurred", 0, 0);
 			}
-			if((iStableCnt > (int)(nAE_FUNC_FPS<<1)) && (bSaveDone == 0)) {	// <<1 = 2sec
+			if((iStableCnt > (int)(AE_LONG_FPS<<1)) && (bSaveDone == 0)) {	// <<1 = 2sec
 				bSaveDone = 1;
 
 				if(ABSDIFF(gUdAeStat->bErrNightCnt, bErrNightCnt) >= 2) gbUsrDataSaveChk = 1;
@@ -1594,7 +1651,7 @@ AeCtrl:
 				if(ABSDIFF(iIrsCent, giIrsCent) >= 4) gbUsrDataSaveChk = 1;
 
 				const int iIrsVal = cat2(gUdAeStat->bIrsValBuf);
-				if(ABSDIFF(iIrsVal, giIrsValBuf) >= 4) gbUsrDataSaveChk = 1;
+				if(ABSDIFF(iIrsVal, giIrsValOut) >= 4) gbUsrDataSaveChk = 1;
 
 				const int iShtVal = cat2(gUdAeStat->bShtVal);
 				const int iShtDif = (iShtVal <= 20) ? 1 : (iShtVal>>4);			// >>4 => 1/16 => 6.25%
@@ -1615,8 +1672,8 @@ AeCtrl:
 				if(gbUsrDataSaveChk) {
 					gUdAeStat->bIrsCentL = giIrsCent&0xff;
 					gUdAeStat->bIrsCentH = (giIrsCent>>8)&0xff;
-					gUdAeStat->bIrsValBufL = giIrsValBuf&0xff;
-					gUdAeStat->bIrsValBufH = (giIrsValBuf>>8)&0xff;
+					gUdAeStat->bIrsValBufL = giIrsValOut&0xff;
+					gUdAeStat->bIrsValBufH = (giIrsValOut>>8)&0xff;
 					gUdAeStat->bShtValL = giShtVal&0xff;
 					gUdAeStat->bShtValH = (giShtVal>>8)&0xff;
 					gUdAeStat->bTgtValL = iTgtVal&0xff;
@@ -1644,6 +1701,83 @@ AeCtrl:
 
 	}
 
+
+	if((gbWdrOn==WDR_OFF) || ((gbWdrOn==WDR_FRAME)&&(gnLSflag==AeLONG)))	// apply control val -------------- // Long
+	{
+		giSht_L = AeSHT0(/*ParAe(PA_SHT_MANUAL) ? (int)ParAe(PA_SHT_MANUAL) :*/ giShtVal, 0/*(UP(Shutter)==UP_SHUT_MNL)*/, 0/*(gnAeVtw>>UP(ShutSpd))*/ );
+
+		AeAGC0(ParAe(PA_AGC_MANUAL) ? (int)ParAe(PA_AGC_MANUAL) : ((gbAeStg==AE_STG_SHT) ? gbVHssAgc : 0) + giSenAgcVal);
+	}
+	else {
+		const int iShtSpd = (iErrS1<0) ? (ParAe(PA_SHT_DOWN_SPEED)  ? ParAe(PA_SHT_DOWN_SPEED)  : 1200) : (ParAe(PA_SHT_UP_SPEED)   ? ParAe(PA_SHT_UP_SPEED)   : 200 );
+
+		//iShtSpd = LibUtlInterp1D_CLAMP( giCurAgc, UP(AE_WDR_ON_AGC), AE_WDR_OFF_AGC, iShtSpd, iShtSpd>>3);	// Sensor AGC
+		//if(iErrS1 < (-iErrMgn-1)) iErrS1 = -iErrMgn-1 - LibUtlInterp1D_CLAMP( giCurAgc, UP(AE_WDR_ON_AGC), AE_WDR_OFF_AGC, (iErrS1+iErrMgn+1)>>0, (iErrS1+iErrMgn+1)>>10);	// Sensor AGC
+		GrpAe(GA_ERR_DAY_ORI) = iErrS1;
+
+	#if (model_Sens==SENS_IMX327) || (model_Sens==SENS_OV2718)	// Shutter line 에 따른 밝기가 큰 경우 WDR Short에서 20 이하의 제어가 필요
+		#define FWDR_SHORT_MIN1	/*8*/ParAe(PA_WDR_SHORT_MIN1)	// 너무 빠른 Shutter에서는 AGC를 써도 SUM2가 크게 변화하여 헌팅이 발생 -> 1에서 8로 변경
+		#define WDR_SHORT_MIN1	FWDR_SHORT_MIN1
+		const int iShtSValMax0 = (giShtVal)>>1;																// WDR Short limit 50% of Long
+	#else
+		#define FWDR_SHORT_MIN1	20
+		#define WDR_SHORT_MIN1	((gbWdrOn==WDR_FRAME) ? FWDR_SHORT_MIN1 : (FWDR_SHORT_MIN1>>1))				// EN781 WDR
+		const int iShtSValMax0 = (gbWdrOn==WDR_FRAME) ? ((giShtVal<<1) + giShtVal)>>2 : (giShtVal)>>1;	// WDR Short limit 75% of Long, EN781 WDR
+	#endif
+
+		#define FWDR_SHORT_MIN2	40
+		#define WDR_SHORT_MIN2	((gbWdrOn==WDR_FRAME) ? FWDR_SHORT_MIN2 : (FWDR_SHORT_MIN2>>1))				// EN781 WDR
+
+		// Short과 Long이 너무 벌어지지 않도록 개선, Short VHSS 보정 AGC 와 Long AGC 동시 적용 방지
+		const int iWdrSLmt = LibUtlInterp1D_CLAMP(giShtVal, WdrLShtMax(1)>>1, WdrLShtMax(1)-1, WDR_SHORT_MIN1, WDR_SHORT_MIN2);	// Sht limit
+
+		const int iShtSMax = CLAMP(iShtSValMax0, 1, WdrSShtMax(gbDssRatioLmt));
+		const int iShtSMin = MIN(iShtSMax, iWdrSLmt);
+
+		//if(iShtSMax<iWdrSLmt && iErrS1 < (-iErrMgn-1)) iErrS1 = (-iErrMgn-1) - ((iErrS1+iErrMgn+1)>>3);
+
+		// ShtCtrl(1, ...)에서 abAgcOn를 1로 사용하기 위해서는 AgcCtrl()의 giAgcVal도 2개가 있어야 함 -> 현재는 gbVHssSAgc + giAgcVal(Long Shutter) 로 동작 -> WDR 사용 시 AGC_MIN 적용하지 않음
+		// 너무 빠른 Shutter에서는 AGC를 써도 SUM2가 크게 변화하여 헌팅이 발생 -> iErrMgn에 +4 적용
+		if(bInitAe==0) ShtCtrl(1, iErrS1, iErrMgn+4, (iShtSpd/*>>NO_EST_SPD_DOWN_BIT*/), MAX(iShtSMin,1), iShtSMax/*giShtVal-1*/, 0, 0, 0, 0);	// over than short limit, under than long
+
+		const int iWdrAgcWgt = LibUtlInterp1D_CLAMP( giCurAgc, UP(AE_WDR_ON_AGC), AE_WDR_OFF_AGC, AE_WDR_MAX_WGT, UP(AE_WDR_MIN_WGT));	// Sensor AGC
+		const int iShtSVal = WdrAgcWgt(bInitAe, UP(AE_WDR_ON_AGC) < giCurAgc, iWdrAgcWgt, iShtSMax/*giShtVal-1*/, 30, 18);	// CAUTION ! -> iShtSVal 와 gbVHssSAgc 는 비동기
+
+		//if(iShtSVal > iShtSMax) iShtSVal = iShtSMax;//SHT_SET1(iShtSMax);
+
+		if(gbWdrOn==WDR_FRAME) {
+			giSht_S = AeSHT1(/*ParAe(PA_SHT_MANUAL) ? (int)ParAe(PA_SHT_MANUAL) :*/ iShtSVal, 0/*(UP(Shutter)==UP_SHUT_MNL)*/, 0/*(gnAeVtw>>UP(ShutSpd))*/ );
+
+			AeAGC0(ParAe(PA_AGC_MANUAL) ? (int)ParAe(PA_AGC_MANUAL) : (((gbAeStg==AE_STG_SHT)&&(giShtSVal==iShtSVal)) ? gbVHssSAgc : 0) + giSenAgcVal);
+			//AeIRS(UP(DefDet) ? AE_IRS_CLS_Max : ((model_Iris_DC) ? 0 : AE_IRS_STAT_Max));
+		}
+		else {
+			giSht_L = /*(UP(Shutter)==UP_SHUT_MNL) ? (gnAeVtw>>UP(ShutSpd)) : ParAe(PA_SHT_MANUAL) ? (int)ParAe(PA_SHT_MANUAL) :*/ giShtVal;
+			giSht_S = iShtSVal;
+
+			if(gbWdrOn==WDR_LINE_3P) {
+				giSht_M = (giSht_L - giSht_S)/3 + giSht_S;
+				giSht_M = MIN(giSht_M, WdrMShtMax(gbDssRatioLmt));
+			} else {
+				giSht_M = 0;
+			}
+
+			AeSHT_LWDR(giSht_L, giSht_S, giSht_M);
+
+			AeAGC_LWDR(giSenAgcVal, (gbAeStg==AE_STG_SHT) ? gbVHssAgc : 0, ((gbAeStg==AE_STG_SHT)&&(giShtSVal==iShtSVal)) ? gbVHssSAgc : 0, 0);
+		}
+
+		AeMon(AE_SAT_OFF, AeLONG, iErrMgn+4, iCurS1, iTgtS1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+
+		//GrpAeF(GA_WDR_SHORT_POS) = gfAePosWdrflt;
+		//GrpAe(GA_WDR_LONG_POS) = giShtValBuf;
+		//GrpAe(GA_WDR_HSS_T_POS) = gnAeHssTVal;
+		//GrpAe(GA_WDR_SHORT_LMT_POS) = iWdrSLmt;
+		//GrpAe(GA_WDR_AGC_WGT) = iWdrAgcWgt;
+	}
+
+	//extern void Test_AeSHT_LWDR(void);  Test_AeSHT_LWDR();
+
 	//GrpAe(GA_ERR_DAY) = iTgtVal/*giShtVal*/;
 	//GrpAe(GA_ERR_NIGHT_ORI) = iTgtMin/*iTgtValDly*//*iShtValDly*/;
 	//GrpAe(GA_IRS_VAL) = iIrsVal;
@@ -1652,7 +1786,7 @@ AeCtrl:
 
 // -------------------------------------------------------------------------------
 // WDR Control
-	if(WdrCtrl(&wShtInt))
+	if(WdrCtrl())
 	{
 		//if (gbWdrOnBuf2!=gbWdrOnBuf3) {SYNC_UPw(1); /*TxStr("sync_up_", 1,  "\n");*/}	// 141031 SMJ : 1080p30 WDR OFF image crack
 
@@ -1663,8 +1797,6 @@ AeCtrl:
 		TMG_ONw(0);
 
 		//gwWdrCnt = (gwWdrCnt==0 ) ? 0  : gwWdrCnt-1;
-
-		iShtSVal = SHT_SET1((giShtVal>1) ? giShtVal-1 : 1);
 	}
 
 // -------------------------------------------------------------------------------
@@ -1674,28 +1806,39 @@ AeCtrl:
 // -------------------------------------------------------------------------------
 // Monitoring
 //AeMonitoring:
-	if(gbWdrOn){
+	if(gbWdrOn!=WDR_OFF){
 		DebugDisp2(gbAeDebugOn, Dec, "Tgt    ",  3, AE_DEBUG_X, iTgt, 4)
 		DebugDisp2(gbAeDebugOn, Dec, "Cur    ",  4, AE_DEBUG_X, iCur, 4)
 
 		DebugDisp2(gbAeDebugOn, Dec, "SliceLv",  5, AE_DEBUG_X, nAe2SlicLvl, 4)
 		DebugDisp2(gbAeDebugOn, Dec, "ClipLv ",  6, AE_DEBUG_X, nAe2ClipLvl, 4)
 
-		if (gnLSflag==AeSHORT) {
-				DebugDisp2(gbAeDebugOn, Dec, "WdrLtgt", AE_WDR_DEBUG_Y+0/*17*/, AE_DEBUG_X, iTgt, 4)
-				DebugDisp2(gbAeDebugOn, Dec, "WdrLcur", AE_WDR_DEBUG_Y+1/*18*/, AE_DEBUG_X, iCur, 4)
-				DebugDisp2(gbAeDebugOn, Dec, "WdrSsht", AE_WDR_DEBUG_Y+5/*22*/, AE_DEBUG_X, wShtInt, 4)
+		if((gbWdrOn!=WDR_FRAME)||(gnLSflag==AeSHORT)) {
+			DebugDisp2(gbAeDebugOn, Dec, "WdrLtgt", AE_WDR_DEBUG_Y+0/*17*/, AE_DEBUG_X, iTgt, 4)
+			DebugDisp2(gbAeDebugOn, Dec, "WdrLcur", AE_WDR_DEBUG_Y+1/*18*/, AE_DEBUG_X, iCur, 4)
 
-				DebugDisp2(gbAeDebugOn, Dec, "WdrStgt", AE_WDR_DEBUG_Y+2/*19*/, AE_DEBUG_X, iTgtS1, 4)
-				DebugDisp2(gbAeDebugOn, Dec, "WdrScur", AE_WDR_DEBUG_Y+3/*20*/, AE_DEBUG_X, iCurS1, 4)
-		} else {
-				//DebugDisp2(gbAeDebugOn, Dec, "WdrStgt", AE_WDR_DEBUG_Y+2/*19*/, AE_DEBUG_X, iTgt, 4)
-				//DebugDisp2(gbAeDebugOn, Dec, "WdrScur", AE_WDR_DEBUG_Y+3/*20*/, AE_DEBUG_X, iCur, 4)
-				DebugDisp2(gbAeDebugOn, Dec, "WdrLsht", AE_WDR_DEBUG_Y+4/*21*/, AE_DEBUG_X, wShtInt, 4)
-
+			DebugDisp2(gbAeDebugOn, Dec, "WdrStgt", AE_WDR_DEBUG_Y+2/*19*/, AE_DEBUG_X, iTgtS1, 4)
+			DebugDisp2(gbAeDebugOn, Dec, "WdrScur", AE_WDR_DEBUG_Y+3/*20*/, AE_DEBUG_X, iCurS1, 4)
+#if 0
+			if(gbWdrOn==WDR_FRAME) {
+				DebugDisp2(gbAeDebugOn, Dec, "WdrSsht", AE_WDR_DEBUG_Y+5/*22*/, AE_DEBUG_X, giSht_S, 4)
+			}
+			else {
+#endif
+				DebugDisp2(gbAeDebugOn, Dec, "WdrLsht", AE_WDR_DEBUG_Y+4/*21*/, AE_DEBUG_X, giSht_L, 4)
+				DebugDisp2(gbAeDebugOn, Dec, "WdrSsht", AE_WDR_DEBUG_Y+5/*22*/, AE_DEBUG_X, giSht_S, 4)
+				DebugDisp2(gbAeDebugOn, Dec, "WdrMsht", AE_WDR_DEBUG_Y+6/*23*/, AE_DEBUG_X, giSht_M, 4)
+#if 0
+			}
+		}
+		else if(gbWdrOn==WDR_FRAME) {
+			//DebugDisp2(gbAeDebugOn, Dec, "WdrStgt", AE_WDR_DEBUG_Y+2/*19*/, AE_DEBUG_X, iTgt, 4)
+			//DebugDisp2(gbAeDebugOn, Dec, "WdrScur", AE_WDR_DEBUG_Y+3/*20*/, AE_DEBUG_X, iCur, 4)
+			DebugDisp2(gbAeDebugOn, Dec, "WdrLsht", AE_WDR_DEBUG_Y+4/*21*/, AE_DEBUG_X, giSht_L, 4)
+#endif
 		}
 	}
-	else if ((gbWdrOn==UP_OFF)&&(gbWdrOnBuf/*gbWdrOnBuf2*/==UP_ON)) {	// 191104 KSH gbWdrOnBuf2 -> gbWdrOnBuf
+	else if ((gbWdrOn==WDR_OFF)&&(gbWdrOnBuf/*gbWdrOnBuf2*/!=WDR_OFF)) {	// 191104 KSH gbWdrOnBuf2 -> gbWdrOnBuf
 		DispClr(AE_WDR_DEBUG_Y+4, AE_DEBUG_X, 7+1+4);
 		DispClr(AE_WDR_DEBUG_Y+5, AE_DEBUG_X, 7+1+4);
 		DispClr(AE_WDR_DEBUG_Y+6, AE_DEBUG_X, 7+1+4);
@@ -1709,6 +1852,11 @@ AeCtrl:
 		DebugDisp2(gbAeDebugOn, Dec, "ClipLv ",  8, AE_DEBUG_X, nAe2ClipLvl<<2, 4)	// AE_DISP 8BIT
 		DebugDisp2(gbAeDebugOn, Dec, "SliceLv",  9, AE_DEBUG_X, nAe2SlicLvl<<2, 4)	// AE_DISP 8BIT
 		DebugDisp2(gbAeDebugOn, Dec, "SlicCnt", 10, AE_DEBUG_X, (nAe3SlicCnt<<10)/nAe3PxCnt, 4)
+
+		DebugDisp2(gbAeDebugOn, Dec, "PreAgc ", 11, AE_DEBUG_X, giPreAgcMax, 4)
+		DebugDisp2(gbAeDebugOn, Dec, "IspAgc ", 12, AE_DEBUG_X, giIspAgcMax, 4)
+		DebugDisp2(gbAeDebugOn, Dec, "TotAgc ", 13, AE_DEBUG_X, AGC_MAX-giIspAgcMax, 4)
+		DebugDisp2(gbAeDebugOn, Dec, "AgcPos ", 14, AE_DEBUG_X, giCurAgc, 4)
 	}
 
 	/*GRP0 = ParAe(PA_SHT_MANUAL);

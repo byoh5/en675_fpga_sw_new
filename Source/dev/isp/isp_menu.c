@@ -724,9 +724,9 @@ void Menu(void)
 
 // MENU - EXPOSURE ----------------------------------------------------------------------------------------------------
 #if(model_Iris==0)						// no Iris
-	#define MENU_NUM_EXPOSURE	2
+	#define MENU_NUM_EXPOSURE	5
 #else
-	#define MENU_NUM_EXPOSURE	3
+	#define MENU_NUM_EXPOSURE	6
 #endif
 
 	// MENU - EXPOSURE
@@ -738,6 +738,13 @@ void Menu(void)
 		#elif(model_Iris_P)		// pIris, AF Iris
 			nIRIS,			MENU_STRi(UP_ON, UP(Iris)==UP_LENS_MNL, IRIS, , , UP(Iris), 2, MANUALe, AUTO),
 		#endif
+			SENSOR_GAIN,	MENU_BARn(UP_ON, if_KEY_LR(MENU_REDRAW()), UP(Agc), 0, 255, 1),
+			ISP_GAIN,		MENU_BARn(UP_ON, , UP(IspGain), 0, 255, 1)
+							if(DEV_ON){
+								MENU_IN(UP_ON, ISP_GAIN, )
+								SETFONTID(DRAW_Y, MN_SXSP+10, 0xa6);
+							},
+			EXTRA_GAIN,		MENU_BARn(UP_ON, , UP(ExtraGain), 0, 255-UP(Agc), 1),
 			RETURN,			MENU_ONEo(UP_ON, e, UP_ON, ))
 
 	// MENU - EXPOSURE - BRIGHTNESS
@@ -752,6 +759,13 @@ void Menu(void)
 							   SETFONTID(DRAW_Y, MN_SXSP+3, ':');
 							   DispClrDec(TgtMinGet(TgtMaxGet(0,0), UP(BrightnessMin)), DRAW_Y, MN_SXSP+5, 3);
 							   MENU_CODE(if_KEY_LR(MENU_REDRAW())) }),*/
+			RETURN,			MENU_ONEo(UP_ON, e, UP_ON, ))
+
+	// MENU - EXPOSURE - ISP_GAIN
+	MENU_SET( 4, ISP_GAIN, UP_ON,
+			ISP_GAIN,		MENU_BARn(UP_ON, , UP(IspGain), 0, 255, 1),
+			AE_CURRENT,		MENU_BARn(UP_ON, , UP(IspGainAeCur), 0, 128, 1),
+			AE_POSITION,	MENU_BARn(UP_ON, , UP(IspGainAePos), 0, 128, 1),
 			RETURN,			MENU_ONEo(UP_ON, e, UP_ON, ))
 
 // MENU - BACKLIGHT ----------------------------------------------------------------------------------------------------
@@ -968,7 +982,9 @@ void Menu(void)
 // Setup MENU ----------------------------------------------------------------------------------------------------
 	MENU_SET(8, SETUP, UP_ON,
 			DEVELOPER,		MENU_STRn(UP_ON, , gbMnSetupOn, 2, OFF, ON),
-			STYLE,			MENU_STRn(UP_ON, if_KEY_LR(/*UsrParStyle(gbMenuStyle, 0, 0);*/ MENU_CHANGE()), UP(Style)/*gbMenuStyle*/, 8, /*CUSTOMIZE*/PREVIOUS, IPC_INDOOR, IPC_OUTDOOR, CAR_REC, ACTION_REC, WDR, LOW_BIT, CUSTOM),
+			STYLE,			//MENU_STRn(UP_ON, if_KEY_LR(MENU_CHANGE()), UP(Style)/*gbMenuStyle*/, 8, /*CUSTOMIZE*/PREVIOUS, IPC_INDOOR, IPC_OUTDOOR, CAR_REC, ACTION_REC, WDR, LOW_BIT, CUSTOM),
+							({if(gbStylePreviousOn)	{ MENU_STR(UP_ON, UP(Style), 8, PREVIOUS, IPC_INDOOR, IPC_OUTDOOR, CAR_REC, ACTION_REC, WDR, LOW_BIT, CUSTOM)  MENU_CODE(if_KEY_LR(MENU_CHANGE())) }
+							else					{ MENU_STR(UP_ON, UP(Style), 8,         , IPC_INDOOR, IPC_OUTDOOR, CAR_REC, ACTION_REC, WDR, LOW_BIT, CUSTOM)  MENU_CODE(if_KEY_LR(MENU_CHANGE())) } }),
 
 			CAM_TITLE,		MENU_STRi(UP_ON, UP(CamTitleOn)!=UP_CT_OFF, CAM_TITLE, , , UP(CamTitleOn), 3, OFF, RIGHT_UPe, LEFT_DOWNe),
 			LANGUAGE,		MENU_STRn(UP_ON, if_KEY_LR(MENU_CHANGE()), UP(LanguageSel), 5, ENG, CHN, CHNs, JPN, KOR),

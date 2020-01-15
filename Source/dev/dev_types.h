@@ -926,14 +926,17 @@ typedef struct _IMD_RECT_B {
 //******************************************************************************
 // User Parameter define
 //------------------------------------------------------------------------------
+#include "isp_user_parameter.h"
+
 #define UPt(N)				N##_TYP									// Type of User Parameter
 
 #define _UP_TYPEDEF_1(N,...)	typedef BYTE UPt(N);
 #define _UP_TYPEDEF_2(N,...)	typedef WORD UPt(N);
 #define _UP_TYPEDEF_4(N,...)	typedef UINT UPt(N);
 
+#define	UP_TITLE_ALIGNED	2	// !!! User Parameter에서 UINT 사용 시 4로 설정해야 함 !!!
+#define UP_TITLE(N)
 #define UP_SET(S,N,...)		_UP_TYPEDEF_##S(N,...)
-#include "isp_user_parameter.h"
 USR_PAR_LIST
 
 
@@ -954,13 +957,13 @@ USR_PAR_LIST
 		#define UP_LIB(N)	extern UPt(N) *gLib##N;//UP_LIB##S(N)
 	#endif
 
-	#include "isp_user_parameter.h"
 	UP_LIB_LIST
 #else
 
+#define UpListEx			((UP_LIST_EX*)gbUsrParTbl)
 #define UpList				((UP_LIST*)gbUsrParTbl)
 #define UP(N)				UpList->N
-#define UPd(N)				((UP_LIST*)gbUsrParTblSaved)->N
+//#define UPd(N)				((UP_LIST*)gbUsrParTblSaved)->N
 
 #define UPi(N)				N##_IDX									// Index of User Parameter
 #define UPs(N)				N##_SIZ									// Size of User Parameter
@@ -988,33 +991,97 @@ USR_PAR_LIST
 #define _UP_IDX_2(N,...)	N##_UP_END }; enum { N##_UP_START=((N##_UP_END+1)&~1)-1, PAR_IDX2(N,__VA_ARGS__)
 #define _UP_IDX_4(N,...)	N##_UP_END }; enum { N##_UP_START=((N##_UP_END+3)&~3)-1, PAR_IDX4(N,__VA_ARGS__)
 
+#undef UP_TITLE
+#define UP_TITLE(N)			N##_UP_END }; enum { N##_UP_START=((N##_UP_END+(UP_TITLE_ALIGNED-1))&~(UP_TITLE_ALIGNED-1))-1,
 #undef UP_SET
 #define UP_SET(S,N,...)		_UP_IDX_##S(N,...)
-#include "isp_user_parameter.h"
 enum {
 	UP_START=0,
 	USR_PAR_LIST
 	UP_END
 };
 
-
+//---------------------------------------------------------
 #define _UP_TYPE_1(N,...)	BYTE N;
 #define _UP_TYPE_2(N,...)	WORD N;
 #define _UP_TYPE_4(N,...)	UINT N;
 
+#undef UP_TITLE
+#define UP_TITLE(...)		__attribute__((__aligned__(UP_TITLE_ALIGNED)))
 #undef UP_SET
 #define UP_SET(S,N,...)		_UP_TYPE_##S(N,...)//UPt(N) N;
-#include "isp_user_parameter.h"
 typedef struct {
 	BYTE Start;
 	USR_PAR_LIST
 	BYTE End;
+	_PRIVACY	PVC0;
+	_PRIVACY	PVC1;
+	_PRIVACY	PVC2;
+	_PRIVACY	PVC3;
+	_PRIVACY	PVC4;
+	_PRIVACY	PVC5;
+	_PRIVACY	PVC6;
+	_PRIVACY	PVC7;
+	_PRIVACY	PVC8;
+	_PRIVACY	PVC9;
+	_PRIVACY	PVC10;
+	_PRIVACY	PVC11;
+	_PRIVACY	PVC12;
+	_PRIVACY	PVC13;
+	_PRIVACY	PVC14;
+	_PRIVACY	PVC15;
+	_PRIVACY	IMD0;
+	_PRIVACY	IMD1;
+	_PRIVACY	IMD2;
+	_PRIVACY	IMD3;
 } UP_LIST;
 
+//---------------------------------------------------------
+#undef UP_TITLE
+#define UP_TITLE(N)		}; struct __UP_##N {
+struct __UP_START { BYTE Start;
+USR_PAR_LIST
+}; struct __UP_END { BYTE End; };
 
 #undef UP_SET
+#define UP_SET(...)
+#undef UP_TITLE
+#define UP_TITLE(N)		typedef struct __UP_##N UP_##N;
+USR_PAR_LIST
+
+#undef UP_TITLE
+#define UP_TITLE(N)		__attribute__((__aligned__(UP_TITLE_ALIGNED))) UP_##N	N;
+typedef struct {
+	BYTE Start;
+	USR_PAR_LIST		// !!! ECM의 UP_END 위치때문에 마지막 구조체는 모두 BYTE이어야 함 !!!
+	BYTE End;
+	_PRIVACY	PVC0;
+	_PRIVACY	PVC1;
+	_PRIVACY	PVC2;
+	_PRIVACY	PVC3;
+	_PRIVACY	PVC4;
+	_PRIVACY	PVC5;
+	_PRIVACY	PVC6;
+	_PRIVACY	PVC7;
+	_PRIVACY	PVC8;
+	_PRIVACY	PVC9;
+	_PRIVACY	PVC10;
+	_PRIVACY	PVC11;
+	_PRIVACY	PVC12;
+	_PRIVACY	PVC13;
+	_PRIVACY	PVC14;
+	_PRIVACY	PVC15;
+	_PRIVACY	IMD0;
+	_PRIVACY	IMD1;
+	_PRIVACY	IMD2;
+	_PRIVACY	IMD3;
+} UP_LIST_EX;
+
+//---------------------------------------------------------
+#undef UP_TITLE
+#define UP_TITLE(N)
+#undef UP_SET
 #define UP_SET(S,N,...)		enum { UPs(N) = S };
-#include "isp_user_parameter.h"
 USR_PAR_LIST
 
 #define MpPvcCfgIdx			(UP_END+1)
@@ -1027,6 +1094,7 @@ extern BYTE gbUsrParSaveChk;
 extern BYTE gbUsrParReadChk;
 extern BYTE gbUsrParTbl[USR_PAR_EA];
 extern BYTE gbUsrParTblSaved[USR_PAR_EA];
+extern BYTE gbStylePreviousOn;
 
 #define PAR_BASE	((UINT*)(gbUsrParTbl+UPi(UpPAR00)))
 
@@ -1094,7 +1162,9 @@ extern BYTE gbUsrDataTbl[USR_DATA_EA];
 #define DispDat0									DispDat0Hex
 #define DebugDisp(ON, TYPE, STR, Y, X, VAL, ...)	DispDat0##TYPE( ON, STR, Y, X, VAL );									// Debug display by Debug mode
 
-#define DebugDisp2(ON, TYPE, STR, Y, X, VAL, LEN)	FontStrDec( ON, Y, X, MN_GREEN, STR, MN_WHITE, VAL, LEN, 1);			// Debug display by Debug mode
+#define DispDat2Hex(ON, STR, Y, X, VAL, LEN)		FontStrHex( ON, Y, X, MN_GREEN, STR, MN_WHITE, VAL, LEN)
+#define DispDat2Dec(ON, STR, Y, X, VAL, LEN)		FontStrDec( ON, Y, X, MN_GREEN, STR, MN_WHITE, VAL, LEN, 1)
+#define DebugDisp2(ON, TYPE, STR, Y, X, VAL, LEN)	DispDat2##TYPE( ON, STR, Y, X, VAL, LEN );								// Debug display by Debug mode
 
 //******************************************************************************
 // Debug Graph & Parameter channel

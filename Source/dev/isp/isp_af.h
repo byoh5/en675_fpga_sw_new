@@ -17,8 +17,7 @@
 
 extern BYTE gbAfDebugOn;
 
-//extern int AE_GAIN_TOTAL;
-//extern int AE_GAIN_TOTAL2;
+//extern int AGC_POS_MAX;
 
 extern void Af(void);
 extern void AF_Init(void);

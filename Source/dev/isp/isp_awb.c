@@ -349,7 +349,7 @@ void ISRT Awb(void)
 	iGcm2 = CLAMP(giCmat[1][2], -2047, 2047);
 	iBcm0 = CLAMP(giCmat[2][0], -2047, 2047);
 	iBcm1 = CLAMP(giCmat[2][1], -2047, 2047);
-	iBcm2 = CLAMP(giCmat[2][2],     0, 2047);
+	iBcm2 = /*PAR00 ? PAR00 : */CLAMP(giCmat[2][2],     0, 2047);
 #else	// Manual control (affect to Post Matrix)
 	iRcm0 = ((PRR_GAINr)>>11) ? -(PRR_GAINr&BitMask_11) : (PRR_GAINr&BitMask_11);
 	iRcm1 = ((PRG_GAINr)>>11) ? -(PRG_GAINr&BitMask_11) : (PRG_GAINr&BitMask_11);
@@ -380,7 +380,6 @@ void ISRT Awb(void)
 	PBR_GAINw(nBcm0);
 	PBG_GAINw(nBcm1);
 	PBB_GAINw(iBcm2);
-
 
 //-------------------------------------------------------------------------------------------------
 // RGB gain control
@@ -427,7 +426,7 @@ void ISRT Awb(void)
 
 		nRsum 	= MAX(nRsum, 1);
 		nGsum 	= MAX(nGsum, 1);
-		nBsum 	= MAX(nBsum, 1);
+		nBsum 	= /*PAR01 ? PAR01 : */MAX(nBsum, 1);
 
 //		nRGain  = (nGsum*AWB_GAIN_DFLT) / ((nRsum*AWB_GAIN_DFLT)/(gnAwbRGainIIR>>4));				// gain with default offset		// new
 //		nBGain  = (nGsum*AWB_GAIN_DFLT) / ((nBsum*AWB_GAIN_DFLT)/(gnAwbBGainIIR>>4));				// "							// new
@@ -481,17 +480,17 @@ void ISRT Awb(void)
 //		nAwbBgain 	= ((WORD)((float)(gnAwbBGainIIR>>4) * (0.5f+((float)MP(MpSaturation)*0.05f))) * iWgt) >> 8;
 
 	#if 0
-		const BYTE bMpSaturationR = (gbWdrOn) ? ((40-10)>UP(SaturationR)) ? (UP(SaturationR)+10) : 40 : UP(SaturationR) ;
-		const BYTE bMpSaturationG = (gbWdrOn) ? ((40-10)>UP(Saturation))  ? (UP(Saturation) +10) : 40 : UP(Saturation)  ;
-		const BYTE bMpSaturationB = (gbWdrOn) ? ((40-10)>UP(SaturationB)) ? (UP(SaturationB)+10) : 40 : UP(SaturationB) ;
+		const BYTE bMpSaturationR = (gbWdrOn!=WDR_ OFF) ? ((40-10)>UP(SaturationR)) ? (UP(SaturationR)+10) : 40 : UP(SaturationR) ;
+		const BYTE bMpSaturationG = (gbWdrOn!=WDR_ OFF) ? ((40-10)>UP(Saturation))  ? (UP(Saturation) +10) : 40 : UP(Saturation)  ;
+		const BYTE bMpSaturationB = (gbWdrOn!=WDR_ OFF) ? ((40-10)>UP(SaturationB)) ? (UP(SaturationB)+10) : 40 : UP(SaturationB) ;
 
 		nAwbRgain 	= ((WORD)((float)(gnAwbRGainIIR>>4) * (0.5f+((float)bMpSaturationR*0.025f))) * iWgt) >> 8;		// divide by iWgt scale
 		nAwbGgain 	= ((WORD)((float)AWB_GAIN_DFLT   	* (0.5f+((float)bMpSaturationG*0.025f))) * iWgt) >> 8;
 		nAwbBgain 	= ((WORD)((float)(gnAwbBGainIIR>>4) * (0.5f+((float)bMpSaturationB*0.025f))) * iWgt) >> 8;
 	#else
-		const BYTE bMpSaturationR = (gbWdrOn) ? ((64-16)>UP(SaturationR)) ? (UP(SaturationR)+16) : 64 : UP(SaturationR) ;
-		const BYTE bMpSaturationG = (gbWdrOn) ? ((64-16)>UP(Saturation))  ? (UP(Saturation) +16) : 64 : UP(Saturation)  ;
-		const BYTE bMpSaturationB = (gbWdrOn) ? ((64-16)>UP(SaturationB)) ? (UP(SaturationB)+16) : 64 : UP(SaturationB) ;
+		const BYTE bMpSaturationR = (gbWdrOn!=WDR_OFF) ? ((64-16)>UP(SaturationR)) ? (UP(SaturationR)+16) : 64 : UP(SaturationR) ;	// TODO KSH ◆ WDR - Awb()에서 "R-GAIN"의 Line WDR 설정을 Frame WDR로 하는게 더 좋은지 확인 필요
+		const BYTE bMpSaturationG = (gbWdrOn!=WDR_OFF) ? ((64-16)>UP(Saturation))  ? (UP(Saturation) +16) : 64 : UP(Saturation)  ;	//	"
+		const BYTE bMpSaturationB = (gbWdrOn!=WDR_OFF) ? ((64-16)>UP(SaturationB)) ? (UP(SaturationB)+16) : 64 : UP(SaturationB) ;	//	"
 
 		nAwbRgain = ((gnAwbRGainIIR>>4) * iWgt * (32+bMpSaturationR)) >> (8+6);		// 8:iWgt, 6:bMpSaturationX		190902 KSH
 		nAwbGgain = (AWB_GAIN_DFLT      * iWgt * (32+bMpSaturationG)) >> (8+6);		//		"
@@ -503,18 +502,6 @@ void ISRT Awb(void)
 		nAwbGgain 	= AWB_GAIN_DFLT;
 		nAwbBgain 	= AWB_GAIN_DFLT;
 #endif
-
-	/*static UINT nGrpCnt = 0;
-	nGrpCnt = (nGrpCnt==FPS_VDI) ? 1 : nGrpCnt+1;
-	GRP0 = iWgt;
-	GRP1 = (gnAwbRGainIIR>>4);
-	GRP2 = AWB_GAIN_DFLT;
-	GRP3 = (gnAwbBGainIIR>>4);
-	GRP4 = nAwbRgain;
-	GRP5 = nAwbGgain;
-	GRP6 = nAwbBgain;
-	GRP7 = nGrpCnt;
-	if(gbMnDebugFnc==1) UartTxGrp();*/
 
 ////-------------------------------------------------------------------------------------------------
 //// Post Matrix (final with R,B Gain)(Sign[12], Integer[10:8], Float[7:0])
@@ -545,6 +532,19 @@ void ISRT Awb(void)
 	WPBR_GAINw(nBcm0);
 	WPBG_GAINw(nBcm1);
 	WPBB_GAINw(iBcm2);
+
+
+//	static UINT nGrpCnt = 0;
+//	nGrpCnt = (nGrpCnt==FPS_VDI) ? 1 : nGrpCnt+1;
+//	GRP0 = iWgt;
+//	GRP1 = AWBL_CCB_SUM_LOCKr;//(gnAwbRGainIIR>>4);
+//	GRP2 = PBB_GAINr;//AWB_GAIN_DFLT;
+//	GRP3 = WPBB_GAINr;//(gnAwbBGainIIR>>4);
+//	GRP4 = nAwbRgain;
+//	GRP5 = nAwbGgain;
+//	GRP6 = nAwbBgain;
+//	GRP7 = nGrpCnt;
+//	if(gbMnDebugFnc==1) UartTxGrp();
 
 //-------------------------------------------------------------------------------------------------
 // Preset save example	13.2.22

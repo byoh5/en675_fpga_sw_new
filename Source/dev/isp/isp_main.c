@@ -261,11 +261,12 @@ void Isp_Digital_input_init(void)
 
 void OutMode(void)
 {
+#if 0
 	static BYTE bOutFps = 0xee;
 	static BYTE bSysFreq = 0xee;
 
 	if(bOutFps!=UP(OutFps) || bSysFreq!=UP(SysFreq)) {
-
+#endif
 		extern UINT gnVDI_CHG;
 		gnVDI_CHG = 2;
 
@@ -277,9 +278,11 @@ void OutMode(void)
 		IspDout1SyncConfig();
 		//Isp_Output_init();			// Output 설정
 
+#if 0
 		bOutFps = UP(OutFps);
 		bSysFreq = UP(SysFreq);
 	}
+#endif
 }
 
 void Isp_init(void)
@@ -290,6 +293,8 @@ void Isp_init(void)
 	InitMenu();					// If hold down a specific key, reset the user parameters.
 
 	Isp_irq_init();				// Enable External Interrupts & Wait_VLOCKO() 사용을 위한 임시 설정
+
+	InMode();
 
 	Isp_Sensor_init();			// ISP Sync 설정 및 Sensor Initial
 
@@ -403,6 +408,43 @@ void IF_Funcs(void)
 		isp_DispTime();
 		isp_DispLogo();
 		//isp_LedCtrl();
+		//DebugDisp2(1, Dec, "UPTEST0", 25, 0, gbUsrParTbl[UPi(LckDly)], 4)
+		//DebugDisp2(1, Dec, "UPTEST1", 26, 0, UpList->LckDly, 4)
+		//DebugDisp2(1, Dec, "UPTEST2", 27, 0, UpListEx->Sensor.LckDly, 4)
+		//DebugDisp2(1, Dec, "UPTEST0", 25, 0, gbUsrParTbl[UPi(CamTitle2)], 4)
+		//DebugDisp2(1, Dec, "UPTEST1", 26, 0, UpList->CamTitle2, 4)
+		//DebugDisp2(1, Dec, "UPTEST2", 27, 0, UpListEx->MENU_SYSTEM.CamTitle2, 4)
+		//DebugDisp2(1, Dec, "UPTEST0", 25, 0, gbUsrParTbl[UPi(Sensor_FPS)], 4)
+		//DebugDisp2(1, Dec, "UPTEST1", 26, 0, UpList->Sensor_FPS, 4)
+		//DebugDisp2(1, Dec, "UPTEST2", 27, 0, UpListEx->ISP_BINARY_INFO.Sensor_FPS, 4)
+		//DebugDisp2(1, Dec, "UPTEST0", 25, 0, gbUsrParTbl[UP_END], 4)
+		//DebugDisp2(1, Dec, "UPTEST1", 26, 0, UpList->End, 4)
+		//DebugDisp2(1, Dec, "UPTEST2", 27, 0, UpListEx->End, 4)
+		//DebugDisp2(1, Dec, "UPTEST0", 25, 0, gbMnPvcCfg(0)->bAction, 4)
+		//DebugDisp2(1, Dec, "UPTEST1", 26, 0, UpList->PVC0.bAction, 4)
+		//DebugDisp2(1, Dec, "UPTEST2", 27, 0, UpListEx->PVC0.bAction, 4)
+		DebugDisp2(1, Dec, "UPTEST0", 25, 0, gbMnImdCfg(3)->bSizY, 4)
+		DebugDisp2(1, Dec, "UPTEST1", 26, 0, UpList->IMD3.bSizY, 4)
+		DebugDisp2(1, Dec, "UPTEST2", 27, 0, UpListEx->IMD3.bSizY, 4)
+
+#if 0	// ddr write test
+		const int iX = B30_HSPr;
+		const int iY = B30_VSPr;
+		//const UINT nAddrY = (FRC_ADR0r<<4) + ((((RP(PO_HW) * iY) + iX)*10)>>3);
+		const UINT nAddrY = (IM_YADR0r<<4) + (RP(PO_HW) * iY) + iX;
+		const UINT nAddrC = (IM_CADR0r<<4) + ((RP(PO_HW)>>1) * iY) + (iX>>1);
+
+		hwflush_dcache_range(nAddrC, 64);
+		hwflush_dcache_range(nAddrY, 64);
+
+		const BYTE bDdrY = *((volatile BYTE *)(unsigned long)(nAddrY));
+		const BYTE bDdrC = *((volatile BYTE *)(unsigned long)(nAddrC));
+
+		DebugDisp2(1, Hex, "DDR YC ", 13, 0, bDdrY/*(bDdrY<<8) | bDdrC*/, 4)
+		DebugDisp2(1, Hex, "ADDR Y ", 14, 0, nAddrY, 8)
+		DebugDisp2(1, Dec, "B30_HSP", 15, 0, iX, 4)
+		DebugDisp2(1, Dec, "B30_VSP", 16, 0, iY, 4)
+#endif
 	}
 	else if(ABSDIFF(IF_Funcs_Time,IspIfTimeSta) < (CPU_FREQ/IF_FUNC_FPS)) return;
 

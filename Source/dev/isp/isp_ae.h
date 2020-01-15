@@ -31,11 +31,11 @@
 	#define	AE_WDR_LTGT_GAIN		0x3															// WDR Long Brightness target gain
 	#define	UpAE_WDR_LTGT_OFST		0x64/*0x8a*/                                                // WDR Long Brightness target offset
 	#define	UpAE_WDR_LTGT_OFST2		0x60/*0x30*/		        // 150802                               // WDR Long Brightness target offset (UpAE_WDR_STYLE_SEL==1)
-	#define	AE_WDR_LCLIP_OFST		0x50                                                        // WDR Long Brightness Clip level (+ Target offset)
+	#define	AE_WDR_LCLIP_OFST		0x70/*0x50*/                                                        // WDR Long Brightness Clip level (+ Target offset), EN781 WDR 0x50 -> 0x70
 
 	#define	AE_WDR_STGT_GAIN		AE_WDR_LTGT_GAIN											// WDR Short Brightness target gain
 	#define	UpAE_WDR_STGT_OFST		0x220/*0x262*/                                              // WDR Short Brightness target offset
-	#define	UpAE_WDR_STGT_OFST2		0xa0/*0x88*//*0x280*/		        // 150802                               // WDR Short Brightness target offset (UpAE_WDR_STYLE_SEL==1)
+	#define	UpAE_WDR_STGT_OFST2		0x84/*0xa0*/		        // 150802                       // WDR Short Brightness target offset (UpAE_WDR_STYLE_SEL==1), EN781 WDR 0xa0 -> 0x84
 	#define	AE_WDR_SCLIP_OFST		(-0x80)                                                     // WDR Short Brightness Clip level (+ Target offset)
 
 	#define UpAE_WDR_SWGT_L			0x80														// WDR weight adjust for menu Low	 (0x40 = x0.5, 0x80 = x1, 0xC0 = x1.5, 0xff = x2)
@@ -53,7 +53,7 @@ enum {		// gnLSflag
 	AeLONG
 };
 
-enum {		// gbModeWdrOn_L
+enum {		// gbWdrOn (+Lib)
 	WDR_OFF=0,
 	WDR_FRAME,
 	WDR_LINE_2P,
@@ -68,6 +68,7 @@ extern void FreqAdjust(void);
 extern void InitAe(void);
 extern void Ae(void);
 extern void AeDev(void);
+extern void InMode(void);
 
 extern int giCurAgc;
 extern int giCurDss;
@@ -108,18 +109,18 @@ extern void AntiSatStabilizingSet(void);
 
 #if 1
 #define IRS_RUN(E,M,G)	{ IrsCent((gnMnLensChg ? 0 : E), M, AE_IRS_OPN_Max, AE_IRS_CLS_Max, AE_IRS_STAT_Max);\
-						  giIrsValBuf = IrsCtrl(E, M, G, giIrsCent>>6, 0, 0);\
+						  giIrsValOut = IrsCtrl(E, M, G, giIrsCent>>6, 0, 0);\
 						  IrsPos( E, M, ParAe(PA_IRS_POS_SPEED), 0, AE_IRS_STAT_Max);\
 						  /*if(gbIrsDly && giIrsPos>=AE_IRS_STAT_Max) giIrsPos = AE_IRS_STAT_Max - 1;*/ }
 #else
-#define IRS_RUN(E,M,G)	{ giIrsValBuf/*iIrsVal*/ = LibAeSpeedDc(E, M, AE_IRS_OPN_Max, AE_IRS_CLS_Max, UP(AE_SPEED_DC), 0);\
+#define IRS_RUN(E,M,G)	{ giIrsValOut/*iIrsVal*/ = LibAeSpeedDc(E, M, AE_IRS_OPN_Max, AE_IRS_CLS_Max, UP(AE_SPEED_DC), 0);\
 						  IrsPos(E, M, ParAe(PA_IRS_POS_SPEED)/*9*//*12*/, 0, AE_IRS_STAT_Max);\
-						  /*giIrsValBuf = iIrsVal;*/ }
+						  /*giIrsValOut = iIrsVal;*/ }
 #endif
 
 #define AE_CTRL_ADV			1//((model_ADV_AE==1)&&(model_Pana==0)&&(model_Sens!=SENS_IMX225))
 #define AE_CTRL_ORIGINAL	((AE_CTRL_ADV==0) || ParAe(PA_CTRL_ORIGINAL))
-#define AE_SAT_OFF			(/*((gbAeStg!=AE_STG_AGC)&&(gbAeStg!=AE_STG_DSS)) ||*/ (UP(BackLight)==UP_BL_WDR) || (gbWdrOn==UP_ON) || (gbWdrOnBuf2==UP_ON) || ParAe(PA_SAT_OFF) || (UP(AntiSatOn)==UP_OFF)/*(UP(LSpotLv)==0)*/ /*|| UP(ClipMax)*/)
+#define AE_SAT_OFF			(/*((gbAeStg!=AE_STG_AGC)&&(gbAeStg!=AE_STG_DSS)) ||*/ (UP(BackLight)==UP_BL_WDR) || (gbWdrOn!=WDR_OFF) || (gbWdrOnBuf2!=WDR_OFF) || ParAe(PA_SAT_OFF) || (UP(AntiSatOn)==UP_OFF)/*(UP(LSpotLv)==0)*/ /*|| UP(ClipMax)*/)
 
 #define AE_DEV_ON			1//((model_Pana==0)&&(model_Sens!=SENS_IMX225))
 

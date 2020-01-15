@@ -29,6 +29,7 @@ extern void UartTxIrq(BYTE abByte);
 extern void UartDebugRxIrq(void *ctx);
 extern void UartDebugTxIrq(void *ctx);
 extern void UartTxGrp(void);
+extern void UartTxGrpSet(UINT anNum, UINT anData);
 extern void UartTxGrpRun(void);
 extern void Comm(void);
 

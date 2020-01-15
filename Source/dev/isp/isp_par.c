@@ -24,6 +24,7 @@
 const char *gsBuildDate = "FW Date : "__DATE__" "__TIME__;
 WORD gDataID = 0;
 BYTE gbUsrParChgOn = 0;	// 0:실행안함, 1:부팅&변경, 2:변경
+BYTE gbStylePreviousOn = 0;
 
 // User Parameter --------------------------------------------------
 BYTE gbUsrParSaveChk=0;
@@ -40,6 +41,40 @@ BYTE gbUsrDataTbl[USR_DATA_EA];
 //*************************************************************************************************
 // Functions
 //-------------------------------------------------------------------------------------------------
+BYTE Month2Hex(const char *Month)
+{
+	if(*Month=='J') {
+		Month++;
+		if(*Month=='a') return 0x1;
+		Month++;
+		if(*Month=='n') return 0x6;
+		if(*Month=='l') return 0x7;
+		return 0;
+	}
+
+	if(*Month=='M') {
+		Month++;
+		Month++;
+		if(*Month=='r') return 0x3;
+		if(*Month=='y') return 0x5;
+		return 0;
+	}
+
+	if(*Month=='A') {
+		Month++;
+		if(*Month=='p') return 0x4;
+		if(*Month=='u') return 0x8;
+		return 0;
+	}
+
+	if(*Month=='F') return 0x2;
+	if(*Month=='S') return 0x9;
+	if(*Month=='O') return 0x10;
+	if(*Month=='N') return 0x11;
+	if(*Month=='D') return 0x12;
+	return 0;
+}
+
 void InitDataSet(void)
 {
 	const UINT gsBuildDateLen = strlen(gsBuildDate);
@@ -48,13 +83,32 @@ void InitDataSet(void)
 	gDataID += (*(gsBuildDate + gsBuildDateLen-4) - '0')<<8;
 	gDataID += (*(gsBuildDate + gsBuildDateLen-5) - '0')<<12;
 
-	#include "isp_user_parameter.h"
 	UP_LIB_LIST
 
 	void SensorSetting(BYTE, BYTE, BYTE); SensorSetting(model_Sens_Ctrl, model_Sens_Intf, model_Sens_Fps);
 
 	gbUsrParReadChk = 1;
 	gbUsrDataReadChk = 1;
+
+	//_printf_irq("=== %s ===\r\n", gsBuildDate);
+}
+
+void UsrParDateTime(void)
+{
+	const UINT gsBuildDateLen = strlen(gsBuildDate);
+	UP(ISP_FW_Build_Year)  = (*(gsBuildDate + gsBuildDateLen-10) - '0');
+	UP(ISP_FW_Build_Year) += (*(gsBuildDate + gsBuildDateLen-11) - '0')<<4;
+	UP(ISP_FW_Build_Year) += (*(gsBuildDate + gsBuildDateLen-12) - '0')<<8;
+	UP(ISP_FW_Build_Year) += (*(gsBuildDate + gsBuildDateLen-13) - '0')<<12;
+
+	UP(ISP_FW_Build_MonthDay)  = (*(gsBuildDate + gsBuildDateLen-15) - '0');
+	UP(ISP_FW_Build_MonthDay) += (*(gsBuildDate + gsBuildDateLen-16) - '0')<<4;
+	UP(ISP_FW_Build_MonthDay) += Month2Hex(gsBuildDate + gsBuildDateLen-20)<<8;
+
+	UP(ISP_FW_Build_Time)  = (*(gsBuildDate + gsBuildDateLen-4) - '0');
+	UP(ISP_FW_Build_Time) += (*(gsBuildDate + gsBuildDateLen-5) - '0')<<4;
+	UP(ISP_FW_Build_Time) += (*(gsBuildDate + gsBuildDateLen-7) - '0')<<8;
+	UP(ISP_FW_Build_Time) += (*(gsBuildDate + gsBuildDateLen-8) - '0')<<12;
 }
 
 void UsrDataReset(void)
@@ -85,7 +139,6 @@ void UsrParChg(const UINT anStrIdx)
 		#define INIT_RUN	|| gbUsrParChgOn==1
 		#undef UP_SET
 		#define UP_SET(S,N,D,I,...)		case UPi(N): if(gbUsrParChgOn==2 I) { __VA_ARGS__ /*printf("UsrParChg("#N"):%d\n", anIdx);*/ } break;
-		#include "isp_user_parameter.h"
 		USR_PAR_LIST
 	}
 #endif
@@ -100,6 +153,21 @@ void UsrParChg(const UINT anStrIdx)
 		else if(anStrIdx < UP_END) {
 			UsrParStyle(0, 0, anStrIdx);	// Style 값들 변경여부 체크 -> 값이 변경되었으면 /*CUSTOMIZE*/PREVIOUS 로
 		}
+
+		#undef UP_SET
+		#define UP_SET(...)
+		#undef UP_TITLE
+		#define UP_TITLE(N)		if(N##_UP_START < anStrIdx && anStrIdx <= (N##_UP_START + sizeof(UP_##N))) { _printf/*_printf_irq*/("UP %d : "#N" (%d~%d)\r\n", anStrIdx, N##_UP_START+1, (N##_UP_START + sizeof(UP_##N))); }
+		USR_PAR_LIST
+		#undef UP_TITLE
+		#define UP_TITLE(N)
+
+		//void TestInterp1D(void); TestInterp1D();
+
+#if 0	// ddr write test
+		IM_GO0w(1);
+		_printf_irq("!!! IM_GO !!!\r\n");
+#endif
 	}
 }
 
@@ -108,7 +176,6 @@ void UsrParChgEndIdx(const UINT anEndIdx)
 	switch(anEndIdx) {
 		#undef UP_SET
 		#define UP_SET(S,N,D,...)		case UPinv(N): UsrParChg(UPi(N)); break;
-		#include "isp_user_parameter.h"
 		USR_PAR_LIST
 	}
 }
@@ -118,7 +185,6 @@ void UsrParCpy(BYTE *dest, BYTE *src)
 	if(gbUsrParChgOn==2) {
 		#undef UP_SET
 		#define UP_SET(S,N,D,...)		if( ((UP_LIST*)dest)->N != ((UP_LIST*)src)->N ) { ((UP_LIST*)dest)->N = ((UP_LIST*)src)->N; UsrParChg(UPi(N)); }
-		#include "isp_user_parameter.h"
 		USR_PAR_LIST
 
 		int i, iChg = 0;
@@ -150,7 +216,6 @@ BYTE UsrParSiz(const UINT anIdx)
 	switch(anIdx) {
 		#undef UP_SET
 		#define UP_SET(S,N,D,...)		case UPi(N): return S;
-		#include "isp_user_parameter.h"
 		USR_PAR_LIST
 	}
 }
@@ -161,7 +226,6 @@ void UsrParChgAll(void)
 #if 0
 	#undef UP_SET
 	#define UP_SET(S,N,D,...)		UsrParChg(UPi(N));
-	#include "isp_user_parameter.h"
 	USR_PAR_LIST
 #else
 	if(gbUsrParChgOn == 0) return;
@@ -194,7 +258,6 @@ void UsrParReset(void)
 
 	#undef UP_SET
 	#define UP_SET(S,N,D,...)		UP(N) = (D);//UPw(N,D);
-	#include "isp_user_parameter.h"
 	USR_PAR_LIST
 
 	for(i=0; i<PVC_EA; i++) {
@@ -241,11 +304,11 @@ void UsrParStyle(const int abStyle, const int abInit, const int abValChg)
 	static int bStyleBuf = 0;
 
 	#define UP_STYLE(N, ...)	const UPt(N) bStyleVals##N[] = { __VA_ARGS__ };
-	#include "isp_user_parameter.h"
 	USR_PAR_STYLE
 
 	if(abInit) {
 		bStyleBuf = abStyle;
+		gbStylePreviousOn = (abStyle == 0);
 		if(abStyle && abValChg) goto StyleSet;
 		else return;
 	}
@@ -257,7 +320,6 @@ void UsrParStyle(const int abStyle, const int abInit, const int abValChg)
 			switch(abValChg) {
 				#undef UP_STYLE
 				#define UP_STYLE(N, ...)	case UPi(N): if((UINT)(bStyleBuf-1) < ARRAY_SIZE(bStyleVals##N)) { if(UP(N) != bStyleVals##N[bStyleBuf-1]) nStyleChg = 1; } break;
-				#include "isp_user_parameter.h"
 				USR_PAR_STYLE
 			}
 
@@ -266,6 +328,7 @@ void UsrParStyle(const int abStyle, const int abInit, const int abValChg)
 				//gbMenuStyle = 0;
 				UP(Style) = 0;
 				bStyleBuf = 0;
+				gbStylePreviousOn = 1;
 			}
 		}
 		return;
@@ -275,13 +338,11 @@ void UsrParStyle(const int abStyle, const int abInit, const int abValChg)
 
 	#undef UP_STYLE
 	#define UP_STYLE(N, ...)	static UPt(N) bStylePrv##N = -16;
-	#include "isp_user_parameter.h"
 	USR_PAR_STYLE
 
 	if(bStyleBuf == 0) {	// abStyle값이 0에서 다른값으로 변경되는 경우 PREVIOUS값들 업데이트
 		#undef UP_STYLE
 		#define UP_STYLE(N, ...)	bStylePrv##N = UP(N);
-		#include "isp_user_parameter.h"
 		USR_PAR_STYLE
 	}
 	bStyleBuf = abStyle;
@@ -292,7 +353,6 @@ StyleSet:
 		if(abStyle==0) { if(UP(N) != bStylePrv##N) { UP(N) = bStylePrv##N; if(abInit==0) UsrParChg(UPi(N)); } }\
 		else if((UINT)(abStyle-1) < ARRAY_SIZE(bStyleVals##N)) { if(UP(N) != bStyleVals##N[abStyle-1]) { UP(N) = bStyleVals##N[abStyle-1]; if(abInit==0) UsrParChg(UPi(N)); } }\
 	}
-	#include "isp_user_parameter.h"
 	USR_PAR_STYLE
 }
 
@@ -362,8 +422,9 @@ void UsrParSave(UINT anSaveOn)
  	}
 	else {																	// No Save & Exit
 		UsrParCpy(gbUsrParTbl, gbUsrParTblSaved);	// 복귀
-		UsrParStyle(UP(Style), 1, 0);	// Style의 buffer값 변경
 	}
+
+ 	UsrParStyle(UP(Style), 1, 0);	// Style의 buffer값 변경 & gbStylePreviousOn 설정
 }
 
 void AppSavePar(void)
@@ -461,7 +522,7 @@ void AppLoadPar(void)
 		}
 		else {
 			UsrParCpy(gbUsrParTblSaved, gbUsrParTbl);
-			UsrParStyle(UP(Style), 1, 0);	// Style의 buffer값 변경
+			UsrParStyle(UP(Style), 1, 0);	// Style의 buffer값 변경 & gbStylePreviousOn 설정
 		}
 
 		gbUsrParReadChk = 0;

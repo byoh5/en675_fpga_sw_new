@@ -17,7 +17,7 @@
 //	#define 	SENS_MN34227			21		// Pana	2M 30p(also MN34220), LVDS Mode
 	#define 	SENS_OV2718				22		// Omni	2M 30p, Parallel Mode
 //	#define 	SENS_IMX122 			23		// Sony 2M 30p(also IMX222/IMX322), Parallel Mode - TBD
-//	#define 	SENS_IMX323				24		// Sony	2M 30p, Parallel Mode
+	#define 	SENS_IMX323				24		// Sony	2M 30p, Parallel Mode
 //	#define 	SENS_AR0237CSP			25		// Aptina 2M 30p, Parallel Mode(PLCC Type) - TBD
 
 	#define		SENS_IMX335				40		// Sony 4M 30p
@@ -33,20 +33,21 @@
 #ifndef __SENS_LIST__
 
 //	Sensor Setting--------------------------------------------------------------
-//#define model_Sens		SENS_OS08A10
-#define model_Sens		SENS_IMX291	// Sensor selection
-
+//#define model_Sens		SENS_OS08A10	// Sensor selection
+//#define model_Sens		SENS_IMX291	// Sensor selection
+#define model_Sens		SENS_IMX323	// Sensor selection
 
 #define model_Sens_Ctrl		1		// 0 : SPI, supported Sony Sensor Only
 									// 1 : TWI, supported All Sensor
 
-#define model_Sens_Intf		1		// 0 : Parallel, supported IMX225
+#define model_Sens_Intf		0
+//#define model_Sens_Intf		1		// 0 : Parallel, supported IMX225, IMX323
 									// 1 : LVDS, supported OS08A10, IMX291, OV2718,
 									// 2 : MIPI, supported OV4689, IMX335, IMX274, IMX225, IMX415
 
 //#define model_Sens_Fps		15
 #define model_Sens_Fps		30		// 60 fps : supported IMX225
-									// 30 fps : supported IMX335, OV4689, OV2718, IMX291
+									// 30 fps : supported IMX335, OV4689, OV2718, IMX291, IMX323
 									// 20 fps : supported IMX335
 									// 15 fps : supported IMX274, OV4689, OS08A10, IMX415
 									// 12 fps : =12.5fps, supported IMX335
@@ -59,10 +60,10 @@
 
 #define model_Mipi			((model_Sens==SENS_IMX415)||(model_Sens==SENS_OV4689)||(model_Sens==SENS_IMX335)||(model_Sens==SENS_IMX274)||(model_Sens==SENS_IMX225))
 #define model_Lvds			((model_Sens==SENS_OS08A10)||(model_Sens==SENS_IMX291)||(model_Sens==SENS_OV2718))
-#define model_Parallel		((model_Sens==SENS_IMX225))
+#define model_Parallel		((model_Sens==SENS_IMX225)||(model_Sens==SENS_IMX323))
 
 #define model_60fps			((model_Sens==SENS_IMX225))
-#define model_30fps			((model_Sens==SENS_IMX335)||(model_Sens==SENS_OV4689)||(model_Sens==SENS_OV2718)||(model_Sens==SENS_IMX291))
+#define model_30fps			((model_Sens==SENS_IMX335)||(model_Sens==SENS_OV4689)||(model_Sens==SENS_OV2718)||(model_Sens==SENS_IMX291)||(model_Sens==SENS_IMX323))
 #define model_20fps			((model_Sens==SENS_IMX335))
 #define model_15fps			((model_Sens==SENS_IMX415)||(model_Sens==SENS_IMX274)||(model_Sens==SENS_OV4689)||(model_Sens==SENS_OS08A10))
 #define model_12fps			((model_Sens==SENS_IMX335))

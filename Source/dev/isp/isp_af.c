@@ -193,7 +193,7 @@ void Af_Debuging(BYTE bExcute)
 		//GRP7 = AF1_CLCNT_LOCKr;
 
 		#if 1
-//		UINT nAlpha = LibUtlInterp1D(giCurAgc, 0, (AE_GAIN_TOTAL + AE_GAIN_TOTAL2), 0x3E8, 0x4B0);
+//		UINT nAlpha = LibUtlInterp1D(giCurAgc, 0, AGC_POS_MAX, 0x3E8, 0x4B0);
 		UINT nAlpha = LibUtlInterp1D(giCurAgc, 0, 800, 0x3E8, 0x4B0);
 
 		const UINT nAF1_YSUM1_LOCK = AF1_YSUM1_LOCKr;

@@ -17,7 +17,56 @@ void main_3(int cpu_id)
 
 #if defined(__SENSOR__)
 
+#if 0	// ddr write test
+	#define DDR0_BASE	0x80000000
+	#define DDR1_BASE	0x90000000
+
+	const UINT nHW = 416;
+	const UINT nVW = 240;
+	const UINT nDdrAddrY = DDR1_BASE + 0xAAA780;	// DDR 주소 설정
+	const UINT nDdrAddrC = nDdrAddrY + (nHW * nVW);
+
+	PSCK_SELw(2);
+	PPCK_SELw(2);
+	FN_CK0_SELw(2);
+	PR_CK0_SELw(2);
+	PSCK_PDw(1);
+	PPCK_PDw(1);
+	PR_CK0_PDw(1);
+	FN_CK0_PDw(1);
+
+	POS_HZw(1);
+	//HSPOw(0x6);
+	//VSPOw(0x4);
+	HWOw(1928);
+	VWOw(1088);
+	HTWOw(2200-2);
+	VTWOw(1125-1);
+	OSYNC_MODw(1);
+	//VLOCKI2_POSw(0x2);
+	//HLOCKI2_POSw(0x3a);
+	//EXVSYNC_SELw(0);
+	//EXHSYNC_SELw(0);
+	POS_HZw(0);
+
+	Isp_Output_init();
+
+	YC_OSELw(0x11);
+
+	YCW_CK0_SELw(2);
+	YCW_CK0_PDw(1);
+	IM_YADR0w(nDdrAddrY>>4);
+	IM_CADR0w(nDdrAddrC>>4);
+	IM_HWI0w(nHW);
+	IM_IVSEL0w(0);
+	IM_ISEL0w(0xC);
+
+	IM_GO0w(1);
+
+	while(1);
+#else
 	Isp_init();
+#endif
 
 	//VIRQI_EN_Tw(1);
 	//CLI_VLOCKI_Tw(1);		// TODO KSH> 컴파일 문제?

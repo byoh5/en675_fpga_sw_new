@@ -16,24 +16,43 @@ BYTE gbSensFps = 0;
 //-------------------------------------------------------------------------------------------------
 int ISRT0 LibUtlInterp1D(int aiXCur, int aiXPos1, int aiXPos2, int aiYPos1, int aiYPos2)
 {	// interpolation val
-
 	int	iResult=0;
 
 	if (aiXPos1==aiXPos2)			return 0;										// Divide by 0 " error "
 	else if (aiYPos1==aiYPos2)		return aiYPos1;									// Position equal
 	else if (aiYPos1<aiYPos2) {														// Increase wgt
-
 		iResult = (((aiYPos2-aiYPos1) * (aiXCur-aiXPos1)) / (aiXPos2-aiXPos1)) + aiYPos1;
-
 	}
-	else if (aiYPos1>aiYPos2) {													// Decrease wgt
-
+	else if (aiYPos1>aiYPos2) {														// Decrease wgt, 1.9 => 1, -1.9 => -2가 아닌 -1 이므로 필요
 		iResult = (((aiYPos1-aiYPos2) * (aiXPos2 - aiXCur)) / (aiXPos2-aiXPos1)) + aiYPos2;
 	}
 
-	iResult = (iResult<0) ? 0 : iResult;
+	return (iResult<0) ? 0 : iResult;
+}
 
-	return iResult;
+int ISRT0 LibUtlInterp1D_CLAMP(int aiXCur, int aiXPos1, int aiXPos2, int aiYPos1, int aiYPos2)
+{	// interpolation val
+	int	iResult=0;
+
+	if(aiXPos1 <= aiXPos2) {
+		if(aiXCur<aiXPos1) aiXCur = aiXPos1;
+		if(aiXCur>aiXPos2) aiXCur = aiXPos2;
+	}
+	else {
+		if(aiXCur>aiXPos1) aiXCur = aiXPos1;
+		if(aiXCur<aiXPos2) aiXCur = aiXPos2;
+	}
+
+	if (aiXPos1==aiXPos2)			return 0;										// Divide by 0 " error "
+	else if (aiYPos1==aiYPos2)		return aiYPos1;									// Position equal
+	else if (aiYPos1<aiYPos2) {														// Increase wgt
+		iResult = (((aiYPos2-aiYPos1) * (aiXCur-aiXPos1)) / (aiXPos2-aiXPos1)) + aiYPos1;
+	}
+	else if (aiYPos1>aiYPos2) {														// Decrease wgt, 1.9 => 1, -1.9 => -2가 아닌 -1 이므로 필요
+		iResult = (((aiYPos1-aiYPos2) * (aiXPos2 - aiXCur)) / (aiXPos2-aiXPos1)) + aiYPos2;
+	}
+
+	return (iResult<0) ? 0 : iResult;
 }
 
 //-------------------------------------------------------------------------------------------------
