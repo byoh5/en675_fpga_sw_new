@@ -3,6 +3,7 @@
 #ifdef __SENSOR__
 
 
+#if 0
 void Isp_irq_init(void)
 {
 	//	For VLOCKO Interrupt
@@ -10,30 +11,25 @@ void Isp_irq_init(void)
 	Isp_PostSync_Config(1, 0, 2200, 1125, 0x3a, 0x2, 0x6, 0x4, 1928, 1088, 1);	// VLOCK
 	Isp_VLOCKO_init();						//	Post Sync
 }
+#endif
 
 void Isp_SensorRst(void)
 {
-	Wait_VLOCKO();
-	Wait_VLOCKO();
+	INIT_DELAY(2);
 
 	//	Sensor Init
 #if model_Sens==SENS_OV2718
 	PCKO_SELw(3);		//	18.5 MHz
-	Wait_VLOCKO();
-	Wait_VLOCKO();
-	Wait_VLOCKO();
+	INIT_DELAY(3);
 	GpioSetOut(SENSOR_RESET_GPIO_CH,0);
-	Wait_VLOCKO();
+	INIT_DELAY(1);
 #else
 	GpioSetOut(SENSOR_RESET_GPIO_CH,0);
 #endif
 
-	Wait_VLOCKO();
-	Wait_VLOCKO();
-	Wait_VLOCKO();
-	Wait_VLOCKO();
+	INIT_DELAY(4);
 	GpioSetOut(SENSOR_RESET_GPIO_CH,1);
-	Wait_VLOCKO();
+	INIT_DELAY(1);
 }
 
 void Isp_Sensor_init(void)
@@ -46,11 +42,10 @@ void Isp_Sensor_init(void)
 
 	IspSDesConfig();
 	IspSDesDelay();
-	IspSDesPosition();
 
 	IspSYNC_CODE();
 
-	void printf_SensorSetting(void); printf_SensorSetting();
+	INIT_STR_SENSOR
 	InitSensRun();
 
 #if (model_Sens==SENS_IMX291)
@@ -60,7 +55,7 @@ void Isp_Sensor_init(void)
 	PRE_BOFSw(0x3c4);
 #endif
 
-	_printf("ISP Sync & Sensor configuration...\r\n");
+	INIT_STR("ISP Sync & Sensor configuration...");
 }
 
 void Isp_PrePost_init(void)
@@ -75,13 +70,11 @@ void Isp_PrePost_init(void)
 #endif
 
 #if (model_Sens==SENS_IMX291) || (model_Sens==SENS_OV2718)
-	Wait_VLOCKO();
-	Wait_VLOCKO();
-	Wait_VLOCKO();
+	INIT_DELAY(3);
 	SYNC_UPw(1);
 #endif
 
-	_printf("ISP Clk/Res configuration...\r\n");
+	INIT_STR("ISP Clk/Res configuration...");
 }
 
 void Isp_Output_init(void)
@@ -105,7 +98,7 @@ void Isp_Output_init(void)
 	Isp_Cvbs_Config(FN_ON, NTSC, FREQ_27M, ISP_74M, DS_ISP_FONT_PATH, NO_VLCBIT, 0x7a, 0xf);
 #endif
 
-	_printf("Output configuration...\r\n");
+	INIT_STR("Output configuration...");
 }
 
 void Isp_Function_init(void)
@@ -143,7 +136,6 @@ void Isp_Function_init(void)
 	//FontCharInit(gnFontChar0, ARRAY_SIZE(gnFontChar0));		//	Write Font Data
 	//FontClrAll(NO_ALPHA,MN_WHITE);
 
-
 	FORCE_ABT_SOFFw(1);
 
 	//	Dnr3d On
@@ -154,8 +146,7 @@ void Isp_Function_init(void)
 	Isp_Dnr2d_Config(FN_ON, SP(Dnr2dICSel), SP(Dnr2dOCSel));
 	//Isp_Defect_Config(FN_ON, DF_SUM_6, DF_SUM_4, DF_WGT_CASEB, DF_WGT_CASEB, DF_SLOPE_NOR, DF_GTHRES, DF_RBTHRES, DF_MAX, DF_MIN, 3);
 
-
-	_printf("ISP Function configuration...\r\n");
+	INIT_STR("ISP Function configuration...");
 }
 
 void Isp_DDR_init(void)
@@ -172,43 +163,27 @@ void Isp_DDR_init(void)
 //	bus_init();											//	Bus Monitor Init
 
 #ifdef	USE_FRC
-	DDR_RDNR_LTCw(0x3a0);
-	DDR_RWDR_LTCw(0x500);
-  #if	model_4M
-	DDR_RFRC_LTCw(0x620);
-  #elif	model_8M
-	DDR_RFRC_LTCw(0xf80/*0xe00*/);
-  #else
-	DDR_RFRC_LTCw(0x200);
-  #endif
+	#if model_1M
+		#define R_LTC	0x260
+	#elif model_4M
+		#define R_LTC	0xa40
+	#elif model_8M
+		#define R_LTC	0xf80
+	#else// model_2M & model_2M30p
+		#define R_LTC	0x500
+	#endif
 
-	DDR_RENC_LTCw(0x300);
-	DDR_RYC_LTCw(0x500);
+	DDR_RDNR_LTCw(R_LTC);
+	DDR_RWDR_LTCw(R_LTC);
+	DDR_RFRC_LTCw(R_LTC);
+	DDR_RYC_LTCw(R_LTC);
+	DDR_RENC_LTCw(0x300);	// ENC 는 고정
 
-//	RD_LTC7w(0x20);
-//	RD_LTC8w(0x20);
-//	RD_LTC9w(0x20);
-//	RD_LTC10w(0x20);
-	RD_LTC11w(0xf0);
-	RD_LTC12w(0xf0);
-
-	Wait_VLOCKO();
-	Wait_VLOCKO();
-	Wait_VLOCKO();
-	Wait_VLOCKO();
-	Wait_VLOCKO();
-	Wait_VLOCKO();
+	//INIT_DELAY(6);
 	SD_MODw(0);			// DDR OFF
 
-	RD_LTC7w(4);
-	RD_LTC8w(4);
-	RD_LTC9w(4);
-	RD_LTC10w(4);
-	Wait_VLOCKO();
-	Wait_VLOCKO();
-	Wait_VLOCKO();
-	Wait_VLOCKO();
-	CPU_FRC_ENw(1);		// DDR OFF
+	INIT_DELAY(1/*4*/);
+	CPU_FRC_ENw(1);		// DDR OFF,  SD_MODw(0) 이후 1 VLOCK Delay 후 설정해야 함!!!
 	BUS_RD_RSTw(1);
 #endif
 }
@@ -221,7 +196,7 @@ void Isp_Digital_input_init(void)
 	Isp_Vlc_Config(VLC_6BIT);
 
 #ifdef	USE_DIG_CH2		//	Digital Input Channel 2 (BT1120 YCMuxed 8Bit)
-	_printf("Digital Channel2 Input  ---------> \r\n");
+	INIT_STR("Digital Channel2 Input  --------->");
 	Isp_DigIn_CH2_Config(IF_BT1120_8BIT_SDR, 0, IF_NEGEDGE, 4, 1920, 0, 1080, IF_MODE_SET);							//	Digital Channel 2 Setting		(Input Mode, Input Clock Delay, Clock Latch Position, Hsp, Hw, Vsp, Vw, On/Off)
   #ifdef	USE_WRCH2_DS1_RDCH2_PIP0
 	Isp_DS1_Config(DS_DIGITAL_CH2_PATH, CLK_DIG_CH2_DIV2, 0x80, 0x80, 1920, 1080, LPF_LV3, LPF_LV3, 0, 0, FN_ON);	//	Down-Scale 1 Setting
@@ -239,7 +214,7 @@ void Isp_Digital_input_init(void)
 #endif
 
 #ifdef	USE_DIG_CH3		//	Digital Input Channel 3 (BT1120 YCMuxed 8Bit)
-	_printf("Digital Channel3 Input---------> \r\n");
+	INIT_STR("Digital Channel3 Input--------->");
 	Isp_DigIn_CH3_Config(IF_BT1120_8BIT_SDR, 4, IF_POSEDGE, 4, 1920, 0, 1080, IF_MODE_SET);							//	Digital Channel 2 Setting	(Input Mode, Input Clock Delay, Clock Latch Position, Hsp, Hw, Vsp, Vw, On/Off)
   #ifdef	USE_WRCH3_DS2_RDCH3_PIP1
 	Isp_DS2_Config(DS_DIGITAL_CH3_PATH, CLK_DIG_CH3_DIV2, 0x80, 0x80, 1920, 1080, LPF_LV3, LPF_LV3, 0, 0, FN_ON);	//	Down-Scale 2 Setting
@@ -256,7 +231,7 @@ void Isp_Digital_input_init(void)
   #endif
 #endif
 
-	_printf("Digital Input configuration...\r\n");
+	INIT_STR("Digital Input configuration...");
 }
 
 void OutMode(void)
@@ -287,12 +262,11 @@ void OutMode(void)
 
 void Isp_init(void)
 {	// The execution order of the functions is important !!!
-
 	InitDataSet();				// Data setting for initialization
 	AppLoadPar();				// load parameter from memory
 	InitMenu();					// If hold down a specific key, reset the user parameters.
 
-	Isp_irq_init();				// Enable External Interrupts & Wait_VLOCKO() 사용을 위한 임시 설정
+//	Isp_irq_init();				// Enable External Interrupts & Wait_VLOCKO() 사용을 위한 임시 설정
 
 	InMode();
 
@@ -312,11 +286,7 @@ void Isp_init(void)
 
 	Isp_Digital_input_init();	// Digital Input configuration
 
-	YCW_DCK2_PDw(0);			// Clock enable ->  isp_clk.h의 YCW_DCK2_SET(2) 함수로 대치 가능.
-	YCW_DCK2_SELw(2);			// TODO KSH ◆ WDR 사용 시 꼭 필요한지 확인 필요
-	YCW_DCK2_PDw(1);
-
-	//extern void ParFncTest(void); ParFncTest();		// TODO KSH ◆ ParFncTest()
+	Isp_VLOCKO_init();			// IF_Funcs() 에서 VLOCKO 에 동기화하여 코드 실행 시 필요(테스트 용), OutMode() -> Isp_PrePost_init() 에서 Post Clk & Sync 설정 후 실행되어야 함, Isp_irq_init() 사용 시 필요 없음
 
 	VIRQO_ENw(1);				// VLOCKO IRQ Routine Test, enx_exirq_source1() 함수에서 CLI_VLOCKOw(1) 실행됨
 	VIRQI_ENw(1);				// Sensor FPS 출력용
@@ -329,7 +299,7 @@ void Hdmi_Check(void)
 
 	Hdmi(DetFmt0);
 	WriteByteTPI(0x63,0x40);
-//	_printf("HDMI Detect format..\r\n");
+//	INIT_STR("HDMI Detect format...");
 #endif
 }
 

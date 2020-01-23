@@ -458,7 +458,7 @@ void AppSavePar(void)
 				gbUsrParSaveChk = 0;
 				bTwiWrEep2Rdy = 0;
 
-				UartTxStr("MENU PAR Save...");
+				INIT_STR("MENU PAR Save...");
 			}
 		}
 		else if (gbUsrDataSaveChk) {	// User Data
@@ -474,7 +474,7 @@ void AppSavePar(void)
 					#else
 						gptMsgISPTbl.ISPTblState=eIP1_ISP_SAVE_DATA;
 						gptMsgISPTbl.ISPTblAddr =(UINT)&gbUsrDataTbl;
-//						UartTxStrHexNoIRQ("gnISPTblAddr : ", gnISPTblAddr, 8);
+//						INIT_STR_HEX("gnISPTblAddr : ", gnISPTblAddr, 8);
 
 						CPU_IRQ1 = 1;
 
@@ -518,7 +518,7 @@ void AppLoadPar(void)
 		if ((WORD)((gbUsrParTbl[UP_START]<<8)|gbUsrParTbl[UP_END])!=(WORD)UP_DATA_ID) {	// Parameter reset condition
 			UsrParReset();			// gbUsrParTbl[] 초기화 & UsrParCpy(gbUsrParTblSaved, gbUsrParTbl) 실행
 			gbUsrParSaveChk = 1;	// ROM 저장 실행
-			UartTxStrNoIRQ("MENU PAR reset ");
+			INIT_STR("MENU PAR reset");
 		}
 		else {
 			UsrParCpy(gbUsrParTblSaved, gbUsrParTbl);
@@ -543,12 +543,12 @@ void AppLoadPar(void)
 			EepRead(EEPROM_ADDR_DATA, gbUsrDataTbl, USR_DATA_EA);
 		#endif
 
-		if (UD_END_REAL>UD_END)	UartTxStrNoIRQ("USER DATA size over ");			// Size verify
+		if (UD_END_REAL>UD_END)	{ INIT_STR("USER DATA size over"); }			// Size verify
 		if ((WORD)((UD(UD_START)<<8)|UD(UD_END))!=(WORD)UD_DATA_ID) {				// reset condition
 
 			UsrDataReset();
 			gbUsrDataSaveChk = 1;
-			UartTxStrNoIRQ("USER DATA reset ");
+			INIT_STR("USER DATA reset");
 	    }
 
 		gbUsrDataReadChk = 0;

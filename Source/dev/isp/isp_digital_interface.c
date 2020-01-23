@@ -852,7 +852,7 @@ UINT Isp_DigOut_Config(UINT PinList, UINT Mode, UINT Rsync, UINT Res, UINT Path,
 	switch(Path)
 	{
 		case IFO_ISP_PATH:
-			ITU_SSEL0w(0);	ITU_ASEL0w(0);	FN_APPCK0_HSELw(1);
+			ITU_SSEL0w(0);	ITU_ASEL0w(0);
 			if((PinList==IFO_OPIN_16TO31)||(PinList==IFO_OPIN_24TO31))
 			{
 				if((Mode==IFO_BT1120_16BIT)||(Mode==IFO_BT1120_8BIT_DDR))	{	DITCK1_SET(FRQ);	OTCK1_SET(FRQ);		ITCK1_SET(FRQ);		DO2_CK_SET(FRQ);	DO3_CK_SET(FRQ);	}
@@ -916,10 +916,10 @@ UINT Isp_DigOut_Config(UINT PinList, UINT Mode, UINT Rsync, UINT Res, UINT Path,
 
 		case IFO_DIG_RDCH1_FONT_PATH:
 			OSD_ISEL0w(6);		POST_OSEL0w(0);		ITU_ASEL0w(15);
-			if(Rsync==IFO_ISP_SYNC)			{	OSD_IVSEL0w(5);	ITU_SSEL0w(0);	FN_APPCK0_HSELw(1);	FN_APPCK0_HONw(1);	}
-			else if(Rsync==IFO_RD_SYNC1)	{	OSD_IVSEL0w(5);	ITU_SSEL0w(5);  FN_APPCK0_HSELw(5);	FN_APPCK0_HONw(1);	}
-			else if(Rsync==IFO_RD_SYNC2)	{	OSD_IVSEL0w(6);	ITU_SSEL0w(6);  FN_APPCK0_HSELw(6);	FN_APPCK0_HONw(1);	}
-			else 							{	OSD_IVSEL0w(7);	ITU_SSEL0w(7);  FN_APPCK0_HSELw(7);	FN_APPCK0_HONw(1);	}
+			if(Rsync==IFO_ISP_SYNC)			{	OSD_IVSEL0w(5);	ITU_SSEL0w(0);	}
+			else if(Rsync==IFO_RD_SYNC1)	{	OSD_IVSEL0w(5);	ITU_SSEL0w(5);  }
+			else if(Rsync==IFO_RD_SYNC2)	{	OSD_IVSEL0w(6);	ITU_SSEL0w(6);  }
+			else 							{	OSD_IVSEL0w(7);	ITU_SSEL0w(7);  }
 			FN_CK0_SET(FRQ);	PR_CK0_SET(FRQ);	ITCK0_SET(FRQ);
 			if((Mode==IFO_BT1120_16BIT)||(Mode==IFO_BT1120_8BIT_DDR))		{	DITCK0_SET(FRQ);	OTCK0_SET(FRQ);		DoCk_Set(PinList, FRQ);	}
 			else if(Mode==IFO_BT1120_8BIT_SDR)								{	DITCK0_SET(FRQ-1);	OTCK0_SET(FRQ-1);	DoCk_Set(PinList, FRQ-1);	D_ITU_FIFO_ON0w(1);	D_ITU_DOFF_RS0w(1);	}
@@ -928,10 +928,10 @@ UINT Isp_DigOut_Config(UINT PinList, UINT Mode, UINT Rsync, UINT Res, UINT Path,
 
 		case IFO_DIG_RDCH2_FONT_PATH:
 			OSD_ISEL0w(7);		POST_OSEL0w(0);		ITU_ASEL0w(16);
-			if(Rsync==IFO_ISP_SYNC)			{	OSD_IVSEL0w(5);	ITU_SSEL0w(0);	FN_APPCK0_HSELw(1);	FN_APPCK0_HONw(1);	}
-			else if(Rsync==IFO_RD_SYNC1)	{	OSD_IVSEL0w(5);	ITU_SSEL0w(5);  FN_APPCK0_HSELw(5);	FN_APPCK0_HONw(1);	}
-			else if(Rsync==IFO_RD_SYNC2)	{	OSD_IVSEL0w(6);	ITU_SSEL0w(6);  FN_APPCK0_HSELw(6);	FN_APPCK0_HONw(1);	}
-			else 							{	OSD_IVSEL0w(7);	ITU_SSEL0w(7);  FN_APPCK0_HSELw(7);	FN_APPCK0_HONw(1);	}
+			if(Rsync==IFO_ISP_SYNC)			{	OSD_IVSEL0w(5);	ITU_SSEL0w(0);	}
+			else if(Rsync==IFO_RD_SYNC1)	{	OSD_IVSEL0w(5);	ITU_SSEL0w(5);  }
+			else if(Rsync==IFO_RD_SYNC2)	{	OSD_IVSEL0w(6);	ITU_SSEL0w(6);  }
+			else 							{	OSD_IVSEL0w(7);	ITU_SSEL0w(7);  }
 			FN_CK0_SET(FRQ);	PR_CK0_SET(FRQ);	ITCK0_SET(FRQ);
 			if((Mode==IFO_BT1120_16BIT)||(Mode==IFO_BT1120_8BIT_DDR))		{	DITCK0_SET(FRQ);	OTCK0_SET(FRQ);		DoCk_Set(PinList, FRQ);	}
 			else if(Mode==IFO_BT1120_8BIT_SDR)								{	DITCK0_SET(FRQ-1);	OTCK0_SET(FRQ-1);	DoCk_Set(PinList, FRQ-1);	D_ITU_FIFO_ON0w(1);	D_ITU_DOFF_RS0w(1);	}
@@ -940,10 +940,10 @@ UINT Isp_DigOut_Config(UINT PinList, UINT Mode, UINT Rsync, UINT Res, UINT Path,
 
 		case IFO_DIG_RDCH3_FONT_PATH:
 			OSD_ISEL0w(8);		POST_OSEL0w(0);		ITU_ASEL0w(17);
-			if(Rsync==IFO_ISP_SYNC)			{	OSD_IVSEL0w(5);	ITU_SSEL0w(0);	FN_APPCK0_HSELw(1);	FN_APPCK0_HONw(1);	}
-			else if(Rsync==IFO_RD_SYNC1)	{	OSD_IVSEL0w(5);	ITU_SSEL0w(5);  FN_APPCK0_HSELw(5);	FN_APPCK0_HONw(1);	}
-			else if(Rsync==IFO_RD_SYNC2)	{	OSD_IVSEL0w(6);	ITU_SSEL0w(6);  FN_APPCK0_HSELw(6);	FN_APPCK0_HONw(1);	}
-			else 							{	OSD_IVSEL0w(7);	ITU_SSEL0w(7);  FN_APPCK0_HSELw(7);	FN_APPCK0_HONw(1);	}
+			if(Rsync==IFO_ISP_SYNC)			{	OSD_IVSEL0w(5);	ITU_SSEL0w(0);	}
+			else if(Rsync==IFO_RD_SYNC1)	{	OSD_IVSEL0w(5);	ITU_SSEL0w(5);  }
+			else if(Rsync==IFO_RD_SYNC2)	{	OSD_IVSEL0w(6);	ITU_SSEL0w(6);  }
+			else 							{	OSD_IVSEL0w(7);	ITU_SSEL0w(7);  }
 			FN_CK0_SET(FRQ);	PR_CK0_SET(FRQ);	ITCK0_SET(FRQ);
 			if((Mode==IFO_BT1120_16BIT)||(Mode==IFO_BT1120_8BIT_DDR))		{	DITCK0_SET(FRQ);	OTCK0_SET(FRQ);		DoCk_Set(PinList, FRQ);	}
 			else if(Mode==IFO_BT1120_8BIT_SDR)								{	DITCK0_SET(FRQ-1);	OTCK0_SET(FRQ-1);	DoCk_Set(PinList, FRQ-1);	D_ITU_FIFO_ON0w(1);	D_ITU_DOFF_RS0w(1);	}
@@ -952,10 +952,10 @@ UINT Isp_DigOut_Config(UINT PinList, UINT Mode, UINT Rsync, UINT Res, UINT Path,
 
 		case IFO_DIG_RDCH4_FONT_PATH:
 			OSD_ISEL0w(9);		POST_OSEL0w(0);		ITU_ASEL0w(18);
-			if(Rsync==IFO_ISP_SYNC)			{	OSD_IVSEL0w(5);	ITU_SSEL0w(0);	FN_APPCK0_HSELw(1);	FN_APPCK0_HONw(1);	}
-			else if(Rsync==IFO_RD_SYNC1)	{	OSD_IVSEL0w(5);	ITU_SSEL0w(5);  FN_APPCK0_HSELw(5);	FN_APPCK0_HONw(1);	}
-			else if(Rsync==IFO_RD_SYNC2)	{	OSD_IVSEL0w(6);	ITU_SSEL0w(6);  FN_APPCK0_HSELw(6);	FN_APPCK0_HONw(1);	}
-			else 							{	OSD_IVSEL0w(7);	ITU_SSEL0w(7);  FN_APPCK0_HSELw(7);	FN_APPCK0_HONw(1);	}
+			if(Rsync==IFO_ISP_SYNC)			{	OSD_IVSEL0w(5);	ITU_SSEL0w(0);	}
+			else if(Rsync==IFO_RD_SYNC1)	{	OSD_IVSEL0w(5);	ITU_SSEL0w(5);  }
+			else if(Rsync==IFO_RD_SYNC2)	{	OSD_IVSEL0w(6);	ITU_SSEL0w(6);  }
+			else 							{	OSD_IVSEL0w(7);	ITU_SSEL0w(7);  }
 			FN_CK0_SET(FRQ);	PR_CK0_SET(FRQ);	ITCK0_SET(FRQ);
 			if((Mode==IFO_BT1120_16BIT)||(Mode==IFO_BT1120_8BIT_DDR))		{	DITCK0_SET(FRQ);	OTCK0_SET(FRQ);		DoCk_Set(PinList, FRQ);	}
 			else if(Mode==IFO_BT1120_8BIT_SDR)								{	DITCK0_SET(FRQ-1);	OTCK0_SET(FRQ-1);	DoCk_Set(PinList, FRQ-1);	D_ITU_FIFO_ON0w(1);	D_ITU_DOFF_RS0w(1);	}
@@ -1027,7 +1027,7 @@ UINT Isp_DigOut_Config(UINT PinList, UINT Mode, UINT Rsync, UINT Res, UINT Path,
 		break;
 
 		case IFO_DIG_CH0_DIRT_FONT_PATH:
-			OSD_ISEL0w(1);	OSD_IVSEL0w(1);		POST_OSEL0w(0);		ITU_SSEL0w(1);	ITU_ASEL0w(5);	FN_APPCK0_HSELw(0);	FN_APPCK0_HONw(1);
+			OSD_ISEL0w(1);	OSD_IVSEL0w(1);		POST_OSEL0w(0);		ITU_SSEL0w(1);	ITU_ASEL0w(5);
 			if((g_ConfigICh0==IF_BT1120_8BIT_SDR)||(g_ConfigICh0==IF_BT656_SDR)||(g_ConfigICh0==IF_YC_8BIT))	{	FN_CK0_SET(7);	PR_CK0_SET(7);	ITCK0_SET(7);	IFRQ = 7;	}
 			else																								{	FN_CK0_SET(3);	PR_CK0_SET(3);	ITCK0_SET(3);	IFRQ = 3; 	}
 
@@ -1043,7 +1043,7 @@ UINT Isp_DigOut_Config(UINT PinList, UINT Mode, UINT Rsync, UINT Res, UINT Path,
 		break;
 
 		case IFO_DIG_CH1_DIRT_FONT_PATH:
-			OSD_ISEL0w(2);	OSD_IVSEL0w(2);		POST_OSEL0w(0);		ITU_SSEL0w(2);	ITU_ASEL0w(6);	FN_APPCK0_HSELw(2);	FN_APPCK0_HONw(1);
+			OSD_ISEL0w(2);	OSD_IVSEL0w(2);		POST_OSEL0w(0);		ITU_SSEL0w(2);	ITU_ASEL0w(6);
 			if((g_ConfigICh1==IF_BT1120_8BIT_SDR)||(g_ConfigICh1==IF_BT656_SDR)||(g_ConfigICh1==IF_YC_8BIT))	{	FN_CK0_SET(8);	PR_CK0_SET(8);	ITCK0_SET(8);	IFRQ = 8;	}
 			else																								{	FN_CK0_SET(4);	PR_CK0_SET(4);	ITCK0_SET(4);	IFRQ = 4; 	}
 
@@ -1059,7 +1059,7 @@ UINT Isp_DigOut_Config(UINT PinList, UINT Mode, UINT Rsync, UINT Res, UINT Path,
 		break;
 
 		case IFO_DIG_CH2_DIRT_FONT_PATH:
-			OSD_ISEL0w(3);	OSD_IVSEL0w(3);		POST_OSEL0w(0);		ITU_SSEL0w(3);	ITU_ASEL0w(7);	FN_APPCK0_HSELw(3);	FN_APPCK0_HONw(1);
+			OSD_ISEL0w(3);	OSD_IVSEL0w(3);		POST_OSEL0w(0);		ITU_SSEL0w(3);	ITU_ASEL0w(7);
 			if((g_ConfigICh2==IF_BT1120_8BIT_SDR)||(g_ConfigICh2==IF_BT656_SDR)||(g_ConfigICh2==IF_YC_8BIT))	{	FN_CK0_SET(9);	PR_CK0_SET(9);	ITCK0_SET(9);	IFRQ = 9;	}
 			else																								{	FN_CK0_SET(5);	PR_CK0_SET(5);	ITCK0_SET(5);	IFRQ = 5; 	}
 
@@ -1075,7 +1075,7 @@ UINT Isp_DigOut_Config(UINT PinList, UINT Mode, UINT Rsync, UINT Res, UINT Path,
 		break;
 
 		case IFO_DIG_CH3_DIRT_FONT_PATH:
-			OSD_ISEL0w(4);	OSD_IVSEL0w(4);		POST_OSEL0w(0);		ITU_SSEL0w(4);	ITU_ASEL0w(8);	FN_APPCK0_HSELw(4);	FN_APPCK0_HONw(1);
+			OSD_ISEL0w(4);	OSD_IVSEL0w(4);		POST_OSEL0w(0);		ITU_SSEL0w(4);	ITU_ASEL0w(8);
 			if((g_ConfigICh2==IF_BT1120_8BIT_SDR)||(g_ConfigICh2==IF_BT656_SDR)||(g_ConfigICh2==IF_YC_8BIT))	{	FN_CK0_SET(10);	PR_CK0_SET(10);	ITCK0_SET(10);	IFRQ = 10;	}
 			else																								{	FN_CK0_SET(6);	PR_CK0_SET(6);	ITCK0_SET(6);	IFRQ = 6; 	}
 
@@ -1095,25 +1095,25 @@ UINT Isp_DigOut_Config(UINT PinList, UINT Mode, UINT Rsync, UINT Res, UINT Path,
 
 			if(Rsync==IFO_ISP_SYNC)
 			{
-				OSD_IVSEL0w(4);	FN_APPCK0_HSELw(1);	FN_APPCK0_HONw(1);
+				OSD_IVSEL0w(4);
 				if((PinList==IFO_OPIN_0TO15)||(PinList==IFO_OPIN_0TO7)||(PinList==IFO_OPIN_24TO31))		{	ITU_ASEL0w(0);  ITU_SSEL0w(0);}
 				else 																					{	ITU_ASEL1w(0);	ITU_SSEL1w(0);}
 			}
 			else if(Rsync==IFO_RD_SYNC1)
 			{
-				OSD_IVSEL0w(5);	FN_APPCK0_HSELw(5);	FN_APPCK0_HONw(1);
+				OSD_IVSEL0w(5);
 				if((PinList==IFO_OPIN_0TO15)||(PinList==IFO_OPIN_0TO7)||(PinList==IFO_OPIN_24TO31))		{	ITU_ASEL0w(20);	ITU_SSEL0w(5);}
 				else 																					{	ITU_ASEL1w(20); ITU_SSEL1w(5);}
 			}
 			else if(Rsync==IFO_RD_SYNC2)
 			{
-				OSD_IVSEL0w(6);	FN_APPCK0_HSELw(6);	FN_APPCK0_HONw(1);
+				OSD_IVSEL0w(6);
 				if((PinList==IFO_OPIN_0TO15)||(PinList==IFO_OPIN_0TO7)||(PinList==IFO_OPIN_24TO31))		{	ITU_ASEL0w(20);	ITU_SSEL0w(6);}
 				else 																					{	ITU_ASEL1w(20); ITU_SSEL1w(6);}
 			}
 			else
 			{
-				OSD_IVSEL0w(7);	FN_APPCK0_HSELw(7);	FN_APPCK0_HONw(1);
+				OSD_IVSEL0w(7);
 				if((PinList==IFO_OPIN_0TO15)||(PinList==IFO_OPIN_0TO7)||(PinList==IFO_OPIN_24TO31))		{	ITU_ASEL0w(20);	ITU_SSEL0w(7);}
 				else 																					{	ITU_ASEL1w(20); ITU_SSEL1w(7);}
 			}
@@ -1174,17 +1174,17 @@ UINT Isp_DigOut_Config(UINT PinList, UINT Mode, UINT Rsync, UINT Res, UINT Path,
 			}
 			else if(Rsync==IFO_RD_SYNC1)
 			{
-				OSD_IVSEL0w(5);	FN_APPCK0_HSELw(5);	FN_APPCK0_HONw(1);
+				OSD_IVSEL0w(5);
 				if((PinList==IFO_OPIN_0TO15)||(PinList==IFO_OPIN_0TO7)||(PinList==IFO_OPIN_24TO31))		{	ITU_ASEL0w(23);	ITU_SSEL0w(5);}
 				else 																					{	ITU_ASEL1w(23); ITU_SSEL1w(5);}
 			}
 			else if(Rsync==IFO_RD_SYNC2) {
-				OSD_IVSEL0w(6);	FN_APPCK0_HSELw(6);	FN_APPCK0_HONw(1);
+				OSD_IVSEL0w(6);
 				if((PinList==IFO_OPIN_0TO15)||(PinList==IFO_OPIN_0TO7)||(PinList==IFO_OPIN_24TO31))		{	ITU_ASEL0w(23);	ITU_SSEL0w(6);}
 				else 																					{	ITU_ASEL1w(23); ITU_SSEL1w(6);}
 			}
 			else {
-				OSD_IVSEL0w(7);	FN_APPCK0_HSELw(7);	FN_APPCK0_HONw(1);
+				OSD_IVSEL0w(7);
 				if((PinList==IFO_OPIN_0TO15)||(PinList==IFO_OPIN_0TO7)||(PinList==IFO_OPIN_24TO31))		{	ITU_ASEL0w(23);	ITU_SSEL0w(7);}
 				else 																					{	ITU_ASEL1w(23); ITU_SSEL1w(7);}
 			}
@@ -1245,19 +1245,19 @@ UINT Isp_DigOut_Config(UINT PinList, UINT Mode, UINT Rsync, UINT Res, UINT Path,
 			}
 			else if(Rsync==IFO_RD_SYNC1)
 			{
-				OSD_IVSEL0w(5);	FN_APPCK0_HSELw(5);	FN_APPCK0_HONw(1);
+				OSD_IVSEL0w(5);
 				if((PinList==IFO_OPIN_0TO15)||(PinList==IFO_OPIN_0TO7)||(PinList==IFO_OPIN_24TO31))		{	ITU_ASEL0w(22);	ITU_SSEL0w(5);}
 				else 																					{	ITU_ASEL1w(22); ITU_SSEL1w(5);}
 			}
 			else if(Rsync==IFO_RD_SYNC2)
 			{
-				OSD_IVSEL0w(6);	FN_APPCK0_HSELw(6);	FN_APPCK0_HONw(1);
+				OSD_IVSEL0w(6);
 				if((PinList==IFO_OPIN_0TO15)||(PinList==IFO_OPIN_0TO7)||(PinList==IFO_OPIN_24TO31))		{	ITU_ASEL0w(22);	ITU_SSEL0w(6);}
 				else 																					{	ITU_ASEL1w(22); ITU_SSEL1w(6);}
 			}
 			else
 			{
-				OSD_IVSEL0w(7);	FN_APPCK0_HSELw(7);	FN_APPCK0_HONw(1);
+				OSD_IVSEL0w(7);
 				if((PinList==IFO_OPIN_0TO15)||(PinList==IFO_OPIN_0TO7)||(PinList==IFO_OPIN_24TO31))		{	ITU_ASEL0w(22);	ITU_SSEL0w(7);}
 				else 																					{	ITU_ASEL1w(22); ITU_SSEL1w(7);}
 			}
@@ -1432,19 +1432,6 @@ void Isp_Dout1_Sync_Config(UINT Htw, UINT HSyncOfs, UINT VSyncOfs, UINT Hsp, UIN
 	HWC1w(Hw);		VWC1w(Vw);
 }
 
-//	DDR Isp Write Path Function---------------------------------------------------------------------------------------------------
-//	#define DDR_ISP_2PAGE					0
-//	#define DDR_ISP_3PAGE					1
-//	#define DDR_ISP_BYP_DNR_WDR				2
-//	#define DDR_ISP_BYPASS					3
-//	#define DDR_ISP_5PAGE					4
-void Isp_Ddr_Init(BYTE IspFrcMode)
-{
-	SD_MODw(IspFrcMode);
-	WaitXus(60000);			// 1frame 이상 delay 필요
-	CPU_FRC_ENw(1);
-	BUS_RD_RSTw(1);
-}
 
 //	DDR Digital Write Path Function---------------------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------------------------------------------------------
@@ -1994,18 +1981,6 @@ void Isp_RdCh0_Config(BYTE Path, SHORT Hw, BYTE Color, BYTE Clk, BYTE RdSync, BO
 	IM_RVSEL0w(RdSync);
 	IM_RISEL0w(Path);
 
-	switch(RdSync)
-	{
-		case RD_ISP_SYNC		:	YCR0_HLOCKI_SELw(1);	YCR0_HONw(1);	break;
-		case RD_DIG_CH0_SYNC	:	YCR0_HLOCKI_SELw(0);	YCR0_HONw(1);	break;
-		case RD_DIG_CH1_SYNC	:	YCR0_HLOCKI_SELw(2);	YCR0_HONw(1);	break;
-		case RD_DIG_CH2_SYNC	:	YCR0_HLOCKI_SELw(3);	YCR0_HONw(1);	break;
-		case RD_DIG_CH3_SYNC	:	YCR0_HLOCKI_SELw(4);	YCR0_HONw(1);	break;
-		case RD_SYNC1		    :	YCR0_HLOCKI_SELw(5);	YCR0_HONw(1);	break;
-		case RD_SYNC2		    :	YCR0_HLOCKI_SELw(6);	YCR0_HONw(1);	break;
-		case RD_SYNC3		    :	YCR0_HLOCKI_SELw(7);	YCR0_HONw(1);	break;
-	}
-
 	if(OnOff)	{	IM_RON0w(1);	YCR_CK0_SET(Clk);	}
 	else		{	IM_RON0w(0);	YCR_CK0_PDw(0);		}
 }
@@ -2021,18 +1996,6 @@ void Isp_RdCh1_Config(BYTE Path, SHORT Hw, BYTE Color, BYTE Clk, BYTE RdSync, BY
 
 	IM_RVSEL1w(RdSync);
 	IM_RISEL1w(Path);
-
-	switch(RdSync)
-	{
-		case RD_ISP_SYNC		:	YCR1_HLOCKI_SELw(1);	YCR1_HONw(1);	break;
-		case RD_DIG_CH0_SYNC	:	YCR1_HLOCKI_SELw(0);	YCR1_HONw(1);	break;
-		case RD_DIG_CH1_SYNC	:	YCR1_HLOCKI_SELw(2);	YCR1_HONw(1);	break;
-		case RD_DIG_CH2_SYNC	:	YCR1_HLOCKI_SELw(3);	YCR1_HONw(1);	break;
-		case RD_DIG_CH3_SYNC	:	YCR1_HLOCKI_SELw(4);	YCR1_HONw(1);	break;
-		case RD_SYNC1		    :	YCR1_HLOCKI_SELw(5);	YCR1_HONw(1);	break;
-		case RD_SYNC2		    :	YCR1_HLOCKI_SELw(6);	YCR1_HONw(1);	break;
-		case RD_SYNC3		    :	YCR1_HLOCKI_SELw(7);	YCR1_HONw(1);	break;
-	}
 
 	if(VlcMode==NO_VLCBIT)	{	LC_RON1w(0);	}
 	else					{	LC_RON1w(1);	}
@@ -2053,18 +2016,6 @@ void Isp_RdCh2_Config(BYTE Path, SHORT Hw, BYTE Color, BYTE Clk, BYTE RdSync, BY
 	IM_RVSEL2w(RdSync);
 	IM_RISEL2w(Path);
 
-	switch(RdSync)
-	{
-		case RD_ISP_SYNC		:	YCR2_HLOCKI_SELw(1);	YCR2_HONw(1);	break;
-		case RD_DIG_CH0_SYNC	:	YCR2_HLOCKI_SELw(0);	YCR2_HONw(1);	break;
-		case RD_DIG_CH1_SYNC	:	YCR2_HLOCKI_SELw(2);	YCR2_HONw(1);	break;
-		case RD_DIG_CH2_SYNC	:	YCR2_HLOCKI_SELw(3);	YCR2_HONw(1);	break;
-		case RD_DIG_CH3_SYNC	:	YCR2_HLOCKI_SELw(4);	YCR2_HONw(1);	break;
-		case RD_SYNC1		    :	YCR2_HLOCKI_SELw(5);	YCR2_HONw(1);	break;
-		case RD_SYNC2		    :	YCR2_HLOCKI_SELw(6);	YCR2_HONw(1);	break;
-		case RD_SYNC3		    :	YCR2_HLOCKI_SELw(7);	YCR2_HONw(1);	break;
-	}
-
 	if(VlcMode==NO_VLCBIT)	{	LC_RON2w(0);	}
 	else					{	LC_RON2w(1);	}
 
@@ -2084,18 +2035,6 @@ void Isp_RdCh3_Config(BYTE Path, SHORT Hw, BYTE Color, BYTE Clk, BYTE RdSync, BY
 	IM_RVSEL3w(RdSync);
 	IM_RISEL3w(Path);
 
-	switch(RdSync)
-	{
-		case RD_ISP_SYNC		:	YCR3_HLOCKI_SELw(1);	YCR3_HONw(1);	break;
-		case RD_DIG_CH0_SYNC	:	YCR3_HLOCKI_SELw(0);	YCR3_HONw(1);	break;
-		case RD_DIG_CH1_SYNC	:	YCR3_HLOCKI_SELw(2);	YCR3_HONw(1);	break;
-		case RD_DIG_CH2_SYNC	:	YCR3_HLOCKI_SELw(3);	YCR3_HONw(1);	break;
-		case RD_DIG_CH3_SYNC	:	YCR3_HLOCKI_SELw(4);	YCR3_HONw(1);	break;
-		case RD_SYNC1		    :	YCR3_HLOCKI_SELw(5);	YCR3_HONw(1);	break;
-		case RD_SYNC2		    :	YCR3_HLOCKI_SELw(6);	YCR3_HONw(1);	break;
-		case RD_SYNC3		    :	YCR3_HLOCKI_SELw(7);	YCR3_HONw(1);	break;
-	}
-
 	if(VlcMode==NO_VLCBIT)	{	LC_RON3w(0);	}
 	else					{	LC_RON3w(1);	}
 
@@ -2114,18 +2053,6 @@ void Isp_RdCh4_Config(BYTE Path, SHORT Hw, BYTE Color, BYTE Clk, BYTE RdSync, BY
 
 	IM_RVSEL4w(RdSync);
 	IM_RISEL4w(Path);
-
-	switch(RdSync)
-	{
-		case RD_ISP_SYNC		:	YCR4_HLOCKI_SELw(1);	YCR4_HONw(1);	break;
-		case RD_DIG_CH0_SYNC	:	YCR4_HLOCKI_SELw(0);	YCR4_HONw(1);	break;
-		case RD_DIG_CH1_SYNC	:	YCR4_HLOCKI_SELw(2);	YCR4_HONw(1);	break;
-		case RD_DIG_CH2_SYNC	:	YCR4_HLOCKI_SELw(3);	YCR4_HONw(1);	break;
-		case RD_DIG_CH3_SYNC	:	YCR4_HLOCKI_SELw(4);	YCR4_HONw(1);	break;
-		case RD_SYNC1		    :	YCR4_HLOCKI_SELw(5);	YCR4_HONw(1);	break;
-		case RD_SYNC2		    :	YCR4_HLOCKI_SELw(6);	YCR4_HONw(1);	break;
-		case RD_SYNC3		    :	YCR4_HLOCKI_SELw(7);	YCR4_HONw(1);	break;
-	}
 
 	if(VlcMode==NO_VLCBIT)	{	LC_RON4w(0);	}
 	else					{	LC_RON4w(1);	}
@@ -2218,25 +2145,25 @@ void Isp_DS0_Config(BYTE Path, BYTE Clk, SHORT DSRatioX, SHORT DSRatioY, SHORT D
 	//	Select Path
 	switch(Path)
 	{
-		case DS_ISP_FONT_PATH		    :	CDS0_VISELw(0);		CDS0_HSELw(1);	CDS0_HONw(1);	break;
-		case DS_ISP_NO_FONT_PATH		:	CDS0_VISELw(0);		CDS0_HSELw(1);	CDS0_HONw(1);	break;
-		case DS_DIGITAL_CH0_PATH		:	CDS0_VISELw(1);		CDS0_HSELw(0);	CDS0_HONw(1);	break;
-		case DS_DIGITAL_CH1_PATH		:	CDS0_VISELw(2);		CDS0_HSELw(2);	CDS0_HONw(1);	break;
-		case DS_DIGITAL_CH2_PATH		:	CDS0_VISELw(3);		CDS0_HSELw(3);	CDS0_HONw(1);	break;
-		case DS_DIGITAL_CH3_PATH		:	CDS0_VISELw(4);		CDS0_HSELw(4);	CDS0_HONw(1);	break;
-		case DS_DIGITAL_CH0_FONT_PATH   :	CDS0_VISELw(1);		CDS0_HSELw(0);	CDS0_HONw(1);	break;
-		case DS_DIGITAL_CH1_FONT_PATH   :	CDS0_VISELw(2);		CDS0_HSELw(2);	CDS0_HONw(1);	break;
-		case DS_DIGITAL_CH2_FONT_PATH   :	CDS0_VISELw(3);		CDS0_HSELw(3);	CDS0_HONw(1);	break;
-		case DS_DIGITAL_CH3_FONT_PATH   :	CDS0_VISELw(4);		CDS0_HSELw(4);	CDS0_HONw(1);	break;
-		case DS_COLOR_BAR_PATH		    :														break;			//	Special Path
-		case DS_DDR_RD_CH1_PATH		    :														break;          //	Special Path
-		case DS_DDR_RD_CH2_PATH		    :														break;          //	Special Path
-		case DS_DDR_RD_CH3_PATH		    :														break;          //	Special Path
-		case DS_DDR_RD_CH4_PATH		    :														break;          //	Special Path
-		case DS_DDR_RD_DZOOM_PATH	    :														break;          //	Special Path
-		case DS_JPEG_DEC_FONT_PATH	    :														break;          //	Special Path
-		case DS_JPEG_DEC_RD_PATH		:														break;          //	Special Path
-		case DS_THERNAL_Y_PATH		    :	CDS0_VISELw(9);										break;
+		case DS_ISP_FONT_PATH		    :	CDS0_VISELw(0);	break;
+		case DS_ISP_NO_FONT_PATH		:	CDS0_VISELw(0);	break;
+		case DS_DIGITAL_CH0_PATH		:	CDS0_VISELw(1);	break;
+		case DS_DIGITAL_CH1_PATH		:	CDS0_VISELw(2);	break;
+		case DS_DIGITAL_CH2_PATH		:	CDS0_VISELw(3);	break;
+		case DS_DIGITAL_CH3_PATH		:	CDS0_VISELw(4);	break;
+		case DS_DIGITAL_CH0_FONT_PATH   :	CDS0_VISELw(1);	break;
+		case DS_DIGITAL_CH1_FONT_PATH   :	CDS0_VISELw(2);	break;
+		case DS_DIGITAL_CH2_FONT_PATH   :	CDS0_VISELw(3);	break;
+		case DS_DIGITAL_CH3_FONT_PATH   :	CDS0_VISELw(4);	break;
+		case DS_COLOR_BAR_PATH		    :					break;			//	Special Path
+		case DS_DDR_RD_CH1_PATH		    :					break;          //	Special Path
+		case DS_DDR_RD_CH2_PATH		    :					break;          //	Special Path
+		case DS_DDR_RD_CH3_PATH		    :					break;          //	Special Path
+		case DS_DDR_RD_CH4_PATH		    :					break;          //	Special Path
+		case DS_DDR_RD_DZOOM_PATH	    :					break;          //	Special Path
+		case DS_JPEG_DEC_FONT_PATH	    :					break;          //	Special Path
+		case DS_JPEG_DEC_RD_PATH		:					break;          //	Special Path
+		case DS_THERNAL_Y_PATH		    :	CDS0_VISELw(9);	break;
 	}
 
 	CDS0_ISELw(Path);
@@ -2267,16 +2194,16 @@ void Isp_DS1_Config(BYTE Path, BYTE Clk, SHORT DSRatioX, SHORT DSRatioY, SHORT D
 	//	Select Path
 	switch(Path)
 	{
-		case DS_ISP_FONT_PATH		    :	CDS1_VISELw(0);		CDS1_HSELw(1);	CDS1_HONw(1);	break;
-		case DS_ISP_NO_FONT_PATH		:	CDS1_VISELw(0);		CDS1_HSELw(1);	CDS1_HONw(1);	break;
-		case DS_DIGITAL_CH0_PATH		:	CDS1_VISELw(1);		CDS1_HSELw(0);	CDS1_HONw(1);	break;
-		case DS_DIGITAL_CH1_PATH		:	CDS1_VISELw(2);		CDS1_HSELw(2);	CDS1_HONw(1);	break;
-		case DS_DIGITAL_CH2_PATH		:	CDS1_VISELw(3);		CDS1_HSELw(3);	CDS1_HONw(1);	break;
-		case DS_DIGITAL_CH3_PATH		:	CDS1_VISELw(4);		CDS1_HSELw(4);	CDS1_HONw(1);	break;
-		case DS_DIGITAL_CH0_FONT_PATH   :	CDS1_VISELw(1);		CDS1_HSELw(0);	CDS1_HONw(1);	break;
-		case DS_DIGITAL_CH1_FONT_PATH   :	CDS1_VISELw(2);		CDS1_HSELw(2);	CDS1_HONw(1);	break;
-		case DS_DIGITAL_CH2_FONT_PATH   :	CDS1_VISELw(3);		CDS1_HSELw(3);	CDS1_HONw(1);	break;
-		case DS_DIGITAL_CH3_FONT_PATH   :	CDS1_VISELw(4);		CDS1_HSELw(4);	CDS1_HONw(1);	break;
+		case DS_ISP_FONT_PATH		    :	CDS1_VISELw(0);		break;
+		case DS_ISP_NO_FONT_PATH		:	CDS1_VISELw(0);		break;
+		case DS_DIGITAL_CH0_PATH		:	CDS1_VISELw(1);		break;
+		case DS_DIGITAL_CH1_PATH		:	CDS1_VISELw(2);		break;
+		case DS_DIGITAL_CH2_PATH		:	CDS1_VISELw(3);		break;
+		case DS_DIGITAL_CH3_PATH		:	CDS1_VISELw(4);		break;
+		case DS_DIGITAL_CH0_FONT_PATH   :	CDS1_VISELw(1);		break;
+		case DS_DIGITAL_CH1_FONT_PATH   :	CDS1_VISELw(2);		break;
+		case DS_DIGITAL_CH2_FONT_PATH   :	CDS1_VISELw(3);		break;
+		case DS_DIGITAL_CH3_FONT_PATH   :	CDS1_VISELw(4);		break;
 		case DS_COLOR_BAR_PATH		    :						break;			//	Special Path
 		case DS_DDR_RD_CH1_PATH		    :						break;          //	Special Path
 		case DS_DDR_RD_CH2_PATH		    :						break;          //	Special Path
@@ -2317,16 +2244,16 @@ void Isp_DS2_Config(BYTE Path, BYTE Clk, SHORT DSRatioX, SHORT DSRatioY, SHORT D
 	//	Select Path
 	switch(Path)
 	{
-		case DS_ISP_FONT_PATH		    :	CDS2_VISELw(0);		CDS2_HSELw(1);	CDS2_HONw(1);	break;
-		case DS_ISP_NO_FONT_PATH		:	CDS2_VISELw(0);		CDS2_HSELw(1);	CDS2_HONw(1);	break;
-		case DS_DIGITAL_CH0_PATH		:	CDS2_VISELw(1);		CDS2_HSELw(0);	CDS2_HONw(1);	break;
-		case DS_DIGITAL_CH1_PATH		:	CDS2_VISELw(2);		CDS2_HSELw(2);	CDS2_HONw(1);	break;
-		case DS_DIGITAL_CH2_PATH		:	CDS2_VISELw(3);		CDS2_HSELw(3);	CDS2_HONw(1);	break;
-		case DS_DIGITAL_CH3_PATH		:	CDS2_VISELw(4);		CDS2_HSELw(4);	CDS2_HONw(1);	break;
-		case DS_DIGITAL_CH0_FONT_PATH   :	CDS2_VISELw(1);		CDS2_HSELw(0);	CDS2_HONw(1);	break;
-		case DS_DIGITAL_CH1_FONT_PATH   :	CDS2_VISELw(2);		CDS2_HSELw(2);	CDS2_HONw(1);	break;
-		case DS_DIGITAL_CH2_FONT_PATH   :	CDS2_VISELw(3);		CDS2_HSELw(3);	CDS2_HONw(1);	break;
-		case DS_DIGITAL_CH3_FONT_PATH   :	CDS2_VISELw(4);		CDS2_HSELw(4);	CDS2_HONw(1);	break;
+		case DS_ISP_FONT_PATH		    :	CDS2_VISELw(0);		break;
+		case DS_ISP_NO_FONT_PATH		:	CDS2_VISELw(0);		break;
+		case DS_DIGITAL_CH0_PATH		:	CDS2_VISELw(1);		break;
+		case DS_DIGITAL_CH1_PATH		:	CDS2_VISELw(2);		break;
+		case DS_DIGITAL_CH2_PATH		:	CDS2_VISELw(3);		break;
+		case DS_DIGITAL_CH3_PATH		:	CDS2_VISELw(4);		break;
+		case DS_DIGITAL_CH0_FONT_PATH   :	CDS2_VISELw(1);		break;
+		case DS_DIGITAL_CH1_FONT_PATH   :	CDS2_VISELw(2);		break;
+		case DS_DIGITAL_CH2_FONT_PATH   :	CDS2_VISELw(3);		break;
+		case DS_DIGITAL_CH3_FONT_PATH   :	CDS2_VISELw(4);		break;
 		case DS_COLOR_BAR_PATH		    :						break;			//	Special Path
 		case DS_DDR_RD_CH1_PATH		    :						break;          //	Special Path
 		case DS_DDR_RD_CH2_PATH		    :						break;          //	Special Path
@@ -2368,16 +2295,16 @@ void Isp_DS3_Config(BYTE Path, BYTE Clk, SHORT DSRatioX, SHORT DSRatioY, SHORT D
 	//	Select Path
 	switch(Path)
 	{
-		case DS_ISP_FONT_PATH		    :	CDS3_VISELw(0);		CDS3_HSELw(1);	CDS3_HONw(1);	break;
-		case DS_ISP_NO_FONT_PATH		:	CDS3_VISELw(0);		CDS3_HSELw(1);	CDS3_HONw(1);	break;
-		case DS_DIGITAL_CH0_PATH		:	CDS3_VISELw(1);		CDS3_HSELw(0);	CDS3_HONw(1);	break;
-		case DS_DIGITAL_CH1_PATH		:	CDS3_VISELw(2);		CDS3_HSELw(2);	CDS3_HONw(1);	break;
-		case DS_DIGITAL_CH2_PATH		:	CDS3_VISELw(3);		CDS3_HSELw(3);	CDS3_HONw(1);	break;
-		case DS_DIGITAL_CH3_PATH		:	CDS3_VISELw(4);		CDS3_HSELw(4);	CDS3_HONw(1);	break;
-		case DS_DIGITAL_CH0_FONT_PATH   :	CDS3_VISELw(1);		CDS3_HSELw(0);	CDS3_HONw(1);	break;
-		case DS_DIGITAL_CH1_FONT_PATH   :	CDS3_VISELw(2);		CDS3_HSELw(2);	CDS3_HONw(1);	break;
-		case DS_DIGITAL_CH2_FONT_PATH   :	CDS3_VISELw(3);		CDS3_HSELw(3);	CDS3_HONw(1);	break;
-		case DS_DIGITAL_CH3_FONT_PATH   :	CDS3_VISELw(4);		CDS3_HSELw(4);	CDS3_HONw(1);	break;
+		case DS_ISP_FONT_PATH		    :	CDS3_VISELw(0);		break;
+		case DS_ISP_NO_FONT_PATH		:	CDS3_VISELw(0);		break;
+		case DS_DIGITAL_CH0_PATH		:	CDS3_VISELw(1);		break;
+		case DS_DIGITAL_CH1_PATH		:	CDS3_VISELw(2);		break;
+		case DS_DIGITAL_CH2_PATH		:	CDS3_VISELw(3);		break;
+		case DS_DIGITAL_CH3_PATH		:	CDS3_VISELw(4);		break;
+		case DS_DIGITAL_CH0_FONT_PATH   :	CDS3_VISELw(1);		break;
+		case DS_DIGITAL_CH1_FONT_PATH   :	CDS3_VISELw(2);		break;
+		case DS_DIGITAL_CH2_FONT_PATH   :	CDS3_VISELw(3);		break;
+		case DS_DIGITAL_CH3_FONT_PATH   :	CDS3_VISELw(4);		break;
 		case DS_COLOR_BAR_PATH		    :						break;			//	Special Path
 		case DS_DDR_RD_CH1_PATH		    :						break;          //	Special Path
 		case DS_DDR_RD_CH2_PATH		    :						break;          //	Special Path
@@ -2509,12 +2436,11 @@ void Isp_DZoom_Config(BOOL OnOff, BYTE Clk, BYTE DzSync, BOOL IsAutoAlign, BOOL 
 	if(IsAutoAlign)					{	DZ_DAONw(IsAutoAlign);														}
 	else							{	DZ_DAONw(IsAutoAlign);		DZ_HSP_POSw(HOffset);	DZ_VSP_POSw(VOffset);	}
 
-	if(DzSync==DZ_ISP_SYNC)			{	DZ_HLOCKI_SELw(0);	DZOOM_VSPw(DzRdVsp);	DZOOM_HSPw(DzRdHsp);			}
-	else if(DzSync==DZ_ISYNC_GEN1)	{	DZ_HLOCKI_SELw(5);															}
-	else if(DzSync==DZ_ISYNC_GEN2)	{	DZ_HLOCKI_SELw(6);															}
-	else							{	DZ_HLOCKI_SELw(7);															}
+	if(DzSync==DZ_ISP_SYNC)			{	DZOOM_VSPw(DzRdVsp);	DZOOM_HSPw(DzRdHsp);			}
+	else if(DzSync==DZ_ISYNC_GEN1)	{															}
+	else if(DzSync==DZ_ISYNC_GEN2)	{															}
+	else							{															}
 
-	DZPCK2_HONw(1);
 	DZ_VWOw(DzVwo);													//	Dzoom Image Vertical Width
 	DZ_CH_SELw(DzoomCh);											//	Select Dzoom Channel
 	DZ_DKXY_ONw(IsDkxAuto);											//	DKX,DKY Control Way
@@ -2815,23 +2741,23 @@ void Isp_Cvbs_Config(BOOL OnOff, BOOL IsNtsc, BYTE CvbsFreq, BYTE SourceFrq, BYT
 	//	Select Source Path & Clock
 	switch(SourcePath)
 	{
-		 case DS_ISP_FONT_PATH         :	CDS3_VISELw(0);	CDS3_ISELw(0);	CDS3_HSELw(1);	CDS3_HONw(1);
+		 case DS_ISP_FONT_PATH         :	CDS3_VISELw(0);	CDS3_ISELw(0);
 		 									if(PPCK_SELr==4)		CDS3_PCK_SELw(7);
 		 									else if(PPCK_SELr==5)	CDS3_PCK_SELw(11);
 		 									else					CDS3_PCK_SELw(PPCK_SELr);																					break;
-		 case DS_ISP_NO_FONT_PATH      :    CDS3_VISELw(0);	CDS3_ISELw(1);  CDS3_HSELw(1);	CDS3_HONw(1);
+		 case DS_ISP_NO_FONT_PATH      :    CDS3_VISELw(0);	CDS3_ISELw(1);
 		 									if(PPCK_SELr==4)		CDS3_PCK_SELw(7);
 		 									else if(PPCK_SELr==5)	CDS3_PCK_SELw(11);
 		 									else					CDS3_PCK_SELw(PPCK_SELr);																					break;
-		 case DS_DIGITAL_CH0_PATH      :    CDS3_VISELw(1);	CDS3_ISELw(2);	CDS3_HSELw(0);	CDS3_HONw(1);	if(BT_PCK_SELr==3)	CDS3_PCK_SELw(3);	else	CDS3_PCK_SELw(7);	break;
-		 case DS_DIGITAL_CH1_PATH      :    CDS3_VISELw(2);	CDS3_ISELw(3);	CDS3_HSELw(2);	CDS3_HONw(1);	if(BT0_PCK_SELr==0)	CDS3_PCK_SELw(4);	else	CDS3_PCK_SELw(8);	break;
-		 case DS_DIGITAL_CH2_PATH      :    CDS3_VISELw(3);	CDS3_ISELw(4);	CDS3_HSELw(3);	CDS3_HONw(1);	if(BT1_PCK_SELr==0)	CDS3_PCK_SELw(5);	else	CDS3_PCK_SELw(9);	break;
-		 case DS_DIGITAL_CH3_PATH      :    CDS3_VISELw(4);	CDS3_ISELw(5);	CDS3_HSELw(4);	CDS3_HONw(1);	if(BT2_PCK_SELr==0)	CDS3_PCK_SELw(6);	else	CDS3_PCK_SELw(10);	break;
-		 case DS_DIGITAL_CH0_FONT_PATH :    CDS3_VISELw(1);	CDS3_ISELw(6);	CDS3_HSELw(0);	CDS3_HONw(1);	if(BT_PCK_SELr==3)	CDS3_PCK_SELw(3);	else	CDS3_PCK_SELw(7);	break;
-		 case DS_DIGITAL_CH1_FONT_PATH :    CDS3_VISELw(2);	CDS3_ISELw(7);	CDS3_HSELw(2);	CDS3_HONw(1);	if(BT0_PCK_SELr==0)	CDS3_PCK_SELw(4);	else	CDS3_PCK_SELw(8);	break;
-		 case DS_DIGITAL_CH2_FONT_PATH :    CDS3_VISELw(3);	CDS3_ISELw(8);	CDS3_HSELw(3);	CDS3_HONw(1);	if(BT1_PCK_SELr==0)	CDS3_PCK_SELw(5);	else	CDS3_PCK_SELw(9);	break;
-		 case DS_DIGITAL_CH3_FONT_PATH :    CDS3_VISELw(4);	CDS3_ISELw(9);	CDS3_HSELw(4);	CDS3_HONw(1);	if(BT2_PCK_SELr==0)	CDS3_PCK_SELw(6);	else	CDS3_PCK_SELw(10);	break;
-		 case DS_COLOR_BAR_PATH        :    CDS3_VISELw(0);	CDS3_ISELw(10);	CDS3_HSELw(1);	CDS3_HONw(1);
+		 case DS_DIGITAL_CH0_PATH      :    CDS3_VISELw(1);	CDS3_ISELw(2);	if(BT_PCK_SELr==3)	CDS3_PCK_SELw(3);	else	CDS3_PCK_SELw(7);	break;
+		 case DS_DIGITAL_CH1_PATH      :    CDS3_VISELw(2);	CDS3_ISELw(3);	if(BT0_PCK_SELr==0)	CDS3_PCK_SELw(4);	else	CDS3_PCK_SELw(8);	break;
+		 case DS_DIGITAL_CH2_PATH      :    CDS3_VISELw(3);	CDS3_ISELw(4);	if(BT1_PCK_SELr==0)	CDS3_PCK_SELw(5);	else	CDS3_PCK_SELw(9);	break;
+		 case DS_DIGITAL_CH3_PATH      :    CDS3_VISELw(4);	CDS3_ISELw(5);	if(BT2_PCK_SELr==0)	CDS3_PCK_SELw(6);	else	CDS3_PCK_SELw(10);	break;
+		 case DS_DIGITAL_CH0_FONT_PATH :    CDS3_VISELw(1);	CDS3_ISELw(6);	if(BT_PCK_SELr==3)	CDS3_PCK_SELw(3);	else	CDS3_PCK_SELw(7);	break;
+		 case DS_DIGITAL_CH1_FONT_PATH :    CDS3_VISELw(2);	CDS3_ISELw(7);	if(BT0_PCK_SELr==0)	CDS3_PCK_SELw(4);	else	CDS3_PCK_SELw(8);	break;
+		 case DS_DIGITAL_CH2_FONT_PATH :    CDS3_VISELw(3);	CDS3_ISELw(8);	if(BT1_PCK_SELr==0)	CDS3_PCK_SELw(5);	else	CDS3_PCK_SELw(9);	break;
+		 case DS_DIGITAL_CH3_FONT_PATH :    CDS3_VISELw(4);	CDS3_ISELw(9);	if(BT2_PCK_SELr==0)	CDS3_PCK_SELw(6);	else	CDS3_PCK_SELw(10);	break;
+		 case DS_COLOR_BAR_PATH        :    CDS3_VISELw(0);	CDS3_ISELw(10);
 		 									if(PPCK_SELr==4)		CDS3_PCK_SELw(7);
 		 									else if(PPCK_SELr==5)	CDS3_PCK_SELw(11);
 		 									else					CDS3_PCK_SELw(PPCK_SELr);																					break;

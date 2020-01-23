@@ -58,28 +58,17 @@
 #define SP_SET(NAME,V1,V2,V3,V4,V5,V6,V7,V8,V9,V10,V11,V12,V13,V14,V15,V16,V17,V18,V19,V20) SENS_SEL(NAME,V1,V2,V3,V4,V5,V6,V7,V8,V9,V10,V11,V12,V13,V14,V15,V16,V17,V18,V19,V20,\
 \
 					OV2718, IMX291,OS08A10, IMX225, IMX335, IMX274, OV4689, IMX415, IMX323, none10, none11, none12, none13, none14, none15, none16, none17, none18, none19, none20)
-SP_SET(LvdsPNSel,	     0,      1,      1,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 0 : Negative Start, 1 : Positive Start,  입력 data의 latch start point를 설정
-SP_SET(LvdsSofNo,	     1,      1,      1,      0,      0,      0,      0,      0,      1,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 0 : usually Panasonic sensor, 1 : others
-SP_SET(LvdsBit,		    12,     12,     10,      0,      0,      0,      0,      0,     12,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)
-
 SP_SET(LckDly,		     7,      4,      1,      2,      2,      6,      4,      4,      7,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 0 ~ 7,  Lvds/Mipi input clock delay adjust
-SP_SET(LdiDly0,		     0,      0,      2,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 0 ~ 7,  Lvds/Mipi channel 0 delay adjust
-SP_SET(LdiDly1,		     0,      0,      2,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 0 ~ 7,  Lvds/Mipi channel 1 delay adjust
-SP_SET(LdiDly2,		     0,      0,      2,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 0 ~ 7,  Lvds/Mipi channel 2 delay adjust
-SP_SET(LdiDly3,		     0,      0,      2,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 0 ~ 7,  Lvds/Mipi channel 3 delay adjust
-
 SP_SET(MipiClkPhase,     0,      0,      0,      2,      2,      0,      2,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// Select Mipi 1/4 Clock Phase 0, 1, 2, 3, image align에 영향을 주어 영상을 보면서 이 값을 조절해야 함
 SP_SET(MipiBit,		     0,      0,      0,     10,     12,     12,     10,     12,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)
-SP_SET(MipiHSyncOfs,     0,      0,      0,      7,      7,      7,      8,      7,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// Very Important!!! For Image Phase
-SP_SET(MipiUseWcl,	     0,      0,      0,      0,      0,      0,      1,      1,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// use long packet word counter check function
 
 SP_SET(IsSlave,		     1,      0,      1,      1,      1,      1,      1,      1,      1,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 0 : Master Mode, 1 : Slave Mode,  Isp master/slave mode를 설정
 SP_SET(IsASync,		     1,      0,      1,      0,      1,      0,      1,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// Auto sync generation, omni sensor와 같이 Active 이외의 구간에서 sync가 나오지 않는 sensor에서 1로 설정
-SP_SET(IsNSync,		     1,      0,      0,      1,      1,      0,      1,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 입력 sync의 H/V 위상이 일치하지 않는 상황에서 1로 설정
-SP_SET(PreHSyncOfs,	  0x16,   0x12,   0xa8,   0xb8,   0xb8,   0x12,   0xb8,   0xa8,   0x16,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// Pre module Horizontal Sync Offset, Hsp 인자로 Image 위치가 맞지 않을때 Sync의 위치를 이동하여 image 위치를 맞추는데 사용
-SP_SET(PreVSyncOfs,	   0xa,    0xa,    0xa,    0xa,    0xa,    0xa,    0xa,    0xa,    0xa,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// Pre module Vertical Sync Offset, Vsp 인자로 Image 위치가 맞지 않을때 Sync의 위치를 이동하여 image 위치를 맞추는데 사용
-SP_SET(PreHsp,		  0x13,   0x15,   0x15,    0x8,    0x8,   0x15,    0x8,   0x15,   0x13,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// Pre module Horizontal image start position
-SP_SET(PreVsp,		   0x9,    0x7,    0x3,    0x5,    0x5,    0x7,    0x5,    0x3,    0x9,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// Pre module Vertical image start position
+SP_SET(IsNSync,		     1,      0,      0,      1,      1,      0,      1,      0,      1,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 입력 sync의 H/V 위상이 일치하지 않는 상황에서 1로 설정
+SP_SET(PreHSyncOfs,	  0x16,   0x12,   0xa8,   0xb8,   0xb8,   0x12,   0xb8,   0xa8,   0x8e,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// Pre module Horizontal Sync Offset, Hsp 인자로 Image 위치가 맞지 않을때 Sync의 위치를 이동하여 image 위치를 맞추는데 사용
+SP_SET(PreVSyncOfs,	   0xa,    0xa,    0xa,    0xa,    0xa,    0xa,    0xa,    0xa,    0xf,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// Pre module Vertical Sync Offset, Vsp 인자로 Image 위치가 맞지 않을때 Sync의 위치를 이동하여 image 위치를 맞추는데 사용
+SP_SET(PreHsp,		  0x13,   0x15,   0x15,    0x8,    0x8,   0x15,    0x8,   0x15,    0x7,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// Pre module Horizontal image start position
+SP_SET(PreVsp,		   0x9,    0x7,    0x3,    0x5,    0x5,    0x7,    0x5,    0x3,    0x7,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// Pre module Vertical image start position
 SP_SET(PreHSyncPol,	     0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 0 : Falling position, 1 : Rising position, Pre module Horizontal sync input polarity
 SP_SET(PreVSyncPol,	     0,      0,      1,      1,      1,      1,      1,      1,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 0 : Falling position, 1 : Rising position, Pre module Vertical sync input polarity
 SP_SET(ICSel,		     0,      0,      3,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 0 ~ 3,  Pre module color phase selection, RGB interpolator의 위상을 조절, AWB ODM 값으로 올바른지 확인(AWBLNOR_SEL:1, 청색필터:CRDR- CBDB+, 황색필터:CRDR+ CBDB-)		TODO KSH ◆ ICSEL 설정 필요
@@ -152,14 +141,12 @@ RP_SET(FR_HW,		  1280,   1920,   2560,   3840,   2592)	// Digital Output formatt
 RP_SET(FR_VW,		   720,   1080,   1440,   2160,   1944)	// Digital Output formatter vertical   active width
 RP_SET(PO_HW,		  1288,   1928,   2568,   3848,      0)	// HWI(pre module active image horizontal width) & HWO(Post module horizontal image active width)
 RP_SET(PO_VW,		   728,   1088,   1448,   2168,      0)	// VWI(pre module active image vertical   width) & VWO(Post module vertical   image active width)
-RP_SET(LV_HW,		  1308,   1988,   2584,   3860,      0)	// Lvds/Mipi internal buffer에서 image를 read하는 horizontal width를 설정한다. 이 값은 margin을 포함하여 실제 horizontal active pixel보다 크게 설정한다.
-RP_SET(LV_VW,		   736,   1100,   1458,   2180,      0)	// Lvds/Mipi internal buffer에서 image를 read하는 vertical   width를 설정한다. 이 값은 margin을 포함하여 실제 vertical   active pixel보다 크게 설정한다.
 RP_SET(FR_HTW60,	  1650,   2200,   3300,   4400,      0)	// Total horizontal width for 30P/60P
 RP_SET(FR_VTW60,	   750,   1125,   1500,   2250,      0)	// Total vertical   width for 30P/60P
 RP_SET(FR_HTW50,	  1980,   2640,   3960,   5280,      0)	// Total horizontal width for 25P/50P
 RP_SET(FR_VTW50,	   750,   1125,   1500,   2250,      0)	// Total vertical   width for 25P/60P
 
-RP_SET(OutHSyncOfs,	  0x8a,   0x88,   0x8a,   0x88,      0)	// 0 ~ 0x1fff,  Digital Output formatter Horizontal sync offset, OCSel에 영향을 주므로 가능한 변경하지 않는 것을 권장, 이 값을 조절해도 영상이 화면에 채워지지 않으면 pre/post단의 Hsync offse이나 Hsp를 조절해야 함	TODO KSH - OutHSyncOfs : 2M만 검증 완료
+RP_SET(OutHSyncOfs,	  0x82,   0x80,   0x82,   0x80,      0)	// 0 ~ 0x1fff,  Digital Output formatter Horizontal sync offset, OCSel에 영향을 주므로 가능한 변경하지 않는 것을 권장, 이 값을 조절해도 영상이 화면에 채워지지 않으면 pre/post단의 Hsync offse이나 Hsp를 조절해야 함	TODO KSH - OutHSyncOfs : 2M만 검증 완료
 RP_SET(OutVSyncOfs,	   0x3,  0x449,  0x5bd,  0x8a8,      0)	// 0 ~ 0xfff,   Digital Output formatter Vertical   sync offset, OCSel에 영향을 주므로 가능한 변경하지 않는 것을 권장, 이 값을 조절해도 영상이 화면에 채워지지 않으면 pre/post단의 Vsync offse이나 Vsp를 조절해야 함	TODO KSH - OutVSyncOfs : 2M만 검증 완료
 
 RP_SET(AE_HSP,		   0x8,    0x8,   0x10,   0x10,      0)
@@ -283,29 +270,22 @@ RP_SET(FONT_OFY,	  0x36,    0xf,    0xf,   0x30,      0)	// Font Vertical Positi
 // ISP Function define
 #define IspSensorPowerOn()		Isp_SensorPowerOn(FN_ON,SP(SensorClk))
 
+#define IspSDesPowerOn()		Isp_SDesPowerOn(model_Sens_Intf>0, model_Sens_Intf==2, UP(MipiClkPhase))
+
 #if (model_Sens_Intf==0)	// Parallel
-	#define IspSDesPowerOn()	Isp_SDesPowerOn(FN_OFF,0,0)		// LVDS/MIPI Off
-	#define IspSDesConfig()		Isp_Parallel_Config(FN_ON/*, ISP_SLAVE*/, PARA_EXTER_CLK, PARA_CLK_SDR, 0/*, SYNC_FALL, SYNC_RISE, DIFF_EDGE, NO_USE_AUTOSYNC*/)
+	#define IspSDesConfig()		Isp_Parallel_Config(FN_ON/*, ISP_SLAVE*/, PARA_INTER_CLK, PARA_CLK_SDR, 0/*, SYNC_FALL, SYNC_RISE, DIFF_EDGE, NO_USE_AUTOSYNC*/, BIT12TOBit12)
 #elif (model_Sens_Intf==1)	// LVDS
-	#define IspSDesPowerOn()	Isp_SDesPowerOn(FN_ON, LVDS_INTERFACE, 0)
 	#define IspSDesConfig()		Isp_Lvds_Config(SP(LvdsBit), LVDS_4LANE, 0, UP(LvdsPNSel), SP(LvdsSofNo))
 #elif (model_Sens_Intf==2)	// MIPI
-	#define IspSDesPowerOn()	Isp_SDesPowerOn(FN_ON, MIPI_INTERFACE, UP(MipiClkPhase))
 	#define IspSDesConfig()		Isp_Mipi_Config(SP(MipiBit), MIPI_4LANE, 0, 1, UP(MipiHSyncOfs), USE_ECC_CHECK, SP(MipiUseWcl), NO_USE_CHECK, NO_USE_CHECK, 3)
 #endif
 
-#define IspSDesDelay()			Isp_SDesDelay(UP(LckDly), UP(LdiDly0), UP(LdiDly1), UP(LdiDly2), UP(LdiDly3))
-
-#if model_2M || model_2M30p
-	#define IspSDesPosition()	Isp_SDesPosition(0x1f, 0x1, RP(LV_HW), RP(LV_VW))
-#else
-	#define IspSDesPosition()	Isp_SDesPosition(0xb5, 0xc, RP(LV_HW), RP(LV_VW))
-#endif
+#define IspSDesDelay()			Isp_SDesDelay(UP(LckDly))
 
 #define IspSYNC_CODE()			Isp_SYNC_CODE(SP(SyncCode0), SP(SyncCode1), SP(SyncCode2), SP(SyncCode3_0), SP(SyncCode3_1), SP(SyncCode3_2),\
 											  SP(SyncS0Code3_0), SP(SyncS0Code3_1), SP(SyncS0Code3_2), SP(SyncS1Code3_0), SP(SyncS1Code3_1), SP(SyncS1Code3_2))
 
-#define IspPreClkConfig()		Isp_PreClk_Config(SP(PreClk))
+#define IspPreClkConfig()		Isp_PreClk_Config(SP(PreClk), USE_FRC)
 #define IspPostClkConfig()		Isp_PostClk_Config(SP(PostClk))
 
 #define IspPreSyncConfig()		Isp_PreSync_Config(SP(IsSlave), gnAeHtw, gnAeVtw, UP(PreHSyncOfs), UP(PreVSyncOfs), UP(PreHsp), UP(PreVsp), RP(PO_HW), RP(PO_VW), SP(IsASync), SP(IsNSync), UP(PreHSyncPol), UP(PreVSyncPol))

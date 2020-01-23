@@ -134,7 +134,7 @@ BYTE ISRT TwiWrEep2( WORD awWaddr, volatile BYTE* apbBuf, UINT anBufEa)
 	if (!bTwiCnt) {											// Burst Tx Ready
 		if (!anBufEa)	return 0;
 		else if ((awWaddr+anBufEa)>=(TWI_EEP_PAGE_EA*TWI_EEP_BYTE_EA)) {
-			UartTxStrNoIRQ("WrEEP Size Over ! ");
+			INIT_STR("WrEEP Size Over ! ");
 			return 0;
 		}
 		else {
@@ -148,7 +148,7 @@ BYTE ISRT TwiWrEep2( WORD awWaddr, volatile BYTE* apbBuf, UINT anBufEa)
 		}
 	}
 	else if (bTwiCnt>=k+2) {								// Status reset at Tx end
-		UartTxStrHexNoIRQ("TwiWrEep2 Done ! ", gwWaddr, 5);
+		INIT_STR_HEX("TwiWrEep2 Done ! ", gwWaddr, 5);
 
 		gwWaddr = 0;
 		gpbBuf  = 0;

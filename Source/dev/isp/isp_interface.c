@@ -28,30 +28,27 @@ void Isp_SDesPowerOn(BOOL OnOff, BOOL IsMipi, BYTE MipiClkPhase)
 {
 	if(OnOff) {
 		SDES_PDw(0x00);
-		if(IsMipi)	{	RDES_CK_SELw(1);	MIPI_RXONw(1);	LSYNCM_SELw(MipiClkPhase);	LVDS_RXONw(0);	}
-		else		{	RDES_CK_SELw(0);	LVDS_RXONw(1);	MIPI_RXONw(0);	}
+		if(IsMipi)	{	RDES_CK_SELw(1);	LSYNCM_SELw(MipiClkPhase);	LVDS_RXONw(0);	}
+		else		{	RDES_CK_SELw(0);	LVDS_RXONw(1);	}
 		CH_DSELw(0);
 		CH_HSSELw(0);
 		CH_VSSELw(0);
 		LCK_SONw(1);
-		LBUF_ONw(1);
 	}
 	else {
 		SDES_PDw(0x1f);
-		MIPI_RXONw(0);
 		LVDS_RXONw(0);
 		CH_DSELw(1);
 		CH_HSSELw(1);
 		CH_VSSELw(1);
 		LCK_SONw(0);
-		LBUF_ONw(0);
 	}
 }
 
-void Isp_SDesDelay(BYTE Lck, BYTE Ldi0, BYTE Ldi1, BYTE Ldi2, BYTE Ldi3)
+void Isp_SDesDelay(BYTE Lck)
 {
-#if (model_Sens_Intf==1) || (model_Sens_Intf==2)	// LVDS or MIPI
-	LCK_DLYw(Lck);	LDIDLY0w(Ldi0);		LDIDLY1w(Ldi1);		LDIDLY2w(Ldi2);		LDIDLY3w(Ldi3);
+#if (model_Sens_Intf==1) || (model_Sens_Intf==2)	// MIPI
+	LCK_DLYw(Lck);
 #endif
 }
 
@@ -84,64 +81,6 @@ void Isp_SDesDelay(BYTE Lck, BYTE Ldi0, BYTE Ldi1, BYTE Ldi2, BYTE Ldi3)
 //	}
 //
 //}
-
-void Isp_SDesPosition(UINT LvdsHRpos, UINT LvdsVRpos, UINT LvdsHw, UINT LvdsVw)
-{
-#if (model_Sens_Intf==1) || (model_Sens_Intf==2)	// LVDS or MIPI
-	RDES_RPOSw(LvdsHRpos);		// Lvds/Mipi internal buffer에서 image를 read하는 horizontal position을 설정한다.
-	RDES_RVPOSw(LvdsVRpos);		// Lvds/Mipi internal buffer에서 image를 read하는 vertical position을 설정한다.
-	RDES_VWw(LvdsVw);			// Lvds/Mipi internal buffer에서 image를 read하는 vertical width를 설정한다. 이 값은 margin을 포함하여 실제 vertical active pixel보다 크게 설정한다.
-	MERGE_HWw(LvdsHw>>2);		// Lvds/Mipi internal buffer에서 image를 read하는 horizontal width를 설정한다. 이 값은 margin을 포함하여 실제 horizontal active pixel보다 크게 설정한다. '>>2'적용하여 설정
-#endif
-}
-
-//	LvdsBit		->	LVDS_10BIT		10
-//             	 	LVDS_12BIT		12
-//
-//	LvdsLane	->	LVDS_2LANE		0
-//					LVDS_4LANE      1
-//
-//	IsLsbFirst	->	0 : Msb First, 1 : Lsb First
-//
-//	PNSel		->	0 : Negative Start, 1 : Positive Start
-//
-//	SofNo		->	0 : usually Panasonic sensor, 1 : others
-void Isp_Lvds_Config(BYTE LvdsBit, BYTE LvdsLane, BOOL IsLsbFirst, BOOL PNSel, BOOL SofNo)
-{
-	if(LvdsBit==12)		{	OMOD_BITw(0);	RDES_BITw(1); }			//	12 Bit
-	else				{	OMOD_BITw(1);	RDES_BITw(0); }			//	10 Bit
-
-	RDES_CH_MODw(LvdsLane);
-	LVDS_LSBw(IsLsbFirst);
-	RDES_PNSELw(PNSel);
-	SOF_NOw(SofNo);
-}
-
-//	MipiBit		->	MIPI_10BIT		10
-//             	 	MIPI_12BIT		12
-//	MipiLane	->	MIPI_1LANE		0
-//					MIPI_2LANE      1
-//					MIPI_4LANE      2
-void Isp_Mipi_Config(BYTE MipiBit, BYTE MipiLane, BOOL IsLsbFirst, BOOL PNSel, WORD MipiHsyncOfs, BOOL UseEcc, BOOL UseWcl, BOOL UseWcf, BOOL UseWcfe, BYTE MipiImgPhase)
-{
-	if(MipiBit==12)		{	OMOD_BITw(0);	RDES_BITw(1); }			//	12 Bit
-	else				{	OMOD_BITw(1);	RDES_BITw(0); }			//	10 Bit
-
-	RDES_CH_MODw(MipiLane);
-	LVDS_LSBw(IsLsbFirst);
-	RDES_PNSELw(PNSel);
-	MIPI_ECC_ONw(UseEcc);
-	MIPI_WCCHK_LONw(UseWcl);
-	MIPI_WCCHK_FONw(UseWcf);
-	MIPI_WCCHK_FEONw(UseWcfe);
-	MIPI_IMG_MCNTw(MipiImgPhase);
-//	LSYNCM_SELw(MipiClkPhase);
-
-	MIPI_HLOCK_POSw(MipiHsyncOfs);				//	Very Important!!! For Image Phase
-
-	MIPI_LAT_AENw(1);
-}
-
 
 //	ClkSel	->	Select Sensor Operation Clock
 //	SENS_148M	0 : 148.5 MHz
@@ -184,7 +123,7 @@ void Isp_SensorPowerOn(BOOL OnOff, UINT Clk)
 //							DIFF_EDGE (1)
 //	BOOL IsUseAsync		->	NO_USE_AUTOSYNC (0)
 //						->	USE_AUTOSYNC 	(1)
-void Isp_Parallel_Config(BOOL OnOff/*, BOOL IsSlave*/, BOOL IsUseExtClk, BOOL IsClkDdr, BYTE ClkDly/*, BOOL HSyncPol, BOOL VSyncPol, BOOL SyncMode, BOOL IsUseAsync*/)
+void Isp_Parallel_Config(BOOL OnOff/*, BOOL IsSlave*/, BOOL IsUseExtClk, BOOL IsClkDdr, BYTE ClkDly/*, BOOL HSyncPol, BOOL VSyncPol, BOOL SyncMode, BOOL IsUseAsync*/, BYTE BitMode)
 {
 
 	PCLK_PDw(OnOff);
@@ -203,11 +142,15 @@ void Isp_Parallel_Config(BOOL OnOff/*, BOOL IsSlave*/, BOOL IsUseExtClk, BOOL Is
 	if(IsClkDdr==PARA_CLK_SDR)		{	IDDR_ONw(1);	ISDR_OPw(1);	}
 	else							{	IDDR_ONw(1);	ISDR_OPw(0);	}
 
+	DDRFF_RSw(1);
+
 //	POL_HSIw(HSyncPol);
 //	POL_VSIw(VSyncPol);
 
 //	VSYN_NAONw(SyncMode);
 //	ASYNC_ONw(IsUseAsync);
+
+	PDI_MODw(BitMode);
 
 	PCLK_DLYw(ClkDly);
 }
@@ -219,7 +162,7 @@ void Isp_Parallel_Config(BOOL OnOff/*, BOOL IsSlave*/, BOOL IsUseExtClk, BOOL Is
 //	ISP_CLK_PCLK		3   //	SS_CKI Input
 //	ISP_CLK_PCLK_DIV2	4   //	SS_CKI Input 1/2 Divided Clock
 //	ISP_CLK_PLL_DIV0	5	//	ISP PLL Output Adjust CLock 0
-void Isp_PreClk_Config(BYTE Clk)
+void Isp_PreClk_Config(BYTE Clk, BOOL Usefrc)
 {
 	BT_PCK_PDw(0);	FPCK_PDw(0);
 
@@ -229,6 +172,15 @@ void Isp_PreClk_Config(BYTE Clk)
 	FPCK_SELw(Clk);
 
 	BT_PCK_PDw(1);	FPCK_PDw(1);
+
+	if(Usefrc)	{
+		YCW_DCK2_PDw(0);
+		if(Clk==ISP_CLK_PCLK_DIV2)		{ YCW_DCK2_SELw(7); }
+		else if(Clk==ISP_CLK_PLL_DIV0)	{ YCW_DCK2_SELw(12); }
+		else							{ YCW_DCK2_SELw(Clk); }
+		YCW_DCK2_PDw(1);	// WDR 사용 시 필요
+	}
+	else YCW_DCK2_PDw(0);
 }
 
 

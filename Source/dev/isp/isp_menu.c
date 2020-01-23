@@ -617,7 +617,7 @@ void menu_pos(const PEXCH* Title, int MenuNum, const PEXCH** Str)
 //-------------------------------------------------------------------------------------------------
 void InitMenu(void)
 {	// Initiate Menu
-	UartTxStrNoIRQ("Menu Init... ");
+	INIT_STR("Menu Init...");
 
 	UINT i;
 	UINT nResetKey = 0;
@@ -638,7 +638,7 @@ void InitMenu(void)
 	if (((WORD)((MSP(MP_START)<<8)|MSP(MP_END))!=(WORD)MN_DATA_ID)||nResetKey) {	// Parameter reset condition
 		MenuResetSet(1);
 		gbMnParSaveChk = 1;
-		UartTxStrNoIRQ("MENU SET PAR reset ");
+		INIT_STR("MENU SET PAR reset");
 	}
 #endif
 
@@ -646,7 +646,7 @@ void InitMenu(void)
 		UsrParReset();			// gbUsrParTbl[] 초기화 & UsrParCpy(gbUsrParTblSaved, gbUsrParTbl) 실행
 		gbUsrParSaveChk = 1;	// ROM 저장 실행
 
-		UartTxStrNoIRQ("MENU PAR reset ");
+		INIT_STR("MENU PAR reset");
     }
 }
 
@@ -764,7 +764,7 @@ void Menu(void)
 	// MENU - EXPOSURE - ISP_GAIN
 	MENU_SET( 4, ISP_GAIN, UP_ON,
 			ISP_GAIN,		MENU_BARn(UP_ON, , UP(IspGain), 0, 255, 1),
-			AE_CURRENT,		MENU_BARn(UP_ON, , UP(IspGainAeCur), 0, 128, 1),
+			AE_CURRENT,		MENU_BARn(UP_ON, , UP(IspGainAeCur), 0, 255, 1),
 			AE_POSITION,	MENU_BARn(UP_ON, , UP(IspGainAePos), 0, 128, 1),
 			RETURN,			MENU_ONEo(UP_ON, e, UP_ON, ))
 

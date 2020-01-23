@@ -10,6 +10,10 @@
 #define	ISP_MASTER		0
 #define	ISP_SLAVE		1
 
+//Parallel input Bit------------------------------------------------------------------
+#define	BIT10			0
+#define	BIT12TOBit12	1
+#define	BIT8			2
 
 //	Parallel Interface----------------------------------------------------------------
 #define	PARA_EXTER_CLK	0

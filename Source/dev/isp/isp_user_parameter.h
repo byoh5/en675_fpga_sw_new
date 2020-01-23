@@ -232,14 +232,8 @@ UP_SET(1, Sensor_ID, model_Sens, INIT_RUN, UP(Sensor_ID) = model_Sens; )/* Senso
 UP_SET(1, Sensor_Ctrl, model_Sens_Ctrl, INIT_RUN, UP(Sensor_Ctrl) = model_Sens_Ctrl; )/* Sensor Control Interface, 0 : SPI, 1 : TWI (Read Only) */\
 UP_SET(1, Sensor_FPS, model_Sens_Fps, INIT_RUN, UP(Sensor_FPS) = model_Sens_Fps; )/* Sensor Initial FPS (Read Only) */\
 UP_TITLE(SENSOR)/*--　SENSOR　--*/\
-UP_SET(1, LvdsPNSel, SP(LvdsPNSel), , RDES_PNSELw(UP(LvdsPNSel)); )/* 0 ~ 1,  0 : Negative Start, 1 : Positive Start,  입력 data의 latch start point를 설정 */\
 UP_SET(1, LckDly, SP(LckDly), ,  LCK_DLYw(UP(LckDly)); )/* 0 ~ 7,  Lvds/Mipi input clock delay adjust */\
-UP_SET(1, LdiDly0, SP(LdiDly0), , LDIDLY0w(UP(LdiDly0)); )/* 0 ~ 7,  Lvds/Mipi channel 0 delay adjust */\
-UP_SET(1, LdiDly1, SP(LdiDly1), , LDIDLY1w(UP(LdiDly0)); )/* 0 ~ 7,  Lvds/Mipi channel 1 delay adjust */\
-UP_SET(1, LdiDly2, SP(LdiDly2), , LDIDLY2w(UP(LdiDly0)); )/* 0 ~ 7,  Lvds/Mipi channel 2 delay adjust */\
-UP_SET(1, LdiDly3, SP(LdiDly3), , LDIDLY3w(UP(LdiDly0)); )/* 0 ~ 7,  Lvds/Mipi channel 3 delay adjust */\
 UP_SET(1, MipiClkPhase, SP(MipiClkPhase), , LSYNCM_SELw(UP(MipiClkPhase)); )/* 0 ~ 3,  Select Mipi 1/4 Clock Phase 0, 1, 2, 3, image align에 영향을 주어 영상을 보면서 이 값을 조절해야 함 */\
-UP_SET(2, MipiHSyncOfs, SP(MipiHSyncOfs), , MIPI_HLOCK_POSw(UP(MipiHSyncOfs)); )/* 0 ~ 0x3fff,  Very Important!!! For Image Phase */\
 UP_SET(2, PreHSyncOfs, SP(PreHSyncOfs), , HLOCKI_POSw(UP(PreHSyncOfs)); )/* 0 ~ 0x1fff,  Pre module Horizontal Sync Offset, Hsp 인자로 Image 위치가 맞지 않을때 Sync의 위치를 이동하여 image 위치를 맞추는데 사용 */\
 UP_SET(2, PreVSyncOfs, SP(PreVSyncOfs), , VLOCKI_POSw(UP(PreVSyncOfs)); )/* 0 ~ 0xfff,  Pre module Vertical Sync Offset, Vsp 인자로 Image 위치가 맞지 않을때 Sync의 위치를 이동하여 image 위치를 맞추는데 사용 */\
 UP_SET(1, PreHSyncPol, SP(PreHSyncPol), , POL_HSIw(UP(PreHSyncPol)); )/* 0 ~ 1,  0 : Falling position, 1 : Rising position, Pre module Horizontal sync input polarity */\
@@ -305,8 +299,8 @@ UP_SET(1, ShtMode, UP_SHT_NORMAL, , ShutterMenuGet(); )/* IRIS:ELC/MANUAL/AUTO &
 UP_SET(1, Dss, UP_DSS_OFF, , )/* SEMS-UP : 0 = OFF, 1 = X2, 2 = X4, 3 = X8, 4 = X16, 5 = X32, 6 = X64(Must be set OUTPUT SET→MODE:60P_NOMAL｜30P_WDR｜60P_DNR) */\
 UP_SET(1, Agc, 91, , )/* AGC MAX : 0 ~ 255 */\
 UP_SET(1, AgcMin, 0, , )/* AGC MIN : 0 ~ 255 */\
-UP_SET(1, IspGain, 100, , )/* ISP GAIN MAX : 0 ~ 255 */\
-UP_SET(1, IspGainAeCur, 96, , )/* AE CURRENT BY ISP GAIN : 0 ~ 128 */\
+UP_SET(1, IspGain, 150, , )/* ISP GAIN MAX : 0 ~ 255 */\
+UP_SET(1, IspGainAeCur, 112, , )/* AE CURRENT BY ISP GAIN : 0 ~ 255, 32 = x1, 96 = x3, 112 = x3.5, 128 = x4 */\
 UP_SET(1, IspGainAePos, 0, , )/* AE CURRENT BY ISP GAIN : 0 ~ 128 */\
 UP_SET(1, ExtraGain, 164, , )/* EXTRA GAIN MAX : 0 ~ (255-AGC_MAX) */\
 UP_TITLE(MENU_BACKLIGHT)/*--　MENU:　BACKLIGHT　--*/\
@@ -424,7 +418,7 @@ UP_SET(1, DEFECT_SPOT_GA, 0x80, , )/* Spot pattern area gain. (0x40 = x0.5, 0x80
 UP_SET(1, DEFECT_TSEL, 0, INIT_RUN, DF_TSEL_LEw(UP(DEFECT_TSEL)); DF_TSEL_SE0w(UP(DEFECT_TSEL)); )/* Select test image in core for directional defect correction. (VLOCKI)  "0" : Normal operation  "1" : Difference values for isolated points  "2" : Image before correction  "3" : Complete correction image (100% correction image except weight).  "4" : Defect pattern detection value */\
 UP_TITLE(MENU_IMAGE)/*--　MENU:　IMAGE　--*/\
 UP_SET(1, Adnr2D, 8, , )/* 2D DNR : 0 ~ 16, 0 = OFF, 2 = LOW, 4 = MIDDLE, 8 = HIGH */\
-UP_SET(1, Adnr3D, UP_4sOFF/*UP_4sMID*/, , )/* 3D DNR : 0 = OFF, 1 = LOW, 2 = MIDDLE, 3 = HIGH */\
+UP_SET(1, Adnr3D, UP_4sHI/*UP_4sOFF*//*UP_4sMID*/, , )/* 3D DNR : 0 = OFF, 1 = LOW, 2 = MIDDLE, 3 = HIGH */\
 UP_SET(1, DnrIncrease, UP_OFF, , )/* 3D DNR  → INCR.BY AGC : 0 = OFF, 1 = ON */\
 UP_SET(1, Sharpness, 10/*5*/, , )/* SHARPNESS : 0 ~ 10 */\
 UP_SET(1, ShpSmallEdge, 128, , )/* SHARPNESS → SMALL EDGE : 0 ~ 255 */\
@@ -436,8 +430,8 @@ UP_SET(1, Gamma, UP_GAMMA_075/*UP_GAMMA_055*/, , )/* GAMMA : 0 = 0.45, 1 = 0.55,
 UP_SET(1, GammaDay, UP_GAMMA_055, , )/* GAMMA DAY : 0 = 0.45, 1 = 0.55, 2 = 0.65, 3 = 0.75 */\
 UP_SET(1, GammaNgt, UP_GAMMA_045, , )/* GAMMA NIGHT : 0 = 0.45, 1 = 0.55, 2 = 0.65, 3 = 0.75 */\
 UP_SET(1, GammaWdr, UP_GAMMA_045, , )/* GAMMA WDR : 0 = 0.45, 1 = 0.55, 2 = 0.65, 3 = 0.75 */\
-UP_SET(1, Flip, UP_ON, INIT_RUN, Flip(); )/* FLIP : 0 = OFF, 1 = ON */\
-UP_SET(1, Mirror, UP_ON, INIT_RUN, if(UP(Mirror)<2) { SensMirror(UP(Mirror)); } )/* MIRROR : 0 = OFF, 1 = ON */\
+UP_SET(1, Flip, UP_OFF, INIT_RUN, Flip(); )/* FLIP : 0 = OFF, 1 = ON */\
+UP_SET(1, Mirror, UP_OFF, INIT_RUN, if(UP(Mirror)<2) { SensMirror(UP(Mirror)); } )/* MIRROR : 0 = OFF, 1 = ON */\
 UP_TITLE(MENU_PRIVACY)/*--　MENU:　PRIVACY　--*/\
 UP_SET(1, PvcOn, UP_OFF, , PrivacyBox(); )/* PRIVACY : 0 = OFF, 1 = ON */\
 UP_SET(1, PvcFormat, 1, , PrivacyBox(); )/* PRIVACY:ON → MASK MODE : 0 = FILL, 1 = FORMAT */\

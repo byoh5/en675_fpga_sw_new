@@ -188,6 +188,7 @@ volatile int giTxOn = 0;
 //volatile BYTE* gpbTxCont = 0;
 //volatile BYTE* gpbTxRegOn = 0;
 //volatile int giTxIrqHold = 0;
+volatile int giTxIrqRdy = 0;
 
 //-------------------------------------------------------------------------------------------------
 // Functions
@@ -289,6 +290,8 @@ void UartDebugTxIrq(void *ctx)
 				gtUartQue.pbTxTail = gtUartQue.bTxQue;
 			}
 			gtUartQue.wTxLen--;
+
+			giTxIrqRdy = 1;
 
 			//if(gpbTxCont == gtUartQue.pbTxTail) gpbTxCont = 0;
 
@@ -467,7 +470,7 @@ void UartTxStrEx(const UINT nCH, const char* apbStr0, const char* apbStr1, UINT 
 {
 	if(anAddNewLine) anLen += 2;
 
-	if(nCH < UART_CNT) {
+	if(nCH < UART_CNT) {	// Polling operation
 #if 0
 		//while(gtUartQue.wTxLen || UART0_TX_IRQ_EN) { NOP4 };
 		if(gtUartQue.wTxLen || UART0_TX_IRQ_EN) {
@@ -478,7 +481,7 @@ void UartTxStrEx(const UINT nCH, const char* apbStr0, const char* apbStr1, UINT 
 			SetSt(nSt,&nStNum);
 		}
 #else
-		while(gtUartQue.wTxLen || UartTxGetIrqEn(DEBUG_UART_NUM)) WaitXus(10);
+		while(giTxIrqRdy && (gtUartQue.wTxLen || UartTxGetIrqEn(DEBUG_UART_NUM))) WaitXus(10);
 		/*if(gtUartQue.wTxLen && UartTxGetIrqEn(DEBUG_UART_NUM)) {
 			giTxIrqHold = 1;
 			while(giTxIrqHold != 2) WaitXus(10);
@@ -503,7 +506,7 @@ void UartTxStrEx(const UINT nCH, const char* apbStr0, const char* apbStr1, UINT 
 			if(gtUartQue.wTxLen) UartTxSetIrqEn(DEBUG_UART_NUM, ENX_ON);
 		}*/
 	}
-	else {
+	else {					// Interrupt operation
 		UART_TX_IRQ_STA
 
 		UartTxIrq(PC_STX);

@@ -1113,7 +1113,7 @@ void ISRT AceGmgnSet(const BYTE abAceGmgnMin)
 	#define ACE_GMGN_MAX	bACE_GMGN_MAX
 
 	const int iAgcCtrlCmp = (giAgcCtrl > ((giPreAgcMax + giIspAgcMax)<<AGC_VAL_GAB)) ? (giIspAgcMax<<AGC_VAL_GAB) :
-							(giAgcCtrl < (giPreAgcMax<<AGC_VAL_GAB)) ? 0 : giAgcCtrl - (giPreAgcMax<<AGC_VAL_GAB) ;
+							(giAgcCtrl > (giPreAgcMax<<AGC_VAL_GAB)) ? giAgcCtrl - (giPreAgcMax<<AGC_VAL_GAB) : 0 ;
 
 	const int bACE_GMGN = (giIspAgcMax) ? ((iAgcCtrlCmp>>8) * (ACE_GMGN_MAX - ACE_GMGN_MIN)) / ((giIspAgcMax<<(AGC_VAL_GAB-8))) : 0;
 
@@ -1130,7 +1130,7 @@ void ISRT AceGmgnSet(const BYTE abAceGmgnMin)
 
 int ISRT AceCurGet(const int aiCur)
 {
-	return (giIspAgcMax) ? (gLAceCurR * aiCur) / ((int64)(giIspAgcMax<<AGC_VAL_GAB)*255*32) : 0;
+	return (giIspAgcMax) ? (gLAceCurR * aiCur) / ((int64)(giIspAgcMax<<AGC_VAL_GAB)*255*32) : 0;	// 255 : ACE_GMGNw 최대값,  32 : UP(IspGainAeCur)가 32이면 1배이고 96이면 3배
 }
 
 
@@ -1754,6 +1754,7 @@ void ISRT LibWdrCtrl(const UINT SMAX)
 //			DebugDisp(1, Dec, "WGT ", 1, 24, WGT  	)
 	}
 
+#if 1
 	TMG_TBL00w(nTblToneMapCurY[ 0]);
 	TMG_TBL01w(nTblToneMapCurY[ 1]);
 
@@ -1761,6 +1762,7 @@ void ISRT LibWdrCtrl(const UINT SMAX)
 
 		SetIsp(TMG_BASE+i, (nTblToneMapCurY[j]<<20)|(nTblToneMapCurY[j+1]<<10)|(nTblToneMapCurY[j+2]));
 	}
+#endif
 }
 
 //                     Gamma: 0.45  0.5   0.55  0.6   0.65  0.7   0.75

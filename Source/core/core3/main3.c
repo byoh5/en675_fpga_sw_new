@@ -13,11 +13,13 @@ void main_3(int cpu_id)
 	SYS_REG0 = 0;
 	while(SYS_REG0 == 0x0) {} // Wait for CPU0 to be ready.
 
+	write_csr(mstatus, MSTATUS_FS); // Enable
+
 	enx_externalirq_init_cpu3();
 
 #if defined(__SENSOR__)
 
-#if 0	// ddr write test
+  #if 0	// ddr write test
 	#define DDR0_BASE	0x80000000
 	#define DDR1_BASE	0x90000000
 
@@ -64,9 +66,9 @@ void main_3(int cpu_id)
 	IM_GO0w(1);
 
 	while(1);
-#else
+  #else
 	Isp_init();
-#endif
+  #endif
 
 	//VIRQI_EN_Tw(1);
 	//CLI_VLOCKI_Tw(1);		// TODO KSH> 컴파일 문제?
@@ -80,7 +82,7 @@ void main_3(int cpu_id)
 	TimerStart(TIMER_IRQ_CH);
   #endif
 
-	printf("--------- Main Loop Start --------- \r\n");
+	INIT_STR("--------- Main Loop Start ---------");
 
 	while (1)
 	{
@@ -105,16 +107,16 @@ void main_3(int cpu_id)
 	}
 #else
 	while (1) {
-#ifdef __ECM_STRING__
+  #ifdef __ECM_STRING__
 		Comm();
-#endif
+  #endif
 		if (SYS_REG0 == 0xC) {
-#ifdef __USE_LED1__
+  #ifdef __USE_LED1__
 			GpioSetOut(GPIO_LED1, GPIO_OUT_LOW);
-#endif
-#ifdef __USE_LED2__
+  #endif
+  #ifdef __USE_LED2__
 			GpioSetOut(GPIO_LED2, GPIO_OUT_LOW);
-#endif
+  #endif
 			//_printf("%d:%lu\r\n", cpu_id, *mtime);
 			WaitXms(100);
 			SYS_REG0 = 0xA;

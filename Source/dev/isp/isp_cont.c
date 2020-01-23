@@ -333,7 +333,7 @@ void ISRT AceDefog(void)
 
 	if (gbWdrOn!=WDR_OFF) {									// WDR on	// TODO KSH ◆ WDR - AceDefog()에서 Line WDR 설정을 Frame WDR로 하는게 더 좋은지 확인 필요
 
-		ACE_BPw(0);			// Block bypass ON
+		ACE_BPw(0);			// Block bypass OFF
 
 		bAceGmgnMin = 0;
 //		ACE_DTHw(0x4);
@@ -381,7 +381,7 @@ void ISRT AceDefog(void)
 		}
 		else {														// all off condition
 
-			ACE_BPw(1);		// Block bypass ON
+			ACE_BPw(UP(IspGain)==0/*1*/);		// Block bypass ON
 
 			bAceGmgnMin = 0;
 

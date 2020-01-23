@@ -176,7 +176,7 @@ void InitAwb(void)
 			gnAwbRGainIIR = giAwbPrstTbl[2];
 			gnAwbBGainIIR = giAwbPrstTbl[3];
 
-			UartTxStr("AWB : Set to preset values.");
+			INIT_STR("AWB : Set to preset values.");
 	}
 	else {	// Press 모드 Data가 없는 경우 초기값 설정
 		giAwbPrstTbl[0] = giAwbDbIIR;
@@ -184,7 +184,7 @@ void InitAwb(void)
 		giAwbPrstTbl[2] = (int)gnAwbRGainIIR;
 		giAwbPrstTbl[3] = (int)gnAwbBGainIIR;
 
-		UartTxStr("AWB : Set to default values.");
+		INIT_STR("AWB : Set to default values.");
 	}
 
 	//TxStrDec("Db:", iDbSum, 4);
@@ -276,12 +276,12 @@ void ISRT Awb(void)
 #if 1//model_ISP_Save == 1
 	static BYTE bInitAwb = /*(model_ISP_Save == 1) ? 3 :*/ 1;
 	if(bInitAwb) {
-		//TxStrDec("AWB X:", iDgSum / (int)nTcnt, 4);
+		//INIT_STR_DEC("Awb X:", iDgSum / (int)nTcnt, 4);
 	}
 	else {
 		static BYTE bDispCnt = 5;
 		if(bDispCnt) {
-			//TxStrDec("AWB O:", iDgSum / (int)nTcnt, 4);
+			//INIT_STR_DEC("Awb O:", iDgSum / (int)nTcnt, 4);
 			bDispCnt--;
 		}
 	}
@@ -587,6 +587,29 @@ void ISRT Awb(void)
 // -------------------------------------------------------------------------------
 // AWB State Auto Save
 	if(bInitAwb) bInitAwb--;
+
+
+	extern int RR_GAIN;
+	extern int RG_GAIN;
+	extern int RB_GAIN;
+	extern int GR_GAIN;
+	extern int GG_GAIN;
+	extern int GB_GAIN;
+	extern int BR_GAIN;
+	extern int BG_GAIN;
+	extern int BB_GAIN;
+	extern  void LibAwbWdrRGB (int, int, int);
+
+	RR_GAIN = iRcm0;
+	RG_GAIN = iRcm1;
+	RB_GAIN = iRcm2;
+	GR_GAIN = iGcm0;
+	GG_GAIN = iGcm1;
+	GB_GAIN = iGcm2;
+	BR_GAIN = iBcm0;
+	BG_GAIN = iBcm1;
+	BB_GAIN = iBcm2;
+	LibAwbWdrRGB (1, (gnTdnChkOut==TDN_NIT), 0);
 
 //-------------------------------------------------------------------------------------------------
 // Monitoring

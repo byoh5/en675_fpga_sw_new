@@ -38,13 +38,10 @@ extern void Isp_Ddr_Cong(void);
 //-------------------------------------------------------------------------------------------------
 extern void Isp_SYNC_CODE(WORD awC0, WORD awC1, WORD awC2, WORD awC3_0, WORD awC3_1, WORD awC3_2, WORD awS0C3_0, WORD awS0C3_1, WORD awS0C3_2, WORD awS1C3_0, WORD awS1C3_1, WORD awS1C3_2);
 extern void Isp_SDesPowerOn(BOOL OnOff, BOOL IsMipi, BYTE MipiClkPhase);
-extern void Isp_SDesDelay(BYTE Lck, BYTE Ldi0, BYTE Ldi1, BYTE Ldi2, BYTE Ldi3);
-extern void Isp_SDesPosition(UINT LvdsHRpos, UINT LvdsVRpos, UINT LvdsHw, UINT LvdsVw);
-extern void Isp_Lvds_Config(BYTE LvdsBit, BYTE LvdsLane, BOOL IsLsbFirst, BOOL PNSel, BOOL SofNo);
-extern void Isp_Mipi_Config(BYTE MipiBit, BYTE MipiLane, BOOL IsLsbFirst, BOOL PNSel, WORD MipiHsyncOfs, BOOL UseEcc, BOOL UseWcl, BOOL UseWcf, BOOL UseWcfe, BYTE MipiImgPhase);
+extern void Isp_SDesDelay(BYTE Lck);
 extern void Isp_SensorPowerOn(BOOL OnOff, UINT Clk);
-extern void Isp_Parallel_Config(BOOL OnOff/*, BOOL IsSlave*/, BOOL IsUseExtClk, BOOL IsClkDdr, BYTE ClkDly/*, BOOL HSyncPol, BOOL VSyncPol, BOOL SyncMode, BOOL IsUseAsync*/);
-extern void Isp_PreClk_Config(BYTE Clk);
+extern void Isp_Parallel_Config(BOOL OnOff/*, BOOL IsSlave*/, BOOL IsUseExtClk, BOOL IsClkDdr, BYTE ClkDly/*, BOOL HSyncPol, BOOL VSyncPol, BOOL SyncMode, BOOL IsUseAsync*/, BYTE BitMode);
+extern void Isp_PreClk_Config(BYTE Clk, BOOL Usefrc);
 extern void Isp_PreSync_Config(BOOL IsSlave, UINT Htw, UINT Vtw, UINT HsyncOfs, UINT VsyncOfs, UINT Hsp, UINT Vsp, UINT Hw, UINT Vw, BOOL IsASync, BOOL IsNSync, BOOL HSyncPol, BOOL VSyncPol);
 extern void Isp_PostSync_Config(BOOL OSyncMode, BOOL ExSyncSel, UINT Htw, UINT Vtw, UINT HsyncOfs, UINT VsyncOfs, UINT Hsp, UINT Vsp, UINT Hw, UINT Vw, BYTE OCSel);
 extern void Isp_PostClk_Config(BYTE Clk);
@@ -70,7 +67,6 @@ extern void Isp_Dout_Clock1_Config(BOOL Dcko, BYTE DckoClk, BYTE Dly, BOOL ClkoI
 extern void Isp_Dout_Clock2_Config(BOOL Dcko, BYTE DckoClk, BYTE Dly, BOOL ClkoInv);
 extern void Isp_Dout0_Sync_Config(UINT Htw, UINT HSyncOfs, UINT VSyncOfs, UINT Hsp, UINT Vsp, UINT Hw, UINT Vw);
 extern void Isp_Dout1_Sync_Config(UINT Htw, UINT HSyncOfs, UINT VSyncOfs, UINT Hsp, UINT Vsp, UINT Hw, UINT Vw);
-extern void Isp_Ddr_Init(BYTE IspFrcMode);
 extern void Isp_WrCh0_Config(UINT Path, SHORT Hw, BYTE WrSync, BOOL Color, BOOL Intl, BYTE Clk, BOOL OnOff);
 extern void Isp_WrCh1_Config(BYTE Path, SHORT Hw, BYTE WrSync, BOOL Color, BOOL Intl, BYTE VlcMode, BYTE Clk, BOOL IsFrc, BYTE FrcPage, BYTE Rdock, BYTE RdCh, BOOL OnOff);
 extern void Isp_WrCh2_Config(BYTE Path, SHORT Hw, BYTE WrSync, BOOL Color, BOOL Intl, BYTE VlcMode, BYTE Clk, BOOL IsFrc, BYTE FrcPage, BYTE Rdock, BYTE RdCh, BOOL OnOff);
@@ -186,6 +182,7 @@ extern void IF_Funcs(void);
 extern void isp_main(void);
 extern void OutMode(void);
 
+#define INIT_DELAY(T)	WaitXms(34*T)/*Wait_VLOCKO_M(T)*/	// Uint of T is 1/30 sec
 
 //*************************************************************************************************
 // TDN

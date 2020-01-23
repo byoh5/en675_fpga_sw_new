@@ -1340,6 +1340,7 @@ typedef float float32;
 
 #define _itof(I)		((float32)(I))
 #define _fmul(F1,F2)	((F1)*(F2))
+#define _fdiv(F1,F2)	((F1)/(F2))
 #define _fadd(F1,F2)	((F1)+(F2))
 #define _ftoi(F)		((int)(F))
 //#define TOFLOAT32(f)	f				// TODO KSH> AWB 초기화 코드 최적화 가능?

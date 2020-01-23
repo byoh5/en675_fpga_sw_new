@@ -605,8 +605,6 @@ void LCD_FR_TFT035_6_Init(void)
 void JPG_Init(void)
 {
 	SYNC_UPw(1);									//	Sync_up
-	JPG_HSELw(0);									//	Select ISP Post HLOCK
-	JPG_HONw(1);
 
 	JPG_ZRL_CUTw(0);
 	JPG_RST_IVLw(0);
@@ -695,8 +693,6 @@ void JPG_Decoding_Display_Set(void)
 	//	Down Scale Setting
 	CDS0_VISELw(5);
 	CDS0_ISELw(0x1b);
-	CDS0_HONw(1);
-	CDS0_HSELw(0x5);
 	DS0_KXY_ONw(0);
 	DS0_HLPFw(2);
 	DS0_VLPFw(2);
@@ -718,8 +714,6 @@ void JPG_Decoding_Display_Set(void)
 	YCW_CK2_SELw(2);
 	YCW_CK2_PDw(1);
 	//	Read Channel Setting
-	YCR2_HONw(1);
-	YCR2_HLOCKI_SELw(6);
 	IM_RFRC2_ONw(1);
 	IM_RON2w(1);
 	IM_CLRREN2w(1);
@@ -757,8 +751,6 @@ void JPG_Decoding_Display_Set(void)
 	JDEC_CK_SELw(1);								//	JPEG Decoder Clock 74.25 MHz
 	JDEC_CK_PDw(1);
 
-	YCR3_HLOCKI_SELw(5);							//	Select RYC Channel 1 HLOCK Sync
-	YCR3_HONw(1);
 	JPG_IVSELw(5);									//	Decoding Sync
 	JPG_ISELw(0x19);
 

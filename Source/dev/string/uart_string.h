@@ -49,5 +49,10 @@ extern void UartTxStrCh(const UINT nCH, const char* apbStr0);
 #define UartTxStrDec(STR,VAL,LEN)		UartTxStrDecCh(INVALID_UART_NUM, STR, VAL, LEN)
 #define UartTxStrDecNoIRQ(STR,VAL,LEN)	UartTxStrDecCh(DEBUG_UART_NUM, STR, VAL, LEN)
 
+#define INIT_STR			UartTxStrNoIRQ
+#define INIT_STR_DEC		UartTxStrDecNoIRQ
+#define INIT_STR_HEX		UartTxStrHexNoIRQ
+#define INIT_STR_SENSOR		{void printf_SensorSetting(void); printf_SensorSetting();}
+
 
 #endif /* __UART_STRING_H__ */

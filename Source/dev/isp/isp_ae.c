@@ -466,6 +466,9 @@ void InitAe(void)
 
 #if WDR_OLD == 1
 	WDR_MOTION_ONw(0/*UP(AE_WDR_MOTION_SEL)*/);		// 150615 LH
+#else
+	WDR_LGAINw(0x100);
+	WDR_STEPw(4);
 #endif
 
 #if (model_Iris==4)
@@ -675,7 +678,7 @@ void ISRT AeODM(void)
 	}
 
 	if(UP(BackLight) == UP_BL_WDR/*gbWdrOn!=WDR_OFF*/) {		// for Short in WDR
-		LBUFS0_ONw(1);
+		DOL_LBUFS0_ONw(1);
 
 		AE3_WIN_CHw(1);
 		AE3_HSPw(AE2_HSPr);
@@ -690,7 +693,7 @@ void ISRT AeODM(void)
 		AE4_VEPw(AE2_VEPr);*/
 	}
 	else {											// for All Area & Original Clip
-		LBUFS0_ONw(0);
+		DOL_LBUFS0_ONw(0);
 
 		AE3_WIN_CHw(0);
 		AE_AREA_INIT(3)
@@ -1344,7 +1347,7 @@ void ISRT AeAdv(void)
 	static BYTE bInitAe = /*(model_ISP_Save == 1) ? 3 :*/ 2;
 	if(bWdrOnCnt) bInitAe = bWdrOnCnt;
 	if(bInitAe) {
-		UartTxStrDec("Ae X:", iCur, 4);
+		INIT_STR_DEC("Ae X:", iCur, 4);
 		//bInitAe--;
 		//giCurAgc = AGC2POS(giAgcVal);
 		//AeSHT0(ParAe(PA_SHT_MANUAL) ? (int)ParAe(PA_SHT_MANUAL) : giShtVal, (UP(Shutter)==UP_SHUT_MNL), (gnAe Vtw>>UP(ShutSpd)) );
@@ -1354,7 +1357,7 @@ void ISRT AeAdv(void)
 	else {
 		static BYTE bDispCnt = 5/*10*/;
 		if(bDispCnt) {
-			UartTxStrDec("Ae O:", iCur, 4);
+			INIT_STR_DEC("Ae O:", iCur, 4);
 			bDispCnt--;
 		}
 	}
@@ -1405,7 +1408,8 @@ void ISRT AeAdv(void)
 												 (int)((((AGC_POS_MAX-AE_GAIN_TGT_OFST)*UP(Agc))/255)+AE_GAIN_TGT_OFST);
 			giPreAgcMax = POS2AGC(iPreAgc);
 
-			giIspAgcMax = POS2AGC(((AGC_POS_MAX>>1)*UP(IspGain))/255);
+			// 180:AGC 제어 속도에 영향  IMX291에서 UP(IspGainAeCur) = 128(x4)일 때, UP(IspGain)=255 -> Sensor AGC 60 -> AGC position 180
+			giIspAgcMax = POS2AGC((180*UP(IspGain))/255);
 
 			const int iAgcLmt = ((UP(Agc)+UP(ExtraGain))>=255) ? (int)AGC_POS_MAX :
 												 (int)((((AGC_POS_MAX-AE_GAIN_TGT_OFST)*(UP(Agc)+UP(ExtraGain)))/255)+AE_GAIN_TGT_OFST);
@@ -1450,8 +1454,6 @@ void ISRT AeAdv(void)
 		if(bInitAe) goto AeCtrl;
 
 	// Status manage ----------------------------------------------------------------------------------------------------------------------------
-		//if(gbWdrOn!=WDR_FRAME) GrpAe(GA_ERR_DAY_ORI) = iErr;
-
 		if(gbAeStg==AE_STG_IRS) {
 			if(bIrsOn) {
 				iErr = ErrNor(iErr, iCur, 0, 1, 0, 0);
@@ -1499,8 +1501,8 @@ void ISRT AeAdv(void)
 		//	iAgcSpd >>= NO_EST_SPD_DOWN_BIT;
 		//}
 
-		const BYTE BRIGHT_ON = iErr > iErrMgn;
-		const BYTE DARKEN_ON = iErr < -iErrMgn;
+		const BYTE BRIGHT_ON = iErr > iErrMgn;		// Tgt > Cur 인 경우, Cur 증가해야 함
+		const BYTE DARKEN_ON = iErr < -iErrMgn;		// Tgt < Cur 인 경우, Cur 감소해야 함
 
 		if(gbWdrOn!=WDR_FRAME) GrpAe(GA_ERR_DAY_ORI) = 0;
 
