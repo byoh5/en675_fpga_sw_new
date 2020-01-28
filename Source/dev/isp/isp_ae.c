@@ -467,6 +467,8 @@ void InitAe(void)
 #if WDR_OLD == 1
 	WDR_MOTION_ONw(0/*UP(AE_WDR_MOTION_SEL)*/);		// 150615 LH
 #else
+	//RGB_WGEN_RB_INVw(1);
+	WDR_CSELw(1);
 	WDR_LGAINw(0x100);
 	WDR_STEPw(4);
 #endif
@@ -1239,6 +1241,8 @@ void ISRT AeAdv(void)
 
 	/*const int*/ iTgtMin = (bWdrOn) ? iTgtMax : TgtMinGet(iTgtMax, UP(BrightnessMin)) ;
 
+	iTgt = TgtGet(iTgtMax, iTgtMin, gbAeStg);	// WDR 일 때는 실제 사용되지 않으나, iTgtVal 초기 설정을 위해 실행
+
 
 	const int iErrMgn = ErrMgn(AE_ERR_MGN, AE_ERR_MGN>>1, AE_ERR_MIN, 16);
 
@@ -1311,8 +1315,6 @@ void ISRT AeAdv(void)
 
 		iCur = udiv4x((nAe2SlicCnt*nAe2SlicLvl) + nAe2Sum1 + (iAe2ClipCnt*nAe2ClipLvl), nAe2PxCnt, 0);
 		iCur += AceCurGet(iCur);
-
-		iTgt = TgtGet(iTgtMax, iTgtMin, gbAeStg);
 
 		iErr = iTgt - iCur;
 

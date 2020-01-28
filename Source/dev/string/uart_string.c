@@ -703,33 +703,34 @@ void UartRxAddr(const int aiWrite)
 		GetIsp(wAddr))
 
 #ifdef __SENSOR__
-	SET_ADDR(BASE_SENS, BASE_EN331,		// Sensor : 0x4000 ~ 0x4fff
-		// Sensor Write Code
-		UartTxStrHexNoIRQ("SetSens:", wAddr, 2);
-		UartTxStrHexNoIRQ("Data:", gnRxData, 8);
-	#if model_Sony || model_Omni
-		SetSens(0x3000+wAddr, gnRxData);
-	#else
+	SET_ADDR(BASE_SENS, BASE_EN331,		// Sensor : 0x4000 ~ 0x5fff
 
+	#if model_Pana || model_Aptn
+
+	#elif SENS_IMX323
+		#define SENS_ADDR_OFS		((wAddr < 0x1000) ? 0x0 : 0x2000)
+	#elif model_Sony || model_Omni
+		#define SENS_ADDR_OFS		0x3000
+	#else
+		#define SENS_ADDR_OFS		0x3000
 	#endif
+
+		// Sensor Write Code
+		UartTxStrHexNoIRQ("SetSens:", SENS_ADDR_OFS+wAddr, 2);
+		UartTxStrHexNoIRQ("Data:", gnRxData, 8);
+		SetSens(SENS_ADDR_OFS+wAddr, gnRxData);
+
 	#if model_Aptn
 		WaitXus(20000);
 	#endif
 		,
 		// Sensor Read Code
-		UartTxStrHexNoIRQ("GetSens:", wAddr, 8);
+		UartTxStrHexNoIRQ("GetSens:", SENS_ADDR_OFS+wAddr, 8);
 		//UartTxStrHex("GetSens:", wAddr, 8);
 		//const UINT nBuf = GetSens(wAddr);
 		,
 
-	#if model_Pana || model_Aptn
-
-	#elif model_Sony || model_Omni
-		//GetSens((SENS_CONTROL_MODE) ? SENS_SONY_ID2_TWI : SENS_SONY_ID2, wAddr)
-		GetSens(0x3000+wAddr)
-	#else
-
-	#endif
+		GetSens(SENS_ADDR_OFS+wAddr)
 		/*nBuf*//*0x0*//* =Dummy */)
 #endif
 

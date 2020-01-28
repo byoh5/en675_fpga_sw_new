@@ -235,6 +235,7 @@ void ISRT Awb(void)
 
 	//if (WDR_ONr&&((LS_FLGr&0x00000001)==AeLONG))	return;		// WDR (process at Short and apply to Long)
 	//if (gbModeWdrOn_F&&((LS_FLGr&0x00000001)==AeLONG))	return;		// LH TMP
+	if((gbWdrOn==WDR_FRAME)&&(LS_FLGr==AeLONG))	return;
 
 #if AWB_CAPTURE_MODE
 	else if (gnAwbOdmCapOn) {
