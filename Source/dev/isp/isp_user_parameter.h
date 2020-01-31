@@ -211,11 +211,11 @@ STRING1(CUSTOM,		_B,"CUSTOM");
 
 #define USR_PAR_STYLE \
 /*                      IPC_INDOOR,      IPC_OUTDOOR,     CAR_REC,         ACTION_REC,      WDR,             LOW_BIT,         CUSTOM        */\
-UP_STYLE(Brightness,    5/*4*/,          6,               4,               4,               4,               4,               4              )\
+UP_STYLE(Brightness,    4,          6,               4,               4,               4,               4,               4              )\
 UP_STYLE(Adnr2D,        8,               4,               8,               8,               8,               8,               8              )\
 UP_STYLE(ShpBigEdge,    0x80,            0x40,            0x80,            0x80,            0x80,            0x80,            0x80           )\
 UP_STYLE(Gamma,         UP_GAMMA_075,    UP_GAMMA_055,    UP_GAMMA_075,    UP_GAMMA_075,    UP_GAMMA_075,    UP_GAMMA_075,    UP_GAMMA_075   )\
-UP_STYLE(Ace,        UP_4sLOW/*UP_4sHI*/,UP_4sOFF,        UP_4sHI,         UP_4sHI,         UP_4sHI,         UP_4sHI,         UP_4sHI        )
+UP_STYLE(Ace,        UP_4sMID/*UP_4sHI*/,UP_4sOFF,        UP_4sHI,         UP_4sHI,         UP_4sHI,         UP_4sHI,         UP_4sHI        )
 // ※IMX323의 경우 ACE HIGH 가 오히려 Color가 안좋음
 
 //*************************************************************************************************
