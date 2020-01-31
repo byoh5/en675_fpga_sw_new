@@ -482,7 +482,7 @@ void ISRT Awb(void)
 
 	#if 0
 		const BYTE bMpSaturationR = (gbWdrOn!=WDR_ OFF) ? ((40-10)>UP(SaturationR)) ? (UP(SaturationR)+10) : 40 : UP(SaturationR) ;
-		const BYTE bMpSaturationG = (gbWdrOn!=WDR_ OFF) ? ((40-10)>UP(Saturation))  ? (UP(Saturation) +10) : 40 : UP(Saturation)  ;
+		const BYTE bMpSaturationG = (gbWdrOn!=WDR_ OFF) ? ((40-10)>UP(SaturationG)) ? (UP(SaturationG)+10) : 40 : UP(SaturationG) ;
 		const BYTE bMpSaturationB = (gbWdrOn!=WDR_ OFF) ? ((40-10)>UP(SaturationB)) ? (UP(SaturationB)+10) : 40 : UP(SaturationB) ;
 
 		nAwbRgain 	= ((WORD)((float)(gnAwbRGainIIR>>4) * (0.5f+((float)bMpSaturationR*0.025f))) * iWgt) >> 8;		// divide by iWgt scale
@@ -490,7 +490,7 @@ void ISRT Awb(void)
 		nAwbBgain 	= ((WORD)((float)(gnAwbBGainIIR>>4) * (0.5f+((float)bMpSaturationB*0.025f))) * iWgt) >> 8;
 	#else
 		const BYTE bMpSaturationR = (gbWdrOn!=WDR_OFF) ? ((64-16)>UP(SaturationR)) ? (UP(SaturationR)+16) : 64 : UP(SaturationR) ;	// TODO KSH ◆ WDR - Awb()에서 "R-GAIN"의 Line WDR 설정을 Frame WDR로 하는게 더 좋은지 확인 필요
-		const BYTE bMpSaturationG = (gbWdrOn!=WDR_OFF) ? ((64-16)>UP(Saturation))  ? (UP(Saturation) +16) : 64 : UP(Saturation)  ;	//	"
+		const BYTE bMpSaturationG = (gbWdrOn!=WDR_OFF) ? ((64-16)>UP(SaturationG)) ? (UP(SaturationG)+16) : 64 : UP(SaturationG) ;	//	"
 		const BYTE bMpSaturationB = (gbWdrOn!=WDR_OFF) ? ((64-16)>UP(SaturationB)) ? (UP(SaturationB)+16) : 64 : UP(SaturationB) ;	//	"
 
 		nAwbRgain = ((gnAwbRGainIIR>>4) * iWgt * (32+bMpSaturationR)) >> (8+6);		// 8:iWgt, 6:bMpSaturationX		190902 KSH

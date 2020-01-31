@@ -39,7 +39,7 @@ const WORD gwTblIMX323[][2] = { // for TWI
 
 								// TWI Only Register
 								{0x0008, 0x00},	// Black Level[8]
-								{0x0009, 0x3C},	// Black Level[7:0]
+								{0x0009, 0x3C},	// Black Level[7:0] It's recommended to be set 10bit:0x3c, 12bit:0xf0
 
 								{0x0101, 0x00},	// H[0]/V[1] Scanning direction control (0:Normal, 1:Inverted)
 

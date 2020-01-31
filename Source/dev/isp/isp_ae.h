@@ -76,7 +76,7 @@ extern int giCurDssStg;
 
 extern int giErr1d;
 
-extern BYTE gbWdrOn,gbWdrOnBuf/*,gbWdrOnBuf2*/;	// WDR on/off status
+extern BYTE gbWdrOn/*,gbWdrOnBuf,gbWdrOnBuf2*/;	// WDR on/off status,  Ae() 에서만 gbWdrOn!=gbWdrOnBuf 으로 변경 여부 체크 가능
 extern WORD gwWdrGmk;						// WDR Gamma weight
 
 #define gbWdrOnBuf2		gbWdrOn

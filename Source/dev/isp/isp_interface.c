@@ -143,6 +143,7 @@ void Isp_Parallel_Config(BOOL OnOff/*, BOOL IsSlave*/, BOOL IsUseExtClk, BOOL Is
 	else							{	IDDR_ONw(1);	ISDR_OPw(0);	}
 
 	DDRFF_RSw(1);
+	DDRFF_RSw(0);
 
 //	POL_HSIw(HSyncPol);
 //	POL_VSIw(VSyncPol);

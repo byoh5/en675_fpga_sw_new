@@ -809,7 +809,7 @@ void Menu(void)
 										UP(Awb), 4, AUTO, AUTOext, PRESETp, MANUALe),
 			STYLE,			MENU_STRn(UP_ON, /*if_KEY_LR(Hue_Chroma_Menu_Set(0))*/, UP(AwbStyle), 6, A_TYPE, B_TYPE, C_TYPE, D_TYPE, E_TYPE, F_TYPE),
 			R_GAIN,			MENU_BARn(UP_ON, , UP(SaturationR), 0, 64, 1 ),	// 2017419 - WHL : CBB TEST
-			G_GAIN,			MENU_BARn(UP_ON, , UP(Saturation), 0, 64, 1 ),
+			G_GAIN,			MENU_BARn(UP_ON, , UP(SaturationG), 0, 64, 1 ),
 			B_GAIN,			MENU_BARn(UP_ON, , UP(SaturationB), 0, 64, 1 ),
 			HUEnCHROMA,		MENU_ONEi(UP_ON, e, UP_ON, HUEnCHROMA, ),
 			RETURN,			MENU_ONEo(UP_ON, e, UP_ON, ))

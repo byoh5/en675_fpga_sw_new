@@ -154,10 +154,11 @@ void UsrParChg(const UINT anStrIdx)
 			UsrParStyle(0, 0, anStrIdx);	// Style 값들 변경여부 체크 -> 값이 변경되었으면 /*CUSTOMIZE*/PREVIOUS 로
 		}
 
+		static UINT anStrIdx1d = 0;
 		#undef UP_SET
 		#define UP_SET(...)
 		#undef UP_TITLE
-		#define UP_TITLE(N)		if(N##_UP_START < anStrIdx && anStrIdx <= (N##_UP_START + sizeof(UP_##N))) { _printf/*_printf_irq*/("UP %d : "#N" (%d~%d)\r\n", anStrIdx, N##_UP_START+1, (N##_UP_START + sizeof(UP_##N))); }
+		#define UP_TITLE(N)		if(N##_UP_START < anStrIdx && anStrIdx <= (N##_UP_START + sizeof(UP_##N)) && anStrIdx1d != anStrIdx) { anStrIdx1d = anStrIdx; _printf/*_printf_irq*/("UP %d : "#N" (%d~%d)\r\n", anStrIdx, N##_UP_START+1, (N##_UP_START + sizeof(UP_##N))); }
 		USR_PAR_LIST
 		#undef UP_TITLE
 		#define UP_TITLE(N)

@@ -214,8 +214,8 @@ extern void TDN(void);
 #define UpACETBL2_MID	0x18		// ACE Bright Area Strength for menu MIDDLE (LOW ~ 0xff)
 #define UpACETBL2_HIGH	0x20		// ACE Bright Area Strength for menu HIGH (MIDDLE ~ 0xff)
 
-#define UpACEWDR1_TH	0/*0x20*/		// ACE Dark Area Strength of WDR (0x0 ~ 0xff)
-#define UpACEWDR2_TH	0/*0x20*/		// ACE Bright Area Strength of WDR (0x0 ~ 0xff)
+#define UpACEWDR1_TH	0x20		// ACE Dark Area Strength of WDR (0x0 ~ 0xff)
+#define UpACEWDR2_TH	0x30/*0x20*/		// ACE Bright Area Strength of WDR (0x0 ~ 0xff)
 
 #define DEFOG_X_OFF 	30
 

@@ -211,12 +211,12 @@ STRING1(CUSTOM,		_B,"CUSTOM");
 
 #define USR_PAR_STYLE \
 /*                      IPC_INDOOR,      IPC_OUTDOOR,     CAR_REC,         ACTION_REC,      WDR,             LOW_BIT,         CUSTOM        */\
-UP_STYLE(Brightness,    4,               6,               4,               4,               4,               4,               4              )\
+UP_STYLE(Brightness,    5/*4*/,          6,               4,               4,               4,               4,               4              )\
 UP_STYLE(Adnr2D,        8,               4,               8,               8,               8,               8,               8              )\
 UP_STYLE(ShpBigEdge,    0x80,            0x40,            0x80,            0x80,            0x80,            0x80,            0x80           )\
 UP_STYLE(Gamma,         UP_GAMMA_075,    UP_GAMMA_055,    UP_GAMMA_075,    UP_GAMMA_075,    UP_GAMMA_075,    UP_GAMMA_075,    UP_GAMMA_075   )\
-UP_STYLE(Ace,           UP_4sHI,         UP_4sOFF,        UP_4sHI,         UP_4sHI,         UP_4sHI,         UP_4sHI,         UP_4sHI        )
-
+UP_STYLE(Ace,        UP_4sLOW/*UP_4sHI*/,UP_4sOFF,        UP_4sHI,         UP_4sHI,         UP_4sHI,         UP_4sHI,         UP_4sHI        )
+// ※IMX323의 경우 ACE HIGH 가 오히려 Color가 안좋음
 
 //*************************************************************************************************
 // User Parameter List
@@ -344,11 +344,11 @@ UP_TITLE(MENU_COLOR)/*--　MENU:　COLOR　--*/\
 UP_SET(1, Awb, /*UP_AWB_MNL*/UP_AWB_AUTO, , )/* AWB : 0 = AUTO, 1 = AUTOext, 2 = PRESET, 3 = MANUAL */\
 UP_SET(1, AwbStyle, 0, , )/* AWB:STYLE */\
 UP_SET(1, AwbMnl, UP_5000K, , )/* AWB:MANUAL → C-TEMP : 0 = 3000K, 1 = 5000K, 2 = 8000K */\
-UP_SET(1, Rgain, 10, , )/* AWB:MANUAL → R-GAIN : 0 ~ 20 */\
-UP_SET(1, Bgain, 10, , )/* AWB:MANUAL → B-GAIN : 0 ~ 20 */\
-UP_SET(1, SaturationR, 36/*30*//*32*/, , )/* R-GAIN : 0 ~ 64 */\
-UP_SET(1, Saturation,  34/*34*//*32*/, , )/* G-GAIN : 0 ~ 64 */\
-UP_SET(1, SaturationB, 38/*40*//*32*/, , )/* B-GAIN : 0 ~ 64 */\
+UP_SET(1, Rgain, 10, , )/* AWB:MANUAL → R-GAIN : 0 ~ 20, 10:Default */\
+UP_SET(1, Bgain, 10, , )/* AWB:MANUAL → B-GAIN : 0 ~ 20, 10:Default */\
+UP_SET(1, SaturationR, SP(SaturationR), , )/* R-GAIN : 0 ~ 64, 32:Default */\
+UP_SET(1, SaturationG, SP(SaturationG), , )/* G-GAIN : 0 ~ 64, 32:Default */\
+UP_SET(1, SaturationB, SP(SaturationB), , )/* B-GAIN : 0 ~ 64, 32:Default */\
 UP_TITLE(ColorSuppression)/*--　Color　suppression　--*/\
 UP_SET(1, LSUP_ON, 1, , )/* Low Light color suppression on/off (0: off, 1: on) */\
 UP_SET(1, LSUP_GA, /*0xff*/0x80, , )/* Low Light color suppression gain (0x40 = x0.5, 0x80 = x1, 0xC0 = x1.5, 0xff = x2) */\
@@ -362,30 +362,30 @@ UP_SET(1, CES_GAIN, 0x10, , )/* Edge color suppression normal gain (0 ~ 0x3F) */
 UP_SET(1, CES_WGAIN, 0x20, , )/* Edge color suppression WDR gain (0 ~ 0x3F) */\
 UP_TITLE(HUEnGAIN)/*--　Hue　&　Gain　--*/\
 UP_SET(1, HueChromaMode, 1, , HueChroma(); )/* 0 = NEW, 1 = OLD */\
-UP_SET(1, Yellow_HUE_RedToGreen,  0x7c/*0x80*/, , HueChroma(); )/* Adjust Yellow Hue from Red to Green (0x1:Red, 0x80:Default, 0xFF:Green) */\
-UP_SET(1, Yellow_GAIN,            0x60/*0x60*/, , HueChroma(); )/* Adjust Yellow Gain (0 ~ 0xFF, Default:0x60) */\
-UP_SET(1, Red_HUE_YellowToBlue,   0x80/*0x80*/, , HueChroma(); )/* Adjust Red Hue from Yellow to Blue (0x1:Yellow, 0x80:Default, 0xFF:Blue) */\
-UP_SET(1, Red_GAIN,               0x58/*0x60*/, , HueChroma(); )/* Adjust Red Gain (0 ~ 0xFF, Default:0x60) */\
-UP_SET(1, Blue_HUE_GreenToRed,    0x80/*0x80*/, , HueChroma(); )/* Adjust Blue Hue from Green to Red (0x1:Green, 0x80:Default, 0xFF:Red) */\
-UP_SET(1, Blue_GAIN,              0x60/*0x60*/, , HueChroma(); )/* Adjust Blue Gain (0 ~ 0xFF, Default:0x60) */\
-UP_SET(1, Green_HUE_BlueToYellow, 0x90/*0x80*/, , HueChroma(); )/* Adjust Green Hue from Blue to Yellow (0x1:Blue, 0x80:Default, 0xFF:Yellow) */\
-UP_SET(1, Green_GAIN,             0xa0/*0x60*/, , HueChroma(); )/* Adjust Green Gain (0 ~ 0xFF, Default:0x60) */\
-UP_SET(1, Yellow_Red_HUE_YellowToBlue,   0x80/*0x7c*//*0x80*/, , HueChroma(); )/* Adjust Hue of 'Yellow & Red' from Yellow to Blue (0x1:Yellow, 0x80:Default, 0xFF:Blue) */\
-UP_SET(1, Yellow_Red_HUE_RedToGreen,     0x78/*0x78*//*0x80*/, , HueChroma(); )/* Adjust Hue of 'Yellow & Red' from Red to Green (0x1:Red, 0x80:Default, 0xFF:Green) */\
-UP_SET(1, Yellow_Red_GAIN_Yellow,        0x60/*0x50*//*0x40*/, , HueChroma(); )/* Adjust Yellow Gain of 'Yellow & Red' (0 ~ 0xFF, Default:0x60) */\
-UP_SET(1, Yellow_Red_GAIN_Red,           0x58/*0x50*//*0x40*/, , HueChroma(); )/* Adjust Red Gain of 'Yellow & Red' (0 ~ 0xFF, Default:0x60) */\
-UP_SET(1, Red_Blue_HUE_YellowToBlue,     0x80/*0x80*//*0x80*/, , HueChroma(); )/* Adjust Hue of 'Red & Blue' from Yellow to Blue (0x1:Yellow, 0x80:Default, 0xFF:Blue) */\
-UP_SET(1, Red_Blue_HUE_GreenToRed,       0x80/*0x74*//*0x80*/, , HueChroma(); )/* Adjust Hue of 'Red & Blue' from Green to Red (0x1:Green, 0x80:Default, 0xFF:Red) */\
-UP_SET(1, Red_Blue_GAIN_Red,             0x60/*0x60*//*0x40*/, , HueChroma(); )/* Adjust Red Gain of 'Red & Blue' (0 ~ 0xFF, Default:0x60) */\
-UP_SET(1, Red_Blue_GAIN_Blue,            0x60/*0x60*//*0x40*/, , HueChroma(); )/* Adjust Blue Gain of 'Red & Blue' (0 ~ 0xFF, Default:0x60) */\
-UP_SET(1, Blue_Green_HUE_BlueToYellow,   0x80/*0x78*//*0x80*/, , HueChroma(); )/* Adjust Hue of 'Blue & Green' from Blue to Yellow (0x1:Blue, 0x80:Default, 0xFF:Yellow) */\
-UP_SET(1, Blue_Green_HUE_GreenToRed,     0x70/*0x60*//*0x80*/, , HueChroma(); )/* Adjust Hue of 'Blue & Green' from Green to Red (0x1:Green, 0x80:Default, 0xFF:Red) */\
-UP_SET(1, Blue_Green_GAIN_Blue,          0x60/*0x60*//*0x40*/, , HueChroma(); )/* Adjust Blue Gain of 'Blue & Green' (0 ~ 0xFF, Default:0x60) */\
-UP_SET(1, Blue_Green_GAIN_Green,         0x60/*0x60*//*0x40*/, , HueChroma(); )/* Adjust Green Gain of 'Blue & Green' (0 ~ 0xFF, Default:0x60) */\
-UP_SET(1, Green_Yellow_HUE_BlueToYellow, 0x80/*0x80*//*0x80*/, , HueChroma(); )/* Adjust Hue of 'Green & Yellow' from Blue to Yellow (0x1:Blue, 0x80:Default, 0xFF:Yellow) */\
-UP_SET(1, Green_Yellow_HUE_RedToGreen,   0x80/*0x80*//*0x80*/, , HueChroma(); )/* Adjust Hue of 'Green & Yellow' from Red to Green (0x1:Red, 0x80:Default, 0xFF:Green) */\
-UP_SET(1, Green_Yellow_GAIN_Green,       0x60/*0x60*//*0x40*/, , HueChroma(); )/* Adjust Green Gain of 'Green & Yellow' (0 ~ 0xFF, Default:0x60) */\
-UP_SET(1, Green_Yellow_GAIN_Yellow,      0x60/*0x60*//*0x40*/, , HueChroma(); )/* Adjust Yellow Gain of 'Green & Yellow' (0 ~ 0xFF, Default:0x60) */\
+UP_SET(1, Yellow_HUE_RedToGreen,  SP(Yel_RedToGrn), , HueChroma(); )/* Adjust Yellow Hue from Red to Green (0x1:Red, 0x80:Default, 0xFF:Green) */\
+UP_SET(1, Yellow_GAIN,            SP(Yel_Gain)    , , HueChroma(); )/* Adjust Yellow Gain (0 ~ 0xFF, Default:0x60) */\
+UP_SET(1, Red_HUE_YellowToBlue,   SP(Red_YelToBlu), , HueChroma(); )/* Adjust Red Hue from Yellow to Blue (0x1:Yellow, 0x80:Default, 0xFF:Blue) */\
+UP_SET(1, Red_GAIN,               SP(Red_Gain)    , , HueChroma(); )/* Adjust Red Gain (0 ~ 0xFF, Default:0x60) */\
+UP_SET(1, Blue_HUE_GreenToRed,    SP(Blu_GrnToRed), , HueChroma(); )/* Adjust Blue Hue from Green to Red (0x1:Green, 0x80:Default, 0xFF:Red) */\
+UP_SET(1, Blue_GAIN,              SP(Blu_Gain)    , , HueChroma(); )/* Adjust Blue Gain (0 ~ 0xFF, Default:0x60) */\
+UP_SET(1, Green_HUE_BlueToYellow, SP(Grn_BluToYel), , HueChroma(); )/* Adjust Green Hue from Blue to Yellow (0x1:Blue, 0x80:Default, 0xFF:Yellow) */\
+UP_SET(1, Green_GAIN,             SP(Grn_Gain)    , , HueChroma(); )/* Adjust Green Gain (0 ~ 0xFF, Default:0x60) */\
+UP_SET(1, Yellow_Red_HUE_YellowToBlue,   0x80, , HueChroma(); )/* Adjust Hue of 'Yellow & Red' from Yellow to Blue (0x1:Yellow, 0x80:Default, 0xFF:Blue) */\
+UP_SET(1, Yellow_Red_HUE_RedToGreen,     0x80, , HueChroma(); )/* Adjust Hue of 'Yellow & Red' from Red to Green (0x1:Red, 0x80:Default, 0xFF:Green) */\
+UP_SET(1, Yellow_Red_GAIN_Yellow,        0x60, , HueChroma(); )/* Adjust Yellow Gain of 'Yellow & Red' (0 ~ 0xFF, Default:0x60) */\
+UP_SET(1, Yellow_Red_GAIN_Red,           0x60, , HueChroma(); )/* Adjust Red Gain of 'Yellow & Red' (0 ~ 0xFF, Default:0x60) */\
+UP_SET(1, Red_Blue_HUE_YellowToBlue,     0x80, , HueChroma(); )/* Adjust Hue of 'Red & Blue' from Yellow to Blue (0x1:Yellow, 0x80:Default, 0xFF:Blue) */\
+UP_SET(1, Red_Blue_HUE_GreenToRed,       0x80, , HueChroma(); )/* Adjust Hue of 'Red & Blue' from Green to Red (0x1:Green, 0x80:Default, 0xFF:Red) */\
+UP_SET(1, Red_Blue_GAIN_Red,             0x60, , HueChroma(); )/* Adjust Red Gain of 'Red & Blue' (0 ~ 0xFF, Default:0x60) */\
+UP_SET(1, Red_Blue_GAIN_Blue,            0x60, , HueChroma(); )/* Adjust Blue Gain of 'Red & Blue' (0 ~ 0xFF, Default:0x60) */\
+UP_SET(1, Blue_Green_HUE_BlueToYellow,   0x80, , HueChroma(); )/* Adjust Hue of 'Blue & Green' from Blue to Yellow (0x1:Blue, 0x80:Default, 0xFF:Yellow) */\
+UP_SET(1, Blue_Green_HUE_GreenToRed,     0x80, , HueChroma(); )/* Adjust Hue of 'Blue & Green' from Green to Red (0x1:Green, 0x80:Default, 0xFF:Red) */\
+UP_SET(1, Blue_Green_GAIN_Blue,          0x60, , HueChroma(); )/* Adjust Blue Gain of 'Blue & Green' (0 ~ 0xFF, Default:0x60) */\
+UP_SET(1, Blue_Green_GAIN_Green,         0x60, , HueChroma(); )/* Adjust Green Gain of 'Blue & Green' (0 ~ 0xFF, Default:0x60) */\
+UP_SET(1, Green_Yellow_HUE_BlueToYellow, 0x80, , HueChroma(); )/* Adjust Hue of 'Green & Yellow' from Blue to Yellow (0x1:Blue, 0x80:Default, 0xFF:Yellow) */\
+UP_SET(1, Green_Yellow_HUE_RedToGreen,   0x80, , HueChroma(); )/* Adjust Hue of 'Green & Yellow' from Red to Green (0x1:Red, 0x80:Default, 0xFF:Green) */\
+UP_SET(1, Green_Yellow_GAIN_Green,       0x60, , HueChroma(); )/* Adjust Green Gain of 'Green & Yellow' (0 ~ 0xFF, Default:0x60) */\
+UP_SET(1, Green_Yellow_GAIN_Yellow,      0x60, , HueChroma(); )/* Adjust Yellow Gain of 'Green & Yellow' (0 ~ 0xFF, Default:0x60) */\
 UP_TITLE(DEFOG)/*--　Defog　--*/\
 UP_SET(1, Defog, UP_OFF, , )/* DEFOG : 0 = OFF, 1 = ON */\
 UP_SET(1, DefogMode, UP_DEFOG_MANUAL, , )/* DEFOG:ON → MODE : 0 = MANUAL, 1 = AUTO */\
@@ -399,7 +399,7 @@ UP_SET(2, DEFOG_TH_LOW, UpDEFOG_TH_LOW, , )/* Defog Maximum Strength for menu LO
 UP_SET(2, DEFOG_TH_MID, UpDEFOG_TH_MID, , )/* Defog Maximum Strength for menu MIDDLE (LOW ~ 0xffff) */\
 UP_SET(2, DEFOG_TH_HIGH, UpDEFOG_TH_HIGH, , )/* Defog Maximum Strength for menu HIGH (MIDDLE ~ 0xffff) */\
 UP_TITLE(ACE)/*--　ACE　--*/\
-UP_SET(1, Ace, /*UP_4sMID*//*UP_4sOFF*/UP_4sHI, , )/* ACE : 0 = OFF, 1 = LOW, 2 = MIDDLE, 3 = HIGH (Must be set DEFOG:OFF) */\
+UP_SET(1, Ace, /*UP_4sLOW*//*UP_4sMID*/UP_4sHI/*UP_4sOFF*/, , )/* ACE : 0 = OFF, 1 = LOW, 2 = MIDDLE, 3 = HIGH (Must be set DEFOG:OFF) */\
 UP_SET(1, AceGmgn, /*0x20*/63, , )/* ACE → WEIGHT : 0 ~ 255 */\
 UP_SET(1, AceBrt, 0/*32*/, , )/* ACE & DEFOG → DIGITAL BRIGHTNESS : 0 ~ 64 */\
 UP_SET(1, AceCont, 64/*0*//*32*/, , )/* ACE & DEFOG → DIGITAL CONTRAST : 0 ~ 64 */\

@@ -72,7 +72,7 @@
 
 
 #define AE_DEBUG_X		24
-#define AE_WDR_DEBUG_Y	7
+#define AE_WDR_DEBUG_Y	5
 
 #ifdef AE_GRP
 	#define AeTxGrpFnc()	//UartTxGrp()
@@ -764,13 +764,13 @@ void ISRT CurWDR(int *apiCur, int *apiTgt, int *apiErr,	const UINT anSum1, const
 	iCur += AceCurGet(iCur);
 
 	iTgt = TgtMaxGet(UP_ON, AeSHORT);
-	iTgt = MAX(iTgt-(giCurAgc/2), (iTgt/2));	// 13. 8. 4
+	iTgt = MAX(iTgt-(giCurAgc>>1), (iTgt>>1));	// 13. 8. 4
 
 	iErr = iTgt - iCur;
 
 	//if(AE_CTRL_ORIGINAL&&(UP(Shutter)==UP_SHUT_MNL)&&(iErr<0)&&(gnAeState==0)) iErr = 0;	// 170331 KSH
 
-	AE2_SLICE0w(iTgt/2);		// 150802		// EN781 WDR 3 -> 2
+	AE2_SLICE0w(MIN(0xC,iTgt>>1));		// 150802		// EN781 WDR 3 -> 2		200130 KSH 0xC·Î ¼³Á¤
 	AE2_CLIP0w(iTgt + AE_WDR_LCLIP_OFST);							// next long
 
 	//GrpAe(GA_WDR_LONG_CLIP) = iTgt + AE_WDR_LCLIP_OFST;
@@ -787,13 +787,13 @@ void ISRT CurWDR(int *apiCur, int *apiTgt, int *apiErr,	const UINT anSum1, const
 	const int iSClipWgt = LibUtlInterp1D_CLAMP(anClipCntShort, 0, AE_WDR_SWGT_MAXCNT, 0, 0x100);
 	iCur = ( (iSClipWgt * udiv4x(anSum2, anClipCntShort, anClipLvShort<<2)) + ((0x100-iSClipWgt) * (anClipLvShort<<2)) ) >> 8;
 
-	DebugDisp2(gbAeDebugOn, Dec, "WdrSCpW", AE_WDR_DEBUG_Y+6/*23*/, AE_DEBUG_X, iSClipWgt, 4)
+	DebugDisp2(gbAeDebugOn, Dec, "WdrSCpW", AE_WDR_DEBUG_Y+7/*23*/, AE_DEBUG_X, iSClipWgt, 4)
 #endif
 
 	//GrpAe(GA_WDR_SHORT_CLIP_1D) = anClipLvShort;
 
 	iTgt = TgtMaxGet(UP_ON, AeLONG);
-	iTgt = MAX(iTgt-(giCurAgc/2), (iTgt/2));	// 13. 8. 4
+	iTgt = MAX(iTgt-(giCurAgc>>1), (iTgt>>1));	// 13. 8. 4
 
 	iErr = iTgt - iCur;
 
@@ -894,7 +894,7 @@ int ISRT WdrCtrl(void)
 	//--------------------------------------------------------------------------------
 	//gbWdrOnBuf3 = gbWdrOnBuf2;	// 170530 KSH
 	//gbWdrOnBuf2 = gbWdrOnBuf;
-	gbWdrOnBuf = gbWdrOn;
+	//gbWdrOnBuf = gbWdrOn;
 
 	//InMode();
 
@@ -1810,12 +1810,13 @@ AeCtrl:
 // -------------------------------------------------------------------------------
 // Monitoring
 //AeMonitoring:
-	if(gbWdrOn!=WDR_OFF){
-		DebugDisp2(gbAeDebugOn, Dec, "Tgt    ",  3, AE_DEBUG_X, iTgt, 4)
-		DebugDisp2(gbAeDebugOn, Dec, "Cur    ",  4, AE_DEBUG_X, iCur, 4)
-
-		DebugDisp2(gbAeDebugOn, Dec, "SliceLv",  5, AE_DEBUG_X, nAe2SlicLvl, 4)
-		DebugDisp2(gbAeDebugOn, Dec, "ClipLv ",  6, AE_DEBUG_X, nAe2ClipLvl, 4)
+	if (gbWdrOn!=gbWdrOnBuf/*gbWdrOnBuf2*/) {	// 191104 KSH gbWdrOnBuf2 -> gbWdrOnBuf
+		DispClr(13, AE_DEBUG_X, 7+1+4);
+		DispClr(14, AE_DEBUG_X, 7+1+4);
+	}
+	else if(gbWdrOn!=WDR_OFF) {
+		DebugDisp2(gbAeDebugOn, Dec, "SliceLv",  3, AE_DEBUG_X, nAe2SlicLvl, 4)
+		DebugDisp2(gbAeDebugOn, Dec, "ClipLv ",  4, AE_DEBUG_X, nAe2ClipLvl, 4)
 
 		if((gbWdrOn!=WDR_FRAME)||(gnLSflag==AeSHORT)) {
 			DebugDisp2(gbAeDebugOn, Dec, "WdrLtgt", AE_WDR_DEBUG_Y+0/*17*/, AE_DEBUG_X, iTgt, 4)
@@ -1841,13 +1842,7 @@ AeCtrl:
 			DebugDisp2(gbAeDebugOn, Dec, "WdrLsht", AE_WDR_DEBUG_Y+4/*21*/, AE_DEBUG_X, giSht_L, 4)
 #endif
 		}
-	}
-	else if ((gbWdrOn==WDR_OFF)&&(gbWdrOnBuf/*gbWdrOnBuf2*/!=WDR_OFF)) {	// 191104 KSH gbWdrOnBuf2 -> gbWdrOnBuf
-		DispClr(AE_WDR_DEBUG_Y+4, AE_DEBUG_X, 7+1+4);
-		DispClr(AE_WDR_DEBUG_Y+5, AE_DEBUG_X, 7+1+4);
-		DispClr(AE_WDR_DEBUG_Y+6, AE_DEBUG_X, 7+1+4);
-	}
-	else {
+	} else {
 		DebugDisp2(gbAeDebugOn, Dec, "TgtMax ",  3, AE_DEBUG_X, iTgt, 4)
 		DebugDisp2(gbAeDebugOn, Dec, "TgtMin ",  4, AE_DEBUG_X, iTgtSpotBg, 4)
 		DebugDisp2(gbAeDebugOn, Dec, "Cur    ",  5, AE_DEBUG_X, (AE_SAT_OFF) ? iCur : iCurBg, 4)
@@ -1862,6 +1857,8 @@ AeCtrl:
 		DebugDisp2(gbAeDebugOn, Dec, "TotAgc ", 13, AE_DEBUG_X, AGC_MAX-giIspAgcMax, 4)
 		DebugDisp2(gbAeDebugOn, Dec, "AgcPos ", 14, AE_DEBUG_X, giCurAgc, 4)
 	}
+
+	gbWdrOnBuf = gbWdrOn;
 
 	/*GRP0 = ParAe(PA_SHT_MANUAL);
 	GRP1 = iCur;

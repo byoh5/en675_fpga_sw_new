@@ -183,6 +183,7 @@ UINT Isp_DigIn_CH0_Config(UINT iMode, UINT ClkDly, UINT RegLatchPos, UINT Hsp, U
 		BT_DIN_SELw(1);						//	Channel 0 Digital Input Path Enable
 		BT_OBUF_RSTw(1);					//	inbuf buffer reset
 		DDRFF_RSw(1);						//	BT Decoder buffer reset
+		DDRFF_RSw(0);
 	}
 	else
 	{
