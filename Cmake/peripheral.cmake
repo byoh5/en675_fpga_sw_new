@@ -124,3 +124,5 @@ SET ( USE_TIMER35 1 ) # 0:unused  1:GPIO56
 SET ( USE_TIMER36 1 ) # 0:unused  1:GPIO57
 SET ( USE_TIMER37 1 ) # 0:unused  1:GPIO58
 SET ( USE_TIMER38 1 ) # 0:unused  1:GPIO59
+
+SET ( USE_IR 0 ) # 0:unused  1:use

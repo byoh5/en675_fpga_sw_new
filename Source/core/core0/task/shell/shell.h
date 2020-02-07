@@ -44,6 +44,7 @@ typedef struct{
 // Extern
 //-------------------------------------------------------------------------------------------------
 // Function
+extern void IsrShell(void);
 extern void shell_line_print(char line, char *title);
 extern void T_ShellExe(char *shellBuf);
 extern void ShellTask(void *pvParameters);

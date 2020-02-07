@@ -76,6 +76,11 @@
 .global freertos_risc_v_trap_handler
 .global pxPortInitialiseStack
 .extern pxCurrentTCB
+
+.extern prvTaskExitError
+.extern pullMachineTimerCompareRegister
+.extern pullNextTime
+
 //.extern trap_from_machine_mode_freertos
 .extern trap_from_machine_mode_freertos_sync
 .extern trap_from_machine_mode_freertos_async
@@ -305,12 +310,66 @@ pxPortInitialiseStack:
 	slli	t1, t1, 4
 	or		t0, t0, t1						/* Set MPIE and MPP bits in mstatus value. */
 
+	la		t1, prvTaskExitError			/* Task return address */
+
 	addi	a0, a0, -portWORD_SIZE
 	STORE	t0, 0(a0)						/* mstatus onto the stack. */
-	addi	a0, a0, -(22 * portWORD_SIZE)	/* Space for registers x11-x31. */
-	STORE	a2, 0(a0)						/* Task parameters (pvParameters parameter) goes into register X10/a0 on the stack. */
-	addi	a0, a0, -(6 * portWORD_SIZE)	/* Space for registers x5-x9. */
-	STORE	x0, 0(a0)						/* Return address onto the stack, could be portTASK_RETURN_ADDRESS */
+	addi	a0, a0, -portWORD_SIZE
+	STORE	x0, 0(a0)						/* x31 - zero */
+	addi	a0, a0, -portWORD_SIZE
+	STORE	x0, 0(a0)						/* x30 - zero */
+	addi	a0, a0, -portWORD_SIZE
+	STORE	x0, 0(a0)						/* x29 - zero */
+	addi	a0, a0, -portWORD_SIZE
+	STORE	x0, 0(a0)						/* x28 - zero */
+	addi	a0, a0, -portWORD_SIZE
+	STORE	x0, 0(a0)						/* x27 - zero */
+	addi	a0, a0, -portWORD_SIZE
+	STORE	x0, 0(a0)						/* x26 - zero */
+	addi	a0, a0, -portWORD_SIZE
+	STORE	x0, 0(a0)						/* x25 - zero */
+	addi	a0, a0, -portWORD_SIZE
+	STORE	x0, 0(a0)						/* x24 - zero */
+	addi	a0, a0, -portWORD_SIZE
+	STORE	x0, 0(a0)						/* x23 - zero */
+	addi	a0, a0, -portWORD_SIZE
+	STORE	x0, 0(a0)						/* x22 - zero */
+	addi	a0, a0, -portWORD_SIZE
+	STORE	x0, 0(a0)						/* x21 - zero */
+	addi	a0, a0, -portWORD_SIZE
+	STORE	x0, 0(a0)						/* x20 - zero */
+	addi	a0, a0, -portWORD_SIZE
+	STORE	x0, 0(a0)						/* x19 - zero */
+	addi	a0, a0, -portWORD_SIZE
+	STORE	x0, 0(a0)						/* x18 - zero */
+	addi	a0, a0, -portWORD_SIZE
+	STORE	x0, 0(a0)						/* x17 - zero */
+	addi	a0, a0, -portWORD_SIZE
+	STORE	x0, 0(a0)						/* x16 - zero */
+	addi	a0, a0, -portWORD_SIZE
+	STORE	x0, 0(a0)						/* x15 - zero */
+	addi	a0, a0, -portWORD_SIZE
+	STORE	x0, 0(a0)						/* x14 - zero */
+	addi	a0, a0, -portWORD_SIZE
+	STORE	x0, 0(a0)						/* x13 - zero */
+	addi	a0, a0, -portWORD_SIZE
+	STORE	x0, 0(a0)						/* x12 - zero */
+	addi	a0, a0, -portWORD_SIZE
+	STORE	x0, 0(a0)						/* x11 - zero */
+	addi	a0, a0, -portWORD_SIZE
+	STORE	a2, 0(a0)						/* x10 - Task parameters (pvParameters parameter) goes into register X10/a0 on the stack. */
+	addi	a0, a0, -portWORD_SIZE
+	STORE	x0, 0(a0)						/* x9 - zero */
+	addi	a0, a0, -portWORD_SIZE
+	STORE	x0, 0(a0)						/* x8 - zero */
+	addi	a0, a0, -portWORD_SIZE
+	STORE	x0, 0(a0)						/* x7 - zero */
+	addi	a0, a0, -portWORD_SIZE
+	STORE	x0, 0(a0)						/* x6 - zero */
+	addi	a0, a0, -portWORD_SIZE
+	STORE	x0, 0(a0)						/* x5 - zero */
+	addi	a0, a0, -portWORD_SIZE
+	STORE	t1, 0(a0)						/* Return address onto the stack, could be portTASK_RETURN_ADDRESS */
 	addi	a0, a0, -portWORD_SIZE
 	STORE	a1, 0(a0)						/* mret value (pxCode parameter) onto the stack. */
 	ret

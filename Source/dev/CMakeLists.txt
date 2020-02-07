@@ -33,6 +33,7 @@ SET ( DEV_HDRS
 	cpu/mtrap.h
 	cpu/syscall.h
 	cpu/rv_utils.h
+	cpu/pmp.h
 	eeprom/eeprom.h
 	ethernet/ethphy.h
 	ethernet/ksz8081mnx.h
@@ -83,6 +84,7 @@ SET ( DEV_HDRS
 	isp/isp_menu_str.h
 	isp/isp_user_parameter.h
 	isp/isp_sensor_parameter.h
+	jpeg/isp_jpeg.h
 	key/key.h
 	minilib/aes.h
 	minilib/aes_local.h	
@@ -92,6 +94,7 @@ SET ( DEV_HDRS
 	minilib/sha1.h
 	minilib/md32_common.h
 	minilib/Base64.h
+	minilib/enx_math.h
 	minilib/enx_time.h
 	rtc/rtc.h
 	rtc/pcf8563.h
@@ -101,10 +104,15 @@ SET ( DEV_HDRS
 	sfls/sfls_model.h
 	sfls/eon_en25qh128a.h
 	sfls/eon_en25qh256.h
-	sfls/winbond_w25q64.h
+	sfls/winbond_w25q64jviq.h
+	sfls/winbond_w25q256jvq.h
 	sfls/gigadevice_gd25q128c.h
 	sfls/micron_n25q128a.h
+	sfls/issi_is25lp064.h
 	sfls/issi_is25lp128.h
+	sfls/issi_is25lp256.h
+	sfls/macronix_mx25l12835f.h
+	sfls/macronix_mx25u12832f.h
 	string/vsnprintf.h
 	string/enx_string.h
 	string/uart_string.h
@@ -123,6 +131,7 @@ SET ( DEV_SRCS
 	gpio.c
 	i2c.c
 	i2s.c
+	ir.c
 	irq.c
 	sdio.c
 	sfls.c
@@ -135,7 +144,7 @@ SET ( DEV_SRCS
 	audio/tlv320aic3206.c
 	cpu/syscall.c
 	cpu/rv_utils.c
-	cpu/rv_cache.S
+	cpu/pmp.c
 	eeprom/eeprom.c
 	ethernet/ethphy.c
 	ethernet/ksz8081mnx.c
@@ -171,6 +180,7 @@ SET ( DEV_SRCS
 	isp/isp_tdn.c
 	isp/isp_cont.c
 	isp/isp_etc.c
+	jpeg/isp_jpeg.c
 	key/key.c
 	minilib/aes_core.c
 	minilib/aes_cbc.c
@@ -181,6 +191,7 @@ SET ( DEV_SRCS
 	minilib/sha1.c
 	minilib/sha256.c
 	minilib/Base64.c
+	minilib/enx_math.c
 	minilib/enx_time.c
 	rtc/rtc.c
 	rtc/rtc-lib.c
@@ -191,10 +202,15 @@ SET ( DEV_SRCS
 	sfls/sfls_model.c
 	sfls/eon_en25qh128a.c
 	sfls/eon_en25qh256.c
-	sfls/winbond_w25q64.c
+	sfls/winbond_w25q64jviq.c
+	sfls/winbond_w25q256jvq.c
 	sfls/gigadevice_gd25q128c.c
 	sfls/micron_n25q128a.c
+	sfls/issi_is25lp064.c
 	sfls/issi_is25lp128.c
+	sfls/issi_is25lp256.c
+	sfls/macronix_mx25l12835f.c
+	sfls/macronix_mx25u12832f.c
 	string/vsnprintf.c
 	string/enx_string.c
 	string/uart_string.c

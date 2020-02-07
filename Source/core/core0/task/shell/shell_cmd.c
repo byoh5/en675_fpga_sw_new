@@ -43,6 +43,7 @@ extern int UsrCmd_h(int argc, char *argv[]);
 extern int UsrCmd_i(int argc, char *argv[]);
 extern int UsrCmd_j(int argc, char *argv[]);
 extern int cmd_info(int argc, char *argv[]);
+extern int cmd_irq_info(int argc, char *argv[]);
 extern int cmd_perl_check(int argc, char *argv[]);
 extern int cmd_perl_timer(int argc, char *argv[]);
 extern int cmd_reboot(int argc, char *argv[]);
@@ -56,6 +57,7 @@ extern int cmd_test_dump(int argc, char *argv[]);
 extern int cmd_test_sfls(int argc, char *argv[]);
 extern int cmd_test_i2s(int argc, char *argv[]);
 extern int cmd_test_adc(int argc, char *argv[]);
+extern int cmd_test_ir(int argc, char *argv[]);
 
 const char *sHelpDisp[]	    = {"Shell command list (! : Repeat command)",        (char*)0};
 const char *sUsrCmd_a[]     = {":",                                              (char*)0};
@@ -69,19 +71,24 @@ const char *sUsrCmd_h[]     = {":",                                             
 const char *sUsrCmd_i[]     = {":",                                              (char*)0};
 const char *sUsrCmd_j[]     = {":",                                              (char*)0};
 const char *sInfo[]         = {"System Info",                                    (char*)0};
+const char *sIrqInfo[]      = {"Inturrupt Info",                                 (char*)0};
 const char *sPerlCheck[]    = {"Check Interface",                                (char*)0};
 const char *sPerlTimer[]    = {"Check Timer state",                              (char*)0};
 const char *sReboot[]       = {"system reboot",                                  (char*)0};
 const char *sTaskStatus[]   = {"show freeRTOS task status",                      (char*)0};
 const char *sMemStatus[]    = {"show memory status",                             (char*)0};
-const char *sOicCmd[]       = {"Check OIC",          			                  (char*)0};
+const char *sOicCmd[]       = {"Check OIC",                                      (char*)0};
 const char *sSysreg[]       = {"Test(System Reg)",                               (char*)0};
 const char *sDump[]         = {"Test(Dump)",                                     (char*)0};
 const char *sCDump[]        = {"Test(hwflush_dcache_range & Dump)",              (char*)0};
+const char *sIDump[]        = {"Test(hwdiscard_dcache_range & Dump)",            (char*)0};
 #if defined(__AUDIO__)
 const char *sI2sTest[]      = {"Test(i2s)",                                      (char*)0};
 #endif
 const char *sAdcTest[]      = {"Test(adc)",                                      (char*)0};
+#if USE_IR
+const char *sIrTest[]       = {"Test(ir)",                                       (char*)0};
+#endif
 
 tMonCmd gCmdList[] =
 {
@@ -101,6 +108,7 @@ tMonCmd gCmdList[] =
 	{"j",			UsrCmd_j,			sUsrCmd_j		},
 
 	{"info",		cmd_info,			sInfo			},
+	{"irq",			cmd_irq_info,		sIrqInfo		},
 	{"perl",		cmd_perl_check,		sPerlCheck		},
 	{"gpio",		cmd_perl_gpio,		sPerlGpio		},
 	{"timer",		cmd_perl_timer,		sPerlTimer		},
@@ -149,11 +157,15 @@ tMonCmd gCmdList[] =
 //TEST
 	{"dump",		cmd_test_dump,		sDump			},
 	{"cdump",		cmd_test_dump,		sCDump			},
+	{"idump",		cmd_test_dump,		sIDump			},
 	{"sfls",		cmd_test_sfls,		sSflsTest		},
 #if defined(__AUDIO__)
 	{"i2s",			cmd_test_i2s,		sI2sTest		},
 #endif
 	{"adc",			cmd_test_adc,		sAdcTest		},
+#if USE_IR
+	{"ir",			cmd_test_ir,		sIrTest			},
+#endif
 	{"sysreg",		cmd_test_sysreg,	sSysreg			},
 	{"oic",			cmd_test_oic,		sOicCmd			},
 #if defined(__USE_SDIOCD__)
@@ -175,6 +187,7 @@ tMonCmd gCmdList[] =
 	{"mdio",		cmd_test_ethphyreg, sEthphyRegTest	},
 #endif
 	{"video",		cmd_test_video,		sTestVideoCmd	},
+	{"jpeg",		cmd_test_jpeg,		sTestJpegCmd	},
 	{0,				0,					0				}
 };
 
@@ -274,7 +287,7 @@ int UsrCmd_c(int argc, char *argv[])
 	_printf("Shell Cmd %s\n", __func__);
 #if (configUSE_TIMERS==1)
 	if (xTimersTest == NULL) {
-		xTimersTest = xTimerCreate("MyTimer", 50, pdFALSE, ( void * ) 0, vTimerCallback);
+		xTimersTest = xTimerCreate("MyTimer", 100, pdFALSE, ( void * ) 0, vTimerCallback);
 		// pdFALSE pdTRUE
 		if (xTimersTest != NULL) {
 			_printf("Timer Create OK!(0x%08X)\n", (intptr_t)xTimersTest);
@@ -639,8 +652,17 @@ void TestUartTask(void *ctx)
 }
 #endif
 
+void kkkTask(void *ctx)
+{
+	printf("kkkTask Start\n");
+	vTaskDelay(100);
+	printf("kkkTask End\n");
+	vTaskDelay(10);
+}
+
 int UsrCmd_j(int argc, char *argv[])
 {
+#if 0
 	if (argc == 3) {
 		int cpuidx = atoi(argv[1]);
 		if (strcmp("on", argv[2]) == 0) {
@@ -690,7 +712,129 @@ int UsrCmd_j(int argc, char *argv[])
 		printf("SYS_CPU2_PD: %u\n", SYS_CPU2_PD);
 		printf("SYS_CPU3_PD: %u\n", SYS_CPU3_PD);
 	}
+#endif
 
+#if 0
+	AtoBSetIrqEn(ENX_ON);
+	BtoASetIrqEn(ENX_ON);
+
+	if (argc == 2) {
+		ULONG tstart = 0;
+		if (strcmp("0", argv[1]) == 0) {
+			AtoBIrqCall();
+			tstart = BenchTimeStart();
+			while (SYS_ATOB_BUSY);
+			UINT tgap = BenchTimeStop(tstart);
+			printf("gap: %uus\n", tgap);
+		} else if (strcmp("1", argv[1]) == 0) {
+			BtoAIrqCall();
+			tstart = BenchTimeStart();
+			while (SYS_BTOA_BUSY);
+			UINT tgap = BenchTimeStop(tstart);
+			printf("gap: %uus\n", tgap);
+		}
+	} else {
+
+	}
+#endif
+
+#if 1
+	if (argc == 1) {
+		WdtInit(10000);
+	} else {
+		if (strcmp("dma", argv[1]) == 0) {
+			SYS_REG5 = 0x10;
+		} else if (strcmp("eth", argv[1]) == 0) {
+#if (ETHPHY_LOOPBACK_TEST==1)
+			EthSetRxEn(ENX_OFF);
+			EthSetRxIrqEn(ENX_OFF);
+			enx_externalirq_perl(eigiETH, ENX_OFF, 0);
+			vTaskDelay(1);
+			EthRxIrqCallback(NULL, NULL);
+extern void EthphyLoopbackMode(UINT speed, UINT duplex);
+			EthphyLoopbackMode(1000, 2);
+			SYS_REG6 = 0x10;
+#else
+			printf("eth loopback mode disabled!\n");
+#endif
+		} else if (strcmp("err", argv[1]) == 0) {
+			vTaskCreate("kkk", kkkTask, NULL, LV3_STACK_SIZE, LV5_TASK_PRIO);
+		} else if (strcmp("size", argv[1]) == 0) {
+			UINT nHW = atoi(argv[2]);
+			UINT nVW = atoi(argv[3]);
+			UINT nHTW = 4400 - 2; // nHW + 4400;
+			UINT nVTW = 2250 - 1; // nVW + 2250;
+
+			printf("INPUT: HW(%4u,0x%03X) VW(%4u,0x%03X) HTW(%4u,0x%03X) VTW(%4u,0x%03X)\n", nHW, nHW, nVW, nVW, nHTW, nHTW, nVTW, nVTW);
+
+			SYS_REG6 = 1;
+
+			vTaskDelay(100);
+
+			while(SYS_MUTEX10);
+
+			HWIw(nHW);
+			VWIw(nVW);
+			HTWIw(nHTW);
+			VTWIw(nVTW);
+
+			HWOw(nHW);
+			VWOw(nVW);
+			HTWOw(nHTW);
+			VTWOw(nVTW);
+
+			JPG_HWw(nHW);
+			JPG_VWw(nVW);
+
+			SYS_MUTEX10 = 0;
+
+			vTaskDelay(100);
+
+			SYS_REG6 = 0;
+
+		} else if (strcmp("memset", argv[1]) == 0) {
+			hwflush_dcache_all();
+			BDmaMemSet_isr(CPU_ID, (BYTE *)0x8A000000, 0, 4*3*1024*1024);
+			hwflush_dcache_all();
+		}
+	}
+
+
+
+
+
+
+
+
+
+#else
+	ULONG tstart = 0;
+	if (argc == 1) {
+		enx_wake_cpu(3);
+	} else if (argc == 2) {
+		tstart = BenchTimeStart();
+		if (strcmp("all", argv[1]) == 0) {
+			enx_wake_cpu(0);
+			enx_wake_cpu(1);
+			enx_wake_cpu(2);
+			enx_wake_cpu(3);
+		} else if (strcmp("0", argv[1]) == 0) {
+			enx_wake_cpu(0);
+			while (enx_get_wake_cpu(0));
+		} else if (strcmp("1", argv[1]) == 0) {
+			enx_wake_cpu(1);
+			while (enx_get_wake_cpu(1));
+		} else if (strcmp("2", argv[1]) == 0) {
+			enx_wake_cpu(2);
+			while (enx_get_wake_cpu(2));
+		} else if (strcmp("3", argv[1]) == 0) {
+			enx_wake_cpu(3);
+			while (enx_get_wake_cpu(3));
+		}
+		UINT tgap = BenchTimeStop(tstart);
+		printf("gap: %uus\n", tgap);
+	}
+#endif
 
 //	vTaskCreate("uart1rx", TestUartTask, NULL, LV3_STACK_SIZE, LV5_TASK_PRIO);
 
@@ -775,53 +919,8 @@ int UsrCmd_j(int argc, char *argv[])
 	SYS_MUTEX14 = 0;
 #endif
 
-#if 0
-	AtoBSetIrqEn(ENX_ON);
-	BtoASetIrqEn(ENX_ON);
-
-	if (argc == 2) {
-		ULONG tstart = 0;
-		if (strcmp("0", argv[1]) == 0) {
-			AtoBIrqCall();
-			tstart = BenchTimeStart();
-			while (SYS_ATOB_BUSY);
-			UINT tgap = BenchTimeStop(tstart);
-			printf("gap: %uus\n", tgap);
-		} else if (strcmp("1", argv[1]) == 0) {
-			BtoAIrqCall();
-			tstart = BenchTimeStart();
-			while (SYS_BTOA_BUSY);
-			UINT tgap = BenchTimeStop(tstart);
-			printf("gap: %uus\n", tgap);
-		}
-	} else {
-
-	}
-#endif
-
 	//set_csr(mie, MIP_MTIP|MIP_MEIP);
 	//clear_csr(mie, MIP_MTIP|MIP_MEIP);
-
-#if 0
-	if (argc == 1) {
-		enx_wake_cpu(3);
-	} else if (argc == 2) {
-		if (strcmp("all", argv[1]) == 0) {
-			enx_wake_cpu(0);
-			enx_wake_cpu(1);
-			enx_wake_cpu(2);
-			enx_wake_cpu(3);
-		} else if (strcmp("0", argv[1]) == 0) {
-			enx_wake_cpu(0);
-		} else if (strcmp("1", argv[1]) == 0) {
-			enx_wake_cpu(1);
-		} else if (strcmp("2", argv[1]) == 0) {
-			enx_wake_cpu(2);
-		} else if (strcmp("3", argv[1]) == 0) {
-			enx_wake_cpu(3);
-		}
-	}
-#endif
 
 	//TimerSetFreq(8, 250, 1000000000, 500000000);
 	//TimerSetPWMEn(8, ENX_ON);
@@ -944,6 +1043,70 @@ int cmd_info(int argc, char *argv[])
 	UNUSED(argv);
 }
 
+extern irq_count core_irq_count[4];
+
+static void cmd_irq_view(ULONG count)
+{
+	if (count == 0) {
+		_Zprintf("%15u", count);
+	} else {
+		_Gprintf("%15u", count);
+	}
+	printf(" | ");
+}
+
+int cmd_irq_info(int argc, char *argv[])
+{
+	printf("       | %15s | %15s | %15s | %15s |\n", "Core0", "Core1", "Core2", "Core3");
+	shell_line_print('-', NULL);
+#if 1
+	printf("  Sync | ");
+	for (int i = 0; i < 4; i++) {
+		cmd_irq_view(core_irq_count[i].sync_count);
+	}
+	printf("\n");
+
+	printf("   S/W | ");
+	for (int i = 0; i < 4; i++) {
+		cmd_irq_view(core_irq_count[i].swirq_count);
+	}
+	printf("\n");
+
+	printf("  Time | ");
+	for (int i = 0; i < 4; i++) {
+		cmd_irq_view(core_irq_count[i].timeirq_count);
+	}
+	printf("\n");
+	shell_line_print('-', NULL);
+	for (int j = 1; j <= IRQ_SOURCE_COUNT; j++) {
+		printf("  Ex%02u | ", j);
+		for (int k = 0; k < 4; k++) {
+			if (core_irq_count[k].exirq_count[j] == 0) {
+				_Zprintf("%15u", core_irq_count[k].exirq_count[j]);
+			} else {
+				_Gprintf("%15u", core_irq_count[k].exirq_count[j]);
+			}
+			printf(" | ");
+		}
+		printf("\n");
+	}
+#else
+	printf("  Sync | %15u | %15u | %15u | %15u |\n",
+			core_irq_count[0].sync_count, core_irq_count[1].sync_count, core_irq_count[2].sync_count, core_irq_count[3].sync_count);
+	printf("   S/W | %15u | %15u | %15u | %15u |\n",
+				core_irq_count[0].swirq_count, core_irq_count[1].swirq_count, core_irq_count[2].swirq_count, core_irq_count[3].swirq_count);
+	printf("  Time | %15u | %15u | %15u | %15u |\n",
+				core_irq_count[0].timeirq_count, core_irq_count[1].timeirq_count, core_irq_count[2].timeirq_count, core_irq_count[3].timeirq_count);
+	shell_line_print('-', NULL);
+	for (int j = 1; j <= IRQ_SOURCE_COUNT; j++) {
+		printf("  Ex%02u | %15u | %15u | %15u | %15u |\n", j,
+				core_irq_count[0].exirq_count[j], core_irq_count[1].exirq_count[j], core_irq_count[2].exirq_count[j], core_irq_count[3].exirq_count[j]);
+	}
+#endif
+	shell_line_print('-', NULL);
+	return 0;
+}
+
 int cmd_perl_check(int argc, char *argv[])
 {
 	_printf("I2C info ===================================\n");
@@ -962,8 +1125,8 @@ int cmd_perl_check(int argc, char *argv[])
 }
 
 #define TEST_TIMER_DIV 250
-#define TEST_TIMER_LMT 49999
-#define TEST_TIMER_TRIG 25000
+#define TEST_TIMER_LMT 2474
+#define TEST_TIMER_TRIG (TEST_TIMER_LMT>>1)
 
 typedef struct {
 	ENX_YN automode;
@@ -1278,6 +1441,9 @@ int cmd_test_dump(int argc, char *argv[])
 		if (strcmp(argv[0], "cdump") == 0) {
 			printf("call hwflush_dcache_range\n");
 			hwflush_dcache_range(getData, getLen);
+		} else if (strcmp(argv[0], "idump") == 0) {
+			printf("call hwdiscard_dcache_range\n");
+			hwdiscard_dcache_range(getData, getLen);
 		}
 		hexDump("Memory Dump", (void *)getData, getLen);
 	} else {
@@ -1517,3 +1683,62 @@ int cmd_test_adc(int argc, char *argv[])
 	}
 	return 0;
 }
+
+#if USE_IR
+int cmd_test_ir(int argc, char *argv[])
+{
+	if (argc == 1) {
+		printf("== IR =============\n");
+		printf("(RW) IR_CLK (clk [val])           : %u\n", IR_CLK);
+		printf("(R ) IR_IRQ                       : %u\n", IR_IRQ);
+		printf("(RW) IR_IRQ_EN (irq on / off)     : %u\n", IR_IRQ_EN);
+		printf("(R ) IR_IRQ_CLR                   : %u\n", IR_IRQ_CLR);
+		printf("(RW) IR_EN (on / off)             : %u\n", IR_EN);
+		printf("(RW) IR_IRQ_ADDR (irq addr [val]) : 0x%02X, %u\n", IR_IRQ_ADDR, IR_IRQ_ADDR);
+		printf("(RW) IR_MARGIN (m [val])          : %u\n", IR_MARGIN);
+		printf("(RW) IR_RPT_MG (rm [val])         : %u\n", IR_RPT_MG);
+		printf("(R ) IR_RPT                       : %u\n", IR_RPT, IR_RPT);
+		printf("(R ) IR_ADDR                      : 0x%02X, %u\n", IR_ADDR, IR_ADDR);
+		printf("(R ) IR_DAT                       : 0x%02X, %u\n", IR_DAT, IR_DAT);
+	} else {
+		if (argc == 2 && strcmp("init", argv[1]) == 0) {
+			IrInit(0);
+		} else if (argc == 2 && strcmp("on", argv[1]) == 0) {
+			IrSetEn(ENX_ON);
+		} else if (argc == 2 && strcmp("off", argv[1]) == 0) {
+			IrSetEn(ENX_OFF);
+		} else if (argc == 3 && strcmp("clk", argv[1]) == 0) {
+			UINT val = atoi(argv[2]);
+			IrSetClk(val);
+			printf("IrSetClk(%u) IrGetClk(%u)\n", val, IrGetClk());
+		} else if (argc == 3 && strcmp("irq", argv[1]) == 0) {
+			if (strcmp("on", argv[2]) == 0) {
+				IrSetIrqEn(ENX_ON);
+			} else if (strcmp("off", argv[2]) == 0) {
+				IrSetIrqEn(ENX_OFF);
+			} else {
+				Shell_Unknown();
+			}
+		} else if (argc == 4 && strcmp("irq", argv[1]) == 0) {
+			if (strcmp("addr", argv[2]) == 0) {
+				UINT val = atoi(argv[3]);
+				IrSetIrqAddr(val);
+				printf("IrSetIrqAddr(%u) IrGetIrqAddr(%u)\n", val, IrGetIrqAddr());
+			} else {
+				Shell_Unknown();
+			}
+		} else if (argc == 3 && strcmp("m", argv[1]) == 0) {
+			UINT val = atoi(argv[2]);
+			IrSetMargin(val);
+			printf("IrSetMargin(%u) IrGetMargin(%u)\n", val, IrGetMargin());
+		} else if (argc == 3 && strcmp("rm", argv[1]) == 0) {
+			UINT val = atoi(argv[2]);
+			IrSetRepeatMargin(val);
+			printf("IrSetRepeatMargin(%u) IrGetRepeatMargin(%u)\n", val, IrGetRepeatMargin());
+		} else {
+			Shell_Unknown();
+		}
+	}
+	return 0;
+}
+#endif

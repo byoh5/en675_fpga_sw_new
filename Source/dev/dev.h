@@ -41,6 +41,7 @@
 #include <time.h>					// time_t
 #include "enx_string.h"				// dev/string
 #include "enx_time.h"				//
+#include "enx_math.h"				//
 #include "vsnprintf.h"				// dev/string
 #include "boot.h"					// core/shared
 #include "msg.h"					// core/shared

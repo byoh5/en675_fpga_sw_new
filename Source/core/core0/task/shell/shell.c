@@ -10,11 +10,11 @@
 
 #include "enx_freertos.h"
 
-static char gcShellCmdBuf[100];
-static char	gcHistoryBuf[100];
+ATTR_MALIGN64 static char gcShellCmdBuf[128];
+ATTR_MALIGN64 static char gcHistoryBuf[128];
 
 #ifdef __ECM_STRING__
-#define SHELL_SEMAPHORE_USE 0
+#define SHELL_SEMAPHORE_USE 1
 #if (SHELL_SEMAPHORE_USE==1)
 SemaphoreHandle_t SemShell = NULL;
 #endif
@@ -160,12 +160,24 @@ int _DoCommand(char *cmdline)
 //-------------------------------------------------------------------------------------------------
 //
 #ifdef __ECM_STRING__
+#if (SHELL_SEMAPHORE_USE==1)
+void IsrShell(void)
+{
+	if (SemShell) {
+		portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
+		xSemaphoreGiveFromISR(SemShell, &xHigherPriorityTaskWoken);
+		if(xHigherPriorityTaskWoken) {
+			gbXsrTaskSwitchNeeded = 1;	// Task switch required?
+   		}
+	}
+}
+#endif
 INT32S _getline(char *buf, INT32S max, INT32S timeout)
 {	// CPU0 to CPU1
 	while (1) {
 		printf(PROMPT);
 #if (SHELL_SEMAPHORE_USE==1)
-		if (SemaphoreTake(SemShell, portMAX_DELAY)) {
+		if (xSemaphoreTake(SemShell, portMAX_DELAY)) {
 #else
 		while (cQueue_isempty(&gptMsgShell) == ENX_OK) {
 			vTaskDelay(1);
@@ -181,7 +193,7 @@ INT32S _getline(char *buf, INT32S max, INT32S timeout)
 					hwflush_dcache_range_rtos((ulong)buf, len);
 					buf[len] = 0;	// CRLR Á¦°Å
 
-					printf((char *)&gptMsgShell.arg[gptMsgShell.head][1]);
+					printf("%s\n", buf);
 					if (_DoCommand(buf) == CMD_LINE_ERROR) {
 						printf("Bad or not command! : [%s]\n", buf);
 					}
@@ -276,9 +288,9 @@ void ShellTask(void* pvParameters)
 #ifdef __ECM_STRING__
 #if (SHELL_SEMAPHORE_USE==1)
 	if (SemShell == NULL) {
-		SemaphoreCreateBinary(SemShell);
+		vSemaphoreCreateBinary(SemShell);
 	}
-	SemaphoreTake(SemShell, portMAX_DELAY);
+	xSemaphoreTake(SemShell, portMAX_DELAY);
 #endif
 	_getline(gcShellCmdBuf, CMDLINESIZE, 0); // input IDLE...
 #else

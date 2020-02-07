@@ -13,7 +13,7 @@
 // Function
 extern ENX_OKFAIL MsgRecPut(UINT addr, UINT size, UINT ts, UINT type);
 extern ENX_OKFAIL MsgRecGet(stream_info *getInfo);
-extern void IsrRecorddata(void *arg);
+extern void IsrRecorddata(void);
 
 //-------------------------------------------------------------------------------------------------
 // Variable

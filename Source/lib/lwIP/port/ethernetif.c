@@ -394,11 +394,11 @@ static struct pbuf *low_level_input(struct netif *netif)
 			WORD nTotLen = 0;
 			for (struct pbuf *q = p; q != NULL; q = q->next) {
 				if (q->len) { // Copy to "pbuf"
-					hwflush_dcache_range((ULONG)q->payload, (UINT)q->len);
+					//hwflush_dcache_range((ULONG)q->payload, (UINT)q->len);
 					//hwdiscard_dcache_range_rtos((ULONG)q->payload, (UINT)q->len);
 					BDmaMemCpy_rtos(0, q->payload, pkt + nTotLen, (UINT)q->len);
-					//hwdiscard_dcache_range_rtos((ULONG)q->payload, (UINT)q->len);
-					hwflush_dcache_range((ULONG)q->payload, (UINT)q->len);
+					hwdiscard_dcache_range_rtos((ULONG)q->payload, (UINT)q->len);
+					//hwflush_dcache_range((ULONG)q->payload, (UINT)q->len);
 				}
 				nTotLen += q->len;
 			}
@@ -463,6 +463,7 @@ static void network_ethif_pkt_input(void *ctx)
 
 	EthRxSetAddrOffset(NETRX_BUF_GAP);
 
+	//BYTE *pBase = 0xa0040000;
 	BYTE *pBase = pvPortMalloc(ENX_MEM_ALIGN_BUFFER(NETRX_BUF_COUNT*NETRX_BUF_GAP)+NETRX_BUF_GAP);
 	//BYTE *pBase = pvPortMalloc(ENX_MEM_ALIGN_BUFFER(NETRX_BUF_COUNT*NETRX_BUF_GAP)+NETRX_BUF_GAP+524288);
 	if (pBase == NULL) {
@@ -808,6 +809,6 @@ void network_ethif_start(void)
 //	ChangeDefDeviceId();
 
 	netif_state[enlETHERNET].link_notity = vTaskCreate("eifLink", network_ethif_link, NULL, LV2_STACK_SIZE, LV7_TASK_PRIO);
-	netif_state[enlETHERNET].xrx_notity = vTaskCreate("eifRx", network_ethif_pkt_input, netif_state[enlETHERNET]._netif, LV5_STACK_SIZE, LV6_TASK_PRIO);
+	netif_state[enlETHERNET].xrx_notity = vTaskCreate("eifRx", network_ethif_pkt_input, netif_state[enlETHERNET]._netif, LV5_STACK_SIZE, LV5_TASK_PRIO);
 }
 #endif

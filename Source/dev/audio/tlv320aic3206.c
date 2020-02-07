@@ -285,11 +285,27 @@ void tlv320aic3206_init(void)
 				tlv320aic3206_delay((UINT)TLV320AIC3206_SetupA[i][1]);
 			} else {
 				tlv320aic3206_write_reg(TLV320AIC3206_SetupA[i][0],TLV320AIC3206_SetupA[i][1]);
-			}
 
-//			BYTE u8Read;
-//			tlv320aic3206_read_reg(TLV320AIC3206_SetupA[i][0], &u8Read);
-//			printf("Read Adr = %08x  Reg = %08x\n", TLV320AIC3206_SetupA[i][0], u8Read);
+				BYTE u8Read;
+				tlv320aic3206_read_reg(TLV320AIC3206_SetupA[i][0], &u8Read);
+				if (u8Read != TLV320AIC3206_SetupA[i][1]) {
+					printf("  >>TLV320AIC3206 Setting Error. Addr(0x%02X) Data(0x%02X/0x%02X)\n", TLV320AIC3206_SetupA[i][0], TLV320AIC3206_SetupA[i][1], u8Read);
+
+					for (int j = 0; j < 5; j++) {
+						tlv320aic3206_write_reg(TLV320AIC3206_SetupA[i][0],TLV320AIC3206_SetupA[i][1]);
+						tlv320aic3206_read_reg(TLV320AIC3206_SetupA[i][0], &u8Read);
+						if (u8Read != TLV320AIC3206_SetupA[i][1]) {
+							printf("  >>TLV320AIC3206 Setting Retry(%u) Error. Addr(0x%02X) Data(0x%02X/0x%02X)\n", j, TLV320AIC3206_SetupA[i][0], TLV320AIC3206_SetupA[i][1], u8Read);
+						} else {
+							printf("  >>TLV320AIC3206 Setting Retry OK\n");
+							break;
+						}
+					}
+				} else {
+//					printf("  >>TLV320AIC3206 Setting OK\n");
+				}
+//				printf("Read Adr = %08x  Reg = %08x\n", TLV320AIC3206_SetupA[i][0], u8Read);
+			}
 		}
 #if (PCM_FREQUENCY==PCM_16BIT_8000HZ)
 		_Gprintf("  >>TLV320AIC3206 is set to 16bit 8000Hz.\n");

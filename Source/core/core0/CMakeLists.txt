@@ -11,6 +11,7 @@ SET ( CORE0_HDRS
 	enx_record.h
 	enx_file.h
 	task/audtxrx/audtxrx.h
+	task/ir/ir_recv.h
 	task/change/ipchange.h
 	task/change/videochange.h
 	task/chargen/chargen.h
@@ -69,6 +70,7 @@ SET ( CORE0_SRCS
 	enx_record.c
 	enx_file.c
 	task/audtxrx/audtxrx.c
+	task/ir/ir_recv.c
 	task/change/ipchange.c
 	task/change/videochange.c
 	task/chargen/chargen.c

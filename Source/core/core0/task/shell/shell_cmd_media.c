@@ -13,11 +13,14 @@
 #include "enx_stream.h"
 #include "enx_record.h"
 
+#include "isp_jpeg.h"
+
 #include "muxer_videnc.h"
 
 #include "shell_cmd_media.h"
 
 const char *sTestVideoCmd[] = {"Test Video",                    (char*)0};
+const char *sTestJpegCmd[]  = {"Test Jpeg",                     (char*)0};
 
 //*************************************************************************************************
 // User functions
@@ -64,7 +67,7 @@ static void testVideoTimer_irq(void *ctx)
 	static int j = 0;
 
 	if (MsgStmPut(vid_info[i].addr, vid_info[i].size, vid_info[i].ts, vid_info[i].type) == ENX_OK) {
-		IsrStreamdata(ctx);
+		IsrStreamdata();
 		i++;
 	} else {
 		printf("%s(STM) Drop\n", __func__);
@@ -74,7 +77,7 @@ static void testVideoTimer_irq(void *ctx)
 	}
 
 	if (MsgRecPut(vid_info[j].addr, vid_info[j].size, vid_info[j].ts, vid_info[j].type) == ENX_OK) {
-		IsrRecorddata(ctx);
+		IsrRecorddata();
 		j++;
 	} else {
 		printf("%s(REC) Drop\n", __func__);
@@ -188,5 +191,65 @@ int cmd_test_video(int argc, char *argv[])
 	} else if (strcmp("check", argv[1]) == 0) {
 		printf("last number: %d\n", rtp_step);
 	}
+	return 0;
+}
+
+int cmd_test_jpeg(int argc, char *argv[])
+{
+	if (argc == 2 && (strcmp(argv[1], "start") == 0)) {
+		printf("jpeg on!\n");
+		enx_jpeg_on();
+	} else if (argc == 2 && (strcmp(argv[1], "save") == 0)) {
+		if (muxer_jpegstill_request() == ENX_OK) {
+			printf("Save ok!\n");
+		}
+	} else if (argc == 3 && (strcmp(argv[1], "q") == 0)) {
+		int qp = atoi(argv[2]);
+		enx_jpeg_set_quantize(qp);
+#if 1
+		vTaskDelay(50);
+
+		while (gptMsgShare.JPEG_STILL_FLAG == JPEG_SNAP_PROC) {
+			vTaskDelay(1);
+		}
+		gptMsgShare.JPEG_STILL_FLAG = JPEG_SNAP_STR;
+		printf("ADDR(0x%08X~0x%08X) SIZE(%u)\n", gptMsgShare.JPEG_STILL_ADDR, gptMsgShare.JPEG_STILL_ADDR + gptMsgShare.JPEG_STILL_SIZE, gptMsgShare.JPEG_STILL_SIZE);
+		gptMsgShare.JPEG_STILL_FLAG = JPEG_SNAP_IDE;
+
+		UINT endaddr = gptMsgShare.JPEG_STILL_ADDR + gptMsgShare.JPEG_STILL_SIZE;
+		UINT newaddr = ENX_MEM_ALIGN(endaddr) - 64;
+		hwflush_dcache_range(newaddr, 64);
+
+		BYTE *pEndAddr = (BYTE *)(intptr_t)(endaddr - 2);
+		if (pEndAddr[0] == 0xff && pEndAddr[1] == 0xd9) {
+			printf("Length OK\n");
+		} else {
+			hexDump("Memory Dump", (void *)(intptr_t)newaddr, 64);
+		}
+#endif
+	} else {
+		while (gptMsgShare.JPEG_STILL_FLAG == JPEG_SNAP_PROC) {
+			vTaskDelay(1);
+		}
+		gptMsgShare.JPEG_STILL_FLAG = JPEG_SNAP_STR;
+
+		printf("ADDR(0x%08X) SIZE(%u)\n", gptMsgShare.JPEG_STILL_ADDR, gptMsgShare.JPEG_STILL_SIZE);
+
+		gptMsgShare.JPEG_STILL_FLAG = JPEG_SNAP_IDE;
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 	return 0;
 }

@@ -23,6 +23,8 @@ INCLUDE ( Cmake/includeheaddir.cmake )
 INCLUDE ( Cmake/peripheral.cmake )
 INCLUDE ( Cmake/device.cmake )
 
+#SET ( CMAKE_CONFIGURATION_TYPES "Debug;Release")
+
 IF ( NOT CMAKE_BUILD_TYPE )
 	SET ( CMAKE_BUILD_TYPE "Debug" CACHE STRING "Choose the type of build, options are: Debug Release" FORCE)
 ENDIF ( NOT CMAKE_BUILD_TYPE )

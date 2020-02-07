@@ -272,12 +272,6 @@ void enx_peri_init(void)
 
 void enx_sys_init(void)
 {
-	write_csr(mstatus, MSTATUS_FS); // Enable
-	//for (int i = 0; i < 32; i++) {
-	//	init_fp_reg(i);
-	//}
-	//write_csr(fcsr, 0);
-
 	UINT arrMark[5];
 	arrMark[0] = SYS_MARK0;
 	arrMark[1] = SYS_MARK1;
@@ -580,7 +574,7 @@ void main_0(int cpu_id)
 
 	enx_pmp_init();
 
-	SYS_REG0 = 0xA; // CPU0 Ready!
+	SYS_REG0 = 0x0; // CPU0 Ready!
 
 #ifdef __FREERTOS__
 	main_os();

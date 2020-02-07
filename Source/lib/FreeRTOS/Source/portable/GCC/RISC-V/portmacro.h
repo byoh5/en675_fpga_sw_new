@@ -33,8 +33,6 @@
 extern "C" {
 #endif
 
-#include "encoding.h"
-
 /*-----------------------------------------------------------
  * Port specific definitions.
  *
@@ -44,6 +42,7 @@ extern "C" {
  * These settings should not be altered.
  *-----------------------------------------------------------
  */
+#include "encoding.h"
 
 /* Type definitions. */
 #if __riscv_xlen == 64
@@ -75,9 +74,11 @@ not need to be guarded with a critical section. */
 /* Architecture specifics. */
 #define portSTACK_GROWTH			( -1 )
 #define portTICK_PERIOD_MS			( ( TickType_t ) 1000 / configTICK_RATE_HZ )
-#define portBYTE_ALIGNMENT	64
+#define portBYTE_ALIGNMENT			64
 /*-----------------------------------------------------------*/
-
+//#define portasmHAS_CLINT 1
+//#define portasmADDITIONAL_CONTEXT_SIZE 0
+//#define portasmHANDLE_INTERRUPT trap_from_machine_mode_freertos_handle_interrupt
 /*-----------------------------------------------------------*/
 /*System Calls												 */
 /*-----------------------------------------------------------*/
@@ -94,6 +95,7 @@ not need to be guarded with a critical section. */
 /* Scheduler utilities. */
 #define ECALL_YIELD_CMD 0x675
 extern void vTaskSwitchContext( void );
+//#define portYIELD() __asm volatile( "ecall" );
 #define portYIELD() ECALL(ECALL_YIELD_CMD);
 #define portEND_SWITCHING_ISR( xSwitchRequired ) if( xSwitchRequired ) vTaskSwitchContext()
 #define portYIELD_FROM_ISR( x ) portEND_SWITCHING_ISR( x )
@@ -104,9 +106,16 @@ extern void vTaskSwitchContext( void );
 #define portCRITICAL_NESTING_IN_TCB					1
 extern void vTaskEnterCritical( void );
 extern void vTaskExitCritical( void );
+extern void vPortClearInterruptMask( int mask );
+extern int vPortSetInterruptMask( void );
 
+#if 1
+#define portSET_INTERRUPT_MASK_FROM_ISR()       vPortSetInterruptMask()
+#define portCLEAR_INTERRUPT_MASK_FROM_ISR( uxSavedStatusValue )       vPortClearInterruptMask( uxSavedStatusValue )
+#else
 #define portSET_INTERRUPT_MASK_FROM_ISR() 0
 #define portCLEAR_INTERRUPT_MASK_FROM_ISR( uxSavedStatusValue ) ( void ) uxSavedStatusValue
+#endif
 #define portDISABLE_INTERRUPTS()	__asm volatile( "csrc mstatus, 8" )
 #define portENABLE_INTERRUPTS()		__asm volatile( "csrs mstatus, 8" )
 #ifdef __FREERTOS__

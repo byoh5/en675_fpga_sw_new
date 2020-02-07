@@ -164,7 +164,7 @@ static void SdioCDTestTask(void *ctx)
 #endif
 #endif
 
-		printf("%3u%% %5u/%5u Test Sector(0x%08X ~ 0x%08X) Count(%8u) %6s- ", ((i+1) * 100) / sdcditem.u32TestCount, i+1, sdcditem.u32TestCount, testSector, testSector+readCount-1, readCount, readCount == 1 ? "single" : "multi");
+		printf("%3u%% %5u/%5u 0x%08X~0x%08X Cnt(%4u) %c-", ((i+1) * 100) / sdcditem.u32TestCount, i+1, sdcditem.u32TestCount, testSector, testSector+readCount-1, readCount, readCount == 1 ? 'S' : 'M');
 
 		ULONG wstart = BenchTimeStart();
 		SdioCdWrite(parrSrc, testSector, readCount);
@@ -177,7 +177,7 @@ static void SdioCDTestTask(void *ctx)
 		SdioCdRead(parrDst, testSector, readCount);
 		UINT rgap = BenchTimeStop(rstart);
 		snprintf(buf, 64, "%5.2f", ((readCount * u32DataBlockByte) / 1024.0 / 1024.0) / (rgap / 1000.0 / 1000.0));
-		printf("R:%sMB/s ", buf);
+		printf("R:%sMB/s", buf);
 		//printf("R");
 
 //		vTaskDelay(1);
@@ -202,11 +202,11 @@ static void SdioCDTestTask(void *ctx)
 
 		if (flag == 0) {
 			pass++;
-			_Gprintf("- OK\n");
+			_Gprintf("-OK\n");
 //			vTaskDelay(1);
 		} else {
 			fail++;
-			_Rprintf("- Fail\nDet(%u), Error Sector(0x%08X)\n", k, testSector + errSet);
+			_Rprintf("-Fail\nDet(%u), Error Sector(0x%08X)\n", k, testSector + errSet);
 #if 1
 			if (readCount > 2 && errSet > 2)
 				hexCmpDump("SD-W/R test -2", parrSrc + ((errSet - 2) * 512), parrDst + ((errSet - 2) * 512), 512);

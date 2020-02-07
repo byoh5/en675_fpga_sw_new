@@ -109,6 +109,48 @@ void vPortSysTickHandler( void )
 /*-----------------------------------------------------------*/
 
 
+void prvTaskExitError(void)
+{
+    /* A function that implements a task must not exit or attempt to return to
+    its caller as there is nothing to return to.  If a task wants to exit it
+    should instead call vTaskDelete( NULL ).
+
+    Artificially force an assert() to be triggered if configASSERT() is
+    defined, then stop here so application writers can catch the error. */
+	printf("The task was incorrectly closed. [%s]\n", pcTaskGetName(NULL) == NULL ? "null" : pcTaskGetName(NULL));
+    vTaskDelete(NULL);
+}
+/*-----------------------------------------------------------*/
+
+
+/* Clear current interrupt mask and set given mask */
+void vPortClearInterruptMask(int mask)
+{
+#if 0
+	__asm volatile( "csrs mstatus, 8" );
+#else
+    //__asm volatile("csrw mie, %0" ::"r"(mask));
+	write_csr(mie, mask);
+#endif
+}
+/*-----------------------------------------------------------*/
+
+/* Set interrupt mask and return current interrupt enable register */
+int vPortSetInterruptMask(void)
+{
+#if 0
+	__asm volatile( "csrc mstatus, 8" );
+#else
+    //__asm volatile("csrr %0, mie" : "=r"(ret));
+    //__asm volatile("csrc mie, %0" ::"i"(7));
+	int ret = read_csr(mie);
+ 	write_csr(mie, 0);
+	return ret;
+#endif
+}
+/*-----------------------------------------------------------*/
+
+
 void vApplicationStackOverflowHook( TaskHandle_t pxTask, char *pcTaskName )
 {
 	( void ) pcTaskName;
@@ -176,6 +218,12 @@ void vMemoryHeapInit(void)
 		}
 		uiTotalHeapMemorySize += xHeapRegions[i].xSizeInBytes;
 	}
+
+//	юс╫ц Test code
+	printf("xISRStack: 0x%08X, %uByte.\n", xISRStack, sizeof(xISRStack));
+	SYS_REG7 = (UINT)(intptr_t)xISRStack;
+//////////////////////////
+
 
 	/* Pass the array into vPortDefineHeapRegions(). */
 	vPortDefineHeapRegions( xHeapRegions );

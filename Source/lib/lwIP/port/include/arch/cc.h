@@ -84,6 +84,8 @@
 
 #define SSIZE_MAX INT_MAX
 
+//typedef uint64_t sys_prot_t;
+
 //-------------------------------------------------------------------------------------------------
 // H/W assist functions
 WORD my_chksum(const void *dataptr, WORD len);

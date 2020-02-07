@@ -7,7 +7,13 @@ SET(CMAKE_SYSTEM_VERSION 1)
 # prefix of the toolchain path
 SET(TOOLCHAIN_PATH "E:/EN675/eclipse/tool/riscv64-unknown-elf-gcc-8.3.0-2019.08.0-x86_64-w64-mingw32/bin/riscv64-unknown-elf-")
 
+IF (WIN32)
+    SET(EXT ".exe")
+ELSE ()
+    SET(EXT "")
+ENDIF ()
+
 # specify the cross compiler
-SET(CMAKE_C_COMPILER          ${TOOLCHAIN_PATH}gcc.exe)
-SET(CMAKE_CXX_COMPILER        ${TOOLCHAIN_PATH}g++.exe)
-SET(CMAKE_ASM-ATT_COMPILER    ${TOOLCHAIN_PATH}as.exe)
+SET(CMAKE_C_COMPILER          ${TOOLCHAIN_PATH}gcc${EXT})
+SET(CMAKE_CXX_COMPILER        ${TOOLCHAIN_PATH}g++${EXT})
+SET(CMAKE_ASM-ATT_COMPILER    ${TOOLCHAIN_PATH}as${EXT})

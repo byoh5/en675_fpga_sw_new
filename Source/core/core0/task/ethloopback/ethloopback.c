@@ -71,7 +71,7 @@ static void EthLoopbackAuto(EthLoopbackGp *elg)
 
 	int old_ok_acc = 0, ok_acc = 0, ok_txe = 0, ok_rxe = 0, ok_txd = 0, ok_rxd = 0;
 	printf("Ethernet Loopback Test(step loop %d)\n", elg->u32Loop);
-	printf("O:pass, 2:compare fail, 3:zero data, 4:data length underflow or overflow, 5:timeout\n");
+	printf("O:pass, 2:compare fail, 3:zero data, 4:data length underflow or overflow, X:timeout\n");
 #if 0
 	printf("          |            RX-Edge(1)           |\n");
 	printf("RX-DLY	  | 0 1 2 3 4 5 6 7 8 9 A B C D E F |\n");
@@ -94,10 +94,13 @@ static void EthLoopbackAuto(EthLoopbackGp *elg)
 							ok_rxe = u8RXe;
 							ok_rxd = u8RXd;
 						}
-					} else {					// 2:data error, compare fail
-						printf("%d ", TestRes);	// 3:zero data
-					}							// 4:data length underflow or overflow
-												// 5:timeout
+					} else {
+						if (TestRes == 5) {
+							_Zprintf("X ");				// 5:timeout
+						} else {						// 2:data error, compare fail
+							_Rprintf("%d ", TestRes);	// 3:zero data
+						}								// 4:data length underflow or overflow
+					}
 				}
 				printf("| ");
 			}
@@ -128,7 +131,7 @@ static void EthLoopbackAuto(EthLoopbackGp *elg)
 						}
 					} else {
 						if (TestRes == 5) {
-							printf("%d ", TestRes);		// 5:timeout
+							_Zprintf("X ");				// 5:timeout
 						} else {						// 2:data error, compare fail
 							_Rprintf("%d ", TestRes);	// 3:zero data
 						}								// 4:data length underflow or overflow

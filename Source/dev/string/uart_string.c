@@ -861,11 +861,11 @@ void Comm(void)
 // Console process : Send CPU1
 			case PC_CMD_STR:
 				if (gptMsgShell.index != 0 && bIn == PC_ETX) {
-					UART_TX_ECM_DLY;
+					//UART_TX_ECM_DLY;
+					hwflush_dcache_range((ulong)(intptr_t)gptMsgShell.arg[gptMsgShell.tail], MSG_SHELL_MAXLEN + 1);
 					gptMsgShell.index = 0;
 					num_loop(gptMsgShell.tail, gptMsgShell.tot_num);
-//					CPU_SHARED1 |= eIP1_SHELL_RX;
-//					CPU_IRQ1 = 1;
+					enx_wake_message_to_cpu0(eCPU0_MSG_SHELL_RX);
 					SetEnd();
 				} else {
 					if (gptMsgShell.index == MSG_SHELL_MAXLEN) {

@@ -290,8 +290,38 @@ typedef enum {
 typedef void (*idle_fn)(uint64_t tick);
 
 //******************************************************************************
+// CPUx<->CPUx S/W IRQ Message define
+//------------------------------------------------------------------------------
+#define CPU0_MSG_MUTEX	SYS_MUTEX0
+#define CPU0_MSG_FLAG	SYS_REG0
+
+enum {
+	eCPU0_MSG_SHELL_RX		= 0x00000001,
+	eCPU0_MSG_STREAM_INFO	= 0x00000002,
+};
+
+#define CPU1_MSG_MUTEX	SYS_MUTEX1
+#define CPU1_MSG_FLAG	SYS_REG1
+
+#define CPU2_MSG_MUTEX	SYS_MUTEX2
+#define CPU2_MSG_FLAG	SYS_REG2
+
+#define CPU3_MSG_MUTEX	SYS_MUTEX3
+#define CPU3_MSG_FLAG	SYS_REG3
+
+
+//******************************************************************************
 // IRQ define
 //------------------------------------------------------------------------------
+#define IRQ_SOURCE_COUNT			40
+
+typedef struct {
+	uint64_t sync_count;
+	uint64_t swirq_count;
+	uint64_t timeirq_count;
+	uint64_t exirq_count[IRQ_SOURCE_COUNT + 1];
+} irq_count;
+
 typedef enum {
 	eigiISP = 1,
 	eigiVCODEC = 2,
@@ -329,8 +359,8 @@ typedef enum {
 	eigiGPIO60_63_I2C7_UART7 = 34,
 	eigiGPIO64_67_SPI8 = 35,
 	eigiGPIO68_71_I2C8_UART8 = 36,
-	eigiReserved37 = 37,
-	eigiReserved38 = 38,
+	eigiIR = 37,
+	eigiOMC = 38,
 	eigiReserved39 = 39,
 	eigiReserved40 = 40,
 } eIRQ_GROUP_INDEX;
@@ -438,45 +468,6 @@ typedef enum {
 	SFLS_E_64K = 3
 } SFLS_ERASE;
 
-typedef void (*sfls_func)(void);
-typedef void (*sfls_erase_func)(UINT addr);
-
-typedef struct {
-	BYTE ior_cmd;	// read cmd
-	BYTE ior_adr;	// read adr
-	BYTE ior_dat;	// read dat
-	BYTE iow_cmd;	// write cmd
-	BYTE iow_adr;	// write adr
-	BYTE iow_dat;	// write dat
-	BYTE iowe_cmd;	// write enable
-	BYTE iors_cmd;	// read status cmd
-	BYTE iors_dat;	// read status dat
-
-	BYTE cmd_read;
-	BYTE cmd_page_program;
-	BYTE cmd_write_enable;
-	BYTE cmd_read_status;
-	BYTE cmd_enter_qpi;
-	BYTE cmd_enter_4b;
-	BYTE cmd_exit_4b;
-	BYTE cmd_sector_erase;
-	BYTE cmd_32k_erase;
-	BYTE cmd_64k_erase;
-	BYTE cmd_chip_erase;
-
-	BYTE gap;
-	BYTE rdltc;
-
-	UINT size;
-
-	sfls_func func_init;
-	sfls_func func_write_enable;
-	sfls_erase_func func_secter_erase;
-	sfls_erase_func func_32k_erase;
-	sfls_erase_func func_64k_erase;
-	sfls_erase_func func_chip_erase;
-} SFLScontrol;
-
 typedef struct {
 	char SFDPSignature[4];			// 00:03
 	BYTE SFDPMinorNum;				// 04
@@ -489,62 +480,117 @@ typedef struct {
 	BYTE ParameterTableLength;		// 0B
 	UINT ParameterTablePointer:24;	// 0C:0E
 	UINT _res01:8;					// 0F
-	UINT _res02[4];					// 10:1F
-	UINT _res03[4];					// 20:2F
-	UINT BlockSectorEreaseSize:2;	// 30		00:reserved, 01:4KB-erase, 10:reserved, 11:64KB-erase
+} SFLSsfdp_header;
+
+typedef struct {
+	UINT BlockSectorEreaseSize:2;	// 00		00:reserved, 01:4KB-erase, 10:reserved, 11:64KB-erase
 	UINT WriteGranularity:1;		//			0:no, 1:yes
 	UINT WEIR_WVSR:1;				//			00:N/A, 01:use 50h opcode, 11:use 60h opcode
 	UINT WEOS_WVSR:1;				//
 	UINT _res04:3;					//
-	UINT FourKBEraseOpcode:8;		// 31		xx:4KB Erase Support(opcode), FF:not supported
-	UINT Sup112FastRead:1;			// 32		0:not supported, 1:supported
+	UINT FourKBEraseOpcode:8;		// 01		xx:4KB Erase Support(opcode), FF:not supported
+	UINT Sup112FastRead:1;			// 02		0:not supported, 1:supported
 	UINT AddrByte:2;				//			00:3byte, 01:3-4byte(e.g. defaults to 3byte mode, enters 4byte mode on command) 10:4byte, 11:reserved
 	UINT SupDTRClocking:1;			//			0:not supported, 1:supported
 	UINT Sup122FastRead:1;			//			0:not supported, 1:supported
 	UINT Sup144FastRead:1;			//			0:not supported, 1:supported
 	UINT Sup114FastRead:1;			//			0:not supported, 1:supported
 	UINT _res05:1;					//
-	UINT _res06:8;					// 33
-	UINT FlashMemoryDensity;		// 34:37
-	UINT DummyClock144FR:5;			// 38
+	UINT _res06:8;					// 03
+	UINT FlashMemoryDensity;		// 04:07
+	UINT DummyClock144FR:5;			// 08
 	UINT Modebit144FR:3;			//
-	UINT Op144FR:8;					// 39
-	UINT DummyClock114FR:5;			// 3A
+	UINT Op144FR:8;					// 09
+	UINT DummyClock114FR:5;			// 0A
 	UINT Modebit114FR:3;			//
-	UINT Op114FR:8;					// 3B
-	UINT DummyClock112FR:5;			// 3C
+	UINT Op114FR:8;					// 0B
+	UINT DummyClock112FR:5;			// 0C
 	UINT Modebit112FR:3;			//
-	UINT Op112FR:8;					// 3D
-	UINT DummyClock122FR:5;			// 3E
+	UINT Op112FR:8;					// 0D
+	UINT DummyClock122FR:5;			// 0E
 	UINT Modebit122FR:3;			//
-	UINT Op122FR:8;					// 3F
-	UINT Sup222FastRead:1;			// 40		0:not supported, 1:supported
+	UINT Op122FR:8;					// 0F
+	UINT Sup222FastRead:1;			// 10		0:not supported, 1:supported
 	UINT _res07:3;					//
 	UINT Sup444FastRead:1;			//			0:not supported, 1:supported
 	UINT _res08:3;					//
-	UINT _res09:24;					// 41:43
-	UINT _res10:16;					// 44:45
-	UINT DummyClock222FR:5;			// 46
+	UINT _res09:24;					// 11:13
+	UINT _res10:16;					// 14:15
+	UINT DummyClock222FR:5;			// 16
 	UINT Modebit222FR:3;			//
-	UINT Op222FR:8;					// 47
-	UINT _res11:16;					// 48:49
-	UINT DummyClock444FR:5;			// 4A
+	UINT Op222FR:8;					// 17
+	UINT _res11:16;					// 18:19
+	UINT DummyClock444FR:5;			// 1A
 	UINT Modebit444FR:3;			//
-	UINT Op444FR:8;					// 4B
-	BYTE SectorType1Size;			// 4C
-	BYTE SectorType1Op;				// 4D
-	BYTE SectorType2Size;			// 4E
-	BYTE SectorType2Op;				// 4F
-	BYTE SectorType3Size;			// 50
-	BYTE SectorType3Op;				// 51
-	BYTE SectorType4Size;			// 52
-	BYTE SectorType4Op;				// 53
-	UINT _res12[3];					// 54:5F
-	UINT _res13[4];					// 61:6F
-	UINT _res14[4];					// 71:7F
-	BYTE UniqueID[12];				// 80:8B
-	UINT _Res15;					// 8C:8F
+	UINT Op444FR:8;					// 1B
+	BYTE SectorType1Size;			// 1C
+	BYTE SectorType1Op;				// 1D
+	BYTE SectorType2Size;			// 1E
+	BYTE SectorType2Op;				// 1F
+	BYTE SectorType3Size;			// 20
+	BYTE SectorType3Op;				// 21
+	BYTE SectorType4Size;			// 22
+	BYTE SectorType4Op;				// 23
+	UINT _res12[3];					// 24:2F
+	UINT _res13[4];					// 31:3F
+	UINT _res14[4];					// 41:4F
+	UINT _res15[4];					// 51:5F
+	UINT _Res16[40];				// 60:FF
 } SFLSsfdp;
+
+typedef void (*sfls_func)(void);
+typedef void (*sfls_erase_func)(UINT addr);
+typedef BYTE (*sfls_read_status)(void);
+typedef void (*sfls_write_status)(BYTE status);
+typedef void (*sfls_read_sfdp_func)(BYTE *sfdp_bin);
+typedef UINT (*sfls_check_func)(void);
+
+typedef struct {
+	BYTE ior_cmd;	// read cmd
+	BYTE ior_adr;	// read adr
+	BYTE ior_dat;	// read dat
+	BYTE iow_cmd;	// write cmd
+	BYTE iow_adr;	// write adr
+	BYTE iow_dat;	// write dat
+	BYTE iowe_cmd;	// write enable
+	BYTE iors_cmd;	// read status cmd
+	BYTE iors_dat;	// read status dat
+
+	BYTE is_qpi;
+
+	BYTE cmd_read;
+	BYTE cmd_page_program;
+	BYTE cmd_write_enable;
+	BYTE cmd_read_status;
+
+	BYTE gap;
+	BYTE rdltc;
+
+	UINT size;
+
+	sfls_func func_init_1;
+	sfls_func func_init_2;
+	sfls_func func_write_enable;
+	sfls_erase_func func_secter_erase;
+	sfls_erase_func func_32k_erase;
+	sfls_erase_func func_64k_erase;
+	sfls_erase_func func_chip_erase;
+	sfls_read_status func_read_status;
+	sfls_write_status func_write_status;
+	sfls_read_sfdp_func func_read_sfdp;
+	sfls_func func_enter_4b;
+	sfls_func func_exit_4b;
+	sfls_check_func func_is_4b;
+	sfls_func func_enter_qpi;
+	sfls_func func_exit_qpi;
+	sfls_check_func func_is_qpi;
+	sfls_func func_enter_qe;
+	sfls_func func_exit_qe;
+	sfls_check_func func_is_qe;
+	sfls_func func_enter_protection;
+	sfls_func func_exit_protection;
+	sfls_check_func func_is_protection;
+} SFLScontrol;
 
 //******************************************************************************
 // I2S define

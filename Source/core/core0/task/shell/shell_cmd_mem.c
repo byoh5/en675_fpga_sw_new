@@ -301,8 +301,10 @@ static ATTR_MALIGN64 BYTE dmaenddst[64+64];
 int cmd_test_dma(int argc, char *argv[])
 {
 	char cMode = 'B';
-	static UINT nCH = 2;
+	static UINT nCH = 0;
 	static int nTestsize = -1; // random
+
+	nCH = CPU_ID;
 
 	if (strcmp(argv[0], "bdma") == 0) {
 		cMode = 'B';
@@ -531,7 +533,7 @@ int cmd_test_dma(int argc, char *argv[])
 				dmaitem.cMode = cMode;
 				dmaitem.u32CH = nCH;
 				dmaitem.target = target;
-				dmaitem.taskHandle = vTaskCreate("DmaT", DmaTestTask, NULL, LV3_STACK_SIZE, LV5_TASK_PRIO);
+				dmaitem.taskHandle = vTaskCreate("DmaT", DmaTestTask, NULL, LV3_STACK_SIZE, LV4_TASK_PRIO);
 			} else {
 				Shell_Unknown();
 			}

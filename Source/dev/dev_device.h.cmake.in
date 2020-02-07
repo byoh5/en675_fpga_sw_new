@@ -31,13 +31,23 @@
 #define __SFLS_EON__
 #define __SFLS_32MB__
 #endif
-#if ${USE_SFLS_W25Q64}
-#define __SFLS_W25Q64__
+#if ${USE_SFLS_W25Q64JVIQ}
+#define __SFLS_W25Q64JVIQ__
 #define __SFLS_WINBOND__
 #define __SFLS_8MB__
 #endif
+#if ${USE_SFLS_W25Q256JVQ}
+#define __SFLS_W25Q256JVQ__
+#define __SFLS_WINBOND__
+#define __SFLS_32MB__
+#endif
 #if ${USE_SFLS_MX25L12835F}
 #define __SFLS_MX25L12835F__
+#define __SFLS_MACRONIX__
+#define __SFLS_16MB__
+#endif
+#if ${USE_SFLS_MX25U12832F}
+#define __SFLS_MX25U12832F__
 #define __SFLS_MACRONIX__
 #define __SFLS_16MB__
 #endif
@@ -60,6 +70,11 @@
 #define __SFLS_IS25LP128__
 #define __SFLS_ISSI__
 #define __SFLS_16MB__
+#endif
+#if ${USE_SFLS_IS25LP256}
+#define __SFLS_IS25LP256__
+#define __SFLS_ISSI__
+#define __SFLS_32MB__
 #endif
 
 #if ${USE_FREERTOS}
@@ -210,5 +225,10 @@
 #define LOAD_FS_MEM 0
 #endif // LOAD_FS_MEM
 #endif // __FILESYSTEM__
+
+#if ${USE_IR}
+#define __IR__
+#define IR_IRQOCC_ADDR	${IR_IRQ_ADDR}
+#endif // __IR__
 
 #endif // __DEV_DEVICE_H__

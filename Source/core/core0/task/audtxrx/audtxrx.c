@@ -114,13 +114,13 @@ UINT audrx_queue_put(UINT length, UINT *addr)
 #endif
 		//printf("\tAUDIO PUT 0x%08X~0x%08X, %4u/%4u\n", *addr, *addr + AUD_STM_SIZE, AUD_STM_SIZE, length);
 		if (MsgStmPut(*addr, AUD_STM_SIZE, getts, eSTREAMMSG_AUDIO) == ENX_OK) {
-			IsrStreamdata(NULL);
+			IsrStreamdata();
 		} else {
 			printf("%s(STM) Drop\n", __func__);
 		}
 
 		if (MsgRecPut(*addr, AUD_STM_SIZE, getts, eSTREAMMSG_AUDIO) == ENX_OK) {
-			IsrRecorddata(NULL);
+			IsrRecorddata();
 		} else {
 			printf("%s(REC) Drop\n", __func__);
 		}

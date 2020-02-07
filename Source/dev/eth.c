@@ -209,11 +209,40 @@ void EthRxTxInit(UINT type, UINT speed, UINT duplex)
 		// Edge & Delay
 		// eth lbm 1000 2
 		// eth lbt 1000
-#if 1 // 200108(S)
+#if 1 // 200130(S)/mcs
+		if (speed == ETHPHY_SPD_1000) {
+			ETH_TX_CLKEDGE = 1;
+			ETH_TX_TCKDLY = 0xC;
+			ETH_RX_RCKEDGE = 0;
+			ETH_RX_RCKDLY = 0xC;
+		} else {
+			ETH_TX_CLKEDGE = 1;
+			ETH_TX_TCKDLY = 0x1;
+			ETH_RX_RCKEDGE = 1;
+			ETH_RX_RCKDLY = 0xC;
+		}
+#elif 1 // 200128(S)/mcs
+		ETH_TX_CLKEDGE = 0;
+		ETH_TX_TCKDLY = 0x4;
+		ETH_RX_RCKEDGE = 0;
+		ETH_RX_RCKDLY = 0x3;
+#elif 0 // 200108(S)
 		ETH_TX_CLKEDGE = 0;
 		ETH_TX_TCKDLY = 0x0;
 		ETH_RX_RCKEDGE = 0;
 		ETH_RX_RCKDLY = 0xC;
+#else // 200118(JHJ)
+		if (speed == ETHPHY_SPD_1000) {
+			ETH_TX_CLKEDGE = 1;
+			ETH_TX_TCKDLY = 0x0;
+			ETH_RX_RCKEDGE = 1;
+			ETH_RX_RCKDLY = 0xB;
+		} else {
+			ETH_TX_CLKEDGE = 1;
+			ETH_TX_TCKDLY = 0x0;
+			ETH_RX_RCKEDGE = 0;
+			ETH_RX_RCKDLY = 0x3;
+		}
 #endif
 
 		ETH_TX_TXENDLY		= 0;
@@ -380,7 +409,8 @@ void EthRxTxInit(UINT type, UINT speed, UINT duplex)
 		ETH_TX_TXD3DLY		= 0;
 
 		if (speed == ETHPHY_SPD_100) {
-			ETH_TX_LTC = (AXI_FREQ / (50*1000*1000)) + 4;	// 50MHz SDR
+			// ETH_TX_LTC = (AXI_FREQ / (50*1000*1000)) + 4;	// 50MHz SDR
+			ETH_TX_LTC = 30;
 		} else {
 			// ETH_TX_LTC = (AXI_FREQ / (50*1000*1000)) + 4;	// 50MHz SDR
 			ETH_TX_LTC = 30;

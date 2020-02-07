@@ -73,6 +73,10 @@
 #define JPEG_Resolution_MAX				e_res1920x1080
 #define JPEG_Resolution_MIN				e_res320x240
 
+#define JPEG_STREAM						1
+#define JPEG_SNAPSHOT					1
+#define JPEG_WEBVIEW					1
+
 ////////////////////////////////////////////////////////////////////////////////
 // Audio
 ////////////////////////////////////////////////////////////////////////////////
@@ -80,7 +84,7 @@
 #define AUDIO_CODEC_RAW					0
 #define AUDIO_CODEC_G711A				1
 #define AUDIO_CODEC_G711U				2
-#define AUDIO_CODEC						AUDIO_CODEC_G711U
+#define AUDIO_CODEC						AUDIO_CODEC_RAW
 
 ////////////////////////////////////////////////////////////////////////////////
 // PCM
@@ -90,7 +94,7 @@
 #define PCM_16BIT_11025HZ				(22050)
 #define PCM_16BIT_22050HZ				(44100)
 #define PCM_16BIT_44100HZ				(88200)
-#define PCM_FREQUENCY					PCM_16BIT_8000HZ
+#define PCM_FREQUENCY					PCM_16BIT_44100HZ
 
 #if (PCM_FREQUENCY==PCM_16BIT_8000HZ)
 #define AUD_STM_SIZE					(320)

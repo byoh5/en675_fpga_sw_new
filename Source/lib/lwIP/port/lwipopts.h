@@ -72,7 +72,7 @@ void my_copy(void* dst, void* src, unsigned long len);
  * you disable this, you must be sure what you are doing!
  */
 #define SYS_LIGHTWEIGHT_PROT            1
-
+#if 1
 #if 1
 #if !defined(NO_SYS) || !NO_SYS /* default is 0 */
 void sys_check_core_locking(void);
@@ -92,6 +92,7 @@ void sys_unlock_tcpip_core(void);
 #define LWIP_MARK_TCPIP_THREAD()
 #define LOCK_TCPIP_CORE()
 #define UNLOCK_TCPIP_CORE()
+#endif
 #endif
 
 /*
@@ -1213,21 +1214,21 @@ void sys_unlock_tcpip_core(void);
  * NETCONN_UDP. The queue size value itself is platform-dependent, but is passed
  * to sys_mbox_new() when the recvmbox is created.
  */
-#define DEFAULT_UDP_RECVMBOX_SIZE       12
+#define DEFAULT_UDP_RECVMBOX_SIZE       1600 // 12
 
 /**
  * DEFAULT_TCP_RECVMBOX_SIZE: The mailbox size for the incoming packets on a
  * NETCONN_TCP. The queue size value itself is platform-dependent, but is passed
  * to sys_mbox_new() when the recvmbox is created.
  */
-#define DEFAULT_TCP_RECVMBOX_SIZE       12
+#define DEFAULT_TCP_RECVMBOX_SIZE       1600 // 12
 
 /**
  * DEFAULT_ACCEPTMBOX_SIZE: The mailbox size for the incoming connections.
  * The queue size value itself is platform-dependent, but is passed to
  * sys_mbox_new() when the acceptmbox is created.
  */
-#define DEFAULT_ACCEPTMBOX_SIZE         12
+#define DEFAULT_ACCEPTMBOX_SIZE         8000 // 12
 
 
 /*
@@ -1265,7 +1266,7 @@ void sys_unlock_tcpip_core(void);
  * - sys_mbox_free() has to unblock receive tasks waiting on recvmbox/acceptmbox
  *   and prevent a task pending on this during/after deletion
  */
-#define LWIP_NETCONN_FULLDUPLEX         0
+#define LWIP_NETCONN_FULLDUPLEX         1 // 0
 
 
 /*

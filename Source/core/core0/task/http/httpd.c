@@ -2707,7 +2707,7 @@ httpd_init_pcb(struct altcp_pcb *pcb, u16_t port)
     altcp_accept(pcb, http_accept);
   }
 }
-
+#include "arch/sys_arch.h"
 /**
  * @ingroup httpd
  * Initialize the httpd: set up a listening PCB and bind it to the defined port
@@ -2730,6 +2730,7 @@ httpd_init(void)
 #if LWIP_TCPIP_CORE_LOCKING		// $CMT-hjlee-180928 -
   LOCK_TCPIP_CORE();			// $CMT-hjlee-180928 -
 #else							// $CMT-hjlee-180928 -
+  unsigned long lev;
   SYS_ARCH_DECL_PROTECT(lev);	// $CMT-hjlee-180928 -
   SYS_ARCH_PROTECT(lev);		// $CMT-hjlee-180928 -
 #endif							// $CMT-hjlee-180928 -

@@ -24,7 +24,7 @@ window.ExJPG = {
 		}
 		ExJPG.context = ExJPG.canvas.getContext("2d");
 		ExJPG.Img.onload = function(evt) {
-			ExJPG.context.drawImage(ExJPG.Img, ExJPG.dx, ExJPG.dy, 960, 540);
+			ExJPG.context.drawImage(ExJPG.Img, ExJPG.dx, ExJPG.dy, 1280, 720);
 			ExJPG.urlCreator.revokeObjectURL(ExJPG.Img.src);
 			return 0;
 		};
@@ -63,7 +63,7 @@ function SetFormDefaults()
 
 <body onload="SetFormDefaults();">
 	<div style="margin:5px">
-		<canvas id="ExJPG" width="960" height="540"></canvas>
+		<canvas id="ExJPG" width="1280" height="720"></canvas>
 	</div>
 </body>
 </html>

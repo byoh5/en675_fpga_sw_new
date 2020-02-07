@@ -16,7 +16,22 @@ typedef struct{									// Shell : cpu0 -> cpu1
 	char arg[MSG_SHELL_NUM][MSG_SHELL_MAXLEN+1];//		"
 } shell_msg_t;									//		"
 
+// JPEG_STILL_FLAG
+enum {
+	JPEG_SNAP_IDE = 0,
+	JPEG_SNAP_PROC= 1,
+	JPEG_SNAP_STR = 2,
+	JPEG_SNAP_ING = 3,
+	JPEG_SNAP_END = 4,
+	JPEG_SNAP_JTAG= 9
+};
+
 typedef struct {
+	UINT JPEG_STILL_ADDR;
+	UINT JPEG_STILL_SIZE;
+	UINT JPEG_STILL_FLAG;
+	INT JPEG_STILL_REF;
+
 	// Time info
 	time_t TIME;
 	INT TIMEZONE;
@@ -25,6 +40,7 @@ typedef struct {
 	UINT CMP_DATEID;
 	UINT VIDEO_REC;
 	UINT VIDEO_FPS;
+	UINT VIDEO_TICK;
 } share_msg_t;
 
 typedef struct {

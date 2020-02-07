@@ -10,6 +10,7 @@
 
 #if (LOAD_FS_SDCARD==1)
 #include "sdcard.h"
+#include "muxer_videnc.h"
 #endif
 
 #include "ipchange.h"
@@ -1417,7 +1418,7 @@ static const char *AppJpegSave(void)
 				break;
 		case sd_IDLE:	// sd카드o, IDLE <- 즉시 처리 가능
 			printf("%s(%d) : sd_IDLE state\n", __func__, __LINE__);
-			timer_sched_timeout_cb(10, TIMEOUT_ONESHOT, muxer_jpegstill_process, NULL);
+			muxer_jpegstill_request();
 			return strUrl_submit;
 		case sd_SAVE:	// sd카드o, 녹화 중 <- jpeg save 작업을 videnc로 넘긴다.
 			printf("%s(%d) : sd_SAVE state\n", __func__, __LINE__);

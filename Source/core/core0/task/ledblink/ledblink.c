@@ -211,11 +211,11 @@ void LedblinkTask(void *pvParameters)
 	printf("keepcost : %u\r\n", (unsigned int) minfo.keepcost);		// This is the size of the top-most releasable chunk that normally borders the end of the heap.
 	printf("*********************************************************\r\n");
 #endif
-
+#if 1
 	char buf[64] = {0};
 	snprintf(buf, 64, "PI:%.6f / test float printf\n", M_PI); // 내부에서 %f를 처리하기 위해 malloc를 호출한다.
 	flprintf("%s", buf);
-
+#endif
 	//int res = setTimeZone();
 	//printf("res : %d\n", res);
 	ULONG ledcnt = 0;

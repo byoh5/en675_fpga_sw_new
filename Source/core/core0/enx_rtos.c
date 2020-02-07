@@ -10,6 +10,9 @@
 #if defined(__WIFI__)
 #include "wifi_task.h"
 #endif
+#if USE_IR
+#include "ir_recv.h"
+#endif
 
 #include "pmp.h"
 #include "rtspd.h"
@@ -71,6 +74,9 @@ void main_os(void)
 #endif
 #ifdef __AUDIO__
 	vTaskCreate("audRxTx", audtxrx_task, NULL, LV3_STACK_SIZE, LV5_TASK_PRIO);
+#endif
+#if USE_IR
+	vTaskCreate("IrRx", ir_recv_task, NULL, LV3_STACK_SIZE, LV5_TASK_PRIO);
 #endif
 
 	vTaskStartScheduler();

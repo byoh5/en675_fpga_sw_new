@@ -62,10 +62,10 @@ int rtspd_client_rtp_jpeg_main(rtsp_client *prcInfo)
 	}
 
 	rtp_session *rtpSession = &(prcInfo->rtp_ss[ENX_RTSP_STRTYPE_numVIDEO]);
-	rtpSession->buf_idx = (rtpSession->buf_idx + 1) % 2;
+	rtsp_connect_info *rtspConnect = &(prcInfo->conn_info);
 
 	UINT remaining = TCP_MSS;
-	BYTE *send_buffer = rtpSession->buffer[rtpSession->buf_idx];
+	BYTE *send_buffer = NULL;
 	rtp_queue_data pdata;
 	BYTE *base_offset;
 
@@ -76,6 +76,10 @@ int rtspd_client_rtp_jpeg_main(rtsp_client *prcInfo)
 	BYTE *jpgData = NULL;
 	UINT jpegleft;
 
+	if (rtpSession == NULL) {
+		printf("??");
+	}
+
 	switch (rtpSession->tx_ready) {
 		case ENX_RTP_TXSTE_READY:
 			if (rtp_queue_get(prcInfo->rtp_queue_video, &pdata) == ENX_OK) {
@@ -85,7 +89,7 @@ int rtspd_client_rtp_jpeg_main(rtsp_client *prcInfo)
 				rtpSession->start_rtptime += pdata.ts;
 
 				// SOFO를 찾아 JPEG의 size를 check
-				BYTE *size_base = (BYTE *)(rtpSession->rtp_pk.base + JPG_numOffset_SOFO);
+				BYTE *size_base = (BYTE *)(intptr_t)(rtpSession->rtp_pk.base + JPG_numOffset_SOFO);
 				if (size_base[0] == 0xFF && size_base[1] == 0xC0) {
 					rtpSession->rtp_pk.width  = size_base[7] << 8 | size_base[8];
 					rtpSession->rtp_pk.height = size_base[5] << 8 | size_base[6];
@@ -98,20 +102,24 @@ int rtspd_client_rtp_jpeg_main(rtsp_client *prcInfo)
 				// This case goes directly to "ENX_RTP_TXSTE_DOING".
 			} else {
 				break; // switch break;
-			}
+			} // @suppress("No break at end of case")
 		case ENX_RTP_TXSTE_DOING:
 			{
 				// 남은 jpeg의 크기
 				jpegleft = rtpSession->rtp_pk.size - rtpSession->rtp_pk.offset;
 
 				// base기준 전송을 보내야 할 jpeg 주소
-				base_offset = (BYTE *)(rtpSession->rtp_pk.base + prcInfo->rtp_ss[ENX_RTSP_STRTYPE_numVIDEO].rtp_pk.offset);
+				base_offset = (BYTE *)(intptr_t)(rtpSession->rtp_pk.base + prcInfo->rtp_ss[ENX_RTSP_STRTYPE_numVIDEO].rtp_pk.offset);
+
+				rtpSession->buf_idx = (rtpSession->buf_idx + 1) % 2;
+				rtpSession->buf_len[rtpSession->buf_idx] = 0;
+				send_buffer = rtpSession->buffer[rtpSession->buf_idx];
 
 				// RTSP Interleaved(4byte)
 				if (prcInfo->eTransport == ENX_RTSP_TRANSPORT_TCP || prcInfo->eTransport == ENX_RTSP_TRANSPORT_HTTP) {
 					rtspHead = (rthInterleaved *)send_buffer;
 					rtspHead->un8Magic = '$';
-					rtspHead->un8Channel = rtpSession->rtp_port;
+					rtspHead->un8Channel = rtspConnect->rtp_port[ENX_RTSP_STRTYPE_numVIDEO];
 					rtspHead->un16Length = 0;
 					rtpSession->buf_len[rtpSession->buf_idx] = sizeof(rthInterleaved);
 				}
@@ -124,15 +132,15 @@ int rtspd_client_rtp_jpeg_main(rtsp_client *prcInfo)
 				rtpHead->un4CSRCcount = 0;
 				rtpHead->un1Markerbit = 0;
 				rtpHead->un7Payloadtype = rtpSession->payload_type;
-				rtpHead->un16Sequencenum = ++rtpSession->start_seq;
-				rtpHead->un32Timestamp = rtpSession->start_rtptime;
-				rtpHead->un32SSIdentifier = rtpSession->ssrc;
+				rtpHead->un16Sequencenum = htons(++rtpSession->start_seq);
+				rtpHead->un32Timestamp = htonl(rtpSession->start_rtptime);
+				rtpHead->un32SSIdentifier = htonl(rtpSession->ssrc);
 				rtpSession->buf_len[rtpSession->buf_idx] += sizeof(rthRTPHeader);
 
 				// JPEG Header(8byte)
 				jpgHead = (jpgHeader *)(send_buffer + rtpSession->buf_len[rtpSession->buf_idx]);
 				jpgHead->un8TypeSpecific = 0;
-				jpgHead->un24FragmentOffset = rtpSession->rtp_pk.data_offset;
+				jpgHead->un24FragmentOffset = ((rtpSession->rtp_pk.data_offset & 0xff0000) >> 16) | (rtpSession->rtp_pk.data_offset & 0xff00) | ((rtpSession->rtp_pk.data_offset & 0xff) << 16);
 				jpgHead->un8Type = 0;
 				jpgHead->un8Q = 128;
 				jpgHead->un8Width = rtpSession->rtp_pk.width >> 3;
@@ -144,7 +152,7 @@ int rtspd_client_rtp_jpeg_main(rtsp_client *prcInfo)
 					jpgQTHerd = (jpgQTHeader *)(send_buffer + rtpSession->buf_len[rtpSession->buf_idx]);
 					jpgQTHerd->un8MBZ = 0;
 					jpgQTHerd->un8Precision = 0;
-					jpgQTHerd->un16Length = JPG_numYCQUNTSize;
+					jpgQTHerd->un16Length = htons(JPG_numYCQUNTSize);
 					rtpSession->buf_len[rtpSession->buf_idx] += sizeof(jpgQTHeader);
 
 					// Quantization table Copy
@@ -157,7 +165,7 @@ int rtspd_client_rtp_jpeg_main(rtsp_client *prcInfo)
 					if ((jpegleft - JPG_numHeaderSize) < remaining) {
 						remaining = jpegleft - JPG_numHeaderSize;
 					}
-					BDmaMemCpy_rtos_flush(RTSPD_USE_DMA, jpgData + JPG_numYCQUNTSize, base_offset + JPG_numHeaderSize  , remaining);
+					BDmaMemCpy_rtos_flush(RTSPD_USE_DMA, jpgData + JPG_numYCQUNTSize, base_offset + JPG_numHeaderSize, remaining);
 
 					rtpSession->rtp_pk.offset = JPG_numHeaderSize + remaining;
 					rtpSession->rtp_pk.data_offset += remaining + JPG_numYCQUNTSize;
@@ -176,7 +184,7 @@ int rtspd_client_rtp_jpeg_main(rtsp_client *prcInfo)
 				}
 
 				if (prcInfo->eTransport == ENX_RTSP_TRANSPORT_TCP || prcInfo->eTransport == ENX_RTSP_TRANSPORT_HTTP) {
-					rtspHead->un16Length = rtpSession->buf_len[rtpSession->buf_idx] - sizeof(rthInterleaved);
+					rtspHead->un16Length = htons(rtpSession->buf_len[rtpSession->buf_idx] - sizeof(rthInterleaved));
 				}
 
 				if (rtpSession->rtp_pk.offset == rtpSession->rtp_pk.size) {
@@ -187,7 +195,7 @@ int rtspd_client_rtp_jpeg_main(rtsp_client *prcInfo)
 					break;
 					// switch break;
 				}
-			}
+			} // @suppress("No break at end of case")
 		case ENX_RTP_TXSTE_END:
 			rtpSession->tx_ready = ENX_RTP_TXSTE_READY;
 			break;

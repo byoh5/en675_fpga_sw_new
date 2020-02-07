@@ -42,7 +42,7 @@
 	#define FAT_SDSAVE_TXT				0			//*0 : unuse
 													// 1 : Save text(Gsensor, GPS...) to an AVI file(Test...)
 
-	#define JPEG_SDSAVE					0			// 0 : unuse
+	#define JPEG_SDSAVE					1			// 0 : unuse
 													//*1 : Save JPEG still shots to SD card
 
 	#define FAT_SDSAVE_EVENT			0			// 0 : unuse

@@ -6,6 +6,7 @@
 //------------------------------------------------------------------------------
 
 // irq.c ///////////////////////////////////////////////////////////////////////
+extern void enx_externalirq_perl(eIRQ_GROUP_INDEX perlIdx, uint64 onoff, uint64 type);
 extern void enx_timerirq_next(void);
 extern void enx_timerirq_init(void);
 extern void enx_exirq_view(void);
@@ -15,6 +16,11 @@ extern void enx_externalirq_init_cpu1(void);
 extern void enx_externalirq_init_cpu2(void);
 extern void enx_externalirq_init_cpu3(void);
 extern void enx_wake_cpu(int cpu_id);
+extern void enx_wake_message_to_cpu0(UINT flag);
+extern void enx_wake_message_to_cpu1(UINT flag);
+extern void enx_wake_message_to_cpu2(UINT flag);
+extern void enx_wake_message_to_cpu3(UINT flag);
+
 
 // Device driver ///////////////////////////////////////////////////////////////
 
@@ -22,24 +28,44 @@ extern void DdrTest(void); // ddr.c
 extern ENX_OKFAIL DdrInit(BYTE bCH, BYTE Sel, UINT nWrltc); // ddr.c
 
 extern void SflsInit(void);
+extern void SflsSetClkdiv(UINT Clkdiv);
+extern UINT SflsGetClkdiv(void);
+extern void SflsSetClk(UINT Speed_Hz);
+extern UINT SflsGetClk(void);
 extern UINT SflsGetinfo(void);
+extern UINT SflsGetSize(void);
 extern void SflsWriteEnable(void);
 extern void SflsSectErase(UINT addr, ENX_YN sync);
 extern void Sfls32KErase(UINT addr, ENX_YN sync);
 extern void Sfls64KErase(UINT addr, ENX_YN sync);
 extern void SflsChipErase(ENX_YN sync);
 extern UINT SflsGetUsrreq(void);
-extern void SflsSingleCommand(BYTE cmd);
+extern void SflsSingleCommand(BYTE cmd, UINT CMD_MODE);
+extern void SflsWriteStatus(BYTE status);
+extern BYTE SflsReadStatus(void);
 extern void SflsWriteReg(BYTE wrdata, BYTE len, BYTE iomode);
 extern UINT SflsReadReg(BYTE cmd, BYTE iomode, BYTE gap);
-extern void SflsReadSFDP(SFLSsfdp *sfdp);
-extern void SflsViewerSFDP(SFLSsfdp *sfdp);
+extern void SflsEnter4B(void);
+extern void SflsExit4B(void);
+extern void SflsEnterQPI(void);
+extern void SflsExitQPI(void);
+extern void SflsEnterQE(void);
+extern void SflsExitQE(void);
+extern void SflsEnterProtection(void);
+extern void SflsExitProtection(void);
+extern void SflsReadSFDP(BYTE *sfdp_bin);
+extern void SflsViewerSFDP(BYTE *sfdp_bin);
 extern SFLScontrol *SflsEn25qh128a_GetControl(void);
 extern SFLScontrol *SflsEn25qh256_GetControl(void);
 extern SFLScontrol *SflsGd25q128c_GetControl(void);
+extern SFLScontrol *SflsIs25lp064_GetControl(void);
 extern SFLScontrol *SflsIs25lp128_GetControl(void);
+extern SFLScontrol *SflsIs25lp256_GetControl(void);
+extern SFLScontrol *SflsMx25u12832f_GetControl(void);
+extern SFLScontrol *SflsMx25l12835f_GetControl(void);
 extern SFLScontrol *SflsN25q128a_GetControl(void);
-extern SFLScontrol *SflsW25q64_GetControl(void);
+extern SFLScontrol *SflsW25q256jvq_GetControl(void);
+extern SFLScontrol *SflsW25q64jviq_GetControl(void);
 extern void SflsRegShow(ENX_YN isDetail);
 
 extern void GpioInit(void);
@@ -468,5 +494,26 @@ extern void OicIrqClear(void);
 extern UINT OicIsIrq(void);
 extern void IrqOic(void);
 
+extern void IrInit(UINT nAddr);
+extern void IrDeInit(void);
+extern void IrSetClk(UINT clk);
+extern UINT IrGetClk(void);
+extern void IrSetEn(ENX_SWITCH sw);
+extern UINT IrGetEn(void);
+extern void IrSetIrqAddr(UINT nAddr);
+extern UINT IrGetIrqAddr(void);
+extern void IrSetMargin(UINT nMargin);
+extern UINT IrGetMargin(void);
+extern void IrSetRepeatMargin(UINT nMargin);
+extern UINT IrGetRepeatMargin(void);
+extern UINT IrIsRepeat(void);
+extern UINT IrGetAddr(void);
+extern UINT IrGetDat(void);
+extern void IrIrqCallback(irq_fn irqfn, void *arg);
+extern void IrSetIrqEn(ENX_SWITCH sw);
+extern ENX_SWITCH IrGetIrqEn(void);
+extern void IrIrqClear(void);
+extern UINT IrIsIrq(void);
+extern void IrqIr(void);
 
 #endif

@@ -634,7 +634,7 @@ static int fs_open_custom_still_jpg(struct fs_file *file)
   }
   gptMsgShare.JPEG_STILL_FLAG = JPEG_SNAP_STR;
   gptMsgShare.JPEG_STILL_REF++;
-  file->data = (char *)gptMsgShare.JPEG_STILL_ADDR;
+  file->data = (char *)(intptr_t)gptMsgShare.JPEG_STILL_ADDR;
   if (file->data) { // malloc ok
     realsize = gptMsgShare.JPEG_STILL_SIZE;
     data->type = fftJpeg;
@@ -788,7 +788,7 @@ static int fs_open_custom_fls_webfile(struct fs_file *file)
 int fs_open_custom(struct fs_file *file, const char *name)
 {
   int fsopenres = 0;
-  struct fs_custom_data *data = (struct fs_custom_data *)mem_malloc(sizeof(struct fs_custom_data));
+  struct fs_custom_data *data = (struct fs_custom_data *)mem_calloc(1, sizeof(struct fs_custom_data));
   if (data == NULL) {
     flprintf("malloc fail\r\n");
     return 0;
@@ -835,14 +835,19 @@ int fs_open_custom(struct fs_file *file, const char *name)
   {
 	fsopenres = fs_open_custom_fls_webfile(file);
   }
+#else
+  {}
 #endif /* (LOAD_FS_FLS==1) */
 #endif /* defined(__FILESYSTEM__) */
-  if (fsopenres == 1) {
+
+  if (fsopenres != 0) {
   	return 1;
   }
+
   mem_free(data);
   file->pextension = NULL;
   return 0;
+
   UNUSED(file);
   UNUSED(name);
 }

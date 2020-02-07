@@ -34,8 +34,10 @@
 
 // 8 byte
 typedef struct {
+	BF_2(
 	uint32 un8TypeSpecific:8;		/* type-specific field */
 	uint32 un24FragmentOffset:24;	/* fragment byte offset */
+	)
 	uint8 un8Type;					/* id of jpeg decoder params */
 	uint8 un8Q;						/* quantization factor (or table id) */
 	uint8 un8Width;					/* frame width in 8 pixel blocks */

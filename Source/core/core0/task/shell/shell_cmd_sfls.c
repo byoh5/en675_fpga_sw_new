@@ -11,10 +11,13 @@
 #include <string.h> // for strcmp, memset
 
 #include "eon_en25qh256.h"
+#include "winbond_w25q256jvq.h"
+#include "winbond_w25q64jviq.h"
 
 //#include "en675_ddr_init_bin.h"
-#include "UBOOT.h"
-#include "BBL2.h"
+//#include "UBOOT.h"
+//#include "BBL2.h"
+#include "EXBL.h"
 
 const char *sSflsTest[]      = {"Test SFLS",                                      (char*)0};
 
@@ -228,6 +231,7 @@ static void SflsReadTestTask(void *ctx)
 
 	printf("Read Test: 0x%08lX ~ 0x%08lX\n", (intptr_t)p8Base, (intptr_t)(p8Base + SFLS_SIZE));
 	UINT pass = 0, fail = 0;
+	ULONG start_time = BenchTimeStart();
 	for (UINT i = 0; i < sflsitem.u32TestCount; i++) {
 		UINT *arr32Org = (UINT *)parrOrg;
 //		UINT *arr32Sdr = (UINT *)parrSdr;
@@ -274,8 +278,8 @@ static void SflsReadTestTask(void *ctx)
 					CPU_BREAK();
 				}
 				arr32Org[inx+0] = ENX_HTONL(addr);
-				arr32Org[inx+1] = startIdx + j;
-				arr32Org[inx+2] = (startIdx + j) * (SFLSDATA_PP_SIZE / 16) + (j2 / 4);
+				arr32Org[inx+1] = ENX_HTONL(startIdx + j);
+				arr32Org[inx+2] = 0xFF0000FF;
 				arr32Org[inx+3] = (j2+3) << 24 | (j2+3) << 16 | (j2+3) << 8 | (j2+3);
 			}
 		}
@@ -322,8 +326,10 @@ static void SflsReadTestTask(void *ctx)
 			break;
 		}
 	}
-
-	printf("\nRead Test End. Pass(%d) Fail(%d)\n", pass, fail);
+	UINT end_time = BenchTimeStop(start_time);
+	char buf[64] = {0};
+	snprintf(buf, 64, "%.2fsec", end_time / 1000.0 / 1000.0);
+	printf("\nRead Test End(%s). Pass(%d) Fail(%d)\n", buf, pass, fail);
 
 	vTaskInfoPrint();
 
@@ -363,23 +369,27 @@ static void SflsWriteTestTask(void *ctx)
 	BYTE *p8Pos = p8Base;
 	// Test code
 
+	cmd_test_sfls(3, (char *[]){NULL, "e", "all"});
+
 	printf("Write Test: 0x%08lX ~ 0x%08lX\n", (intptr_t)p8Base, (intptr_t)(p8Base + (sflsitem.u32TestCount * SFLSDATA_PP_SIZE) - 1));
 	ULONG total_time = 0, total_size = 0, time1000 = 0, size1000 = 0;
 	char buf[64] = {0};
+	ULONG start_time = BenchTimeStart();
 	for (UINT i = 0; i < sflsitem.u32TestCount; i++) {
 		UINT *arr32Src = (UINT *)sflsitem.arrSrc;
 		for (UINT j = 0; j < (SFLSDATA_PP_SIZE/4); j += 4) {
 			UINT addr = ((intptr_t)p8Pos) + (4 * j);
 			arr32Src[j+0] = ENX_HTONL(addr);
-			arr32Src[j+1] = i;
-			arr32Src[j+2] = i * (SFLSDATA_PP_SIZE / 16) + (j / 4);
+			arr32Src[j+1] = ENX_HTONL(i);
+			arr32Src[j+2] = 0xFF0000FF;
 			arr32Src[j+3] = (j+3) << 24 | (j+3) << 16 | (j+3) << 8 | (j+3);
 		}
 		hwflush_dcache_range((ULONG)sflsitem.arrSrc, SFLSDATA_PP_SIZE);
-
+#if 0
 		if (((ULONG)p8Pos) % 4096 == 0 && sflsitem.u32Flag == 0) {
 			SflsSectErase(p8Pos - (BYTE *)SFLS_BASE, ENX_YES);
 		}
+#endif
 		ULONG a = BenchTimeStart();
 		BDmaMemCpy_rtos(0, p8Pos, sflsitem.arrSrc, SFLSDATA_PP_SIZE);
 		total_time += BenchTimeStop(a);
@@ -389,16 +399,18 @@ static void SflsWriteTestTask(void *ctx)
 
 		if (i % 1000 == 0) {
 			snprintf(buf, 64, "%.2f", (size1000 / 1024.0) / (time1000 / 1000.0 / 1000.0));
-			printf("%8u/%8u ing... %u%%, ", i, sflsitem.u32TestCount, (i * 100) / sflsitem.u32TestCount);
+			printf("%7u/%7u ing... %3u%%, ", i, sflsitem.u32TestCount, (i * 100) / sflsitem.u32TestCount);
 			_Gprintf("%sKbyte/s\n", buf);
 			size1000 = time1000 = 0;
 		}
 
 		p8Pos += SFLSDATA_PP_SIZE;
 	}
-	printf("Write Done: total avg ");
-	snprintf(buf, 64, "%.2f", (total_size / 1024.0) / (total_time / 1000.0 / 1000.0));
-	_Gprintf("%sKbyte/s\n", buf);
+	UINT end_time = BenchTimeStop(start_time);
+	snprintf(buf, 64, "Write Done(%.2fsec): total avg ", end_time / 1000.0 / 1000.0);
+	printf(buf);
+	snprintf(buf, 64, "%.2fKbyte/s", (total_size / 1024.0) / (total_time / 1000.0 / 1000.0));
+	_Gprintf("%s\n", buf);
 
 	vPortFree(alloc);
 	sflsitem.arrSrc = NULL;
@@ -419,24 +431,119 @@ int cmd_test_sfls(int argc, char *argv[])
 
 	if(argc == 1) {
 		SflsRegShow(ENX_YES);
-#ifdef __SFLS_EN25QH256__
-		char rdifr_bin[16] = {0};
-		BYTE rdifr = SflsEn25qh256_ReadIFR();
-		es_snprintf(rdifr_bin, sizeof(rdifr_bin), "%08b", rdifr);
-		printf("Read Information Register: %s\n", rdifr_bin);
-#endif
-		SFLSsfdp sfdp;
-		SflsReadSFDP(&sfdp);
-		SflsViewerSFDP(&sfdp);
+
+		cmd_test_sfls(2, (char *[]){NULL, "status"});
+
+		BYTE sfdp_bin[256] = {0};
+		SflsReadSFDP(sfdp_bin);
+		SflsViewerSFDP(sfdp_bin);
 	} else {
 		static int gap = 0, iomode = 0;
 
 		if (strcmp(argv[1], "init") == 0) {
 			printf("call SflsInit\n");
 			SflsInit();
+		} else if (strcmp(argv[1], "reset") == 0) {
+			SFLS_IF_RST = 1;
+		} else if (strcmp(argv[1], "reset2") == 0) {
+#ifdef __SFLS_EN25QH256__
+			extern void SflsEn25qh256_Reset(void);
+			SflsEn25qh256_Reset();
+#endif
+		} else if (strcmp(argv[1], "status") == 0) {
+			char outbuf[32] = {0};
+			BYTE status;
+			shell_line_print('-', NULL);
+			status = SflsReadStatus();
+			es_snprintf(outbuf, sizeof(outbuf), "%08b, 0x%02X", status, status);
+			printf("Read Status Register 1: %s\n", outbuf);
+#ifdef __SFLS_W25Q256JVQ__
+			shell_line_print('-', NULL);
+			status = SflsW25q256jvq_ReadStatus2();
+			es_snprintf(outbuf, sizeof(outbuf), "%08b, 0x%02X", status, status);
+			printf("Read Status Register 2: %s\n", outbuf);
+			shell_line_print('-', NULL);
+			status = SflsW25q256jvq_ReadStatus3();
+			es_snprintf(outbuf, sizeof(outbuf), "%08b, 0x%02X", status, status);
+			printf("Read Status Register 3: %s\n", outbuf);
+#endif
+#ifdef __SFLS_W25Q64JVIQ__
+			shell_line_print('-', NULL);
+			status = SflsW25q64jviq_ReadStatus2();
+			es_snprintf(outbuf, sizeof(outbuf), "%08b, 0x%02X", status, status);
+			printf("Read Status Register 2: %s\n", outbuf);
+			shell_line_print('-', NULL);
+			status = SflsW25q64jviq_ReadStatus3();
+			es_snprintf(outbuf, sizeof(outbuf), "%08b, 0x%02X", status, status);
+			printf("Read Status Register 3: %s\n", outbuf);
+#endif
+#ifdef __SFLS_GD25Q128C__
+			shell_line_print('-', NULL);
+			status = SflsGd25q128c_ReadStatus2();
+			es_snprintf(outbuf, sizeof(outbuf), "%08b, 0x%02X", status, status);
+			printf("Read Status Register 2: %s\n", outbuf);
+			shell_line_print('-', NULL);
+			status = SflsGd25q128c_ReadStatus3();
+			es_snprintf(outbuf, sizeof(outbuf), "%08b, 0x%02X", status, status);
+			printf("Read Status Register 3: %s\n", outbuf);
+#endif
+#ifdef __SFLS_EN25QH256__
+			shell_line_print('-', NULL);
+			status = SflsEn25qh256_ReadIFR();
+			es_snprintf(outbuf, sizeof(outbuf), "%08b", status);
+			printf("Read Information Register: %s\n", outbuf);
+#endif
+			shell_line_print('-', NULL);
+		} else if (argc == 3 && strcmp(argv[1], "4b") == 0) {
+			if (strcmp(argv[2], "on") == 0) {
+				SflsEnter4B();
+			} else {
+				SflsExit4B();
+			}
+		} else if (argc == 3 && strcmp(argv[1], "qpi") == 0) {
+			if (strcmp(argv[2], "on") == 0) {
+				SflsEnterQPI();
+			} else {
+				SflsExitQPI();
+			}
+		} else if (argc == 3 && strcmp(argv[1], "qe") == 0) {
+			if (strcmp(argv[2], "on") == 0) {
+				SflsEnterQE();
+			} else {
+				SflsExitQE();
+			}
+			cmd_test_sfls(2, (char *[]){NULL, "status"});
+		} else if (argc == 3 && strcmp(argv[1], "pro") == 0) {
+			if (strcmp(argv[2], "on") == 0) {
+				SflsEnterProtection();
+			} else {
+				SflsExitProtection();
+			}
+			cmd_test_sfls(2, (char *[]){NULL, "status"});
 		} else if (strcmp(argv[1], "info") == 0) {
 			printf("call SflsGetinfo\n");
 			SflsGetinfo();
+		} else if (strcmp(argv[1], "t1") == 0) {
+			SFLS_USR_CMD_MODE	= 2;
+			SFLS_USR_ADR_EN		= 0;
+			SFLS_USR_GAP_EN		= 0;
+			SFLS_USR_RD_EN		= 0;
+			SFLS_USR_WR_EN		= 0;
+			SFLS_USR_BUSY_EN	= 0;
+			SFLS_USR_CMD		= 0xf5;
+			SFLS_USR_REQ		= 1;
+			while (SFLS_USR_REQ);
+		} else if (strcmp(argv[1], "t2") == 0) {
+			SFLS_USR_CMD_MODE	= 2;
+			SFLS_USR_ADR_EN		= 0;
+			SFLS_USR_GAP_EN		= 0;
+			SFLS_USR_RD_EN		= 0;
+			SFLS_USR_WR_EN		= 0;
+			SFLS_USR_BUSY_EN	= 0;
+			SFLS_USR_CMD		= 0xf5;
+			SFLS_USR_REQ		= 1;
+			while (SFLS_USR_REQ);
+
 		} else if (strcmp(argv[1], "reggap") == 0) {
 			SFLS_USR_GAP = SFLS_BUS_GAP = atoi(argv[2]);
 			SFLS_BUS_REQ = 1;
@@ -469,6 +576,18 @@ int cmd_test_sfls(int argc, char *argv[])
 			}
 #endif
 #if 1
+		} else if (argc == 3 && strcmp(argv[1], "gap") == 0) {
+			UINT getgap = atoi(argv[2]);
+			if (getgap == 0) {
+				SFLS_BUS_GAP_EN = 0;
+				SFLS_BUS_GAP = 0;
+			} else {
+				SFLS_BUS_GAP_EN = 1;
+				SFLS_BUS_GAP = getgap - 1;
+			}
+			SFLS_BUS_REQ = 1;
+			while (SFLS_BUS_REQ);
+#else
 		} else if (strcmp(argv[1], "gap") == 0) {
 			BYTE old_gap = gap;
 			gap = atoi(argv[2]);
@@ -690,11 +809,13 @@ int cmd_test_sfls(int argc, char *argv[])
 #endif
 #endif
 		} else if (strcmp(argv[1], "wbin") == 0) {
-			BYTE *p8WBase = (BYTE *)SFLS_BASE + 0xC8000;
+			BYTE *p8WBase = (BYTE *)SFLS_BASE + 0;//0xC8000;
 			BYTE *p8eBase = p8WBase;
 
-			BYTE *binbase = (BYTE *)BBL2;
-			UINT binsize = BBL2_LEN;
+			BYTE *binbase = (BYTE *)EXBL;
+			UINT binsize = EXBL_LEN;
+
+			binsize = 1214464; // 256ÀÇ ¹è¼ö...
 
 			printf("binary copy.: %ubyte\n", binsize);
 
@@ -703,7 +824,14 @@ int cmd_test_sfls(int argc, char *argv[])
 			}
 			printf("Erase Done!!\n");
 
-			BDmaMemCpy_rtos(0, p8WBase, (BYTE *)binbase, binsize);
+//			BDmaMemCpy_rtos(0, p8WBase, (BYTE *)binbase, binsize);
+			for (int i = 0 ; i < binsize; i += 256) {
+				BDmaMemCpy_rtos(0, p8WBase+i, (BYTE *)binbase+i, 256);
+			}
+
+
+
+
 
 			printf("Write Done!\n");
 #if 0

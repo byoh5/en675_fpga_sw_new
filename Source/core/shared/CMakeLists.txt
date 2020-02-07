@@ -46,19 +46,23 @@ SET ( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -T ${CMAKE_CURRENT_SOURC
 # 소스 코드
 SET ( SHARED_HDRS
 	boot.h
-	pmp.h
 	exbl.h
 	msg.h
 	user.h
+	test/test_nonos.h
+	test/test_header.h
 )
 
 SET ( SHARED_SRCS
 	boot.c
-	pmp.c
 	exbl.c
 	msg.c
 	user.c
 	mentry.S
+	test/test_nonos.c
+	test/test_dma.c
+	test/test_eth.c
+	test/test_sdio.c
 )
 
 # 바이너리 생성

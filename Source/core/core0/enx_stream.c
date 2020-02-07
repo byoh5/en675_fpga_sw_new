@@ -20,9 +20,6 @@ msgq_stream_t gptMsgStmInfo = {
 
 #define StmRecMsgLock()		while (SYS_MUTEX15 == 0);
 #define StmRecMsgUnlock()	SYS_MUTEX15 = 0;
-//static int stmrecmsg_lock;
-//#define StmRecMsgLock()		if (stmrecmsg_lock == 0) { stmrecmsg_lock = 1; } else { while (stmrecmsg_lock); }
-//#define StmRecMsgUnlock()	stmrecmsg_lock = 0;
 
 ENX_OKFAIL MsgStmPut(UINT addr, UINT size, UINT ts, UINT type)
 {
@@ -38,11 +35,7 @@ ENX_OKFAIL MsgStmPut(UINT addr, UINT size, UINT ts, UINT type)
 	}
 
 	ENX_OKFAIL bRes = ENX_FAIL;
-#if 1
 	StmRecMsgLock();
-#else
-	while (StmRecMsgLock() == ENX_FAIL);
-#endif
 	if (cQueue_isfull(&gptMsgStmInfo) != ENX_OK) {
 		stream_info *info = (stream_info *)&gptMsgStmInfo.info[gptMsgStmInfo.tail];
 		info->addr = addr;
@@ -62,11 +55,7 @@ ENX_OKFAIL MsgStmGet(stream_info *getInfo)
 {
 	UINT bRes = ENX_FAIL;
 
-#if 1
 	StmRecMsgLock();
-#else
-	while (StmRecMsgLock() == ENX_FAIL);
-#endif
 	if(cQueue_isempty(&gptMsgStmInfo) != ENX_OK) {
 		stream_info *info = (stream_info *)&gptMsgStmInfo.info[gptMsgStmInfo.head];
 		getInfo->addr = info->addr;
@@ -80,7 +69,7 @@ ENX_OKFAIL MsgStmGet(stream_info *getInfo)
 	return bRes;
 }
 
-void IsrStreamdata(void *arg)
+void IsrStreamdata(void)
 {
 	stream_info info;
 	while (MsgStmGet(&info) == ENX_OK) {
@@ -102,11 +91,11 @@ void IsrStreamdata(void *arg)
 //				http_queue_stream_video_put(info.addr, info.size, 0, ENX_RTSP_STREAM_LIVE_H264_1_1, info.ts);
 				break;
 			case eSTREAMMSG_JPEG:
-#ifdef __JPEG__
+//#ifdef __JPEG__
 #if (JPEG_STREAM==1)
 				rtp_queue_stream_video_put(info.addr, info.size, 1, ENX_RTSP_STREAM_LIVE_JPEG, info.ts);
 #endif
-#endif
+//#endif
 				break;
 //			case eSTREAMMSG_JPEG_SW:
 #if (SW_JPEG_ENCODER==1)
@@ -125,11 +114,9 @@ void IsrStreamdata(void *arg)
 				break;
 		}
 	}
-
-	UNUSED(arg);
 }
 #else
-void IsrStreamdata(void *arg)
+void IsrStreamdata(void)
 {
 	printf("%s(%d): TEST\n", __func__, __LINE__);
 }

@@ -165,126 +165,123 @@ fw_processed_source:
 	mret
 
 do_reset:
-  li x1, 0
-  li x2, 0
-  li x3, 0
-  li x4, 0
-  li x5, 0
-  li x6, 0
-  li x7, 0
-  li x8, 0
-  li x9, 0
-  li x10, 0
-  li x11, 0
-  li x12, 0
-  li x13, 0
-  li x14, 0
-  li x15, 0
-  li x16, 0
-  li x17, 0
-  li x18, 0
-  li x19, 0
-  li x20, 0
-  li x21, 0
-  li x22, 0
-  li x23, 0
-  li x24, 0
-  li x25, 0
-  li x26, 0
-  li x27, 0
-  li x28, 0
-  li x29, 0
-  li x30, 0
-  li x31, 0
+	# interrupt clear/initialization
+	csrw mideleg, x0
+	csrw medeleg, x0
+	csrw mie, x0
+	csrw mip, x0
+	csrw mscratch, x0
 
-  csrw mie, x0			// 190117 hjlee, Disable all interrupts.
-  csrw mip, x0			// 190418 hjlee, Disable all interrupts.
-  csrw mideleg, x0		// 190418 hjlee, Disable all interrupts.
-  csrw medeleg, x0		// 190418 hjlee, Disable all interrupts.
-  csrw mscratch, x0
+	# write mtvec and make sure it sticks
+	la t0, trap_firmware
+	csrw mtvec, t0
+	csrr t1, mtvec
+1:	bne t0, t1, 1b
 
-#init_bss: // cpu0 only
-#  /* cpu0? */
-#  csrr a0, mhartid
-#  li a4, 0 // If you are debugging a specific cpu, put the cpuid you are debugging in. Default CPU0 == 0
-#  bne a0, a4, init_next
-#  /* init bss section */
-#  la a0, __bss_s
-#  la a1, __bss_e-4 /* section end is actually the start of the next section */
-#  li a2, 0x0
-#  jal fill_block
+	# register initialization
+	li x1, 0
+	li x2, 0
+	li x3, 0
+	li x4, 0
+	li x5, 0
+	li x6, 0
+	li x7, 0
+	li x8, 0
+	li x9, 0
+	li x10, 0
+	li x11, 0
+	li x12, 0
+	li x13, 0
+	li x14, 0
+	li x15, 0
+	li x16, 0
+	li x17, 0
+	li x18, 0
+	li x19, 0
+	li x20, 0
+	li x21, 0
+	li x22, 0
+	li x23, 0
+	li x24, 0
+	li x25, 0
+	li x26, 0
+	li x27, 0
+	li x28, 0
+	li x29, 0
+	li x30, 0
+	li x31, 0
 
-init_next:
-  # write mtvec and make sure it sticks
-  la t0, trap_firmware
-  csrw mtvec, t0
-  csrr t1, mtvec
-1:bne t0, t1, 1b
+	# enable FS
+	li t0, MSTATUS_FS
+	csrs mstatus, t0
 
-  #la sp, stacks + RISCV_PGSIZE - MENTRY_FRAME_SIZE + 0x2D140
-  #li sp, 0xA003C000
-  #li sp, 0xA00FC000
-  li sp, 0xA0000000 + (256*1024) - (RISCV_PGSIZE * MAX_HARTS)
-  csrr a0, mhartid
-  slli a2, a0, RISCV_PGSHIFT
-  add sp, sp, a2
+	# FS register initialization
+	fssr    x0
+	fmv.d.x f0, x0
+	fmv.d.x f1, x0
+	fmv.d.x f2, x0
+	fmv.d.x f3, x0
+	fmv.d.x f4, x0
+	fmv.d.x f5, x0
+	fmv.d.x f6, x0
+	fmv.d.x f7, x0
+	fmv.d.x f8, x0
+	fmv.d.x f9, x0
+	fmv.d.x f10,x0
+	fmv.d.x f11,x0
+	fmv.d.x f12,x0
+	fmv.d.x f13,x0
+	fmv.d.x f14,x0
+	fmv.d.x f15,x0
+	fmv.d.x f16,x0
+	fmv.d.x f17,x0
+	fmv.d.x f18,x0
+	fmv.d.x f19,x0
+	fmv.d.x f20,x0
+	fmv.d.x f21,x0
+	fmv.d.x f22,x0
+	fmv.d.x f23,x0
+	fmv.d.x f24,x0
+	fmv.d.x f25,x0
+	fmv.d.x f26,x0
+	fmv.d.x f27,x0
+	fmv.d.x f28,x0
+	fmv.d.x f29,x0
+	fmv.d.x f30,x0
+	fmv.d.x f31,x0
 
-# fill stacks
-  mv a0, sp
-  li a2, RISCV_PGSIZE
-  sub a0, a0, a2
-  mv a1, sp
-  li a2, 0x0
-  jal fill_block
+#	la sp, stacks + RISCV_PGSIZE - MENTRY_FRAME_SIZE + 0x2D140
+	li sp, 0xA0000000 + (256*1024) - (RISCV_PGSIZE * MAX_HARTS)
+	csrr a0, mhartid
+	slli a2, a0, RISCV_PGSHIFT
+	add sp, sp, a2
 
-  csrr a0, mhartid
+	# fill stacks
+	mv a0, sp
+	li a2, RISCV_PGSIZE
+	sub a0, a0, a2
+	mv a1, sp
+	li a2, 0x0
+	jal fill_block
 
-  #csrr a0, mhartid
-  # j main_all
+	# get hard id
+	csrr a0, mhartid
+	# Run hart 3
+	li a4, 3
+	beq a0, a4, main_3
+	# Run hart 2
+	li a4, 2
+	beq a0, a4, main_2
+	# Run hart 1
+	li a4, 1
+	beq a0, a4, main_1
+	# Run hart 0
+	li a4, 0
+	beq a0, a4, main_0
 
-  # Boot on the first hart
-  # Run hart 3
-  li a4, 3
-  beq a0, a4, main_3
-  # Run hart 2
-  li a4, 2
-  beq a0, a4, main_2
-  # Run hart 1
-  li a4, 1
-  beq a0, a4, main_1
-  # Run hart 0
-  li a4, 0
-  beq a0, a4, main_0
-  # beqz a3, init_first_hart
-
-  # set MSIE bit to receive IPI
-  li a2, MIP_MSIP
-  csrw mie, a2
-
-.LmultiHart:
-#if MAX_HARTS > 1
-  # wait for an IPI to signal that it's safe to boot
-  wfi
-
-  # masked harts never start
-  la a4, main_
-  LOAD a4, 0(a4)
-  srl a4, a4, a3
-  andi a4, a4, 1
-  bnez a4, .LmultiHart
-
-  # only start if mip is set
-  csrr a2, mip
-  andi a2, a2, MIP_MSIP
-  beqz a2, .LmultiHart
-
-  # make sure our hart id is within a valid range
-  fence
-  li a2, MAX_HARTS
-  bltu a3, a2, main_
-#endif
-  wfi
-  j .LmultiHart
+loopend:
+	wfi
+	j loopend
 
 /* Fills memory blocks */
 fill_block:

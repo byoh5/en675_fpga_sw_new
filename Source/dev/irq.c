@@ -5,13 +5,13 @@
 #include "enx_freertos.h"
 #endif
 
+irq_count core_irq_count[4];
+
 #define EXIRQ_POINT 1
 
 volatile uint32* cpu_msip =   (uint32*)(CLINT_BASE + 0x0);
-volatile uint64* mtime =      (uint64*)(CLINT_BASE + 0xbff8);
 volatile uint64* timecmp =    (uint64*)(CLINT_BASE + 0x4000);
-
-#define IRQ_SOURCE_COUNT			40
+volatile uint64* mtime =      (uint64*)(CLINT_BASE + 0xbff8);
 
 #define IRQ_PRIO01_BASE				0x0C000004 // RW: Source  1 priority (ISP)
 #define IRQ_PRIO02_BASE				0x0C000008 // RW: Source  2 priority (VCODEC)
@@ -205,6 +205,8 @@ UINT gnViIrqOn = 0;
 UINT gnVDI_4FPS = 0;
 UINT gnVDI_CHG = 2;
 
+#include "isp_jpeg.h"
+
 void enx_exirq_source1(void)
 {
 	if (IRQ_G_ISP) {
@@ -231,8 +233,22 @@ void enx_exirq_source1(void)
 			//if(!(gnVoIrqCnt%(FPS_VDO*5))) _printf("VLOCKO_IRQ %d!!!\n", gnVoIrqCnt/FPS_VDO);	// TODO KSH ¡ß VLOCKO IRQ test
 			//else if(!(gnVoIrqCnt%FPS_VDO)) _printf_irq("VLOCKO_IRQ %d\n", gnVoIrqCnt/FPS_VDO);
 			IRQ_ISP_PRINTF("VLOCKO_IRQ\n");
+			//printf("2");
+
+			gptMsgShare.VIDEO_TICK++;
+			//if (jpeg_enc.enable == 1) {
+			if (SYS_REG6 == 0) {
+				while(SYS_MUTEX10);
+				enx_jpeg_enc_start(30, 0, 0);
+				SYS_MUTEX10 = 0;
+			}
 		}
-		if (IRQ_ISP3){CLI_JPGw(1);}
+		if (IRQ_ISP3) {
+			//printf("J");
+			jpeg_irq_handler(NULL);
+
+			CLI_JPGw(1);
+		}
 		if (IRQ_ISP4){CLI_UIRQ0w(1);}
 		if (IRQ_ISP5){CLI_UIRQ1w(1);}
 		if (IRQ_ISP6){CLI_VLOCKW2w(1);}
@@ -418,7 +434,7 @@ void enx_exirq_source14(void)
 
 void enx_exirq_source15(void)
 {
-	printf("15 ChksumIsIrq(%d/%d) ShaIsIrq(%d/%d) AesIsIrq(%d/%d)\n", IRQ_CHKSUM, ChksumIsIrq(), IRQ_SHA, ShaIsIrq(), IRQ_AES, AesIsIrq());
+//	printf("15 ChksumIsIrq(%d/%d) ShaIsIrq(%d/%d) AesIsIrq(%d/%d)\n", IRQ_CHKSUM, ChksumIsIrq(), IRQ_SHA, ShaIsIrq(), IRQ_AES, AesIsIrq());
 	if (IRQ_CHKSUM) {
 		IrqChksum();
 	} else {
@@ -1079,45 +1095,121 @@ void enx_exirq_source36(void)
 
 void enx_exirq_source37(void)
 {
+#if 1
+	if (IRQ_IR) {
+		IrqIr();
+	} else {
+		printf("NO G_SOURCE37\n");
+		enx_exirq_view();
+	}
+#else
 	printf("%s\n", __func__);
+	enx_exirq_view();
+#endif
 }
 
 void enx_exirq_source38(void)
 {
+#if 0
+	uint32 get = IRQ_38_T;
+	_IRQ_37 *irq = (void *)&get;
+	if (irq->G_SOURCE38) {
+		if (irq->OMC_COOLDONWN) {printf("IRQ_OMC_COOLDONWN\n");}
+		if (irq->OMC_HIGHTEMP) {printf("IRQ_OMC_HIGHTEMP\n");}
+		if (irq->OMC_OVERTEMP) {printf("IRQ_OMC_OVERTEMP\n");}
+		if (irq->OMC_ASP) {printf("IRQ_OMC_ASP\n");}
+	} else {
+		printf("NO G_SOURCE37\n");
+		enx_exirq_view();
+	}
+#else
 	printf("%s\n", __func__);
+	enx_exirq_view();
+#endif
 }
 
 void enx_exirq_source39(void)
 {
 	printf("%s\n", __func__);
+	enx_exirq_view();
 }
 
 void enx_exirq_source40(void)
 {
 	printf("%s\n", __func__);
+	enx_exirq_view();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Software Interrupt Handle
 ////////////////////////////////////////////////////////////////////////////////
+#include "shell.h"
+#include "enx_stream.h"
+
 void enx_swirq_hart0(void)
 {
-	printf("SWIRQ CPU0\n");
+	while (CPU0_MSG_MUTEX);			// lock
+	UINT msg_flag = CPU0_MSG_FLAG;	// flag copy
+	CPU0_MSG_FLAG = 0;				// clear
+	CPU0_MSG_MUTEX = 0;				// unlock
+
+	if (msg_flag & eCPU0_MSG_SHELL_RX) {
+		msg_flag &= ~eCPU0_MSG_SHELL_RX;
+#ifdef __ECM_STRING__
+		IsrShell();
+#endif
+	}
+
+	if (msg_flag & eCPU0_MSG_STREAM_INFO) {
+		msg_flag &= ~eCPU0_MSG_STREAM_INFO;
+		IsrStreamdata();
+	}
+
+	if (msg_flag) {
+		printf("SWIRQ_CPU0: flag remains(0x%08X)\n", msg_flag);
+	}
 }
 
 void enx_swirq_hart1(void)
 {
 	printf("SWIRQ CPU1\n");
+
+	while (CPU1_MSG_MUTEX);			// lock
+	UINT msg_flag = CPU1_MSG_FLAG;	// flag copy
+	CPU1_MSG_FLAG = 0;				// clear
+	CPU1_MSG_MUTEX = 0;				// unlock
+
+	if (msg_flag) {
+		printf("SWIRQ_CPU1: flag remains(0x%08X)\n", msg_flag);
+	}
 }
 
 void enx_swirq_hart2(void)
 {
 	printf("SWIRQ CPU2\n");
+
+	while (CPU2_MSG_MUTEX);			// lock
+	UINT msg_flag = CPU2_MSG_FLAG;	// flag copy
+	CPU2_MSG_FLAG = 0;				// clear
+	CPU2_MSG_MUTEX = 0;				// unlock
+
+	if (msg_flag) {
+		printf("SWIRQ_CPU2: flag remains(0x%08X)\n", msg_flag);
+	}
 }
 
 void enx_swirq_hart3(void)
 {
 	printf("SWIRQ CPU3\n");
+
+	while (CPU3_MSG_MUTEX);			// lock
+	UINT msg_flag = CPU3_MSG_FLAG;	// flag copy
+	CPU3_MSG_FLAG = 0;				// clear
+	CPU3_MSG_MUTEX = 0;				// unlock
+
+	if (msg_flag) {
+		printf("SWIRQ_CPU3: flag remains(0x%08X)\n", msg_flag);
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1276,10 +1368,21 @@ void enx_timerirq_next(void)
 #ifdef __FREERTOS__
 void trap_from_machine_mode_freertos_sync(uintptr_t mcause, uintptr_t mepc, uint64 cpuid, uintptr_t regs[32])
 {
+	core_irq_count[cpuid].sync_count++;
 	switch(mcause) {
 	case CAUSE_USER_ECALL:
 	case CAUSE_SUPERVISOR_ECALL:
 	case CAUSE_MACHINE_ECALL:
+#if 0
+		if (regs[30] == ECALL_YIELD_CMD) {
+//			_Cprintf("!");
+			vTaskSwitchContext();
+			regs[30] = 0;
+		} else {
+//			_Rprintf("!");
+			regs[9] = do_syscall(regs[9], regs[10], regs[11], regs[12], regs[13], regs[14], regs[15]);
+		}
+#else
 		if (regs[28] == ECALL_YIELD_CMD) {
 //			_Cprintf("!");
 			vTaskSwitchContext();
@@ -1288,6 +1391,7 @@ void trap_from_machine_mode_freertos_sync(uintptr_t mcause, uintptr_t mepc, uint
 //			_Rprintf("!");
 			regs[7] = do_syscall(regs[7], regs[8], regs[9], regs[10], regs[11], regs[12], regs[14]);
 		}
+#endif
 		break;
 
 	default:
@@ -1296,6 +1400,37 @@ void trap_from_machine_mode_freertos_sync(uintptr_t mcause, uintptr_t mepc, uint
 		break;
 	}
 }
+
+#if 0
+void trap_from_machine_mode_freertos_handle_interrupt(int32_t mcause)
+{
+#if 1
+	uint64 cpuidx = CPU_ID * 2;
+
+	gbXsrTaskSwitchNeeded = 0;
+//		_Cprintf(".");
+	for (int i = 0; i < 2; i++) {
+		volatile unsigned int *pClaim = iClaimCompliet[cpuidx+i];
+		if (pClaim <= 0xC200000 && pClaim > 0xC207004) {
+			printf("IRQ Error! 0x%08X\n", (UINT)(intptr_t)pClaim);
+		}
+		volatile unsigned int source = *iClaimCompliet[cpuidx+i]; // Get Claim IRQ
+		if (source == 0 || source > IRQ_SOURCE_COUNT) {
+			continue;
+		}
+#if 0 // Test¿ë log
+		else if (IRQ_ETH_RX == 0 && IRQ_CDC == 0 && IRQ_I2S_TX == 0 && IRQ_I2S_RX == 0 && SDIO1_IO_IRQ == 0 && IRQ_TIMER8 == 0) {
+			printf("CPU%u-OS-IRQ%d (%d/%c)\n", cpuid, source, (cpuidx+i), (cpuidx+i)%2==0 ? 'M':'S');
+		}
+#endif
+		core_irq_count[CPU_ID].exirq_count[source]++;
+		exirq_source[source]();
+		*iClaimCompliet[cpuidx+i] = source;	// Set Complete IRQ
+	}
+	portYIELD_FROM_ISR(gbXsrTaskSwitchNeeded);
+#endif
+}
+#endif
 
 void trap_from_machine_mode_freertos_async(uintptr_t mcause, uintptr_t mepc, uint64 cpuid, uintptr_t regs[32])
 {
@@ -1314,12 +1449,14 @@ void trap_from_machine_mode_freertos_async(uintptr_t mcause, uintptr_t mepc, uin
 	switch (mcause) {
 	case IRQ_M_SOFT:
 //		_Rprintf(".");
+		core_irq_count[cpuid].swirq_count++;
 		swirq_source[cpuid]();	// Execution
 		cpu_msip[cpuid] = 0;	// Clear
 		break;
 
 	case IRQ_M_TIMER:
 //		_Rprintf(".");
+		core_irq_count[cpuid].timeirq_count++;
 		vPortSysTickHandler();
 //		_Cprintf("z");
 		break;
@@ -1328,6 +1465,10 @@ void trap_from_machine_mode_freertos_async(uintptr_t mcause, uintptr_t mepc, uin
 		gbXsrTaskSwitchNeeded = 0;
 //		_Cprintf(".");
 		for (int i = 0; i < 2; i++) {
+			volatile unsigned int *pClaim = iClaimCompliet[cpuidx+i];
+			if (((UINT)(intptr_t)pClaim) <= 0xC200000 && ((UINT)(intptr_t)pClaim) > 0xC207004) {
+				printf("IRQ Error! 0x%08X\n", (UINT)(intptr_t)pClaim);
+			}
 			volatile unsigned int source = *iClaimCompliet[cpuidx+i]; // Get Claim IRQ
 			if (source == 0 || source > IRQ_SOURCE_COUNT) {
 				continue;
@@ -1337,6 +1478,7 @@ void trap_from_machine_mode_freertos_async(uintptr_t mcause, uintptr_t mepc, uin
 				printf("CPU%u-OS-IRQ%d (%d/%c)\n", cpuid, source, (cpuidx+i), (cpuidx+i)%2==0 ? 'M':'S');
 			}
 #endif
+			core_irq_count[cpuid].exirq_count[source]++;
 			exirq_source[source]();
 			*iClaimCompliet[cpuidx+i] = source;	// Set Complete IRQ
 		}
@@ -1352,6 +1494,7 @@ void trap_from_machine_mode_freertos_async(uintptr_t mcause, uintptr_t mepc, uin
 
 uintptr_t trap_from_machine_mode_sync(uintptr_t mcause, uintptr_t mepc, uint64 cpuid, uintptr_t regs[32])
 {
+	core_irq_count[cpuid].sync_count++;
 	switch(mcause) {
 	case CAUSE_USER_ECALL:
 	case CAUSE_SUPERVISOR_ECALL:
@@ -1372,25 +1515,32 @@ uintptr_t trap_from_machine_mode_async(uintptr_t mcause, uintptr_t mepc, uint64 
 	mcause = (mcause << 1) >> 1;
 	switch (mcause) {
 	case IRQ_M_SOFT:
+		core_irq_count[cpuid].swirq_count++;
 		swirq_source[cpuid]();	// Execution
 		cpu_msip[cpuid] = 0;	// Clear
 		break;
 
 	case IRQ_M_TIMER:
+		core_irq_count[cpuid].timeirq_count++;
 		enx_timerirq_next();
 		break;
 
 	case IRQ_M_EXT:
 		for (int i = 0; i < 2; i++) {
+			volatile unsigned int *pClaim = iClaimCompliet[cpuidx+i];
+			if (((UINT)(intptr_t)pClaim) <= 0xC200000 && ((UINT)(intptr_t)pClaim) > 0xC207004) {
+				printf("IRQ Error! 0x%08X\n", (UINT)(intptr_t)pClaim);
+			}
 			volatile unsigned int source = *iClaimCompliet[cpuidx+i]; // Get Claim IRQ
 			if (source == 0 || source > IRQ_SOURCE_COUNT) {
 				continue;
 			}
 #if 1 // Test¿ë log
-			else if (source != 1 && source != 6) {
+			else if (source != 1 && source != 4 && source != 9) {
 				printf("CPU%u-FW-IRQ%d (%d/%c)\n", cpuid, source, (cpuidx+i), (cpuidx+i)%2==0 ? 'M':'S');
 			}
 #endif
+			core_irq_count[cpuid].exirq_count[source]++;
 			exirq_source[source]();
 			*iClaimCompliet[cpuidx+i] = source; // Set Complete IRQ
 		}
@@ -1406,7 +1556,7 @@ uintptr_t trap_from_machine_mode_async(uintptr_t mcause, uintptr_t mepc, uint64 
 ////////////////////////////////////////////////////////////////////////////////
 // Interrupt Controller
 ////////////////////////////////////////////////////////////////////////////////
-static void enx_externalirq_perl(eIRQ_GROUP_INDEX perlIdx, uint64 onoff, uint64 type)
+void enx_externalirq_perl(eIRQ_GROUP_INDEX perlIdx, uint64 onoff, uint64 type)
 {
 	if (type > 1) {
 		printf("Error type(%lu) (M-mode:0 S-mode:1)\n", type);
@@ -1430,12 +1580,38 @@ static void enx_externalirq_perl(eIRQ_GROUP_INDEX perlIdx, uint64 onoff, uint64 
 	*iThreshold[cpuid+type] = 0;
 }
 
+/* Used to program the machine timer compare register. */
+uint64_t ullNextTime = 0ULL;
+const uint64_t *pullNextTime = &ullNextTime;
+const size_t uxTimerIncrementsForOneTick = ( size_t ) ( configCPU_CLOCK_HZ / configTICK_RATE_HZ ); /* Assumes increment won't go over 32-bits. */
+volatile uint64_t * const pullMachineTimerCompareRegister = ( volatile uint64_t * const ) ( CLINT_BASE + 0x4000 );
+
 void enx_timerirq_init(void)
 {
 	/* reuse existing routine */
+#if 0
+	uint32_t ulCurrentTimeHigh, ulCurrentTimeLow;
+	volatile uint32_t * const pulTimeHigh = ( volatile uint32_t * const ) ( CLINT_BASE + 0xBFFC );
+	volatile uint32_t * const pulTimeLow = ( volatile uint32_t * const ) ( CLINT_BASE + 0xBFF8 );
+
+	do
+	{
+		ulCurrentTimeHigh = *pulTimeHigh;
+		ulCurrentTimeLow = *pulTimeLow;
+	} while( ulCurrentTimeHigh != *pulTimeHigh );
+
+	ullNextTime = ( uint64_t ) ulCurrentTimeHigh;
+	ullNextTime <<= 32ULL;
+	ullNextTime |= ( uint64_t ) ulCurrentTimeLow;
+	ullNextTime += ( uint64_t ) uxTimerIncrementsForOneTick;
+	*pullMachineTimerCompareRegister = ullNextTime;
+
+	/* Prepare the time to use after the next tick interrupt. */
+	ullNextTime += ( uint64_t ) uxTimerIncrementsForOneTick;
+#else
 	uint64 cpu_id = CPU_ID;
 	timecmp[cpu_id] = *mtime + TIMECMP_NEXT_VAL;						// Next timer Interrupt
-
+#endif
 	set_csr(mie, MIP_MTIP);												// Enable the Machine-Timer bit in MIE
 }
 
@@ -1468,9 +1644,9 @@ void enx_externalirq_init_cpu0(void)
 //	enx_externalirq_perl(eigiISP, ENX_ON, 0);							// Enable ISP Interrupts
 //	enx_externalirq_perl(eigiVCODEC, ENX_ON, 0);						// Enable VCodec Interrupts
 	enx_externalirq_perl(eigiDMA0, ENX_ON, 0);							// Enable DMA0 Interrupts
-	enx_externalirq_perl(eigiDMA1, ENX_ON, 0);							// Enable DMA1 Interrupts
-	enx_externalirq_perl(eigiDMA2, ENX_ON, 0);							// Enable DMA2 Interrupts
-	enx_externalirq_perl(eigiDMA3, ENX_ON, 0);							// Enable DMA3 Interrupts
+//	enx_externalirq_perl(eigiDMA1, ENX_ON, 0);							// Enable DMA1 Interrupts
+//	enx_externalirq_perl(eigiDMA2, ENX_ON, 0);							// Enable DMA2 Interrupts
+//	enx_externalirq_perl(eigiDMA3, ENX_ON, 0);							// Enable DMA3 Interrupts
 	enx_externalirq_perl(eigiETH, ENX_ON, 0);							// Enable ETH_TX Interrupts
 	enx_externalirq_perl(eigiSDIO0, ENX_ON, 0);							// Enable SDIO0 Interrupts
 	enx_externalirq_perl(eigiSDIO1, ENX_ON, 0);							// Enable SDIO1 Interrupts
@@ -1499,8 +1675,8 @@ void enx_externalirq_init_cpu0(void)
 	enx_externalirq_perl(eigiGPIO60_63_I2C7_UART7, ENX_ON, 0);			// Enable GPIO60~63, I2C7, UART7 Interrupts
 	enx_externalirq_perl(eigiGPIO64_67_SPI8, ENX_ON, 0);				// Enable GPIO64~67, SPI8 Interrupts
 	enx_externalirq_perl(eigiGPIO68_71_I2C8_UART8, ENX_ON, 0);			// Enable GPIO68~71, I2C8, UART8 Interrupts
-	enx_externalirq_perl(eigiReserved37, ENX_ON, 0);					// Enable Reserved37 Interrupts
-	enx_externalirq_perl(eigiReserved38, ENX_ON, 0);					// Enable Reserved38 Interrupts
+	enx_externalirq_perl(eigiIR, ENX_ON, 0);							// Enable IR Interrupts
+	enx_externalirq_perl(eigiOMC, ENX_ON, 0);							// Enable OMC Interrupts
 	enx_externalirq_perl(eigiReserved39, ENX_ON, 0);					// Enable Reserved39 Interrupts
 	enx_externalirq_perl(eigiReserved40, ENX_ON, 0);					// Enable Reserved40 Interrupts
 }
@@ -1514,6 +1690,7 @@ void enx_externalirq_init_cpu1(void)
 	set_csr(mstatus, MSTATUS_MIE);										// Machine Interrupt Enable
 
 	enx_externalirq_perl(eigiBTOA, ENX_ON, 0);							// Enable BTOA Interrupts
+	enx_externalirq_perl(eigiDMA1, ENX_ON, 0);							// Enable DMA1 Interrupts
 }
 
 void enx_externalirq_init_cpu2(void)
@@ -1525,6 +1702,7 @@ void enx_externalirq_init_cpu2(void)
 	set_csr(mstatus, MSTATUS_MIE);										// Machine Interrupt Enable
 
 	enx_externalirq_perl(eigiATOB, ENX_ON, 0);							// Enable ATOB Interrupts
+	enx_externalirq_perl(eigiDMA2, ENX_ON, 0);							// Enable DMA2 Interrupts
 }
 
 void enx_externalirq_init_cpu3(void)
@@ -1537,6 +1715,7 @@ void enx_externalirq_init_cpu3(void)
 
 	enx_externalirq_perl(eigiISP, ENX_ON, 0);							// Enable ISP Interrupts
 	enx_externalirq_perl(eigiVCODEC, ENX_ON, 0);						// Enable Codec Interrupts
+	enx_externalirq_perl(eigiDMA3, ENX_ON, 0);							// Enable DMA3 Interrupts
 	enx_externalirq_perl(eigiGPIO60_63_I2C7_UART7, ENX_OFF, 0);			// Enable GPIO60~63, I2C7, UART7 Interrupts
 //	enx_externalirq_perl(eigiGPIO, ENX_ON, 0);							// Enable GPIO Interrupts
 //	enx_externalirq_perl(eigiTIMER, ENX_ON, 0);							// Enable TIMER Interrupts
@@ -1545,6 +1724,38 @@ void enx_externalirq_init_cpu3(void)
 void enx_wake_cpu(int cpu_id)
 {
 	cpu_msip[cpu_id] = 1;
+}
+
+void enx_wake_message_to_cpu0(UINT flag)
+{
+	while (CPU0_MSG_MUTEX);		// lock
+	CPU0_MSG_FLAG |= flag;		// set flag
+	CPU0_MSG_MUTEX = 0;			// unlock
+	enx_wake_cpu(0);			// call cpu
+}
+
+void enx_wake_message_to_cpu1(UINT flag)
+{
+	while (CPU1_MSG_MUTEX);		// lock
+	CPU1_MSG_FLAG |= flag;		// set flag
+	CPU1_MSG_MUTEX = 0;			// unlock
+	enx_wake_cpu(1);			// call cpu
+}
+
+void enx_wake_message_to_cpu2(UINT flag)
+{
+	while (CPU2_MSG_MUTEX);		// lock
+	CPU2_MSG_FLAG |= flag;		// set flag
+	CPU2_MSG_MUTEX = 0;			// unlock
+	enx_wake_cpu(2);			// call cpu
+}
+
+void enx_wake_message_to_cpu3(UINT flag)
+{
+	while (CPU3_MSG_MUTEX);		// lock
+	CPU3_MSG_FLAG |= flag;		// set flag
+	CPU3_MSG_MUTEX = 0;			// unlock
+	enx_wake_cpu(3);			// call cpu
 }
 
 uint32_t enx_get_wake_cpu(int cpu_id)

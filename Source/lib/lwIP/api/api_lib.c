@@ -1061,9 +1061,9 @@ netconn_write_vectors_partly(struct netconn *conn, struct netvector *vectors, u1
   /* For locking the core: this _can_ be delayed on low memory/low send buffer,
      but if it is, this is done inside api_msg.c:do_write(), so we can use the
      non-blocking version here. */
-  printf("[");
+//printf("[");
   err = netconn_apimsg(lwip_netconn_do_write, &API_MSG_VAR_REF(msg));
-  printf("]");
+//printf("]");
   if (err == ERR_OK) {
     if (bytes_written != NULL) {
       *bytes_written = API_MSG_VAR_REF(msg).msg.w.offset;

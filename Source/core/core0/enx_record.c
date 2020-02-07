@@ -72,7 +72,7 @@ ENX_OKFAIL MsgRecGet(stream_info *getInfo)
 	return bRes;
 }
 
-void IsrRecorddata(void *arg)
+void IsrRecorddata(void)
 {
 	stream_info info;
 	while (MsgRecGet(&info) == ENX_OK) {

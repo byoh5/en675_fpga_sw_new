@@ -57,6 +57,11 @@
 #define DGB_GPIO_ERR			(ENX_DBG_ON | ENX_DBG_HALT)
 #define DBG_ADC_LOG				(ENX_DBG_ON)
 
+#define DBG_SFLS_LOG			(ENX_DBG_OFF)
+#define DBG_SFLS_STATUS			(ENX_DBG_ON)
+#define DBG_SFLS_WARNING		(ENX_DBG_ON)
+#define DBG_SFLS_ERR			(ENX_DBG_ON | ENX_DBG_HALT)
+
 //******************************************************************************
 // 2. Debug Log
 //------------------------------------------------------------------------------

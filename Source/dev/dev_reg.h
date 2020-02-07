@@ -8,7 +8,7 @@ _regs_ BF_14(UINT USR_CMD_MODE : 2 ,UINT USR_ADR_MODE    : 2 ,UINT USR_DAT_MODE 
 _regs_ BF_1(UINT USR_ADR : 32 ) _rege_ _SFLS_5;
 _regs_ BF_1(UINT USR_RDDAT : 32 ) _rege_ _SFLS_6;
 _regs_ BF_1(UINT USR_WRDAT : 32 ) _rege_ _SFLS_7;
-_regs_ BF_12(UINT IO_RXEDGE : 1 ,UINT IO_TXEDGE : 1 ,UINT _rev0 : 4, UINT IO_RDLTC : 2 ,UINT _rev1 : 4, UINT IO_CLKDIV : 4 ,UINT _rev2 : 5, UINT IO_CS_GAP : 3 ,UINT _rev3 : 5, UINT USRBUS_REQ : 1 ,UINT BUS_REQ : 1 ,UINT USR_REQ : 1 ) _rege_ _SFLS_8;
+_regs_ BF_11(UINT IO_RXEDGE : 1 ,UINT IO_TXEDGE : 1 ,UINT _rev0 : 4, UINT IO_RDLTC : 2 ,UINT IO_CLKDIV : 8 ,UINT _rev2 : 5, UINT IO_CS_GAP : 3 ,UINT _rev3 : 5, UINT USRBUS_REQ : 1 ,UINT BUS_REQ : 1 ,UINT USR_REQ : 1 ) _rege_ _SFLS_8;
 _regs_ BF_9(UINT CMD_RXEDGE : 1 ,UINT CMD_TXEDGE : 1 ,UINT DAT_RXEDGE : 1 ,UINT DAT_TXEDGE : 1 ,UINT _rev0 : 24, UINT BITMODE : 1 ,UINT IOMODE : 1 ,UINT MODE : 1 ,UINT EN : 1 ) _rege_ _SDIO0_0;
 _regs_ BF_4(UINT _rev0 : 17, UINT CLK_EN : 1 ,UINT CLK_SELECT : 2 ,UINT CLK_DIV : 12 ) _rege_ _SDIO0_1;
 _regs_ BF_1(UINT CMD_ARG : 32 ) _rege_ _SDIO0_2;
@@ -579,7 +579,7 @@ _regs_ BF_12(UINT _rev0 : 1, UINT DONE_VAL : 1 ,UINT _rev1 : 2, UINT DONE_PTR : 
 _regs_ BF_1(UINT SRC : 32 ) _rege_ _CDMA3_1;
 _regs_ BF_1(UINT DST : 32 ) _rege_ _CDMA3_2;
 _regs_ BF_1(UINT LEN : 32 ) _rege_ _CDMA3_3;
-_regs_ BF_22(UINT _rev0 : 1, UINT TXLR : 2 ,UINT TXEDN : 1 ,UINT RXEDN : 1 ,UINT RX_IRQ : 1 ,UINT TX_IRQ : 1 ,UINT TX_IRQ_CLR : 1 ,UINT RX_IRQ_CLR : 1 ,UINT TX_IRQ_EN : 1 ,UINT RX_IRQ_EN : 1 ,UINT BYTE : 2 ,UINT RDBYTE : 2 ,UINT WRBYTE : 2 ,UINT TXDW : 2 ,UINT RXDW : 2 ,UINT TXCODEC : 2 ,UINT RXCODEC : 2 ,UINT TXMODE : 2 ,UINT RXMODE : 2 ,UINT TXEN : 1 ,UINT RXEN : 1 ,UINT MODE : 1 ) _rege_ _I2S_0;
+_regs_ BF_22(UINT _rev0 : 1, UINT TXLR : 2 ,UINT TXEDN : 1 ,UINT RXEDN : 1 ,UINT TX_IRQ : 1 ,UINT RX_IRQ : 1 ,UINT TX_IRQ_CLR : 1 ,UINT RX_IRQ_CLR : 1 ,UINT TX_IRQ_EN : 1 ,UINT RX_IRQ_EN : 1 ,UINT BYTE : 2 ,UINT RDBYTE : 2 ,UINT WRBYTE : 2 ,UINT TXDW : 2 ,UINT RXDW : 2 ,UINT TXCODEC : 2 ,UINT RXCODEC : 2 ,UINT TXMODE : 2 ,UINT RXMODE : 2 ,UINT TXEN : 1 ,UINT RXEN : 1 ,UINT MODE : 1 ) _rege_ _I2S_0;
 _regs_ BF_1(UINT ADRW : 32 ) _rege_ _I2S_1;
 _regs_ BF_1(UINT ADRR : 32 ) _rege_ _I2S_2;
 _regs_ BF_6(UINT _rev0 : 8, UINT RDLEN : 2 ,UINT WRLEN : 2 ,UINT RDDW : 2 ,UINT WRDW : 2 ,UINT SCKCNT : 16 ) _rege_ _I2S_3;
@@ -597,7 +597,7 @@ _regs_ BF_4(UINT G_ETH : 1 ,UINT _rev0 : 29, UINT ETH_RX : 1 ,UINT ETH_TX : 1 ) 
 _regs_ BF_3(UINT G_SDIO0 : 1 ,UINT _rev0 : 30, UINT SDIO0 : 1 ) _rege_ _IRQ_9;
 _regs_ BF_3(UINT G_SDIO1 : 1 ,UINT _rev0 : 30, UINT SDIO1 : 1 ) _rege_ _IRQ_10;
 _regs_ BF_3(UINT G_NPU : 1 ,UINT _rev0 : 30, UINT NPU : 1 ) _rege_ _IRQ_11;
-_regs_ BF_4(UINT G_I2S : 1 ,UINT _rev0 : 29, UINT I2S_RX : 1 ,UINT I2S_TX : 1 ) _rege_ _IRQ_12;
+_regs_ BF_4(UINT G_I2S : 1 ,UINT _rev0 : 29, UINT I2S_TX : 1 ,UINT I2S_RX : 1 ) _rege_ _IRQ_12;
 _regs_ BF_4(UINT G_USB : 1 ,UINT _rev0 : 29, UINT USB_DMA : 1 ,UINT USB_MC : 1 ) _rege_ _IRQ_13;
 _regs_ BF_3(UINT G_CAL : 1 ,UINT _rev0 : 30, UINT CHKSUM : 1 ) _rege_ _IRQ_14;
 _regs_ BF_3(UINT G_HASH : 1 ,UINT _rev0 : 30, UINT SHA : 1 ) _rege_ _IRQ_15;
@@ -621,14 +621,18 @@ _regs_ BF_11(UINT G_SOURCE33 : 1 ,UINT _rev0 : 22, UINT SPI7 : 1 ,UINT TIMER38 :
 _regs_ BF_8(UINT G_SOURCE34 : 1 ,UINT _rev0 : 25, UINT I2C7 : 1 ,UINT UART7 : 1 ,UINT GPIO63 : 1 ,UINT GPIO62 : 1 ,UINT GPIO61 : 1 ,UINT GPIO60 : 1 ) _rege_ _IRQ_33;
 _regs_ BF_7(UINT G_SOURCE35 : 1 ,UINT _rev0 : 26, UINT SPI8 : 1 ,UINT GPIO67 : 1 ,UINT GPIO66 : 1 ,UINT GPIO65 : 1 ,UINT GPIO64 : 1 ) _rege_ _IRQ_34;
 _regs_ BF_8(UINT G_SOURCE36 : 1 ,UINT _rev0 : 25, UINT I2C8 : 1 ,UINT UART8 : 1 ,UINT GPIO71 : 1 ,UINT GPIO70 : 1 ,UINT GPIO69 : 1 ,UINT GPIO68 : 1 ) _rege_ _IRQ_35;
-_regs_ BF_2(UINT G_SOURCE37 : 1 , UINT _rev0 : 31 ) _rege_ _IRQ_36;
-_regs_ BF_2(UINT G_SOURCE38 : 1 , UINT _rev0 : 31 ) _rege_ _IRQ_37;
+_regs_ BF_3(UINT G_SOURCE37 : 1 ,UINT _rev0 : 30, UINT IR : 1 ) _rege_ _IRQ_36;
+_regs_ BF_6(UINT G_SOURCE38 : 1 ,UINT _rev0 : 27, UINT OMC_COOLDONWN : 1 ,UINT OMC_HIGHTEMP : 1 ,UINT OMC_OVERTEMP : 1 ,UINT OMC_ASP : 1 ) _rege_ _IRQ_37;
 _regs_ BF_2(UINT G_SOURCE39 : 1 , UINT _rev0 : 31 ) _rege_ _IRQ_38;
 _regs_ BF_2(UINT G_SOURCE40 : 1 , UINT _rev0 : 31 ) _rege_ _IRQ_39;
 _regs_ BF_7(UINT LOCK_CNT : 16 ,UINT CAP_POS : 2 ,UINT CTRL_POS : 2 ,UINT CLK_DIV : 8 ,UINT _rev0 : 2, UINT CLK_PD : 1 ,UINT MODE : 1 ) _rege_ _ADC_0;
 _regs_ BF_12(UINT IIR_COEF3 : 6 ,UINT IIR_COEF2 : 6 ,UINT IIR_COEF1 : 6 ,UINT IIR_COEF0 : 6 ,UINT OSEL3 : 1 ,UINT OSEL2 : 1 ,UINT OSEL1 : 1 ,UINT OSEL0 : 1 ,UINT ESEL : 1 ,UINT HIGHF : 1 ,UINT OSEL_IIR_INV : 1 ,UINT PD : 1 ) _rege_ _ADC_1;
 _regs_ BF_4(UINT _rev0 : 6, UINT DATA1 : 10 ,UINT _rev1 : 6, UINT DATA0 : 10 ) _rege_ _ADC_2;
 _regs_ BF_4(UINT _rev0 : 6, UINT DATA3 : 10 ,UINT _rev1 : 6, UINT DATA2 : 10 ) _rege_ _ADC_3;
+_regs_ BF_6(UINT CLK : 20 ,UINT IRQ : 1 ,UINT IRQ_EN : 1 ,UINT IRQ_CLR : 1 ,UINT EN : 1 ,UINT IRQ_ADDR : 8 ) _rege_ _IR_0;
+_regs_ BF_1(UINT MARGIN : 32 ) _rege_ _IR_1;
+_regs_ BF_1(UINT RPT_MG : 32 ) _rege_ _IR_2;
+_regs_ BF_4(UINT _rev0 : 15, UINT RPT : 1 ,UINT ADDR : 8 ,UINT DAT : 8 ) _rege_ _IR_3;
 #define SFLS_ID _bm(_SFLS_0,REG_BASE_SFLS, (0<<3),ID) // 24 Bit, 24'h0, R
 #define SFLS_IF_RST _bm(_SFLS_0,REG_BASE_SFLS, (0<<3),IF_RST) // 1 Bit, 1'h0, RW
 #define SFLS_ID_VAL _bm(_SFLS_0,REG_BASE_SFLS, (0<<3),ID_VAL) // 1 Bit, 1'h0, R
@@ -2734,8 +2738,8 @@ _regs_ BF_4(UINT _rev0 : 6, UINT DATA3 : 10 ,UINT _rev1 : 6, UINT DATA2 : 10 ) _
 #define I2S_TXLR _bm(_I2S_0,REG_BASE_I2S, (0<<3),TXLR) // 2 Bit, 0, R/W
 #define I2S_TXEDN _bm(_I2S_0,REG_BASE_I2S, (0<<3),TXEDN) // 1 Bit, 0, R/W
 #define I2S_RXEDN _bm(_I2S_0,REG_BASE_I2S, (0<<3),RXEDN) // 1 Bit, 0, R/W
-#define I2S_RX_IRQ _bm(_I2S_0,REG_BASE_I2S, (0<<3),RX_IRQ) // 1 Bit, 0, R
 #define I2S_TX_IRQ _bm(_I2S_0,REG_BASE_I2S, (0<<3),TX_IRQ) // 1 Bit, 0, R
+#define I2S_RX_IRQ _bm(_I2S_0,REG_BASE_I2S, (0<<3),RX_IRQ) // 1 Bit, 0, R
 #define I2S_TX_IRQ_CLR _bm(_I2S_0,REG_BASE_I2S, (0<<3),TX_IRQ_CLR) // 1 Bit, 0, R/W
 #define I2S_RX_IRQ_CLR _bm(_I2S_0,REG_BASE_I2S, (0<<3),RX_IRQ_CLR) // 1 Bit, 0, R/W
 #define I2S_TX_IRQ_EN _bm(_I2S_0,REG_BASE_I2S, (0<<3),TX_IRQ_EN) // 1 Bit, 0, R/W
@@ -2821,8 +2825,8 @@ _regs_ BF_4(UINT _rev0 : 6, UINT DATA3 : 10 ,UINT _rev1 : 6, UINT DATA2 : 10 ) _
 #define IRQ_G_NPU _bm(_IRQ_11,REG_BASE_IRQ, (11<<3),G_NPU) // 1 Bit, 1'h0, R
 #define IRQ_NPU _bm(_IRQ_11,REG_BASE_IRQ, (11<<3),NPU) // 1 Bit, 1'h0, R
 #define IRQ_G_I2S _bm(_IRQ_12,REG_BASE_IRQ, (12<<3),G_I2S) // 1 Bit, 1'h0, R
-#define IRQ_I2S_RX _bm(_IRQ_12,REG_BASE_IRQ, (12<<3),I2S_RX) // 1 Bit, 1'h0, R
 #define IRQ_I2S_TX _bm(_IRQ_12,REG_BASE_IRQ, (12<<3),I2S_TX) // 1 Bit, 1'h0, R
+#define IRQ_I2S_RX _bm(_IRQ_12,REG_BASE_IRQ, (12<<3),I2S_RX) // 1 Bit, 1'h0, R
 #define IRQ_G_USB _bm(_IRQ_13,REG_BASE_IRQ, (13<<3),G_USB) // 1 Bit, 1'h0, R
 #define IRQ_USB_DMA _bm(_IRQ_13,REG_BASE_IRQ, (13<<3),USB_DMA) // 1 Bit, 1'h0, R
 #define IRQ_USB_MC _bm(_IRQ_13,REG_BASE_IRQ, (13<<3),USB_MC) // 1 Bit, 1'h0, R
@@ -2991,7 +2995,12 @@ _regs_ BF_4(UINT _rev0 : 6, UINT DATA3 : 10 ,UINT _rev1 : 6, UINT DATA2 : 10 ) _
 #define IRQ_GPIO69 _bm(_IRQ_35,REG_BASE_IRQ, (35<<3),GPIO69) // 1 Bit, 1'h0, R
 #define IRQ_GPIO68 _bm(_IRQ_35,REG_BASE_IRQ, (35<<3),GPIO68) // 1 Bit, 1'h0, R
 #define IRQ_G_SOURCE37 _bm(_IRQ_36,REG_BASE_IRQ, (36<<3),G_SOURCE37) // 1 Bit, 1'h0, R
+#define IRQ_IR _bm(_IRQ_36,REG_BASE_IRQ, (36<<3),IR) // 1 Bit, 1'h0, R
 #define IRQ_G_SOURCE38 _bm(_IRQ_37,REG_BASE_IRQ, (37<<3),G_SOURCE38) // 1 Bit, 1'h0, R
+#define IRQ_OMC_COOLDONWN _bm(_IRQ_37,REG_BASE_IRQ, (37<<3),OMC_COOLDONWN) // 1 Bit, 1'h0, R
+#define IRQ_OMC_HIGHTEMP _bm(_IRQ_37,REG_BASE_IRQ, (37<<3),OMC_HIGHTEMP) // 1 Bit, 1'h0, R
+#define IRQ_OMC_OVERTEMP _bm(_IRQ_37,REG_BASE_IRQ, (37<<3),OMC_OVERTEMP) // 1 Bit, 1'h0, R
+#define IRQ_OMC_ASP _bm(_IRQ_37,REG_BASE_IRQ, (37<<3),OMC_ASP) // 1 Bit, 1'h0, R
 #define IRQ_G_SOURCE39 _bm(_IRQ_38,REG_BASE_IRQ, (38<<3),G_SOURCE39) // 1 Bit, 1'h0, R
 #define IRQ_G_SOURCE40 _bm(_IRQ_39,REG_BASE_IRQ, (39<<3),G_SOURCE40) // 1 Bit, 1'h0, R
 #define ADC_LOCK_CNT _bm(_ADC_0,REG_BASE_ADC, (0<<3),LOCK_CNT) // 16 Bit, 16'h400, RW
@@ -3016,4 +3025,15 @@ _regs_ BF_4(UINT _rev0 : 6, UINT DATA3 : 10 ,UINT _rev1 : 6, UINT DATA2 : 10 ) _
 #define ADC_DATA0 _bm(_ADC_2,REG_BASE_ADC, (2<<3),DATA0) // 10 Bit, 10'h0, R
 #define ADC_DATA3 _bm(_ADC_3,REG_BASE_ADC, (3<<3),DATA3) // 10 Bit, 10'h0, R
 #define ADC_DATA2 _bm(_ADC_3,REG_BASE_ADC, (3<<3),DATA2) // 10 Bit, 10'h0, R
+#define IR_CLK _bm(_IR_0,REG_BASE_IR, (0<<3),CLK) // 20 Bit, 20'h0, RW
+#define IR_IRQ _bm(_IR_0,REG_BASE_IR, (0<<3),IRQ) // 1 Bit, 1'h0, R
+#define IR_IRQ_EN _bm(_IR_0,REG_BASE_IR, (0<<3),IRQ_EN) // 1 Bit, 1'h0, RW
+#define IR_IRQ_CLR _bm(_IR_0,REG_BASE_IR, (0<<3),IRQ_CLR) // 1 Bit, 1'h0, RW
+#define IR_EN _bm(_IR_0,REG_BASE_IR, (0<<3),EN) // 1 Bit, 1'h0, RW
+#define IR_IRQ_ADDR _bm(_IR_0,REG_BASE_IR, (0<<3),IRQ_ADDR) // 8 Bit, 8'h0, RW
+#define IR_MARGIN _bm(_IR_1,REG_BASE_IR, (1<<3),MARGIN) // 32 Bit, 32'h0, RW
+#define IR_RPT_MG _bm(_IR_2,REG_BASE_IR, (2<<3),RPT_MG) // 32 Bit, 32'h0, RW
+#define IR_RPT _bm(_IR_3,REG_BASE_IR, (3<<3),RPT) // 1 Bit, 1'h0, R
+#define IR_ADDR _bm(_IR_3,REG_BASE_IR, (3<<3),ADDR) // 8 Bit, 8'h0, R
+#define IR_DAT _bm(_IR_3,REG_BASE_IR, (3<<3),DAT) // 8 Bit, 8'h0, R
 #endif

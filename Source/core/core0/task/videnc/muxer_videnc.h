@@ -157,7 +157,8 @@ extern t_videnc_t *muxsr_videnc_get_t_videnc_t(void);
 extern void muxer_videnc_set_vcodec(int RecType, eVideoChannel vs);
 extern void muxer_videnc_process(t_videnc_t *pvid, t_videnc_totalbuf_t *buffer);
 
-extern void muxer_jpegstill_process(void *ctx);
+extern ENX_OKFAIL muxer_jpegstill_request(void);
+extern void muxer_jpegstill_init(void);
 
 extern t_videnc_t gVidenc[eRecEnd];
 

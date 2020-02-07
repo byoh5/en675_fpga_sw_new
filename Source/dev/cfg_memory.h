@@ -142,7 +142,10 @@
 #define REG_BASE_I2S			0x45400000
 #define REG_BASE_IRQ			0x45500000
 #define REG_BASE_ADC			0x45600000
-#define REG_BASE_BUS			0x45700000
+#define REG_BASE_USB			0x45800000
+#define REG_BASE_MAP_CON		0x45900000
+#define REG_BASE_IR				0x45A00000
+#define REG_BASE_OIC			0x46000000
 
 //******************************************************************************
 // 3. SFLS Userinfo Base Address / Size

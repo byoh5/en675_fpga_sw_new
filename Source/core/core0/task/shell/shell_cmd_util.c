@@ -1112,7 +1112,7 @@ int cmd_test_aes(int argc, char *argv[])
 			u32TestLoop = atoi(argv[2]);
 		}
 		aesitem.mode = bit_flag | type_flag;
-		aesitem.u32BufSize = 1024;
+		aesitem.u32BufSize = 1024 * 16;
 		aesitem.u32TestLoop = u32TestLoop;
 		aesitem.taskHandle = vTaskCreate("AesT", AesTestTask, NULL, LV3_STACK_SIZE, LV5_TASK_PRIO);
 	} else if (argc == 2 && strcmp(argv[1], "stop") == 0) {

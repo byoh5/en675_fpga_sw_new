@@ -10,10 +10,8 @@ void IF_Funcs_Timer_irq(void *ctx)
 
 void main_3(int cpu_id)
 {
-	SYS_REG0 = 0;
-	while(SYS_REG0 == 0x0) {} // Wait for CPU0 to be ready.
-
-	write_csr(mstatus, MSTATUS_FS); // Enable
+	SYS_REG0 = 0xf;
+	while(SYS_REG0 == 0xf) {} // Wait for CPU0 to be ready.
 
 	enx_externalirq_init_cpu3();
 

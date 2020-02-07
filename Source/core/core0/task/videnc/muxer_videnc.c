@@ -1016,7 +1016,8 @@ int muxer_videnc_sbuf_depth_sum(void)
 }
 
 #if (JPEG_SDSAVE==1)
-void muxer_jpegstill_process(void *ctx)
+static TimerHandle_t xTimersJpegstill = NULL;
+static void muxer_jpegstill_process(TimerHandle_t xTimer)
 {
 	FIL fp;
 	char filename[128];
@@ -1029,12 +1030,12 @@ void muxer_jpegstill_process(void *ctx)
 	gptMsgShare.JPEG_STILL_REF++;
 
 	struct tm tmout;
-	enx_get_tmtime(gptMsgShare.TIME, &tmout, DEF_YES, DEF_YES);
+	enx_get_tmtime(gptMsgShare.TIME, &tmout, ENX_YES);
 	sprintf(filename, "%d:/%s/%04d%02d%02d_%02d%02d%02d.jpg", DEV_SD, SD_DIR_SNAP, tmout.tm_year+1900, tmout.tm_mon+1, tmout.tm_mday, tmout.tm_hour, tmout.tm_min, tmout.tm_sec);				// File name gen
 	if (f_open(&fp, filename, FA_WRITE | FA_CREATE_ALWAYS) != FR_OK) {
 		printf("Error : f_open File system fail\n");
 	} else {
-		BYTE* src_addr = (BYTE *)gptMsgShare.JPEG_STILL_ADDR;
+		BYTE* src_addr = (BYTE *)(intptr_t)gptMsgShare.JPEG_STILL_ADDR;
 		if (f_write(&fp, src_addr, gptMsgShare.JPEG_STILL_SIZE, &nByteWritten) != FR_OK) {
 			printf("Error : f_write File system fail\n");
 		}
@@ -1046,14 +1047,32 @@ void muxer_jpegstill_process(void *ctx)
 	if (gptMsgShare.JPEG_STILL_REF == 0) {
 		gptMsgShare.JPEG_STILL_FLAG = JPEG_SNAP_IDE;			// JPEG snapshot idle state
 	} else if (gptMsgShare.JPEG_STILL_REF < 0) {
-		printf("%s(%d) : Error : JPEG_STILL_REF(%d)\n", __func__, __LINE__, gptMsgShare.JPEG_STILL_REF);
+		flprintf("Error : JPEG_STILL_REF(%d)\n", gptMsgShare.JPEG_STILL_REF);
 		gptMsgShare.JPEG_STILL_REF = 0;
 	}
 
-	UNUSED(ctx);
+	UNUSED(xTimer);
+}
+
+ENX_OKFAIL muxer_jpegstill_request(void)
+{
+	BaseType_t xReturn = xTimerStart(xTimersJpegstill, portMAX_DELAY);
+	if (xReturn == pdPASS) {
+		return ENX_OK;
+	}
+	_Rprintf("JPEG still save request fail\n");
+	return ENX_FAIL;
+}
+
+void muxer_jpegstill_init(void)
+{
+	if (xTimersJpegstill == NULL) {
+		xTimersJpegstill = xTimerCreate("jpegstill", pdMS_TO_TICKS(10), pdFALSE, (void *)0, muxer_jpegstill_process);
+	} else {
+		_Rprintf("JPEG still save timer already!\n");
+	}
 }
 #endif
-
 
 /**
 	h.264 stream is buffered in ddr and written to sd card. 	
@@ -1124,6 +1143,7 @@ void muxer_init_buffering(void)
 void muxer_videnc_task(void* pvParameters)
 {
 	muxer_init_buffering();
+	muxer_jpegstill_init();
 
 	nVidenc_Mode_now = 0;
 	nVidenc_Mode_old = -1;
