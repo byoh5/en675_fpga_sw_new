@@ -822,14 +822,6 @@ void Menu(void)
 			//CLIP_MAX,		MENU_STRn(UP_ON, , UP(ClipMax), 2, OFF, ON),
 			RETURN,			MENU_ONEo(UP_ON, e, UP_ON, ))
 
-#if 0
-	// MENU - EXPOSURE - ANTI_SAT:ON - BACKLIGHT:ON
-	MENU_SET( 2, nBACKLIGHT, UP_ON,
-			//MODE,			MENU_STRn(UP_ON, , UP(MinGammaMode), 2, ALWAYS, DAY_ONLY),
-			LEVEL,			MENU_STRn(UP_ON, , UP(MinGammaY), 4, OFF, LOW, MIDDLE, HIGH),
-			RETURN,			MENU_ONEo(UP_ON, e, UP_ON, ))
-#endif
-
 	// MENU - EXPOSURE - AE_SPEED
 	MENU_SET( 9, AE_SPEED, UP_ON,
 			SHTp_SPEED,		MENU_BARn(UP_ON, , UP(ShtSpeed), 1, 20, 1),
@@ -906,14 +898,12 @@ void Menu(void)
 		 	RETURN,			MENU_ONEo(UP_ON, e, UP_ON, ))
 
 	// MENU - Focus ----------------------------------------------------------------------------------------------------
-#if (model_Lens==0)
 	MENU_SET( 3, FOCUS_ADJ, UP_ON,
 			LEVEL,			MENU_BARn(UP_ON, , UP(FocusThrs), 0, 20, 1),
 			COLOR,			MENU_STRn(UP_ON, , UP(FocusAdjColorSel), 6, WHT, YEL, CYN, RED, BLU, BLK),
 			RETURN,			MENU_ONEo(UP_ON, e, UP_ON, ))
-#endif
 
-// MENU - COLOR ----------------------------------------------------------------------------------------------------
+	// MENU - COLOR ----------------------------------------------------------------------------------------------------
 	MENU_SET( 9, COLORm, UP_ON,
 			AWB,			MENU_STRi(UP_ON, MENU_VAL_IS(MANUALe), AWB, ,
 										MENU_VAL_PUSH(PRESETp, PUSHING, PUSH_DELAY_NOR, gbMpAwbPrst = UP_OFF, gbMpAwbPrst = UP_ON),
@@ -961,47 +951,7 @@ void Menu(void)
 			GRN_BLUdYEL,	MENU_BARn(UP_ON, , UP(Green_HUE_BlueToYellow), 1, 255, 1),
 			GRN_GAIN,		MENU_BARn(UP_ON, , UP(Green_GAIN), 0, 255, 1),
 			RETURN,			MENU_ONEo(UP_ON, e, UP_ON, ))
-#if 0
-	MENU_SET( 6, HUEnCHROMA, UP(HueChromaMode) == UP_HUE_GAIN_NEW,
-			MODE,			MENU_STRn(UP_ON, if_KEY_LR(MENU_CHANGE()), UP(HueChromaMode), 2, NEW, OLD),
-			YELLOWnRED,		MENU_ONEi(UP_ON, e, UP_ON, YELLOWnRED, ),
-			REDnBLUE,		MENU_ONEi(UP_ON, e, UP_ON, REDnBLUE, ),
-			BLUEnGREEN,		MENU_ONEi(UP_ON, e, UP_ON, BLUEnGREEN, ),
-			GREENnYELLOW,	MENU_ONEi(UP_ON, e, UP_ON, GREENnYELLOW, ),
-			RETURN,			MENU_ONEo(UP_ON, e, UP_ON, ))
 
-	// MENU - COLOR - HUE & CHROMA - YELLOW&RED
-	MENU_SET( 5, YELLOWnRED, UP_ON,
-			YELLOWdBLUE,	MENU_BARn(UP_ON, , UP(Yellow_Red_HUE_YellowToBlue), 1, 255, 1),
-			REDdGREEN,		MENU_BARn(UP_ON, , UP(Yellow_Red_HUE_RedToGreen), 1, 255, 1),
-			GAIN_YELLOW,	MENU_BARn(UP_ON, , UP(Yellow_Red_GAIN_Yellow), 0, 255, 1),
-			GAIN_RED,		MENU_BARn(UP_ON, , UP(Yellow_Red_GAIN_Red), 0, 255, 1),
-			RETURN,			MENU_ONEo(UP_ON, e, UP_ON, ))
-
-	// MENU - COLOR - HUE & CHROMA - RED&BLUE
-	MENU_SET( 5, REDnBLUE, UP_ON,
-			YELLOWdBLUE,	MENU_BARn(UP_ON, , UP(Red_Blue_HUE_YellowToBlue), 1, 255, 1),
-			GREENdRED,		MENU_BARn(UP_ON, , UP(Red_Blue_HUE_GreenToRed), 1, 255, 1),
-			GAIN_RED,		MENU_BARn(UP_ON, , UP(Red_Blue_GAIN_Red), 0, 255, 1),
-			GAIN_BLUE,		MENU_BARn(UP_ON, , UP(Red_Blue_GAIN_Blue), 0, 255, 1),
-			RETURN,			MENU_ONEo(UP_ON, e, UP_ON, ))
-
-	// MENU - COLOR - HUE & CHROMA - BLUE&GREEN
-	MENU_SET( 5, BLUEnGREEN, UP_ON,
-			BLUEdYELLOW,	MENU_BARn(UP_ON, , UP(Blue_Green_HUE_BlueToYellow), 1, 255, 1),
-			GREENdRED,		MENU_BARn(UP_ON, , UP(Blue_Green_HUE_GreenToRed), 1, 255, 1),
-			GAIN_BLUE,		MENU_BARn(UP_ON, , UP(Blue_Green_GAIN_Blue), 0, 255, 1),
-			GAIN_GREEN,		MENU_BARn(UP_ON, , UP(Blue_Green_GAIN_Green), 0, 255, 1),
-			RETURN,			MENU_ONEo(UP_ON, e, UP_ON, ))
-
-	// MENU - COLOR - HUE & CHROMA - GREEN&YELLOW
-	MENU_SET( 5, GREENnYELLOW, UP_ON,
-			BLUEdYELLOW,	MENU_BARn(UP_ON, , UP(Green_Yellow_HUE_BlueToYellow), 1, 255, 1),
-			REDdGREEN,		MENU_BARn(UP_ON, , UP(Green_Yellow_HUE_RedToGreen), 1, 255, 1),
-			GAIN_GREEN,		MENU_BARn(UP_ON, , UP(Green_Yellow_GAIN_Green), 0, 255, 1),
-			GAIN_YELLOW,	MENU_BARn(UP_ON, , UP(Green_Yellow_GAIN_Yellow), 0, 255, 1),
-			RETURN,			MENU_ONEo(UP_ON, e, UP_ON, ))
-#endif
 // MENU - DNR ----------------------------------------------------------------------------------------------------
 	MENU_SET( 3, DNR, UP_ON,
 			DNR_3D,			MENU_STRn(UP_ON, , UP(Adnr3D), 4, OFF, LOW, MIDDLE, HIGH),
