@@ -271,14 +271,30 @@ void OutMode(void)
 #if 0
 void isp_init_test(void)
 {
+	WaitXms(2000);
+
 	#define DDR0_BASE	0x80000000
 	#define DDR1_BASE	0x90000000
 
-	const UINT nHW = RP(PO_HW)/*416*/;
-	const UINT nVW = RP(PO_VW)/*240*/;
-	const UINT nHTW = RP(FR_HTW60)-2/*416+150*/;
-	const UINT nVTW = RP(FR_VTW60)-1/*240+16*/;
-
+  #if 1
+	const UINT nHW = RP(PO_HW);
+	const UINT nVW = RP(PO_VW);
+	const UINT nHTW = RP(FR_HTW60)-2;
+	const UINT nVTW = RP(FR_VTW60)-1;
+	#define R_LTC_T	0x500
+  #elif 0
+	const UINT nHW = 416;
+	const UINT nVW = 240;
+	const UINT nHTW = 416+300;
+	const UINT nVTW = 240+32;
+	#define R_LTC_T	200
+  #else
+	const UINT nHW = 3848;
+	const UINT nVW = 2168;
+	const UINT nHTW = 4400-2;
+	const UINT nVTW = 2250-1;
+	#define R_LTC_T	0xf80
+  #endif
 	const UINT nWdrAddr = DDR1_BASE;
 	const UINT nFrc0Addr = nWdrAddr  + ((nHW*nVW*10)>>3);
 	const UINT nFrc1Addr = nFrc0Addr + ((nHW*nVW*10)>>3);
@@ -351,10 +367,10 @@ void isp_init_test(void)
 
 	//YC_OSELw(0x11);
 	SYNC_BYSw(1);
-	INSELw(0x6);
+	INSELw(0x3/*0x5*//*0x6*/);
 
 
-  #if 1	// ddr write test
+  #if 0	// ddr write test
 	YCW_CK0_SELw(2);
 	YCW_CK0_PDw(1);
 	IM_YADR0w(nDdrAddrY>>4);
@@ -362,8 +378,19 @@ void isp_init_test(void)
 	IM_HWI0w(nHW);
 	IM_IVSEL0w(0);
 	IM_ISEL0w(0xC);
-	IM_GO0w(1);
+	#define IM_GO_W	IM_GO0w(1)
+  #else
+	YCW_CK1_SELw(2);
+	YCW_CK1_PDw(1);
+	IM_YADR1_P0w(nDdrAddrY>>4);
+	IM_CADR1_P0w(nDdrAddrC>>4);
+	IM_HWI1w(nHW);
+	IM_IVSEL1w(0);
+	IM_ISEL1w(0xC);
+	#define IM_GO_W	IM_GO1w(1)
   #endif
+
+	IM_GO_W;
 
 	// Isp_Dnr3d_Config(FN_ON, 0x80, 0x40, 0x20);
 	DNR3D_FKw(0x80);
@@ -410,23 +437,24 @@ void isp_init_test(void)
 	RD_MODw(0);
 	AXI_IDSw(0);
 
-	DDR_RDNR_LTCw(0x500);
-	DDR_RWDR_LTCw(0x500);
-	DDR_RFRC_LTCw(0x500);
-	DDR_RYC_LTCw(0x500);
+	DDR_RDNR_LTCw(R_LTC_T);
+	DDR_RWDR_LTCw(R_LTC_T);
+	DDR_RFRC_LTCw(R_LTC_T);
+	DDR_RYC_LTCw(R_LTC_T);
 	DDR_RENC_LTCw(0x300);	// ENC 는 고정
 
 	SD_MODw(0);			// DDR OFF
 
-  #if 1
+	VIRQO_EN_Tw(1);
+
+  #if 0
 	//UartTxStr("★Wait...");
 	//INIT_DELAY(1);
 	//for(volatile int i=0;i<CPU_FREQ;i++) { __asm("C.NOP"); }	// 1 cycle = 15 clock = 15/CPU_FREQ sec,  컴파일 옵션 : -O0
-	VIRQO_EN_Tw(1);
 	for(volatile int i=0;i<2;i++) {
 		while(!(ISP_RIRQ_VOr&0x1));
 		CLI_VLOCKO_Tw(1);
-		IM_GO0w(1);
+		IM_GO_W;
 	}
 	//UartTxStr("★Run !!!");
   #endif
@@ -437,14 +465,46 @@ void isp_init_test(void)
 
 	//INIT_DELAY(10);
 
+  #if 1		// WDR ON
 	DOL_LBUFS0_ONw(1);
 	WDR_ONw(1);
 	TMG_ONw(1);
+  #endif
 
-	while (1) {
+	B30_VSPw(4);
+	B30_HSPw(40);
+	int i=1;
+	char bStr[3];
+
+	while (1)
+	{
 		while(!(ISP_RIRQ_VOr&0x1));
 		CLI_VLOCKO_Tw(1);
-		IM_GO0w(1);
+		/*if(i<100)*/ {
+			const UINT nDdrY = nDdrAddrY + (nHW * B30_VSPr) + B30_HSPr;
+			hwflush_dcache_range(nDdrY, 64);
+			//_printf("%2d: %8X %8X %8X %8X\r\n", i++, *pnDdrY, *(pnDdrY+1), *(pnDdrY+2), *(pnDdrY+3));
+
+			BYTE* pbDdrY = (BYTE*)((LONG)nDdrY);
+
+			#define DISP_BYTE_SIZE	16
+
+			UartTx(DEBUG_UART_NUM, 0x02);
+			UartTx(DEBUG_UART_NUM, 0xb0);
+			UartTx(DEBUG_UART_NUM, 3*DISP_BYTE_SIZE+2);
+			for(i=0;i<DISP_BYTE_SIZE;i++) {
+				uint2strh(bStr, *pbDdrY++, 2);
+				UartTx(DEBUG_UART_NUM, bStr[0]);
+				UartTx(DEBUG_UART_NUM, bStr[1]);
+				UartTx(DEBUG_UART_NUM, ' ');
+			}
+			UartTx(DEBUG_UART_NUM, '\r');
+			UartTx(DEBUG_UART_NUM, '\n');
+			UartTx(DEBUG_UART_NUM, 0x03);
+		}
+		IM_GO_W;
+
+		WaitXms(60);
 		Comm();
 	}
 }

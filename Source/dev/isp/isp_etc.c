@@ -588,8 +588,9 @@ void ISRT BoxLast(void)
 		//SetIsp(BOXFIL_BASE  , ((gnBoxFillIMD<<16)|gnBoxFillPVC)&(~(UINT)(gbBoxFillROIWdr<<AE_ROI_WDR_BOX_NO)));	// box fill tone
 		SetIsp(BOXFIL_BASE  , (GetIsp(BOXFIL_BASE)&nBoxBitMask) | gnBoxFillIMD<<iStaIMD | gnBoxFillPVC<<iStaPVC);	// box fill tone
 
+		extern UINT gnBoxOnAeMon;
 		//BOSD_ON0w(gnBoxOnIMD<<16|gnBoxOnPVC|(gbBoxOnROIWdr<<AE_ROI_WDR_BOX_NO));	// box on/off
-		BOSD_ON0w((BOSD_ON0r&nBoxBitMask) | gnBoxOnIMD<<iStaIMD | gnBoxOnPVC<<iStaPVC);	// box on/off
+		BOSD_ON0w((gnBoxOnAeMon/*BOSD_ON0r*/&nBoxBitMask) | gnBoxOnIMD<<iStaIMD | gnBoxOnPVC<<iStaPVC);	// box on/off
 #endif
 		// 2015112 - WHL : Add Bit Box Mode
 		SetIsp(BOXFMT_BASE , gnBoxFmtPVC<<iStaPVC);						// box format

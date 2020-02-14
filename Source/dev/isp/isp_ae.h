@@ -30,12 +30,12 @@
 
 	#define	AE_WDR_LTGT_GAIN		0x3															// WDR Long Brightness target gain
 	#define	UpAE_WDR_LTGT_OFST		0x64/*0x8a*/                                                // WDR Long Brightness target offset
-	#define	UpAE_WDR_LTGT_OFST2		0x60/*0x30*/		        // 150802                               // WDR Long Brightness target offset (UpAE_WDR_STYLE_SEL==1)
+	#define	UpAE_WDR_LTGT_OFST2		96/*0x30*/		        // 150802                               // WDR Long Brightness target offset (UpAE_WDR_STYLE_SEL==1)
 	#define	AE_WDR_LCLIP_OFST		0x70/*0x50*/                                                        // WDR Long Brightness Clip level (+ Target offset), EN781 WDR 0x50 -> 0x70
 
 	#define	AE_WDR_STGT_GAIN		AE_WDR_LTGT_GAIN											// WDR Short Brightness target gain
 	#define	UpAE_WDR_STGT_OFST		0x220/*0x262*/                                              // WDR Short Brightness target offset
-	#define	UpAE_WDR_STGT_OFST2		0x84/*0xa0*/		        // 150802                       // WDR Short Brightness target offset (UpAE_WDR_STYLE_SEL==1), EN781 WDR 0xa0 -> 0x84
+	#define	UpAE_WDR_STGT_OFST2		132/*0xa0*/		        // 150802                       // WDR Short Brightness target offset (UpAE_WDR_STYLE_SEL==1), EN781 WDR 0xa0 -> 0x84
 	#define	AE_WDR_SCLIP_OFST		(-0x80)                                                     // WDR Short Brightness Clip level (+ Target offset)
 
 	#define UpAE_WDR_SWGT_L			0x80														// WDR weight adjust for menu Low	 (0x40 = x0.5, 0x80 = x1, 0xC0 = x1.5, 0xff = x2)
@@ -69,6 +69,9 @@ extern void InitAe(void);
 extern void Ae(void);
 extern void AeDev(void);
 extern void InMode(void);
+
+extern int TgtMinGet(const int aiTgt, const BYTE abV);
+extern int TgtMaxGet(const BYTE abWdrOn, const UINT anLSflag);
 
 extern int giCurAgc;
 extern int giCurDss;

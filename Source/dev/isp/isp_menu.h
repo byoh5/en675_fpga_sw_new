@@ -501,13 +501,13 @@ extern BYTE gbBlcOsdOn;
 
 // Clear : Index finger & color on line
 #define OsdMenuPos0()	if(giMenuNum) {\
-						OsdAttrsStgPosAr(giStgPos[giLV], MN_WHITE);\
+						OsdAttrsStgPosAr(giStgPosLine[giStgPos[giLV]], MN_WHITE);\
 						/*SetFont(gbMenuY+giStgPos[giLV], MXSP-2, 0);*/	\
 						}
 
 // Display : Index finger & color on line
 #define OsdMenuPos1()	if(giMenuNum) {\
-						OsdAttrsStgPosAr(giStgPos[giLV], MN_YELLOW);\
+						OsdAttrsStgPosAr(giStgPosLine[giStgPos[giLV]], MN_YELLOW);\
 						/*SetFont(gbMenuY+giStgPos[giLV], MXSP-2, 0)*/	\
 						}
 
@@ -583,7 +583,7 @@ menu_start:\
 	if(0) {}
 
 #define MENU_DISPLAY_END(...)\
-	else if(MENU_TITLE != _S(OFF)) { menu_pos(MENU_TITLE, 0, 0); if(giMenuDispChg) { giMenuDispChg = 0;\
+	else if(MENU_TITLE != _S(OFF)) { menu_pos(MENU_TITLE, 0, 0); if(giMenuDispChg==1) { giMenuDispChg = 0;\
 										DrawStr(MENU_IS_NOT_AVAILABLE, gbMenuY+1, MN_MXSP+1, 21);\
 										DrawStr(ENTER_d_RETURN,	gbMenuY+4, MN_MXSP+4, 14); }\
 		MENU_OUT(/*OUT_ON*/1, 0, )\
@@ -644,7 +644,7 @@ menu_start:\
 #define _P(...)		{ __VA_ARGS__, 0 }
 
 #define MENU_EXT(TITLE,MENU_ON/*,OUT_ON*/,OUT_CODE, ...)\
-	else if((MENU_TITLE == _S(TITLE)) && (MENU_ON)) { menu_pos(_S(TITLE), 0, 0); if(giMenuDispChg) { giMenuDispChg = 0; __VA_ARGS__ }\
+	else if((MENU_TITLE == _S(TITLE)) && (MENU_ON)) { menu_pos(_S(TITLE), 0, 0); if(giMenuDispChg==1) { giMenuDispChg = 0; __VA_ARGS__ }\
 		MENU_OUT(/*OUT_ON*/1, 0, OUT_CODE;)\
 	}
 #define MENU_SET0(NUM,TITLE,MENU_ON/*,OUT_ON*/, ...)\
@@ -687,6 +687,7 @@ menu_start:\
 
 //#define MENU_VARe(MENU_ON,CODE,VAL_L,VAL_H,MIN,MAX)		menu_val_ex(MENU_ON, &VAL_L, &VAL_H, MIN, MAX);		MENU_DISABLE(MENU_ON)	MENU_CODE(CODE)
 #define MENU_DIRn(MENU_ON,STA,VAL,DRAW,END) ({\
+		menu_sta(MENU_ON);\
 		STA\
 		if((giMenuDispPos == 0) && MENU_ON) { VAL }\
 		if(DRAW_ON && (MENU_ON || giGrayOnly)) { DRAW }\
@@ -701,7 +702,7 @@ menu_start:\
 #define MENU_NAME_REDRAW(NAME)	{ /*gbMenuList = (PEXCH*)_S(NAME);*/ DISPCLRSTR(_S(NAME), DRAW_Y/*gbMenuY+giStgPos[giLV]*/, MN_MXSP, (MN_SXSP-MN_MXSP)/*MN_LINESIZE*/, (MN_SXSP-MN_MXSP)/*MN_LINESIZE*/); }
 #define MENU_OPEN(MENU)			menu_in(_S(MENU))
 #define MENU_CLOSE()			{ OsdMenuPos(0); menu_close(); } // MENU 영역 어디서든 이 함수를 부르면 메뉴가 닫힘
-#define if_KEY_LR(...)			if(KEY_L || KEY_R) { __VA_ARGS__; }
+#define if_KEY_LR(CODE)			if(KEY_L || KEY_R) { CODE; }
 
 #define MENU_VAL_PUSH(STR_NOR,STR_PUSH,PUSH_DELAY,/*PUSH_ON,*/CODE_NOR,CODE_PUSH) {\
 			if(MENU_VAL_IS(STR_NOR)) {\

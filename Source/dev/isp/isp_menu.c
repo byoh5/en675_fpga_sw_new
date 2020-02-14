@@ -81,7 +81,11 @@
 int		giStgPos[MENU_STAGE_LV] = {-1,-1,-1,-1,-1,-1};		// Menu Position, bin 크기가 int형일 작음
 int		giLV            = -1;								// Menu Stage Level, bin 크기가 int형일 작음
 
-BYTE	gbPushCnt		= 0;
+const PEXCH** gMenuNames = 0;
+int		giStgPosLine[16];				// 16 : MENU_SET_NUM(...)에서 NUM 최대값
+int		giStgLine = 0;
+
+BYTE	gbPushCnt = 0;
 
 #define	gbMenuY	  MN_YSTART
 //BYTE	gbMenuY	= MN_YSTART;
@@ -92,6 +96,8 @@ UINT	DRAW_Y	= MN_YSTART;
 #endif
 
 BYTE	MN_MXSP = MN_MXSP_DEF;
+
+const WORD gwShtMnLut[12] = {30,60,120,250,500,1000,2000,4000,8000,15000,30000,60000};
 
 //*************************************************************************************************
 // Fixed define Functions
@@ -335,31 +341,97 @@ void menu_out(const int aiClearFinger/*const PEXCH* Title*/)
 	}
 }
 
+void menu_sta(const int aiOn)
+{
+	if(giMenuDispChg==2) {
+		if(aiOn || giGrayOnly)	giStgPosLine[giStgPos[giLV]] = giStgLine++;
+		else					giStgPosLine[giStgPos[giLV]] = giStgLine;
+
+		DISPCLRSTR(gMenuNames[giStgPos[giLV]], gbMenuY+giStgPosLine[giStgPos[giLV]], MN_MXSP, (MN_SXSP-MN_MXSP)/*MN_LINESIZE*/, (MN_SXSP-MN_MXSP)/*MN_LINESIZE*/);
+
+		DRAW_Y = gbMenuY+giStgPosLine[giStgPos[giLV]];
+	}
+}
+
 void menu_dir(const int aiOn)
 {
 	if(!aiOn) {
-		OsdAttrsStgPosAr(giStgPos[giLV], MN_GRAY);
+		if(giGrayOnly) OsdAttrsStgPosAr(giStgPosLine[giStgPos[giLV]], MN_GRAY);
 		gbMenuVal = (PEXCH*)_S(NOT_USED);
 	}
 
 	if(giMenuDispPos) {
 		if(aiOn) {
-			if(giMenuDispPos != giStgPos[giLV] + 1) OsdAttrsStgPosAr(giStgPos[giLV], MN_WHITE);
+			if(giMenuDispPos != giStgPos[giLV] + 1) OsdAttrsStgPosAr(giStgPosLine[giStgPos[giLV]], MN_WHITE);
 		}
 		else {
 			if(giMenuDispPos == giStgPos[giLV] + 1) giMenuDispPos++;
-			if(giGrayOnly == 0) DISPCLRSTR(_S(NOT_USED), gbMenuY+giStgPos[giLV], MN_SXSP, MN_SUBSIZE, MN_SUBSIZE);
+			//if(giGrayOnly == 0) DISPCLRSTR(_S(NOT_USED), gbMenuY+giStgPosLine[giStgPos[giLV]], MN_SXSP, MN_SUBSIZE, MN_SUBSIZE);
 		}
 		giStgPos[giLV]++;
 	}
 }
 
+void menu_pos(const PEXCH* Title, int MenuNum, const PEXCH** Str)
+{
+	if(giMenuDispChg==1)
+	{
+		gMenuNames = Str;
+		giStgLine = 0;
+
+		if(MenuNum)	giMenuDispChg = 2;
+
+		int i;
+
+		STRLEN(i, Title);
+		//DispClr(MN_TITLE, h760(0x8,MN_MXSP), LINESIZE - h760(0x8,MN_MXSP) - 3);
+		DispClr(MN_TITLE, MN_MXSP, MN_LINESIZE);
+		DISPSTR(Title, MN_TITLE, MN_XCENT - (i>>1) - (giLV==1), i);		// 160330 KSH
+
+		//gbMenuY = MN_YSTART;
+
+#if 0
+		for(i=0; i<MenuNum; i++)
+		{
+			DISPCLRSTR(Str[i], gbMenuY+i, MN_MXSP, (MN_SXSP-MN_MXSP)/*MN_LINESIZE*/, (MN_SXSP-MN_MXSP)/*MN_LINESIZE*/);
+		}
+#endif
+		for(i=0; i<giMenuNum; i++)
+		{
+			DispClr(gbMenuY+i, MN_MXSP, MN_LINESIZE);
+			giStgPosLine[i] = 0;
+		}
+		giMenuNum = MenuNum;
+
+#if 0
+		extern BYTE gbIMDFontY, gbIMDFontX;
+		if(UP(Itl)==UP_ON && UP(ItlAlarm)==UP_ON && (gbMenuY+giMenuNum)<=gbIMDFontY) DispClr(gbIMDFontY, gbIMDFontX, 18);	// 170725 KSH
+#endif
+	}
+	else if(!giMenuDispPos){		// 13.11.8 LJH 동시 키 오류  방지
+		if((KEY_U || KEY_D) && MenuNum) {
+			if((const PEXCH*)gbMenuVal != _S(NOT_USED)) OsdMenuPos(0);	// !! if문은 MN_WHITE에만 영향, finger clear는 항상 적용
+
+			if(KEY_U)	giStgPos[giLV] = (giStgPos[giLV] == 0) ? MenuNum - 1 : giStgPos[giLV] - 1;
+			if(KEY_D)	giStgPos[giLV] = (giStgPos[giLV] == MenuNum - 1) ? 0 : giStgPos[giLV] + 1;
+
+			//OsdMenuPos(1);
+		}
+	}
+
+	DRAW_Y = gbMenuY+giStgPosLine[giStgPos[giLV]];
+
+	if(MenuNum && Str) gbMenuList = (PEXCH*)Str[giStgPos[giLV]];
+}
+
 void menu_one(const int aiOn, const PEXCH* Str)
 {
+	menu_sta(aiOn);
+
 	gbMenuVal = (PEXCH*)Str;
 
 	if(giMenuDispPos && (aiOn || giGrayOnly)) {
-		DISPCLRSTR(Str, gbMenuY+giStgPos[giLV], MN_SXSP, MN_SUBSIZE, MN_SUBSIZE);
+		DISPCLRSTR(Str, gbMenuY+giStgPosLine[giStgPos[giLV]], MN_SXSP, MN_SUBSIZE, MN_SUBSIZE);
 	}
 
 	menu_dir(aiOn);
@@ -367,6 +439,8 @@ void menu_one(const int aiOn, const PEXCH* Str)
 
 BYTE menu_push(const int aiOn, volatile BYTE *Val, const PEXCH* StrNor, const PEXCH* StrPush, const BYTE abDelay)
 {
+	menu_sta(aiOn);
+
 	BYTE bPushOn = 0;
 
 	if(giMenuDispPos && (aiOn || giGrayOnly)) {
@@ -399,13 +473,15 @@ BYTE menu_push(const int aiOn, volatile BYTE *Val, const PEXCH* StrNor, const PE
 
 DISPLAY_PUSH_STR:
 	gbMenuVal = (PEXCH*)((*Val) ? StrPush : StrNor);
-	DISPCLRSTR(gbMenuVal, gbMenuY+giStgPos[giLV], MN_SXSP, MN_SUBSIZE, MN_SUBSIZE);
+	DISPCLRSTR(gbMenuVal, gbMenuY+giStgPosLine[giStgPos[giLV]], MN_SXSP, MN_SUBSIZE, MN_SUBSIZE);
 	menu_dir(aiOn);
 	return bPushOn;
 }
 
 void menu_str(const int aiOn, BYTE *Val, const BYTE abValSize, int OpNum, const PEXCH** Str)
 {
+	menu_sta(aiOn);
+
 	const UINT nOri = GetByte(Val,abValSize);
 	UINT nVal = nOri;
 
@@ -432,7 +508,7 @@ void menu_str(const int aiOn, BYTE *Val, const BYTE abValSize, int OpNum, const 
 
 DISPLAY_STR:
 	if((giMenuDispPos || KEY_R || KEY_L) && (aiOn || giGrayOnly)) {
-		DISPCLRSTR(Str[nVal], gbMenuY+giStgPos[giLV], MN_SXSP, MN_SUBSIZE, MN_SUBSIZE);
+		DISPCLRSTR(Str[nVal], gbMenuY+giStgPosLine[giStgPos[giLV]], MN_SXSP, MN_SUBSIZE, MN_SUBSIZE);
 	}
 
 	menu_dir(aiOn);
@@ -493,13 +569,15 @@ UINT menu_val(void *Val, const BYTE abValSize, UINT anMin, UINT anMax, UINT anRo
 
 void menu_bar(const int aiOn, void *Val, const BYTE abValSize, const UINT anMin, const UINT anMax, const UINT anRotation, const PEXCH *Unit, const BYTE abHex)
 {
+	menu_sta(aiOn);
+
 	UINT nUpChgOn = 0;
 	if(aiOn) nUpChgOn = menu_val(Val, abValSize, anMin, anMax, anRotation);
 
 	const UINT nVal = GetByte(Val,abValSize);
 
 	if((giMenuDispPos || KEY_R || KEY_L) && (aiOn || giGrayOnly)) {
-		const UINT nPosY = gbMenuY+giStgPos[giLV];
+		const UINT nPosY = gbMenuY+giStgPosLine[giStgPos[giLV]];
 		UINT nLen;
 
 		//DispClrDec(nVal, nPosY, MN_SXSP, 3);
@@ -535,6 +613,8 @@ void menu_bar(const int aiOn, void *Val, const BYTE abValSize, const UINT anMin,
 #if model_WDR_ROI
 void menu_val_ex(const int aiOn, BYTE *apbValL, BYTE *apbValH, const WORD awMin, const WORD awMax)
 {
+	menu_sta(aiOn);
+
 	int iVal = ((*apbValH)<<8) | (*apbValL);
 
 	if(giMenuDispPos == 0 && aiOn)
@@ -564,53 +644,6 @@ void menu_val_ex(const int aiOn, BYTE *apbValL, BYTE *apbValH, const WORD awMin,
 	menu_dir(aiOn);
 }
 #endif
-
-void menu_pos(const PEXCH* Title, int MenuNum, const PEXCH** Str)
-{
-	if(giMenuDispChg)
-	{
-		if(MenuNum) giMenuDispChg = 0;
-
-		int i;
-
-		STRLEN(i, Title);
-		//DispClr(MN_TITLE, h760(0x8,MN_MXSP), LINESIZE - h760(0x8,MN_MXSP) - 3);
-		DispClr(MN_TITLE, MN_MXSP, MN_LINESIZE);
-		DISPSTR(Title, MN_TITLE, MN_XCENT - (i>>1) - (giLV==1), i);		// 160330 KSH
-
-		//gbMenuY = MN_YSTART;
-
-		for(i=0; i<MenuNum; i++)
-		{
-			DISPCLRSTR(Str[i], gbMenuY+i, MN_MXSP, (MN_SXSP-MN_MXSP)/*MN_LINESIZE*/, (MN_SXSP-MN_MXSP)/*MN_LINESIZE*/);
-		}
-
-		for(; i<giMenuNum; i++)
-		{
-			DispClr(gbMenuY+i, MN_MXSP, MN_LINESIZE);
-		}
-		giMenuNum = MenuNum;
-
-#if 0
-		extern BYTE gbIMDFontY, gbIMDFontX;
-		if(UP(Itl)==UP_ON && UP(ItlAlarm)==UP_ON && (gbMenuY+giMenuNum)<=gbIMDFontY) DispClr(gbIMDFontY, gbIMDFontX, 18);	// 170725 KSH
-#endif
-	}
-	else if(!giMenuDispPos){		// 13.11.8 LJH 동시 키 오류  방지
-		if((KEY_U || KEY_D) && MenuNum) {
-			if((const PEXCH*)gbMenuVal != _S(NOT_USED)) OsdMenuPos(0);	// !! if문은 MN_WHITE에만 영향, finger clear는 항상 적용
-
-			if(KEY_U)	giStgPos[giLV] = (giStgPos[giLV] == 0) ? MenuNum - 1 : giStgPos[giLV] - 1;
-			if(KEY_D)	giStgPos[giLV] = (giStgPos[giLV] == MenuNum - 1) ? 0 : giStgPos[giLV] + 1;
-
-			//OsdMenuPos(1);
-		}
-	}
-
-	DRAW_Y = gbMenuY+giStgPos[giLV];
-
-	if(MenuNum && Str) gbMenuList = (PEXCH*)Str[giStgPos[giLV]];
-}
 
 //*************************************************************************************************
 // Initial
@@ -692,20 +725,17 @@ void Menu(void)
 	MENU_START
 
 // Main MENU --------------------------------------------------------------------------------
-	MENU_SET( 11, MENU, UP_ON,
+	MENU_SET( 14, MENU, UP_ON,
 			EXPOSURE,		MENU_ONEi(UP_ON, e, UP_ON, EXPOSURE, ),
 
-			BACKLIGHT, 		MENU_STRi(UP_ON, UP(BackLight)!=UP_BL_OFF, BACKLIGHT,
+			BACKLIGHT, 		MENU_STRi(UP_ON, UP(BackLight)!=UP_BL_OFF, WDR,
 								if (MENU_VAL_IS(HLCe)) 		{MENU_TITLE_CHANGE(HLC)}
-								else if (MENU_VAL_IS(BLCe)) {MENU_TITLE_CHANGE(BLC)}
-								else if (MENU_VAL_IS(WDRe)) {MENU_TITLE_CHANGE(WDR)}, , UP(BackLight), 4, OFF, HLCe, BLCe, WDRe),
-		#if(model_Lens==0)
-			FOCUS_ADJ, 		MENU_STRi(UP_ON, MENU_VAL_IS(ONe) ,FOCUS_ADJ, MENU_OFF_GRAY_ONLY();, if_KEY_LR(MENU_REDRAW_GRAY_ONLY()), UP(FocusAdj_On), 2, OFF, ONe), // 150325 WHL
-			//MENU_ONEn(UP_OFF, OFF),
-		#elif(model_Lens==1)
-			MOTORIZED,		if(DEV_ON){ MENU_ONEi(UP_ON, e, UP_ON, MOTOR_SETUP, )	MENU_NAME_REDRAW(MOTOR_SETUP) }
-							else      { MENU_ONEi(UP_ON, e, UP_ON, MOTORIZED, )		MENU_NAME_REDRAW(MOTORIZED) },
-		#endif
+								else if (MENU_VAL_IS(BLCe)) {MENU_TITLE_CHANGE(BLC)}, , UP(BackLight), 4, OFF, HLCe, BLCe, WDRe),
+
+			FOCUS_ADJ, 		MENU_STRi(model_Lens==0, MENU_VAL_IS(ONe) ,FOCUS_ADJ, MENU_OFF_GRAY_ONLY(), if_KEY_LR(MENU_REDRAW_GRAY_ONLY()), UP(FocusAdj_On), 2, OFF, ONe), // 150325 WHL
+			MOTOR_SETUP,	MENU_ONEi((model_Lens==1)&&DEV_ON, e, UP_ON, MOTOR_SETUP, ),
+			MOTORIZED,		MENU_ONEi((model_Lens==1)&&DEV_OFF, e, UP_ON, MOTORIZED, ),
+
 			DAYnNIGHT,		MENU_STRi(UP_ON, (MENU_VAL != _S(COLOR)), DAYnNIGHT, , ,UP(Tdn), 4, AUTOe, COLOR, BnWe, EXTERNe),		// 141120 LH
 			COLORm,			MENU_ONEi(UP_ON, e, UP_ON, COLORm, ),
 
@@ -714,58 +744,139 @@ void Menu(void)
 
 			IMAGE,			MENU_ONEi(UP_ON, e, UP_ON, IMAGE, ),
 
-			MOTION, 		MENU_STRi(UP_ON, MENU_VAL_IS(ONe) ,MOTION, MENU_OFF_GRAY_ONLY();, , UP(Itl), 2, OFF, ONe),				//lgh
+			MOTION, 		MENU_STRi(UP_ON, MENU_VAL_IS(ONe) ,MOTION, MENU_OFF_GRAY_ONLY(), , UP(Itl), 2, OFF, ONe),				//lgh
 
 			OUTPUTSET,      MENU_ONEi(UP_ON, e, UP_ON, OUTPUTSET, ),
-			SYSTEM, 		if(DEV_ON){ MENU_ONEi(UP_ON, e, UP_ON, SETUP, )  MENU_NAME_REDRAW(SETUP) }
-							else      { MENU_ONEi(UP_ON, e, !iSetMnOn, SYSTEM, /*MENU_OFF_GRAY_ONLY();*/ )  MENU_NAME_REDRAW(SYSTEM) },
+
+			SETUP, 			MENU_ONEi(DEV_ON, e, UP_ON, SETUP, ),
+			SYSTEM,			MENU_ONEi(DEV_OFF, e, !iSetMnOn, SYSTEM, /*MENU_OFF_GRAY_ONLY()*/ ),
+
 			EXIT,			MENU_STRo(UP_ON, UP_ON, UsrParSave(gbMnExit==0); gbMnExit = 0;, , gbMnExit, 2, SAVEe, CANCELe))
 
 
 // MENU - EXPOSURE ----------------------------------------------------------------------------------------------------
-#if(model_Iris==0)						// no Iris
-	#define MENU_NUM_EXPOSURE	5
-#else
-	#define MENU_NUM_EXPOSURE	6
-#endif
-
 	// MENU - EXPOSURE
-	MENU_SET( MENU_NUM_EXPOSURE, EXPOSURE, UP_ON,
-			BRIGHTNESS, 	if(DEV_ON){ MENU_ONEi(UP_ON, e, UP_ON, BRIGHTNESS, ) }
-							else      { MENU_BARn(UP_ON, , UP(Brightness), 0, 20, 1) },
-		#if(model_Iris_DC)		// DC Iris
-			nIRIS,			MENU_STRn(UP_ON, , UP(Iris), 2, ELC, ALC),
-		#elif(model_Iris_P)		// pIris, AF Iris
-			nIRIS,			MENU_STRi(UP_ON, UP(Iris)==UP_LENS_MNL, IRIS, , , UP(Iris), 2, MANUALe, AUTO),
-		#endif
+	MENU_SET( 11, EXPOSURE, UP_ON,
+			BRIGHTNESS, 	MENU_BARn(UP_ON, , UP(Brightness), 0, 20, 1)
+							if(DEV_ON){ MENU_IN(UP_ON, BRIGHTNESS, )		SETFONTID(DRAW_Y, MN_SXSP+10, 0xa6); },
+
+			ANTI_SAT,		MENU_STRi(UP_ON, MENU_VAL_IS(ONe), ANTI_SAT, , , UP(AntiSatOn), 2, OFF, ONe),
+
+			nIRIS,			MENU_STRn(model_Iris_DC, , UP(Iris), 2, ELC, ALC),
+			nIRIS,			MENU_STRi(model_Iris_P, UP(Iris)==UP_LENS_MNL, IRIS, , , UP(Iris), 2, MANUALe, AUTO),
+
+			SHUTTER,		({MENU_STR( UP_ON, UP(Shutter), 3, AUTOe/*AUTO*/, MANUALe, FLICKER)
+							  MENU_IN(MENU_VAL_IS(AUTOe) || MENU_VAL_IS(MANUALe), SHUTTER_MANUAL, /*MENU_OFF_GRAY_ONLY()*/
+																				  if(MENU_VAL_IS(AUTOe)) {MENU_TITLE_CHANGE(SHUTTER_AUTO)} )  }),
+
+			SENS_UP,		({if(FPS_LOW){ MENU_STR(UP_ON, UP(Dss), 6, OFF, X2, X4, X8, X16, X32) }
+							  else{        MENU_STR(UP_ON, UP(Dss), 7, OFF, X2, X4, X8, X16, X32, X64) }}),
+
 			SENSOR_GAIN,	MENU_BARn(UP_ON, if_KEY_LR(MENU_REDRAW()), UP(Agc), 0, 255, 1),
 			ISP_GAIN,		MENU_BARn(UP_ON, , UP(IspGain), 0, 255, 1)
-							if(DEV_ON){
-								MENU_IN(UP_ON, ISP_GAIN, )
-								SETFONTID(DRAW_Y, MN_SXSP+10, 0xa6);
-							},
+							if(DEV_ON){ MENU_IN(UP_ON, ISP_GAIN, )		SETFONTID(DRAW_Y, MN_SXSP+10, 0xa6); },
+			EXTRA_GAIN,		MENU_BARn(UP_ON, , UP(ExtraGain), 0, 255-UP(Agc), 1),
+
+			AE_SPEED,		MENU_ONEi(UP_ON, e, UP_ON, AE_SPEED, ),
+			RETURN,			MENU_ONEo(UP_ON, e, UP_ON, ))
+
+	MENU_SET( 7, REDUCE_BY_AGC, DEV_ON,
+			LOW_AGC,		MENU_BARn(UP_ON, , UP(ShpAgcLow),  0, 99, 1)	SETFONTID(DRAW_Y, MN_SXSP+2, '%'),
+			MID_AGC,		MENU_BARn(UP_ON, , UP(ShpAgcMid),  0, 99, 1)	SETFONTID(DRAW_Y, MN_SXSP+2, '%'),
+			HIGH_AGC,		MENU_BARn(UP_ON, , UP(ShpAgcHigh), 0, 99, 1)	SETFONTID(DRAW_Y, MN_SXSP+2, '%'),
+
+			SENSOR_GAIN,	MENU_BARn(UP_ON, if_KEY_LR(MENU_REDRAW()), UP(Agc), 0, 255, 1),
+			ISP_GAIN,		MENU_BARn(UP_ON, , UP(IspGain), 0, 255, 1)		MENU_IN(UP_ON, ISP_GAIN, )		SETFONTID(DRAW_Y, MN_SXSP+10, 0xa6);,
 			EXTRA_GAIN,		MENU_BARn(UP_ON, , UP(ExtraGain), 0, 255-UP(Agc), 1),
 			RETURN,			MENU_ONEo(UP_ON, e, UP_ON, ))
 
 	// MENU - EXPOSURE - BRIGHTNESS
-	MENU_SET( 3, BRIGHTNESS, UP_ON,
-			DAY,			MENU_BARn(UP_ON, , UP(Brightness), 0, 20, 1),
-							/*({ menu_bar(UP_ON, &UP(Brightness), 0, 20, 1, _S());
-							   SETFONTID(DRAW_Y, MN_SXSP+3, ':');
-							   DispClrDec(TgtMaxGet(0,0), DRAW_Y, MN_SXSP+5, 3);
-							   MENU_CODE(if_KEY_LR(MENU_REDRAW())) }),*/
-			NIGHT,			MENU_BARn(UP_ON, , UP(BrightnessMin), 0, 20, 1),
-							/*({ menu_bar(UP_ON, &UP(BrightnessMin), 0, 20, 1, _S());
-							   SETFONTID(DRAW_Y, MN_SXSP+3, ':');
-							   DispClrDec(TgtMinGet(TgtMaxGet(0,0), UP(BrightnessMin)), DRAW_Y, MN_SXSP+5, 3);
-							   MENU_CODE(if_KEY_LR(MENU_REDRAW())) }),*/
+	MENU_SET( 3, BRIGHTNESS, DEV_ON,
+			DAY,			//MENU_BARn(UP_ON, , UP(Brightness), 0, 20, 1),
+							menu_bar(UP_ON, &UP(Brightness), 1, 0, 20, 1, _S(), 0);
+							SETFONTID(DRAW_Y, MN_SXSP+3, ':');
+							DispClrDec(TgtMaxGet(0,0), DRAW_Y, MN_SXSP+5, 3);
+							MENU_CODE(if_KEY_LR(MENU_REDRAW())),
+			NIGHT,			//MENU_BARn(UP_ON, , UP(BrightnessMin), 0, 20, 1),
+							menu_bar(UP_ON, &UP(BrightnessMin), 1, 0, 20, 1, _S(), 0);
+							SETFONTID(DRAW_Y, MN_SXSP+3, ':');
+							DispClrDec(TgtMinGet(TgtMaxGet(0,0), UP(BrightnessMin)), DRAW_Y, MN_SXSP+5, 3);
+							MENU_CODE(if_KEY_LR(MENU_REDRAW())),
+			RETURN,			MENU_ONEo(UP_ON, e, UP_ON, ))
+
+	// MENU - EXPOSURE - ANTI_SAT
+	MENU_SET( 8, ANTI_SAT, UP_ON,
+			WEIGHT,			MENU_BARn(UP_ON, , UP(SatBrt), 0, 20, 1),
+			LEVEL,			MENU_BARn(DEV_ON, , UP(LSpotLv), 0, 20, 1),
+			CTRLp_SPEED,	MENU_BARn(DEV_ON, , UP(SpotSpd), 0, 20, 1),
+
+			CTRLp_STEP,		MENU_BARn(DEV_ON, , UP(ErrChgStep), 0, 8, 1),
+
+			STABILIZING,	MENU_STRn(DEV_ON, if_KEY_LR(MENU_REDRAW()), UP(Stabilizing), 4, OFF, LOW, MIDDLE, HIGH),
+			ERR_CHT_MAX,	MENU_BARn(DEV_ON, if_KEY_LR(MENU_REDRAW()), UP(ErrChtMax), UP(ErrChtMin), ERR_CHT_SIZ, 1),
+			ERR_CHT_MIN,	MENU_BARn(DEV_ON, if_KEY_LR(MENU_REDRAW()), UP(ErrChtMin), 1, UP(ErrChtMax), 1),
+
+			//nBACKLIGHT,		MENU_STRi(UP_ON, UP(MinGammaY)!=UP_4sOFF, nBACKLIGHT, , , UP(MinGammaY), 4, OFF, LOWe, MIDDLEe, HIGHe),
+
+			//SPOT_TH,		MENU_BARn(UP_ON, , UP(LSpotTh), 0, 20, 1),
+			//CLIP_MAX,		MENU_STRn(UP_ON, , UP(ClipMax), 2, OFF, ON),
+			RETURN,			MENU_ONEo(UP_ON, e, UP_ON, ))
+
+#if 0
+	// MENU - EXPOSURE - ANTI_SAT:ON - BACKLIGHT:ON
+	MENU_SET( 2, nBACKLIGHT, UP_ON,
+			//MODE,			MENU_STRn(UP_ON, , UP(MinGammaMode), 2, ALWAYS, DAY_ONLY),
+			LEVEL,			MENU_STRn(UP_ON, , UP(MinGammaY), 4, OFF, LOW, MIDDLE, HIGH),
+			RETURN,			MENU_ONEo(UP_ON, e, UP_ON, ))
+#endif
+
+	// MENU - EXPOSURE - AE_SPEED
+	MENU_SET( 9, AE_SPEED, UP_ON,
+			SHTp_SPEED,		MENU_BARn(UP_ON, , UP(ShtSpeed), 1, 20, 1),
+			AGC_SPEED,		MENU_BARn(UP_ON, , UP(AgcSpeed), 1, 20, 1),
+			IRIS_SPEED,		MENU_BARn(UP_ON, , UP(IrsSpeed), 0, 20, 1),
+
+			SHTp_OPEN,		MENU_BARn(UP_ON, , UP(ShtBrtSpeed), 0, 999, 1),
+			SHTp_CLOSE,		MENU_BARn(UP_ON, , UP(ShtDrkSpeed), 0, 999, 1),
+			AGC_OPEN,		MENU_BARn(UP_ON, , UP(AgcBrtSpeed), 0, 999, 1),
+			AGC_CLOSE,		MENU_BARn(UP_ON, , UP(AgcDrkSpeed), 0, 999, 1),
+
+			STABILIZING,	MENU_STRn(UP_ON, , UP(SmallSpeed), 3, LOW, MIDDLE, HIGH),
+
 			RETURN,			MENU_ONEo(UP_ON, e, UP_ON, ))
 
 	// MENU - EXPOSURE - ISP_GAIN
-	MENU_SET( 4, ISP_GAIN, UP_ON,
+	MENU_SET( 4, ISP_GAIN, DEV_ON,
 			ISP_GAIN,		MENU_BARn(UP_ON, , UP(IspGain), 0, 255, 1),
 			AE_CURRENT,		MENU_BARn(UP_ON, , UP(IspGainAeCur), 0, 255, 1),
 			AE_POSITION,	MENU_BARn(UP_ON, , UP(IspGainAePos), 0, 128, 1),
+			RETURN,			MENU_ONEo(UP_ON, e, UP_ON, ))
+
+
+	#define MENU_STR_SHUTTER_SPEED(MENU_ON,V,CODE) \
+				menu_bar(MENU_ON, &(V), 1, 0, 10, 1, _S(), 0);\
+				/*SETFONTID(DRAW_Y, MN_SXSP  , '1');  SETFONTID(DRAW_Y, MN_SXSP+1, '/');*/\
+				/*DispClrDec(FPS_VDI * ((V)?2<<((V)-1):1), DRAW_Y, MN_SXSP+2, 5);*/\
+				gbStr[0] = '1';  gbStr[1] = '/';\
+				FontClrStr(DRAW_Y, MN_SXSP, gbStr, uint2str(gbStr+2, (UP(SysFreq)==UP_SYSFREQ_60) ? gwShtMnLut[(V)+FPS_HI] : FPS_VDI * ((V)?2<<((V)-1):1), 5)+2, 5+2);/* TODO KSH ◆ FPS가 30 or 25가 아닌 경우 추가 필요 */\
+				MENU_CODE(CODE)
+
+	// MENU - EXPOSURE - SHUTTER:AUTO
+	MENU_SET( 8, SHUTTER_AUTO, (UP(Shutter)==UP_SHUT_AUTO),
+			nIRIS,			MENU_STRn(model_Iris_DC, if_KEY_LR(MENU_REDRAW/*_GRAY_ONLY*/()), UP(Iris), 2, ELC, ALC),
+			nIRIS,			MENU_STRi(model_Iris_P, UP(Iris)==UP_LENS_MNL, IRIS, , if_KEY_LR(MENU_REDRAW/*_GRAY_ONLY*/()), UP(Iris), 2, MANUALe, AUTO),
+
+  			AUTO_MODE,		MENU_STRn((model_Iris_DC==0)||(UP(Iris)==UP_LENS_MNL), if_KEY_LR(MENU_REDRAW/*_GRAY_ONLY*/()), UP(ShtMode), 3, NORMAL, DEBLUR, CUSTOMIZE ),
+			AUTO_MODE,		MENU_STRn(model_Iris_DC&&(UP(Iris)!=UP_LENS_MNL), if_KEY_LR(MENU_REDRAW/*_GRAY_ONLY*/()), UP(DcMode), 4, INDOOR, OUTDOOR, DEBLUR, CUSTOMIZE ),
+
+			SHUTTER_MIN,	MENU_STR_SHUTTER_SPEED(DEV_ON, gbUpShtMin,    if_KEY_LR( ShutterMenuSet(); MENU_REDRAW/*_GRAY_ONLY*/();)),
+			DEBLUR_MIN,		MENU_STR_SHUTTER_SPEED(DEV_ON, gbUpDeblurMin, if_KEY_LR( ShutterMenuSet(); MENU_REDRAW/*_GRAY_ONLY*/();)),
+			SHUTTER_MAX,	MENU_STR_SHUTTER_SPEED(DEV_ON, gbUpShtMax,    if_KEY_LR( ShutterMenuSet(); MENU_REDRAW/*_GRAY_ONLY*/();)),
+			RETURN,			MENU_ONEo(UP_ON, e, UP_ON, ))
+
+	// MENU - EXPOSURE - SHUTTER:MANUAL
+	MENU_SET( 2, SHUTTER_MANUAL, UP(Shutter)==UP_SHUT_MNL,
+			SPEED,			MENU_STR_SHUTTER_SPEED(UP_ON, UP(ShutSpd), ),
 			RETURN,			MENU_ONEo(UP_ON, e, UP_ON, ))
 
 // MENU - BACKLIGHT ----------------------------------------------------------------------------------------------------
@@ -777,7 +888,7 @@ void Menu(void)
 
 	// MENU - BACKLIGHT:BLC
 	MENU_SET( 6, BLC, UP(BackLight) == UP_BL_BLC,
-			MODE,			MENU_STRn(UP_ON, if_KEY_LR(MENU_REDRAW()), UP(BlcMode), 3, CUSTOMIZE, CENTER, SPOT),
+			MODE,			MENU_STRn(UP_ON, if_KEY_LR(MENU_CHANGE()), UP(BlcMode), 3, CUSTOMIZE, CENTER, SPOT),
 			HPOS,			MENU_DECn(UP(BlcMode)==UP_BLC_MODE_CUSTOMIZE, , UP(BlcPosX), 0, 20, 1, ),
 			VPOS,			MENU_DECn(UP(BlcMode)==UP_BLC_MODE_CUSTOMIZE, , UP(BlcPosY), 0, 20, 1, ),
 			HSIZE,			MENU_DECn(UP(BlcMode)==UP_BLC_MODE_CUSTOMIZE, , UP(BlcSizX), 0, 20, 1, ),
@@ -803,7 +914,7 @@ void Menu(void)
 #endif
 
 // MENU - COLOR ----------------------------------------------------------------------------------------------------
-	MENU_SET( 7, COLORm, UP_ON/*DEV_OFF*/,
+	MENU_SET( 9, COLORm, UP_ON,
 			AWB,			MENU_STRi(UP_ON, MENU_VAL_IS(MANUALe), AWB, ,
 										MENU_VAL_PUSH(PRESETp, PUSHING, PUSH_DELAY_NOR, gbMpAwbPrst = UP_OFF, gbMpAwbPrst = UP_ON),
 										UP(Awb), 4, AUTO, AUTOext, PRESETp, MANUALe),
@@ -811,6 +922,8 @@ void Menu(void)
 			R_GAIN,			MENU_BARn(UP_ON, , UP(SaturationR), 0, 64, 1 ),	// 2017419 - WHL : CBB TEST
 			G_GAIN,			MENU_BARn(UP_ON, , UP(SaturationG), 0, 64, 1 ),
 			B_GAIN,			MENU_BARn(UP_ON, , UP(SaturationB), 0, 64, 1 ),
+			AWB_SPEED,		MENU_BARn(DEV_ON, , UP(AWB_SPEED_MTRX), 0, 255, 1 ),
+			AWB_LSUP,		MENU_ONEi(DEV_ON, e, UP_ON, AWB_LSUP, ),
 			HUEnCHROMA,		MENU_ONEi(UP_ON, e, UP_ON, HUEnCHROMA, ),
 			RETURN,			MENU_ONEo(UP_ON, e, UP_ON, ))
 
@@ -821,9 +934,24 @@ void Menu(void)
 			BGAIN,			MENU_BARn(UP_ON, , UP(Bgain), 0, 20, 1),
 			RETURN,			MENU_ONEo(UP_ON, e, UP_ON, ))
 
+	// MENU - COLOR - AWB_LSUP
+	MENU_SET( 7, AWB_LSUP, DEV_ON,
+			HSUP_ON,		MENU_STRn(UP_ON, , UP(HSUP_ON), 2, OFF, ON),
+			HSUP_TH,		MENU_BARn(UP_ON, , UP(HSUP_TH), 0, 255, 1 ),
+
+			LSUP_ON,		MENU_STRn(UP_ON, , UP(LSUP_ON), 2, OFF, ON),
+
+			ESUP_W_NOR,		MENU_BARn(UP_ON, , UP(CES_NOR), 0, 40, 1 ),
+			ESUP_W_WDR,		MENU_BARn(UP_ON, , UP(CES_WDR), 0, 40, 1 ),
+			//ESUP_G_NOR,		MENU_BARn(UP_ON, , UP(CES_GAIN), 0, 0x3F, 1 ),
+			//ESUP_G_WDR,		MENU_BARn(UP_ON, , UP(CES_WGAIN), 0, 0x3F, 1 ),
+
+			REDp_BY_AGC,	MENU_ONEi(UP_ON, e, UP_ON, REDUCE_BY_AGC, ),
+			RETURN,			MENU_ONEo(UP_ON, e, UP_ON, ))
+
 	// MENU - COLOR - HUE & CHROMA
-	MENU_SET( 10, HUEnCHROMA, UP(HueChromaMode) == UP_HUE_GAIN_OLD,
-			MODE,			MENU_STRn(UP_ON, if_KEY_LR(MENU_CHANGE()), UP(HueChromaMode), 2, NEW, OLD),
+	MENU_SET( 9/*10*/, HUEnCHROMA, UP(HueChromaMode) == UP_HUE_GAIN_OLD,
+			//MODE,			MENU_STRn(UP_ON, if_KEY_LR(MENU_CHANGE()), UP(HueChromaMode), 2, NEW, OLD),
 			YEL_REDdGRN,	MENU_BARn(UP_ON, , UP(Yellow_HUE_RedToGreen), 1, 255, 1),
 			YEL_GAIN,		MENU_BARn(UP_ON, , UP(Yellow_GAIN), 0, 255, 1),
 			RED_YELdBLU,	MENU_BARn(UP_ON, , UP(Red_HUE_YellowToBlue), 1, 255, 1),
@@ -833,7 +961,7 @@ void Menu(void)
 			GRN_BLUdYEL,	MENU_BARn(UP_ON, , UP(Green_HUE_BlueToYellow), 1, 255, 1),
 			GRN_GAIN,		MENU_BARn(UP_ON, , UP(Green_GAIN), 0, 255, 1),
 			RETURN,			MENU_ONEo(UP_ON, e, UP_ON, ))
-
+#if 0
 	MENU_SET( 6, HUEnCHROMA, UP(HueChromaMode) == UP_HUE_GAIN_NEW,
 			MODE,			MENU_STRn(UP_ON, if_KEY_LR(MENU_CHANGE()), UP(HueChromaMode), 2, NEW, OLD),
 			YELLOWnRED,		MENU_ONEi(UP_ON, e, UP_ON, YELLOWnRED, ),
@@ -873,7 +1001,7 @@ void Menu(void)
 			GAIN_GREEN,		MENU_BARn(UP_ON, , UP(Green_Yellow_GAIN_Green), 0, 255, 1),
 			GAIN_YELLOW,	MENU_BARn(UP_ON, , UP(Green_Yellow_GAIN_Yellow), 0, 255, 1),
 			RETURN,			MENU_ONEo(UP_ON, e, UP_ON, ))
-
+#endif
 // MENU - DNR ----------------------------------------------------------------------------------------------------
 	MENU_SET( 3, DNR, UP_ON,
 			DNR_3D,			MENU_STRn(UP_ON, , UP(Adnr3D), 4, OFF, LOW, MIDDLE, HIGH),
@@ -881,17 +1009,52 @@ void Menu(void)
 			RETURN,			MENU_ONEo(UP_ON, e, UP_ON, ))
 
 // MENU - IMAGE ----------------------------------------------------------------------------------------------------
-	MENU_SET( 5, IMAGE, UP_ON,
+	MENU_SET( 9, IMAGE, UP_ON,
+			SHARPNESS,		MENU_BARn(UP_ON, , UP(Sharpness), 0, 10, 1)
+							if(DEV_ON){ MENU_IN(UP_ON, SHARPNESS, )		SETFONTID(DRAW_Y, MN_SXSP+10, 0xa6); },
 			GAMMA,			MENU_STRi(UP_ON, MENU_VAL_IS(AUTOe), AUTO_GAMMA, , , UP(Gamma), 8, GAMMA_045, GAMMA_050, GAMMA_055, GAMMA_060, GAMMA_065, GAMMA_070, GAMMA_075, AUTOe),
-			FLIP,			MENU_STRn(UP_ON, , UP(Flip), 2, OFF, ON),
+
+			DWDR,			MENU_STRi(DEV_ON, !MENU_VAL_IS(OFF), DWDR, , , UP(Ace), 4, OFF, LOWe, MIDDLEe, HIGHe),
+			DWDR,			MENU_STRn(DEV_OFF, , UP(Ace), 4, OFF, LOW, MIDDLE, HIGH),
+
+			DEFOG,			MENU_STRi(UP_ON, MENU_VAL_IS(ONe), DEFOG, , , UP(Defog), 2, OFF, ONe),
+
 			MIRROR,			MENU_STRn(UP_ON, , UP(Mirror), 2, OFF, ON),
+			FLIP,			MENU_STRn(UP_ON, , UP(Flip), 2, OFF, ON),
+
 			PRIVACY,		MENU_STRi(UP_ON, MENU_VAL_IS(ONe), PRIVACY, MENU_OFF_GRAY_ONLY(), , UP(PvcOn), 2, OFF, ONe),
+			RETURN,			MENU_ONEo(UP_ON, e, UP_ON, ))
+
+	// MENU - IMAGE - SHARPNESS
+	MENU_SET( 5, SHARPNESS, DEV_ON,
+			SHARPNESS,		MENU_BARn(UP_ON, , UP(Sharpness), 0, 10, 1 ),
+			SMALL_EDGE,		MENU_BARn(UP_ON, , UP(ShpSmallEdge), 0, 255, 1),
+			BIG_EDGE,		MENU_BARn(UP_ON, , UP(ShpBigEdge),   0, 255, 1),
+			REDp_BY_AGC,	MENU_ONEi(UP_ON, e, UP_ON, REDUCE_BY_AGC, ),
 			RETURN,			MENU_ONEo(UP_ON, e, UP_ON, ))
 
 	// MENU - IMAGE - GAMMA
 	MENU_SET( 3, AUTO_GAMMA, UP_ON,
 			DAY,			MENU_STRn(UP_ON, , UP(GammaDay), 7, GAMMA_045, GAMMA_050, GAMMA_055, GAMMA_060, GAMMA_065, GAMMA_070, GAMMA_075),
 			NIGHT,			MENU_STRn(UP_ON, , UP(GammaNgt), 7, GAMMA_045, GAMMA_050, GAMMA_055, GAMMA_060, GAMMA_065, GAMMA_070, GAMMA_075),
+			RETURN,			MENU_ONEo(UP_ON, e, UP_ON, ))
+
+	// MENU - IMAGE - ACE
+	MENU_SET( 6, DWDR, DEV_ON,
+			DWDR/*ACE*/,	MENU_STRn(UP_ON, , UP(Ace), 4, OFF, LOW, MIDDLE, HIGH),
+			WEIGHT,			MENU_BARn(UP_ON, , UP(AceGmgn), 0, 255, 1),
+			Dp_BRIGHT,		MENU_BARn(UP_ON, , UP(AceBrt), 0, 64, 1),
+			Dp_CONTRAST,	MENU_BARn(UP_ON, , UP(AceCont), 0, 64, 1),
+			REDp_BY_AGC,	MENU_ONEi(UP_ON, e, UP_ON, REDUCE_BY_AGC, ),
+			RETURN,			MENU_ONEo(UP_ON, e, UP_ON, ))
+
+	// MENU - IMAGE - DEFOG
+	MENU_SET( 6, DEFOG, UP_ON,
+			MODE,			MENU_STRn(UP_ON, , UP(DefogMode), 2, MANUAL, AUTO),
+			LEVEL,			MENU_STRn(UP_ON, , UP(DefogLevel), 3, LOW, MIDDLE, HIGH),
+			Dp_BRIGHT,		MENU_BARn(DEV_ON, , UP(AceBrt), 0, 64, 1),
+			Dp_CONTRAST,	MENU_BARn(DEV_ON, , UP(AceCont), 0, 64, 1),
+			REDp_BY_AGC,	MENU_ONEi(DEV_ON, e, UP_ON, REDUCE_BY_AGC, ),
 			RETURN,			MENU_ONEo(UP_ON, e, UP_ON, ))
 
 	// MENU - IMAGE - PRIVACY
@@ -915,10 +1078,7 @@ void Menu(void)
 			DET_TONE,		MENU_DECn(UP_ON, , UP(ItlDettone), 0, 4, 1, ),
 			MDRECT_FILL,	MENU_STRn(UP_ON, , UP(ItlRectFill), 2, OFF, ON),
 			SENSITIVITY, 	MENU_BARn(UP_ON, , UP(ItlSens),0, 10, 1)
-							if(DEV_ON){
-								MENU_IN(UP_ON, SENSITIVITY, )
-								SETFONTID(DRAW_Y, MN_SXSP+10, 0xa6);
-							},
+							if(DEV_ON){ MENU_IN(UP_ON, SENSITIVITY, )		SETFONTID(DRAW_Y, MN_SXSP+10, 0xa6); },
 			MOTION_OSD, 	MENU_STRn(UP_ON, , UP(ItlMaskOsd), 2, OFF, ON),
 			TEXT_ALARM, 	MENU_STRn(UP_ON, , UP(ItlAlarm), 2, OFF, ON),
 			SIGNAL_OUT, 	MENU_STRn(UP_ON, , UP(ItlSigno), 2, OFF, ON),

@@ -1943,8 +1943,10 @@ void AeMonOn(const int ai)
 void AeMonOff(void)
 {
 //	gnBoxOnAeMon = 0;
-	BOSD_ON0w(0);
+	//BOSD_ON0w(0);
 }
+
+UINT gnBoxOnAeMon = 0;
 
 void ISRT AeMon(const BYTE bSatOff, const BYTE bLSflag, const int iErrMgn, const int iCur, const int iTgt,
 				const BYTE bIrsOn, const BYTE bShtOn, const BYTE bTgtOn, const BYTE bDeblurOn, const BYTE bAgcOn, const BYTE bDssOn,
@@ -1981,7 +1983,7 @@ void ISRT AeMon(const BYTE bSatOff, const BYTE bLSflag, const int iErrMgn, const
 	}
 	else {
 		static WORD wPos = AE_GRAPH_SX;
-		UINT gnBoxOnAeMon = 0;
+		/*UINT*/ gnBoxOnAeMon = 0;
 
 		wX = AE_GRAPH_SX;
 
@@ -2060,7 +2062,7 @@ void ISRT AeMon(const BYTE bSatOff, const BYTE bLSflag, const int iErrMgn, const
 
 		if(gbWdrOn==WDR_FRAME) gnBoxOnAeMon |= (1<<BOX_ID_CUR_SPOT)|(1<<BOX_ID_TGT_SPOT);
 
-		BOSD_ON0w(gnBoxOnAeMon);
+		//BOSD_ON0w(gnBoxOnAeMon);
 	}
 }
 

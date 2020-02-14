@@ -55,6 +55,8 @@ enum{	// UP(ShutSpd)
 	UP_MNL_SHUT_DIV1024	// 1 line, 1/30000 sec
 };
 
+#define UP_SHT_MIN_DEFAULT	UP_MNL_SHUT_DIV1024		// TODO KSH ◆ Shutter 1 line 을 지원하지 않는 Sensor 주의!!!
+
 enum{	// UP(DcMode)
 	UP_DC_IN,
 	UP_DC_OUT,
@@ -215,7 +217,7 @@ UP_STYLE(Brightness,    4,          6,               4,               4,        
 UP_STYLE(Adnr2D,        8,               4,               8,               8,               8,               8,               8              )\
 UP_STYLE(ShpBigEdge,    0x80,            0x40,            0x80,            0x80,            0x80,            0x80,            0x80           )\
 UP_STYLE(Gamma,         UP_GAMMA_075,    UP_GAMMA_055,    UP_GAMMA_075,    UP_GAMMA_075,    UP_GAMMA_075,    UP_GAMMA_075,    UP_GAMMA_075   )\
-UP_STYLE(Ace,        UP_4sMID/*UP_4sHI*/,UP_4sOFF,        UP_4sHI,         UP_4sHI,         UP_4sHI,         UP_4sHI,         UP_4sHI        )
+UP_STYLE(Ace,           UP_4sHI,         UP_4sOFF,        UP_4sHI,         UP_4sHI,         UP_4sHI,         UP_4sHI,         UP_4sHI        )
 // ※IMX323의 경우 ACE HIGH 가 오히려 Color가 안좋음
 
 //*************************************************************************************************
@@ -281,7 +283,7 @@ UP_SET(1, ErrChtMax, ERR_CHT_SIZ, , )/* ANTI_SAT:ON → ERR CHT MAX : 1 ~ 60 */\
 UP_SET(1, ErrChtMin, (ERR_CHT_SIZ<<1)/3, , )/* ANTI_SAT:ON → ERR CHT MIN : 1 ~ 60 */\
 UP_SET(1, MinGammaY, UP_4sOFF, , )/* ANTI_SAT:ON → BACKLIGHT : 0 = OFF, 1 = LOW, 2 = MIDDLE, 3 = HIGH */\
 UP_SET(1, LSpotTh, 0, , )/* 0 only, Brightness threshold to turn on the ANTI_SAT, If the brightness is darker than the threshold, the ANTI_SAT is turned on. */\
-UP_SET(1, SmallSpeed, 2, , )/* AE SPEED → STABILIZING : 0 = HIGH, 1 = MIDDLE, 2 = LOW */\
+UP_SET(1, SmallSpeed, 2, , )/* AE SPEED → STABILIZING : 0 = LOW, 1 = MIDDLE, 2 = HIGH */\
 UP_SET(1, ShtSpeed, 10, , )/* AE SPEED → SHT. SPEED : 1 ~ 20 */\
 UP_SET(1, AgcSpeed, 10, , )/* AE SPEED → AGC SPEED : 1 ~ 20 */\
 UP_SET(1, IrsSpeed, 10, , )/* AE SPEED → IRIS SPEED : 0 ~ 20 */\
@@ -291,7 +293,7 @@ UP_SET(2, AgcBrtSpeed, SP(AgcBrtSpeed), , )/* AE SPEED → AGC SPEED → BRIGHTEN 
 UP_SET(2, AgcDrkSpeed, SP(AgcDrkSpeed), , )/* AE SPEED → AGC SPEED → DARKEN : 1 ~ 999 (3E7h) */\
 UP_SET(1, Shutter, UP_SHUT_AUTO, , )/* SHUTTER : 0 = AUTO, 1 = MANUAL, 2 = FLICKER */\
 UP_SET(1, ShutSpd, UP_MNL_SHUT_DIV1, , )/* SHUTTER:MANUAL → SPEED (Depends on 'FREQ' & 'OUTPUT SET→MODE') : 0 = 1/30, 1 = 1/60, 2 = 1/120, 3 = 1/250, 4 = 1/500, 5 = 1/1000, 6 = 1/2000, 7 = 1/4000, 8 = 1/8000, 9 = 1/15000, 10 = 1/30000 */\
-UP_SET(1, ShtMin, UP_MNL_SHUT_DIV512, , gbUpShtMin = UP(ShtMin); ShutterMenuSet(); )/* SHUTTER:AUTO → SHUTTER MIN (Depends on 'FREQ' & 'OUTPUT SET→MODE') : 0 = 1/30, 1 = 1/60, 2 = 1/120, 3 = 1/250, 4 = 1/500, 5 = 1/1000, 6 = 1/2000, 7 = 1/4000, 8 = 1/8000, 9 = 1/15000, 10 = 1/30000 */\
+UP_SET(1, ShtMin, UP_SHT_MIN_DEFAULT, , gbUpShtMin = UP(ShtMin); ShutterMenuSet(); )/* SHUTTER:AUTO → SHUTTER MIN (Depends on 'FREQ' & 'OUTPUT SET→MODE') : 0 = 1/30, 1 = 1/60, 2 = 1/120, 3 = 1/250, 4 = 1/500, 5 = 1/1000, 6 = 1/2000, 7 = 1/4000, 8 = 1/8000, 9 = 1/15000, 10 = 1/30000 */\
 UP_SET(1, DeblurMin, UP_MNL_SHUT_DIV1/*UP_MNL_SHUT_DIV8*/, , gbUpDeblurMin = UP(DeblurMin); ShutterMenuSet(); )/* SHUTTER:AUTO → DEBLUR MIN (Depends on 'FREQ' & 'OUTPUT SET→MODE') : 0 = 1/30, 1 = 1/60, 2 = 1/120, 3 = 1/250, 4 = 1/500, 5 = 1/1000, 6 = 1/2000, 7 = 1/4000, 8 = 1/8000, 9 = 1/15000, 10 = 1/30000 */\
 UP_SET(1, ShtMax, UP_MNL_SHUT_DIV1, , gbUpShtMax = UP(ShtMax); ShutterMenuSet(); )/* SHUTTER:AUTO → SHUTTER MAX (Depends on 'FREQ' & 'OUTPUT SET→MODE') : 0 = 1/30, 1 = 1/60, 2 = 1/120, 3 = 1/250, 4 = 1/500, 5 = 1/1000, 6 = 1/2000, 7 = 1/4000, 8 = 1/8000, 9 = 1/15000, 10 = 1/30000 */\
 UP_SET(1, DcMode, UP_DC_IN, , ShutterMenuGet(); )/* IRIS:ALC & SHUTTER:AUTO → MODE : 0 = INDOOR, 1 = OUTDOOR, 2 = DEBLUR */\
@@ -400,9 +402,9 @@ UP_SET(2, DEFOG_TH_MID, UpDEFOG_TH_MID, , )/* Defog Maximum Strength for menu MI
 UP_SET(2, DEFOG_TH_HIGH, UpDEFOG_TH_HIGH, , )/* Defog Maximum Strength for menu HIGH (MIDDLE ~ 0xffff) */\
 UP_TITLE(ACE)/*--　ACE　--*/\
 UP_SET(1, Ace, /*UP_4sLOW*//*UP_4sMID*/UP_4sHI/*UP_4sOFF*/, , )/* ACE : 0 = OFF, 1 = LOW, 2 = MIDDLE, 3 = HIGH (Must be set DEFOG:OFF) */\
-UP_SET(1, AceGmgn, /*0x20*/63, , )/* ACE → WEIGHT : 0 ~ 255 */\
+UP_SET(1, AceGmgn, 0x20/*63*/, , )/* ACE → WEIGHT : 0 ~ 255 */\
 UP_SET(1, AceBrt, 0/*32*/, , )/* ACE & DEFOG → DIGITAL BRIGHTNESS : 0 ~ 64 */\
-UP_SET(1, AceCont, 64/*0*//*32*/, , )/* ACE & DEFOG → DIGITAL CONTRAST : 0 ~ 64 */\
+UP_SET(1, AceCont, 0/*32*/, , )/* ACE & DEFOG → DIGITAL CONTRAST : 0 ~ 64 */\
 UP_SET(1, ACETBL1_LOW, UpACETBL1_LOW, , )/* ACE Dark Area Strength for menu LOW (0x0 ~ 0xff) */\
 UP_SET(1, ACETBL1_MID, UpACETBL1_MID, , )/* ACE Dark Area Strength for menu MIDDLE (LOW ~ 0xff) */\
 UP_SET(1, ACETBL1_HIGH, UpACETBL1_HIGH, , )/* ACE Dark Area Strength for menu HIGH (MIDDLE ~ 0xff) */\
@@ -429,7 +431,7 @@ UP_SET(1, ShpAgcHigh, 64, , IspAgcSet(); )/* SHARPNESS → AGC HIGH : 0 ~ 99 (%) 
 UP_SET(1, Gamma, UP_GAMMA_075/*UP_GAMMA_055*/, , )/* GAMMA : 0 = 0.45, 1 = 0.55, 2 = 0.65, 3 = 0.75 */\
 UP_SET(1, GammaDay, UP_GAMMA_055, , )/* GAMMA DAY : 0 = 0.45, 1 = 0.55, 2 = 0.65, 3 = 0.75 */\
 UP_SET(1, GammaNgt, UP_GAMMA_045, , )/* GAMMA NIGHT : 0 = 0.45, 1 = 0.55, 2 = 0.65, 3 = 0.75 */\
-UP_SET(1, GammaWdr, UP_GAMMA_045, , )/* GAMMA WDR : 0 = 0.45, 1 = 0.55, 2 = 0.65, 3 = 0.75 */\
+UP_SET(1, GammaWdr, UP_GAMMA_060/*UP_GAMMA_045*/, , )/* GAMMA WDR : 0 = 0.45, 1 = 0.55, 2 = 0.65, 3 = 0.75 */\
 UP_SET(1, Flip, UP_OFF, INIT_RUN, Flip(); )/* FLIP : 0 = OFF, 1 = ON */\
 UP_SET(1, Mirror, UP_OFF, INIT_RUN, if(UP(Mirror)<2) { SensMirror(UP(Mirror)); } )/* MIRROR : 0 = OFF, 1 = ON */\
 UP_TITLE(MENU_PRIVACY)/*--　MENU:　PRIVACY　--*/\

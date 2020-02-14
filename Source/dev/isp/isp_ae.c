@@ -825,11 +825,11 @@ void InMode(void)
 		#define AE_WDR_ON_COND	(/*(gnLSflag==AeLONG)&&*/(UP(BackLight)==UP_BL_WDR)/*&&(UP(Shutter)==UP_SHUT_AUTO)*/)
 		#define AE_WDR_OFF_COND	((/*(gnLSflag==AeLONG)&&*/(UP(BackLight)!=UP_BL_WDR))/*||(UP(Shutter)!=UP_SHUT_AUTO)*/)
 
-		if(AE_WDR_ON_COND)	{
-		if(UP(WdrMode) == UP_WDR_FRAME)	gbWdrOn = WDR_FRAME;
-		else							gbWdrOn = WDR_LINE_2P;		// TODO KSH ◆ WDR - Line WDR ON 상태 추가 필요
+		if(AE_WDR_ON_COND) {
+			if(UP(WdrMode) == UP_WDR_FRAME)	gbWdrOn = WDR_FRAME;
+			else							gbWdrOn = WDR_LINE_2P;		// TODO KSH ◆ WDR - Line WDR ON 상태 추가 필요
 		}
-		else if(AE_WDR_OFF_COND)		gbWdrOn = WDR_OFF;
+		else if(AE_WDR_OFF_COND)			gbWdrOn = WDR_OFF;
 
 		gnAeFsc = FrameSetCount(1);
 
@@ -1012,7 +1012,7 @@ int ISRT WdrCtrl(void)
 //*******************************************************************************
 // ADV. AE
 //*******************************************************************************
-BYTE gbUpShtMin    = UP_MNL_SHUT_DIV512;	// 2 line, 1/15000 sec
+BYTE gbUpShtMin    = UP_SHT_MIN_DEFAULT;	// 1 line, 1/30000 sec
 BYTE gbUpDeblurMin = UP_MNL_SHUT_DIV1;		// 1125 line, 1/30 sec
 BYTE gbUpShtMax    = UP_MNL_SHUT_DIV1;		// 1125 line, 1/30 sec
 
@@ -1022,11 +1022,11 @@ void ShutterMenuGet(void)
 
 	if(UP(Iris)==UP_LENS_MNL) {
 		switch(UP(ShtMode)) {
-			case UP_SHT_NORMAL:	gbUpShtMin		= UP_MNL_SHUT_DIV512;	// 2 line, 1/15000 sec
+			case UP_SHT_NORMAL:	gbUpShtMin		= UP_SHT_MIN_DEFAULT;	// 2 line, 1/15000 sec
 								gbUpDeblurMin	= UP_MNL_SHUT_DIV1;	// 1125 line, 1/30 sec
 								gbUpShtMax		= UP_MNL_SHUT_DIV1;	// 1125 line, 1/30 sec
 								break;
-			case UP_SHT_DEBLUR: gbUpShtMin		= UP_MNL_SHUT_DIV512;	// 2 line, 1/15000 sec
+			case UP_SHT_DEBLUR: gbUpShtMin		= UP_SHT_MIN_DEFAULT;	// 2 line, 1/15000 sec
 								gbUpDeblurMin	= UP_MNL_SHUT_DIV8/*UP(AE_DEBLUR_THRS_VAL)*/;	// 140 line, 1/250 sec
 								gbUpShtMax		= UP_MNL_SHUT_DIV1;	// 1125 line, 1/30 sec
 								break;

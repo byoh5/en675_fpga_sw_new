@@ -218,7 +218,7 @@ void ISRT Gamma(void) // 180320 LWH
 			}
 			else {
 				extern int iTgtMax;
-				extern int TgtMinGet(const int aiTgt, const BYTE abV);
+				//extern int TgtMinGet(const int aiTgt, const BYTE abV);
 				const int iTgtOri = iTgtMax;//TgtMaxGet(0,0);
 				const int iTgtOriMin = TgtMinGet(iTgtOri, UP(BrightnessMin));					// UP(BrightnessMin) : BRIGHTNESS NIGHT
 
@@ -247,7 +247,7 @@ void ISRT Gamma(void) // 180320 LWH
 		#if AE_CTRL_ADV
 			else {
 				extern int iTgtMax;
-				extern int TgtMinGet(const int aiTgt, const BYTE abV);
+				//extern int TgtMinGet(const int aiTgt, const BYTE abV);
 				const int iTgtOri = iTgtMax;//TgtMaxGet(0,0);
 				const int iTgtOriMin = TgtMinGet(iTgtOri, 0/*UP(BrightnessMin)*/);					// 0:최소가능밝기(BRIGHTNESS NIGHT)
 
