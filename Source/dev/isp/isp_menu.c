@@ -1076,8 +1076,8 @@ void Menu(void)
 	// MENU - IMAGE - DZOOM
 	MENU_SET( 4, DZOOM, DEV_ON,
 			DZOOM,			menu_dzoom(UP_ON);  MENU_DISABLE(UP_ON)  MENU_CODE(if_KEY_LR(MENU_REDRAW_GRAY_ONLY())),
-			HPOS,			MENU_BARn(UP_ON/*UP(DZoom)>10*/, , UP(DZoomPosH), (RP(PO_HW)+8)*5/UP(DZoom), (UP(DZoom)-5)*(RP(PO_HW)+8)/UP(DZoom), 0),
-			VPOS,			MENU_BARn(UP_ON/*UP(DZoom)>10*/, , UP(DZoomPosV), (RP(PO_VW)  )*5/UP(DZoom), (UP(DZoom)-5)*(RP(PO_VW)  )/UP(DZoom), 0),
+			HPOS,			MENU_BARn(UP(DZoom)>10, , UP(DZoomPosH), (RP(PO_HW)+8)*5/UP(DZoom), (UP(DZoom)-5)*(RP(PO_HW)+8)/UP(DZoom), 0),
+			VPOS,			MENU_BARn(UP(DZoom)>10, , UP(DZoomPosV), (RP(PO_VW)  )*5/UP(DZoom), (UP(DZoom)-5)*(RP(PO_VW)  )/UP(DZoom), 0),
 			RETURN,			MENU_ONEo(UP_ON, e, UP_ON, ))
 
 	// MENU - IMAGE - PRIVACY
