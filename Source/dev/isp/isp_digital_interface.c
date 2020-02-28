@@ -2698,10 +2698,11 @@ void Isp_Cvbs_Config(BOOL OnOff, BOOL IsNtsc, BYTE CvbsFreq, BYTE SourceFrq, BYT
 	UINT i, SourceSiz=0;
 	const UINT *Source;
 
-	ECK_PDw(0);		CDS3_PCK_PDw(0);	HWE_AUTOw(0);
-	DS3_KXY_ONw(0);	DS3_HLPFw(2);	DS3_VLPFw(2);
-	DS3_DKY_STw(0);	DS3_HOFFw(0);	DS3_VOFFw(0);
+	ECK_PDw(0);		CDS4_PCK_PDw(0);	HWE_AUTOw(0);
+	DS4_KXY_ONw(0);	DS4_HLPFw(2);	DS4_VLPFw(2);
+	DS4_DKY_STw(0);	DS4_HOFFw(0);	DS4_VOFFw(0);
 
+	DDR_RENC_LTCw(300);
 
 	HSPEw(Hsp);
 	VSPEw(Vsp);
@@ -2710,8 +2711,9 @@ void Isp_Cvbs_Config(BOOL OnOff, BOOL IsNtsc, BYTE CvbsFreq, BYTE SourceFrq, BYT
 	{
 		if(CvbsFreq==FREQ_27M)	{																							//	27MHz CVBS
 			Source = CVBS_27M_NTSC;		SourceSiz = ARRAY_SIZE(CVBS_27M_NTSC);
-			SetIsp(0x58, 0x359020c);	SetIsp(0x5a, 0x2da00f8);	ECK_SELw(0);
-			DS3_DKXw(0xaa);	DS3_DKYw(0x8c);	CDS3_HWw(0x300);	CDS3_VWw(0x1ea);
+			HTWEw(0x359);		VTWEw(0x20c);		HWEw(0x2da);		VWEw(0xf8);		ECK_SELw(4);
+
+			DS4_DKXw(0xaa);	DS4_DKYw(0x8c);	CDS4_HWw(0x300);	CDS4_VWw(0x1f2);
 			if(SourceFrq==ISP_74M)	{	ENC_AL_RMODw(1);	ENC_AL_WMODw(1);	EFLD_INVw(0);	FLDE_INV2w(1);	}
 			else					{	ENC_AL_RMODw(0);	ENC_AL_WMODw(0);	EFLD_INVw(0);	FLDE_INV2w(0);	}
 
@@ -2742,31 +2744,31 @@ void Isp_Cvbs_Config(BOOL OnOff, BOOL IsNtsc, BYTE CvbsFreq, BYTE SourceFrq, BYT
 	//	Select Source Path & Clock
 	switch(SourcePath)
 	{
-		 case DS_ISP_FONT_PATH         :	CDS3_VISELw(0);	CDS3_ISELw(0);
-		 									if(PPCK_SELr==4)		CDS3_PCK_SELw(7);
-		 									else if(PPCK_SELr==5)	CDS3_PCK_SELw(11);
-		 									else					CDS3_PCK_SELw(PPCK_SELr);																					break;
-		 case DS_ISP_NO_FONT_PATH      :    CDS3_VISELw(0);	CDS3_ISELw(1);
-		 									if(PPCK_SELr==4)		CDS3_PCK_SELw(7);
-		 									else if(PPCK_SELr==5)	CDS3_PCK_SELw(11);
-		 									else					CDS3_PCK_SELw(PPCK_SELr);																					break;
-		 case DS_DIGITAL_CH0_PATH      :    CDS3_VISELw(1);	CDS3_ISELw(2);	if(BT_PCK_SELr==3)	CDS3_PCK_SELw(3);	else	CDS3_PCK_SELw(7);	break;
-		 case DS_DIGITAL_CH1_PATH      :    CDS3_VISELw(2);	CDS3_ISELw(3);	if(BT0_PCK_SELr==0)	CDS3_PCK_SELw(4);	else	CDS3_PCK_SELw(8);	break;
-		 case DS_DIGITAL_CH2_PATH      :    CDS3_VISELw(3);	CDS3_ISELw(4);	if(BT1_PCK_SELr==0)	CDS3_PCK_SELw(5);	else	CDS3_PCK_SELw(9);	break;
-		 case DS_DIGITAL_CH3_PATH      :    CDS3_VISELw(4);	CDS3_ISELw(5);	if(BT2_PCK_SELr==0)	CDS3_PCK_SELw(6);	else	CDS3_PCK_SELw(10);	break;
-		 case DS_DIGITAL_CH0_FONT_PATH :    CDS3_VISELw(1);	CDS3_ISELw(6);	if(BT_PCK_SELr==3)	CDS3_PCK_SELw(3);	else	CDS3_PCK_SELw(7);	break;
-		 case DS_DIGITAL_CH1_FONT_PATH :    CDS3_VISELw(2);	CDS3_ISELw(7);	if(BT0_PCK_SELr==0)	CDS3_PCK_SELw(4);	else	CDS3_PCK_SELw(8);	break;
-		 case DS_DIGITAL_CH2_FONT_PATH :    CDS3_VISELw(3);	CDS3_ISELw(8);	if(BT1_PCK_SELr==0)	CDS3_PCK_SELw(5);	else	CDS3_PCK_SELw(9);	break;
-		 case DS_DIGITAL_CH3_FONT_PATH :    CDS3_VISELw(4);	CDS3_ISELw(9);	if(BT2_PCK_SELr==0)	CDS3_PCK_SELw(6);	else	CDS3_PCK_SELw(10);	break;
-		 case DS_COLOR_BAR_PATH        :    CDS3_VISELw(0);	CDS3_ISELw(10);
-		 									if(PPCK_SELr==4)		CDS3_PCK_SELw(7);
-		 									else if(PPCK_SELr==5)	CDS3_PCK_SELw(11);
-		 									else					CDS3_PCK_SELw(PPCK_SELr);																					break;
+		 case DS_ISP_FONT_PATH         :	CDS4_VISELw(0);	CDS4_ISELw(0);
+		 									if(PPCK_SELr==4)		CDS4_PCK_SELw(7);
+		 									else if(PPCK_SELr==5)	CDS4_PCK_SELw(11);
+		 									else					CDS4_PCK_SELw(PPCK_SELr);																					break;
+		 case DS_ISP_NO_FONT_PATH      :    CDS4_VISELw(0);	CDS4_ISELw(1);
+		 									if(PPCK_SELr==4)		CDS4_PCK_SELw(7);
+		 									else if(PPCK_SELr==5)	CDS4_PCK_SELw(11);
+		 									else					CDS4_PCK_SELw(PPCK_SELr);																					break;
+		 case DS_DIGITAL_CH0_PATH      :    CDS4_VISELw(1);	CDS4_ISELw(2);	if(BT_PCK_SELr==3)	CDS4_PCK_SELw(3);	else	CDS4_PCK_SELw(7);	break;
+		 case DS_DIGITAL_CH1_PATH      :    CDS4_VISELw(2);	CDS4_ISELw(3);	if(BT0_PCK_SELr==0)	CDS4_PCK_SELw(4);	else	CDS4_PCK_SELw(8);	break;
+		 case DS_DIGITAL_CH2_PATH      :    CDS4_VISELw(3);	CDS4_ISELw(4);	if(BT1_PCK_SELr==0)	CDS4_PCK_SELw(5);	else	CDS4_PCK_SELw(9);	break;
+		 case DS_DIGITAL_CH3_PATH      :    CDS4_VISELw(4);	CDS4_ISELw(5);	if(BT2_PCK_SELr==0)	CDS4_PCK_SELw(6);	else	CDS4_PCK_SELw(10);	break;
+		 case DS_DIGITAL_CH0_FONT_PATH :    CDS4_VISELw(1);	CDS4_ISELw(6);	if(BT_PCK_SELr==3)	CDS4_PCK_SELw(3);	else	CDS4_PCK_SELw(7);	break;
+		 case DS_DIGITAL_CH1_FONT_PATH :    CDS4_VISELw(2);	CDS4_ISELw(7);	if(BT0_PCK_SELr==0)	CDS4_PCK_SELw(4);	else	CDS4_PCK_SELw(8);	break;
+		 case DS_DIGITAL_CH2_FONT_PATH :    CDS4_VISELw(3);	CDS4_ISELw(8);	if(BT1_PCK_SELr==0)	CDS4_PCK_SELw(5);	else	CDS4_PCK_SELw(9);	break;
+		 case DS_DIGITAL_CH3_FONT_PATH :    CDS4_VISELw(4);	CDS4_ISELw(9);	if(BT2_PCK_SELr==0)	CDS4_PCK_SELw(6);	else	CDS4_PCK_SELw(10);	break;
+		 case DS_COLOR_BAR_PATH        :    CDS4_VISELw(0);	CDS4_ISELw(10);
+		 									if(PPCK_SELr==4)		CDS4_PCK_SELw(7);
+		 									else if(PPCK_SELr==5)	CDS4_PCK_SELw(11);
+		 									else					CDS4_PCK_SELw(PPCK_SELr);																					break;
 	}
 
 
-	if(OnOff==FN_ON)	{	DS3_ONw(1);		CDS3_PCK_PDw(1);	ECK_PDw(1);		ENC_ONw(1); }
-	else				{	DS3_ONw(0);		CDS3_PCK_PDw(0);	ECK_PDw(0);		ENC_ONw(0);	}
+	if(OnOff==FN_ON)	{	DS4_ONw(1);		CDS4_PCK_PDw(1);	ECK_PDw(1);		ENC_ONw(1); }
+	else				{	DS4_ONw(0);		CDS4_PCK_PDw(0);	ECK_PDw(0);		ENC_ONw(0);	}
 }
 
 void Isp_Cvbs_Adr(UINT CvbsAdr0, UINT CvbsAdr1, UINT CvbsAdr2)

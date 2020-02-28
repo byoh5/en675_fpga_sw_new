@@ -102,9 +102,7 @@ void Isp_Output_init(void)
 //	Isp_Dout_Clock1_Config(FN_ON, CLK_148M, 0, CLK_INVERSE);													//	DCKO1 Pin Clock Out	->	FPGA HDSDI	(Clken, ClkFrq, ClkDelay, ClkInv)
 	Isp_Dout_Clock0_Config(FN_ON, CLK_74M, 0, CLK_INVERSE);														//	DCKO0 Pin Clock Out	->	FPGA HDMI
 
-#ifdef	CVBS_OUTPUT
-	Isp_Cvbs_Config(FN_ON, NTSC, FREQ_27M, ISP_74M, DS_ISP_FONT_PATH, NO_VLCBIT, 0x7a, 0xf);
-#endif
+	Isp_Cvbs_Config(UP(Cvbs), NTSC, FREQ_27M, ISP_74M, DS_ISP_FONT_PATH, NO_VLCBIT, 0x7a, 0xe);
 
 	INIT_STR("Output configuration...");
 }
@@ -536,10 +534,14 @@ void Isp_init(void)
 
 	Isp_Digital_input_init();	// Digital Input configuration
 
+//	extern void ParFncTest(void); ParFncTest();		// TODO KSH ◆ ParFncTest()
+
 	Isp_VLOCKO_init();			// IF_Funcs() 에서 VLOCKO 에 동기화하여 코드 실행 시 필요(테스트 용), OutMode() -> Isp_PrePost_init() 에서 Post Clk & Sync 설정 후 실행되어야 함, Isp_irq_init() 사용 시 필요 없음
 
 	VIRQO_ENw(1);				// VLOCKO IRQ Routine Test, enx_exirq_source1() 함수에서 CLI_VLOCKOw(1) 실행됨
 	VIRQI_ENw(1);				// Sensor FPS 출력용
+
+	Dzoom_init();
 }
 
 void Hdmi_Check(void)

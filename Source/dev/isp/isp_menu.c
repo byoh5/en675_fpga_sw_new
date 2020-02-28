@@ -109,7 +109,7 @@ const WORD gwShtMnLut[12] = {30,60,120,250,500,1000,2000,4000,8000,15000,30000,6
 //*************************************************************************************************
 // Sub Functions
 //-------------------------------------------------------------------------------------------------
-void OsdDispBar(UINT anVal, UINT anPosY, UINT anMin, UINT anMax)
+void OsdDispBar(UINT anVal, UINT anPosY, UINT anPosX, UINT anMin, UINT anMax)
 {
 	if(anVal > anMin) anVal -= anMin;
 	else anVal = 0;
@@ -146,12 +146,12 @@ void OsdDispBar(UINT anVal, UINT anPosY, UINT anMin, UINT anMax)
 
     UINT i;
 
-	SETFONTID(anPosY,MN_XBAR,_IOO);
-	SETFONTID(anPosY,MN_XBAR+(MN_BAR_SIZE-1),_OOI);
-	for(i=1; i<(MN_BAR_SIZE-1); i++) SETFONTID(anPosY,MN_XBAR+i,_OOO);
-	SETFONTID(anPosY,MN_XBAR+Pos1,Typ);
+	SETFONTID(anPosY,anPosX,_IOO);
+	SETFONTID(anPosY,anPosX+(MN_BAR_SIZE-1),_OOI);
+	for(i=1; i<(MN_BAR_SIZE-1); i++) SETFONTID(anPosY,anPosX+i,_OOO);
+	SETFONTID(anPosY,anPosX+Pos1,Typ);
 
-	for(i=(MN_XBAR+MN_BAR_SIZE); i<(UINT)(MN_SXSP+MN_SUBSIZE); i++) SETFONTID(anPosY,i,' ');
+	for(i=(anPosX+MN_BAR_SIZE); i<(UINT)(MN_SXSP+MN_SUBSIZE); i++) SETFONTID(anPosY,i,' ');
 }
 
 void OsdCamTitle(void)
@@ -341,6 +341,37 @@ void menu_out(const int aiClearFinger/*const PEXCH* Title*/)
 	}
 }
 
+void UartTxStgLine(void)
+{
+	int i;
+	char bStr[3];
+
+	#define UartTxFnc(V)	UartTx(DEBUG_UART_NUM,(V))
+	//#define UartTxFnc(V)	UartTxIrq(V)
+
+	#define DISP_SIZE		ARRAY_SIZE(giStgPosLine)
+
+	UartTxFnc(0x02);
+	UartTxFnc(0xb0);
+	UartTxFnc(3*DISP_SIZE+2);
+	for(i=0;i<DISP_SIZE/*-1*/;i++) {
+		int2str(bStr, giStgPosLine[i], 2, 1);
+		UartTxFnc(bStr[0]);
+		UartTxFnc(bStr[1]);
+		UartTxFnc(' ');
+	}
+#if 0
+	extern int giGrayOnly;
+	int2str(bStr, giGrayOnly, 2, 1);
+	UartTxFnc(bStr[0]);
+	UartTxFnc(bStr[1]);
+	UartTxFnc(' ');
+#endif
+	UartTxFnc('\r');
+	UartTxFnc('\n');
+	UartTxFnc(0x03);
+}
+
 void menu_sta(const int aiOn)
 {
 	if(giMenuDispChg==2) {
@@ -428,12 +459,11 @@ void menu_one(const int aiOn, const PEXCH* Str)
 {
 	menu_sta(aiOn);
 
-	gbMenuVal = (PEXCH*)Str;
-
 	if(giMenuDispPos && (aiOn || giGrayOnly)) {
 		DISPCLRSTR(Str, gbMenuY+giStgPosLine[giStgPos[giLV]], MN_SXSP, MN_SUBSIZE, MN_SUBSIZE);
 	}
 
+	gbMenuVal = (PEXCH*)Str;
 	menu_dir(aiOn);
 }
 
@@ -597,17 +627,50 @@ void menu_bar(const int aiOn, void *Val, const BYTE abValSize, const UINT anMin,
 			}
 		}
 		else {
-			OsdDispBar(nVal, nPosY, anMin, anMax);
+			OsdDispBar(nVal, nPosY, MN_SXSP+MAX(nLen,3), anMin, anMax);
 		}
 	}
 
 	//if(gbMenuList) UartTxStr((BYTE*)MENU_NAME);
 
 	gbMenuVal = 0;
-
 	menu_dir(aiOn);
-
 	if(nUpChgOn) UsrParChg((BYTE*)Val-gbUsrParTbl);
+}
+
+void menu_dzoom(const int aiOn)
+{
+	menu_sta(aiOn);
+
+	#define DZOOM_HIGH_VAL	200
+	UINT nUpChgOn = 0;
+	if(aiOn) {
+		if((UP(DZoom)<DZOOM_HIGH_VAL) || (UP(DZoom)==DZOOM_HIGH_VAL&&KEY_L)) {
+			nUpChgOn = menu_val(&UP(DZoom), sizeof(UP(DZoom)), 10, DZOOM_HIGH_VAL, 0);
+		}
+		else {
+			UP(DZoom) /= 10;
+			nUpChgOn = menu_val(&UP(DZoom), sizeof(UP(DZoom)), (DZOOM_HIGH_VAL/10), 64, 0);
+			UP(DZoom) *= 10;
+		}
+	}
+
+	if((giMenuDispPos || KEY_R || KEY_L) && (aiOn || giGrayOnly)) {
+		gbStr[0] = 'X';
+		const UINT nLen = uint2str(gbStr+1, UP(DZoom), 3);
+		gbStr[nLen+1] = gbStr[nLen];
+		gbStr[nLen]   = '.';
+		FontClrStr(gbMenuY+giStgPosLine[giStgPos[giLV]], MN_SXSP, gbStr, nLen+2, MN_SUBSIZE);
+	}
+
+	/*GRP0 = KEY;
+	GRP1 = pKEY;
+	GRP2 = UP(DZoom);
+	UartTxGrp();*/
+
+	gbMenuVal = 0;
+	menu_dir(aiOn);
+	if(nUpChgOn) UsrParChg((BYTE*)(&UP(DZoom))-gbUsrParTbl);
 }
 
 #if model_WDR_ROI
@@ -940,7 +1003,7 @@ void Menu(void)
 			RETURN,			MENU_ONEo(UP_ON, e, UP_ON, ))
 
 	// MENU - COLOR - HUE & CHROMA
-	MENU_SET( 9/*10*/, HUEnCHROMA, UP(HueChromaMode) == UP_HUE_GAIN_OLD,
+	MENU_SET( 9/*10*/, HUEnCHROMA, UP_ON/*UP(HueChromaMode) == UP_HUE_GAIN_OLD*/,
 			//MODE,			MENU_STRn(UP_ON, if_KEY_LR(MENU_CHANGE()), UP(HueChromaMode), 2, NEW, OLD),
 			YEL_REDdGRN,	MENU_BARn(UP_ON, , UP(Yellow_HUE_RedToGreen), 1, 255, 1),
 			YEL_GAIN,		MENU_BARn(UP_ON, , UP(Yellow_GAIN), 0, 255, 1),
@@ -959,7 +1022,7 @@ void Menu(void)
 			RETURN,			MENU_ONEo(UP_ON, e, UP_ON, ))
 
 // MENU - IMAGE ----------------------------------------------------------------------------------------------------
-	MENU_SET( 9, IMAGE, UP_ON,
+	MENU_SET( 10, IMAGE, UP_ON,
 			SHARPNESS,		MENU_BARn(UP_ON, , UP(Sharpness), 0, 10, 1)
 							if(DEV_ON){ MENU_IN(UP_ON, SHARPNESS, )		SETFONTID(DRAW_Y, MN_SXSP+10, 0xa6); },
 			GAMMA,			MENU_STRi(UP_ON, MENU_VAL_IS(AUTOe), AUTO_GAMMA, , , UP(Gamma), 8, GAMMA_045, GAMMA_050, GAMMA_055, GAMMA_060, GAMMA_065, GAMMA_070, GAMMA_075, AUTOe),
@@ -971,6 +1034,9 @@ void Menu(void)
 
 			MIRROR,			MENU_STRn(UP_ON, , UP(Mirror), 2, OFF, ON),
 			FLIP,			MENU_STRn(UP_ON, , UP(Flip), 2, OFF, ON),
+
+			DZOOM,			menu_dzoom(UP_ON);  MENU_DISABLE(UP_ON)  /*MENU_CODE(CODE)*/
+							if(DEV_ON){ MENU_IN(UP_ON, DZOOM, MENU_OFF_GRAY_ONLY())		SETFONTID(DRAW_Y, MN_SXSP+5, 0xa6); },
 
 			PRIVACY,		MENU_STRi(UP_ON, MENU_VAL_IS(ONe), PRIVACY, MENU_OFF_GRAY_ONLY(), , UP(PvcOn), 2, OFF, ONe),
 			RETURN,			MENU_ONEo(UP_ON, e, UP_ON, ))
@@ -1005,6 +1071,13 @@ void Menu(void)
 			Dp_BRIGHT,		MENU_BARn(DEV_ON, , UP(AceBrt), 0, 64, 1),
 			Dp_CONTRAST,	MENU_BARn(DEV_ON, , UP(AceCont), 0, 64, 1),
 			REDp_BY_AGC,	MENU_ONEi(DEV_ON, e, UP_ON, REDUCE_BY_AGC, ),
+			RETURN,			MENU_ONEo(UP_ON, e, UP_ON, ))
+
+	// MENU - IMAGE - DZOOM
+	MENU_SET( 4, DZOOM, DEV_ON,
+			DZOOM,			menu_dzoom(UP_ON);  MENU_DISABLE(UP_ON)  MENU_CODE(if_KEY_LR(MENU_REDRAW_GRAY_ONLY())),
+			HPOS,			MENU_BARn(UP_ON/*UP(DZoom)>10*/, , UP(DZoomPosH), (RP(PO_HW)+8)*5/UP(DZoom), (UP(DZoom)-5)*(RP(PO_HW)+8)/UP(DZoom), 0),
+			VPOS,			MENU_BARn(UP_ON/*UP(DZoom)>10*/, , UP(DZoomPosV), (RP(PO_VW)  )*5/UP(DZoom), (UP(DZoom)-5)*(RP(PO_VW)  )/UP(DZoom), 0),
 			RETURN,			MENU_ONEo(UP_ON, e, UP_ON, ))
 
 	// MENU - IMAGE - PRIVACY
@@ -1050,8 +1123,9 @@ void Menu(void)
 			RETURN,			MENU_ONEo(UP_ON, e, UP_ON, ))
 
 // MENU - OUTPUTSET ----------------------------------------------------------------------------------------------------
-	MENU_SET( 2, OUTPUTSET, UP_ON,
+	MENU_SET( 3, OUTPUTSET, UP_ON,
 			FREQ,			MENU_STRn(UP_ON, if_KEY_LR(MENU_REDRAW()), UP(SysFreq), 2, 50HZ, 60HZ),
+			CVBS,			MENU_STRn(UP_ON, , UP(Cvbs), 2, OFF, ON),
 			RETURN,			MENU_ONEo(UP_ON, e, UP_ON, ))
 
 

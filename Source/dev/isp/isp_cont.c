@@ -211,7 +211,7 @@ void ISRT Gamma(void) // 180320 LWH
 				const BYTE bMpGammaO = (bMpGamma < UP_GAMMA_AUTO) ? bMpGamma : UP(GammaDay) ;	// GAMMA가 AUTO로 설정되어 있지만 bAutoGammaOff 조건인 경우 UP(GammaDay) 사용
 
 				const UINT *pnTblGmaY = gpTblGamma[bMpGammaO+3];
-				const UINT *pnTblGmaC = (gbWdrOn!=WDR_OFF) ? pnTblGmaY : gpTblGamma[bMpGammaO+0];
+				const UINT *pnTblGmaC = (gbWdrOn!=WDR_OFF) ? pnTblGmaY : gpTblGamma[bMpGammaO+0];		// Color Gamma를 낮추고 Color Gain을 올리는 것이 Color Noise가 덜하고 더 자연스러움
 
 				for (i=0; i<9; i++) SetIsp(YGAMMA_BASE+i, *(pnTblGmaY+i));	// y gamma exchange
 				for (i=0; i<9; i++) SetIsp(CGAMMA_BASE+i, *(pnTblGmaC+i));	// c gamma exchange
@@ -230,8 +230,8 @@ void ISRT Gamma(void) // 180320 LWH
 				UINT nAutoGmK = AutoGamma(iTgtSpotBgOri, iTgtOriMin, UP(GammaDay), UP(GammaNgt), &bGammaIdx);
 				const UINT *pnTblGmaY0 = gpTblGamma[bGammaIdx+4];
 				const UINT *pnTblGmaY1 = gpTblGamma[bGammaIdx+3];
-				const UINT *pnTblGmaC0 = (gbWdrOn!=WDR_OFF) ? pnTblGmaY0 : gpTblGamma[bGammaIdx+1];
-				const UINT *pnTblGmaC1 = (gbWdrOn!=WDR_OFF) ? pnTblGmaY1 : gpTblGamma[bGammaIdx+0];
+				const UINT *pnTblGmaC0 = (gbWdrOn!=WDR_OFF) ? pnTblGmaY0 : gpTblGamma[bGammaIdx+1];		// Color Gamma를 낮추고 Color Gain을 올리는 것이 Color Noise가 덜하고 더 자연스러움
+				const UINT *pnTblGmaC1 = (gbWdrOn!=WDR_OFF) ? pnTblGmaY1 : gpTblGamma[bGammaIdx+0];		// "
 
 				for (i=0; i<9; i++) {
 					const UINT nGmaY = GetGamma(*(pnTblGmaY0+i), *(pnTblGmaY1+i), nAutoGmK);

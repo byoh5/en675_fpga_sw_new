@@ -247,23 +247,26 @@ void KeyAccLevel(int *aiKeyAdd)
 	#define KEY_ACC_LV6_CNT	(FR/8)			// 4
 	#define KEY_ACC_LV7_CNT	(FR/11)			// 3
 	
-	#define KEY_NONE_CNT	2
+	//#define KEY_NONE_CNT	2
 
 	static int iKeyAccLv = 0;
 	static int iKeyAccLvCnt = 0;
-	static int iKeyAccLvDn = 0;
+	//static int iKeyAccLvDn = 0;
+	static BYTE pKEY1d = 0;
 	
-	if(pKEY == 0 || KEY != pKEY) {
-		iKeyAccLvDn++;
-		if(iKeyAccLvDn == KEY_NONE_CNT) {
-			iKeyAccLvDn = 0;
+	if(pKEY == 0 /*|| KEY != pKEY*/ || ((pKEY1d!=pKEY)/*&&pKEY1d*/)) {
+		//iKeyAccLvDn++;
+		//if(iKeyAccLvDn == KEY_NONE_CNT || ((pKEY1d!=pKEY)&&pKEY1d))
+		{
+			//iKeyAccLvDn = 0;
 			iKeyAccLvCnt = 0;
 			iKeyAccLv = 0;
 		}
 	}
+	pKEY1d = pKEY;
 
 	if(pKEY) {
-		iKeyAccLvDn = 0;
+		//iKeyAccLvDn = 0;
 		iKeyAccLvCnt++;
 
 		switch(iKeyAccLv) {

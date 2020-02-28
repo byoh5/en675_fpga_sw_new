@@ -1750,7 +1750,7 @@ AeCtrl:
 		//if(iShtSVal > iShtSMax) iShtSVal = iShtSMax;//SHT_SET1(iShtSMax);
 
 		if(gbWdrOn==WDR_FRAME) {
-			giSht_S = AeSHT1(/*ParAe(PA_SHT_MANUAL) ? (int)ParAe(PA_SHT_MANUAL) :*/ iShtSVal, 0/*(UP(Shutter)==UP_SHUT_MNL)*/, 0/*(gnAeVtw>>UP(ShutSpd))*/ );
+			giSht_S = AeSHT1(/*ParAe(PA_SHT_MANUAL) ? (int)ParAe(PA_SHT_MANUAL) :*/ /*giShtVal*/iShtSVal, 0/*(UP(Shutter)==UP_SHUT_MNL)*/, 0/*(gnAeVtw>>UP(ShutSpd))*/ );
 
 			AeAGC0(ParAe(PA_AGC_MANUAL) ? (int)ParAe(PA_AGC_MANUAL) : (((gbAeStg==AE_STG_SHT)&&(giShtSVal==iShtSVal)) ? gbVHssSAgc : 0) + giSenAgcVal);
 			//AeIRS(UP(DefDet) ? AE_IRS_CLS_Max : ((model_Iris_DC) ? 0 : AE_IRS_STAT_Max));

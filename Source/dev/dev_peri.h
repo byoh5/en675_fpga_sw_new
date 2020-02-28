@@ -21,6 +21,9 @@
 #define EN675_FW_VERSION_PATCH		4
 #define EN675_FW_VERSION			0.0.4
 
+// IR define
+#define USE_IR				0
+
 // SDIO0 define
 #define USE_SDIO0			1
 #if USE_SDIO0

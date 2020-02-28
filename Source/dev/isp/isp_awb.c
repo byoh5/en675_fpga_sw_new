@@ -51,8 +51,9 @@ int ISRT div4x(const int aiNumer, const int aiDenom, const int aiZeroDenom)	// A
 
 void HueChroma(void)
 {
-	if(UP(HueChromaMode))	// OLD
-	{
+#if 0
+	if(UP(HueChromaMode)) {	// OLD
+#endif
 		BYHUE_LDw(((int)UP(Yellow_HUE_RedToGreen))-128);
 		BYGAIN_LDw(UP(Yellow_GAIN));
 		RYHUE_LUw(((int)UP(Red_HUE_YellowToBlue))-128);
@@ -61,6 +62,7 @@ void HueChroma(void)
 		BYGAIN_LUw(UP(Blue_GAIN));
 		RYHUE_LDw(((int)UP(Green_HUE_BlueToYellow))-128);
 		RYGAIN_LDw(UP(Green_GAIN));
+#if 0
 	}
 	else {					// NEW
 		RYHUE_LUw(((int)UP(Yellow_Red_HUE_YellowToBlue))-128);
@@ -82,6 +84,11 @@ void HueChroma(void)
 	}
 
 	HUE_MODw(UP(HueChromaMode));
+#else
+	HUE_MODw(1);
+#endif
+
+
 }
 
 void AwbCmapSet(void)
@@ -489,6 +496,7 @@ void ISRT Awb(void)
 		nAwbGgain 	= ((WORD)((float)AWB_GAIN_DFLT   	* (0.5f+((float)bMpSaturationG*0.025f))) * iWgt) >> 8;
 		nAwbBgain 	= ((WORD)((float)(gnAwbBGainIIR>>4) * (0.5f+((float)bMpSaturationB*0.025f))) * iWgt) >> 8;
 	#else
+		// Color Gamma를 낮추고 Color Gain을 올리는 것이 Color Noise가 덜하고 더 자연스러움
 		const BYTE bMpSaturationR = (gbWdrOn!=WDR_OFF) ? ((64-16)>UP(SaturationR)) ? (UP(SaturationR)+16) : 64 : UP(SaturationR) ;	// TODO KSH ◆ WDR - Awb()에서 "R-GAIN"의 Line WDR 설정을 Frame WDR로 하는게 더 좋은지 확인 필요
 		const BYTE bMpSaturationG = (gbWdrOn!=WDR_OFF) ? ((64-16)>UP(SaturationG)) ? (UP(SaturationG)+16) : 64 : UP(SaturationG) ;	//	"
 		const BYTE bMpSaturationB = (gbWdrOn!=WDR_OFF) ? ((64-16)>UP(SaturationB)) ? (UP(SaturationB)+16) : 64 : UP(SaturationB) ;	//	"

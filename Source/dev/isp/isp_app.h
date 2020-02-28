@@ -357,6 +357,11 @@ extern void HlMask(void);
 extern void Flip(void);
 
 //------------------------------------------------------------------------------
+// Digital Zoom
+extern void Dzoom_init(void);
+extern void DZoom(void);
+
+//------------------------------------------------------------------------------
 // Color space
 extern void ColorSpace(void);
 

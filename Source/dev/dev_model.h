@@ -88,7 +88,7 @@
 //	#define			USE_WRCH3_DS2_RDCH3_PIP1		1
 
 //	ISP Function----------------------------------------------------------------
-#define				USE_DNR3D			1		// TODO KSH ◆ 4K 시 USE_DNR3D 아직 사용 안됨
+#define			USE_DNR3D			1		// TODO KSH ◆ 4K 시 USE_DNR3D 아직 사용 안됨
 
 //	Jpeg Test-------------------------------------------------------------------
 //#define			JPG_ENCODING			1
@@ -96,7 +96,6 @@
 //	#define			JPG_DECODING_DSCALE		1
 
 //	CVBS------------------------------------------------------------------------
-//#define			CVBS_OUTPUT			1
 //	#define			CVBS_VLC_6BIT		1
 //	#define			CVBS_VLC_5BIT		1
 //	#define			CVBS_VLC_4BIT		1

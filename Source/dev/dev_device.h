@@ -32,12 +32,22 @@
 #define __SFLS_32MB__
 #endif
 #if 0
-#define __SFLS_W25Q64__
+#define __SFLS_W25Q64JVIQ__
 #define __SFLS_WINBOND__
 #define __SFLS_8MB__
 #endif
 #if 0
+#define __SFLS_W25Q256JVQ__
+#define __SFLS_WINBOND__
+#define __SFLS_32MB__
+#endif
+#if 0
 #define __SFLS_MX25L12835F__
+#define __SFLS_MACRONIX__
+#define __SFLS_16MB__
+#endif
+#if 0
+#define __SFLS_MX25U12832F__
 #define __SFLS_MACRONIX__
 #define __SFLS_16MB__
 #endif
@@ -60,6 +70,11 @@
 #define __SFLS_IS25LP128__
 #define __SFLS_ISSI__
 #define __SFLS_16MB__
+#endif
+#if 0
+#define __SFLS_IS25LP256__
+#define __SFLS_ISSI__
+#define __SFLS_32MB__
 #endif
 
 #if 1
@@ -109,7 +124,7 @@
 #define ETHPHY_GPIO_RST	54
 #define ETHPHY_GPIO_IRQ	53
 #define ETHPHY_MDIO_ADR	1
-#if 0
+#if 1
 #define __ETHPHY_KSZ8081MNX__
 #define ETHPHY_TYPE_VAL 2
 #define ETHPHY_SPD_VAL 100
@@ -121,7 +136,7 @@
 #define ETHPHY_SPD_VAL 100
 #define ETHPHY_DUPLEX_VAL 2
 #endif // __ETHPHY_KSZ8081RNB__
-#if 1
+#if 0
 #define __ETHPHY_KSZ9031RNX__
 #define ETHPHY_TYPE_VAL 1
 #define ETHPHY_SPD_VAL 1000
@@ -165,7 +180,7 @@
 #define GPIO_LED1	7
 #endif // __USE_LED1__
 
-#if 1
+#if 0
 #define __USE_LED2__
 #define GPIO_LED2	8
 #endif // __USE_LED2__
@@ -210,5 +225,10 @@
 #define LOAD_FS_MEM 0
 #endif // LOAD_FS_MEM
 #endif // __FILESYSTEM__
+
+#if 0
+#define __IR__
+#define IR_IRQOCC_ADDR	0
+#endif // __IR__
 
 #endif // __DEV_DEVICE_H__

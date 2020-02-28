@@ -249,6 +249,7 @@ UP_SET(2, OutVSyncOfs, RP(OutVSyncOfs), , VLOCKO_IT_POS0w(UP(OutVSyncOfs)); )/* 
 UP_TITLE(MENU_OUTPUT_SET)/*--　MENU:　OUTPUT　SET　--*/\
 UP_SET(1, OutFps, OUT_FPS_DEF, , OutMode(); )/* SYSTEM ≧ OUTPUT ≧ FRAMERATE : */\
 UP_SET(1, SysFreq, UP_SYSFREQ_60, , OutMode(); )/* FREQ : 0 = 25Hz, 1 = 30Hz */\
+UP_SET(1, Cvbs, UP_ON, , Isp_Cvbs_Config(UP(Cvbs), NTSC, FREQ_27M, ISP_74M, DS_ISP_FONT_PATH, NO_VLCBIT, 0x7a, 0xe); )/* CVBS : 0 = OFF, 1 = ON */\
 UP_TITLE(AE)/*--　AE　--*/\
 UP_SET(2, AE_SHT_SLICE_LINE, UpAE_SHT_SLICE_LINE, , )/* Shutter limit to minimum (line value : spec min ~ 1123) */\
 UP_SET(1, AE_OUTDOOR_THRS_VAL, UpAE_OUTDOOR_THRS_VAL, , )/* Shutter threshold in OUTDOOR mode (ex. 1125>>3 =  375 => 1/240s) */\
@@ -363,7 +364,6 @@ UP_SET(1, CES_WDR, 20, , )/* Edge color suppression weight in WDR(0 ~ 40) */\
 UP_SET(1, CES_GAIN, 0x10, , )/* Edge color suppression normal gain (0 ~ 0x3F) */\
 UP_SET(1, CES_WGAIN, 0x20, , )/* Edge color suppression WDR gain (0 ~ 0x3F) */\
 UP_TITLE(HUEnGAIN)/*--　Hue　&　Gain　--*/\
-UP_SET(1, HueChromaMode, 1, , HueChroma(); )/* 0 = NEW, 1 = OLD */\
 UP_SET(1, Yellow_HUE_RedToGreen,  SP(Yel_RedToGrn), , HueChroma(); )/* Adjust Yellow Hue from Red to Green (0x1:Red, 0x80:Default, 0xFF:Green) */\
 UP_SET(1, Yellow_GAIN,            SP(Yel_Gain)    , , HueChroma(); )/* Adjust Yellow Gain (0 ~ 0xFF, Default:0x60) */\
 UP_SET(1, Red_HUE_YellowToBlue,   SP(Red_YelToBlu), , HueChroma(); )/* Adjust Red Hue from Yellow to Blue (0x1:Yellow, 0x80:Default, 0xFF:Blue) */\
@@ -372,22 +372,6 @@ UP_SET(1, Blue_HUE_GreenToRed,    SP(Blu_GrnToRed), , HueChroma(); )/* Adjust Bl
 UP_SET(1, Blue_GAIN,              SP(Blu_Gain)    , , HueChroma(); )/* Adjust Blue Gain (0 ~ 0xFF, Default:0x60) */\
 UP_SET(1, Green_HUE_BlueToYellow, SP(Grn_BluToYel), , HueChroma(); )/* Adjust Green Hue from Blue to Yellow (0x1:Blue, 0x80:Default, 0xFF:Yellow) */\
 UP_SET(1, Green_GAIN,             SP(Grn_Gain)    , , HueChroma(); )/* Adjust Green Gain (0 ~ 0xFF, Default:0x60) */\
-UP_SET(1, Yellow_Red_HUE_YellowToBlue,   0x80, , HueChroma(); )/* Adjust Hue of 'Yellow & Red' from Yellow to Blue (0x1:Yellow, 0x80:Default, 0xFF:Blue) */\
-UP_SET(1, Yellow_Red_HUE_RedToGreen,     0x80, , HueChroma(); )/* Adjust Hue of 'Yellow & Red' from Red to Green (0x1:Red, 0x80:Default, 0xFF:Green) */\
-UP_SET(1, Yellow_Red_GAIN_Yellow,        0x60, , HueChroma(); )/* Adjust Yellow Gain of 'Yellow & Red' (0 ~ 0xFF, Default:0x60) */\
-UP_SET(1, Yellow_Red_GAIN_Red,           0x60, , HueChroma(); )/* Adjust Red Gain of 'Yellow & Red' (0 ~ 0xFF, Default:0x60) */\
-UP_SET(1, Red_Blue_HUE_YellowToBlue,     0x80, , HueChroma(); )/* Adjust Hue of 'Red & Blue' from Yellow to Blue (0x1:Yellow, 0x80:Default, 0xFF:Blue) */\
-UP_SET(1, Red_Blue_HUE_GreenToRed,       0x80, , HueChroma(); )/* Adjust Hue of 'Red & Blue' from Green to Red (0x1:Green, 0x80:Default, 0xFF:Red) */\
-UP_SET(1, Red_Blue_GAIN_Red,             0x60, , HueChroma(); )/* Adjust Red Gain of 'Red & Blue' (0 ~ 0xFF, Default:0x60) */\
-UP_SET(1, Red_Blue_GAIN_Blue,            0x60, , HueChroma(); )/* Adjust Blue Gain of 'Red & Blue' (0 ~ 0xFF, Default:0x60) */\
-UP_SET(1, Blue_Green_HUE_BlueToYellow,   0x80, , HueChroma(); )/* Adjust Hue of 'Blue & Green' from Blue to Yellow (0x1:Blue, 0x80:Default, 0xFF:Yellow) */\
-UP_SET(1, Blue_Green_HUE_GreenToRed,     0x80, , HueChroma(); )/* Adjust Hue of 'Blue & Green' from Green to Red (0x1:Green, 0x80:Default, 0xFF:Red) */\
-UP_SET(1, Blue_Green_GAIN_Blue,          0x60, , HueChroma(); )/* Adjust Blue Gain of 'Blue & Green' (0 ~ 0xFF, Default:0x60) */\
-UP_SET(1, Blue_Green_GAIN_Green,         0x60, , HueChroma(); )/* Adjust Green Gain of 'Blue & Green' (0 ~ 0xFF, Default:0x60) */\
-UP_SET(1, Green_Yellow_HUE_BlueToYellow, 0x80, , HueChroma(); )/* Adjust Hue of 'Green & Yellow' from Blue to Yellow (0x1:Blue, 0x80:Default, 0xFF:Yellow) */\
-UP_SET(1, Green_Yellow_HUE_RedToGreen,   0x80, , HueChroma(); )/* Adjust Hue of 'Green & Yellow' from Red to Green (0x1:Red, 0x80:Default, 0xFF:Green) */\
-UP_SET(1, Green_Yellow_GAIN_Green,       0x60, , HueChroma(); )/* Adjust Green Gain of 'Green & Yellow' (0 ~ 0xFF, Default:0x60) */\
-UP_SET(1, Green_Yellow_GAIN_Yellow,      0x60, , HueChroma(); )/* Adjust Yellow Gain of 'Green & Yellow' (0 ~ 0xFF, Default:0x60) */\
 UP_TITLE(DEFOG)/*--　Defog　--*/\
 UP_SET(1, Defog, UP_OFF, , )/* DEFOG : 0 = OFF, 1 = ON */\
 UP_SET(1, DefogMode, UP_DEFOG_MANUAL, , )/* DEFOG:ON ≧ MODE : 0 = MANUAL, 1 = AUTO */\
@@ -434,6 +418,9 @@ UP_SET(1, GammaNgt, UP_GAMMA_045, , )/* GAMMA NIGHT : 0 = 0.45, 1 = 0.55, 2 = 0.
 UP_SET(1, GammaWdr, UP_GAMMA_060/*UP_GAMMA_045*/, , )/* GAMMA WDR : 0 = 0.45, 1 = 0.55, 2 = 0.65, 3 = 0.75 */\
 UP_SET(1, Flip, UP_OFF, INIT_RUN, Flip(); )/* FLIP : 0 = OFF, 1 = ON */\
 UP_SET(1, Mirror, UP_OFF, INIT_RUN, if(UP(Mirror)<2) { SensMirror(UP(Mirror)); } )/* MIRROR : 0 = OFF, 1 = ON */\
+UP_SET(2, DZoom, 10, , DZoom(); )/* Digital Zoom : 10 ~ 640 = x1.0 ~ x64.0 */\
+UP_SET(2, DZoomPosH, (RP(PO_HW)+8)>>1, , DZoom(); )/* Horizontal Position of Digital Zoom : 30 ~ 1890 (2M) */\
+UP_SET(2, DZoomPosV, RP(PO_VW)>>1, , DZoom(); )/* Vertical Position of Digital Zoom : 17 ~ 1063 (2M) */\
 UP_TITLE(MENU_PRIVACY)/*--　MENU:　PRIVACY　--*/\
 UP_SET(1, PvcOn, UP_OFF, , PrivacyBox(); )/* PRIVACY : 0 = OFF, 1 = ON */\
 UP_SET(1, PvcFormat, 1, , PrivacyBox(); )/* PRIVACY:ON ≧ MASK MODE : 0 = FILL, 1 = FORMAT */\

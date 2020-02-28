@@ -22,7 +22,7 @@
 extern BYTE MN_MXSP;
 
 #define	MN_SXSP				(MN_MXSP+12)					// sub osd x start position
-#define MN_XBAR				(MN_SXSP+3)						// sub Bar osd start position
+//#define MN_XBAR				(MN_SXSP+3)						// sub Bar osd start position
 #define MN_BAR_SIZE			7								// Bar Size, 7 or 5
 
 #define MN_XCENT        	(MN_MXSP+11)					// Osd center position
@@ -494,7 +494,7 @@ extern BYTE gbBlcOsdOn;
 
 #define DrawBar(VAL,MIN,MAX) {\
 	DispClrDec(VAL, DRAW_Y, MN_SXSP, 3);\
-	OsdDispBar(VAL, DRAW_Y, MIN, MAX);}
+	OsdDispBar(VAL, DRAW_Y, MN_SXSP+3, MIN, MAX);}
 
 
 #define OsdMenuPos(V)		OsdMenuPos##V()
@@ -597,6 +597,7 @@ menu_start:\
 			giStgPos[giLV] = giMenuDispPos - 1;\
 			OsdMenuPos(1);\
 		}\
+		/*UartTxStgLine();*/\
 		giMenuDispPos = 0;\
 		giMenuDispChg = 0;\
 		giGrayOnly = 0;\

@@ -1750,6 +1750,8 @@ void ISRT LibWdrCtrl(const UINT SMAX)
 		const int WGT = (((UINT)NTBLX-gnTblToneMapBase[MADDR-1][0])*256)/(gnTblToneMapBase[MADDR][0]-gnTblToneMapBase[MADDR-1][0]);
 		nTblToneMapCurY[i] = (((WGT*gnTblToneMapBase[MADDR][1])+((256-WGT)*gnTblToneMapBase[MADDR-1][1]))*1023)/(MAXY*256);
 
+		if(nTblToneMapCurY[i] > 0x3ff) nTblToneMapCurY[i] = 0x3ff;
+
 //			DebugDisp(1, Dec, "WGT ", 1, 24, WGT  	)
 //			DebugDisp(1, Dec, "WGT ", 1, 24, WGT  	)
 	}
@@ -1958,7 +1960,7 @@ void ISRT AeMon(const BYTE bSatOff, const BYTE bLSflag, const int iErrMgn, const
 	extern UINT gnAeFsc;
 	extern BYTE gbDssRatioLmt;
 
-	#define AE_GRAPH_SX		1200
+	#define AE_GRAPH_SX		(AWB_WIN1_HWr<<1)//(gnAeHtw-50)//1200
 	#define AE_GRAPH_SY		40
 	#define AE_GRAPH_H_BIT	8	// 2^8 = 256
 	#define AE_GRAPH_EY		(AE_GRAPH_SY+(1<<AE_GRAPH_H_BIT))
@@ -1968,68 +1970,66 @@ void ISRT AeMon(const BYTE bSatOff, const BYTE bLSflag, const int iErrMgn, const
 	#define AE_GRAPH_AGC_W	300
 	#define AE_GRAPH_DSS_W	40
 
-	#define BOX_H(ID,X,W)	gnBoxOnAeMon |= (1<<ID); BOX(ID, X, AE_GRAPH_SY, X+W, AE_GRAPH_EY)
-	#define BOX_W(ID,SY,EY)	gnBoxOnAeMon |= (1<<ID); BOX(ID, AE_GRAPH_SX, SY, wX, EY)
+	#define BOX_H(ID,X,W)	gnBoxOnAeMon |= (1<<ID); BOX(ID, (X), AE_GRAPH_SY, (X)+(W), AE_GRAPH_EY)
+	#define BOX_W(ID,SY,EY)	gnBoxOnAeMon |= (1<<ID); BOX(ID, wX, SY, AE_GRAPH_SX, EY)
 
-	static WORD wX = AE_GRAPH_SX;
+	static WORD wX = 1200;//AE_GRAPH_SX;
 
 	if((gbWdrOn==WDR_FRAME)&&(bLSflag==AeLONG)) {
 		const WORD wCurY = AE_GRAPH_EY - (iCur>>(10-AE_GRAPH_H_BIT));
-		BOX(BOX_ID_CUR_SPOT, AE_GRAPH_SX, wCurY, wX, wCurY)
+		BOX(BOX_ID_CUR_SPOT, wX, wCurY, AE_GRAPH_SX, wCurY)
 
 		const WORD wTgtYS = AE_GRAPH_EY - ((iTgt+iErrMgn)>>(10-AE_GRAPH_H_BIT));
 		const WORD wTgtYE = AE_GRAPH_EY - ((iTgt-iErrMgn)>>(10-AE_GRAPH_H_BIT));
-		BOX(BOX_ID_TGT_SPOT, AE_GRAPH_SX, wTgtYS, wX, wTgtYE)
+		BOX(BOX_ID_TGT_SPOT, wX, wTgtYS, AE_GRAPH_SX, wTgtYE)
 	}
 	else {
-		static WORD wPos = AE_GRAPH_SX;
+		static WORD wPos = 1200;//AE_GRAPH_SX;
 		/*UINT*/ gnBoxOnAeMon = 0;
 
 		wX = AE_GRAPH_SX;
 
-		if(bIrsOn) {
-			if(gbAeStg == AE_STG_IRS) wPos = wX + giIrsPos * AE_GRAPH_IRS_W / AE_IRS_STAT_Max;
-			BOX_H(BOX_ID_IRIS, wX, AE_GRAPH_IRS_W);
-			wX += AE_GRAPH_IRS_W;
-		}
-		if(bShtOn) {
-			const WORD wShtW = ((SHT_MAX - SHT_MIN) * AE_GRAPH_SHT_W) / gnAeFsc + 1;
-			if(gbAeStg == AE_STG_SHT) wPos = wX + ((giShtVal - SHT_MIN) * wShtW) / (SHT_MAX - SHT_MIN);
-			BOX_H(BOX_ID_SHT, wX, wShtW);
-			wX += wShtW;
-		}
-		if(bTgtOn) {
-
-		}
-		if(bDeblurOn) {
-			const WORD wDblW = ((SHT_DBL_MAX - SHT_MAX) * AE_GRAPH_SHT_W) / gnAeFsc + 1;
-			if(gbAeStg == AE_STG_DBL) wPos = wX + ((giShtVal - SHT_MAX) * wDblW) / (SHT_DBL_MAX - SHT_MAX);
-			BOX_H(BOX_ID_DEBLUR, wX, wDblW);
-			wX += wDblW;
+		if(bDssOn) {
+			const WORD wShtW = ((gnAeFsc - iShtMax_Agc) * AE_GRAPH_SHT_W) / gnAeFsc;
+			const WORD wDssW = (gbDssRatioLmt > 1) ? bMpDss/*UP(Dss)*/ * AE_GRAPH_DSS_W : 0 ;
+			wX -= wShtW+wDssW;
+			if(gbAeStg == AE_STG_DSS) wPos = wX + ((giShtVal>(int)gnAeFsc) ? wShtW + ((giShtVal - gnAeFsc) * wDssW) / (iShtMax_Dss - gnAeFsc) :
+																			 ((giShtVal - iShtMax_Agc) * wShtW) / (gnAeFsc - iShtMax_Agc)) ;
+			BOX_H(BOX_ID_DSS, wX, wShtW+wDssW);
 		}
 		if(bAgcOn) {
 			const WORD wAgcW = ((AGC_MAX - iAgcMin_Agc) * AE_GRAPH_AGC_W) / iAgcDevMax/*POS2AGC(AGC_POS_MAX+1)*/ + 1;
+			wX -= wAgcW;
 			if(gbAeStg == AE_STG_AGC) wPos = wX + ((giAgcVal - iAgcMin_Agc) * wAgcW) / (AGC_MAX - iAgcMin_Agc);
 			BOX_H(BOX_ID_AGC, wX, wAgcW);
 
 			extern int giPreAgcMax;
 			extern int giIspAgcMax;
 			if(giIspAgcMax) {
-				const WORD wIspAgcX = wX + ((giPreAgcMax - iAgcMin_Agc) * wAgcW) / (AGC_MAX - iAgcMin_Agc);
 				const WORD wIspAgcW = (giIspAgcMax * wAgcW) / (AGC_MAX - iAgcMin_Agc);
+				const WORD wIspAgcX = wX + ((giPreAgcMax - iAgcMin_Agc) * wAgcW) / (AGC_MAX - iAgcMin_Agc);
 				BOX_H(BOX_ID_ISP_AGC, wIspAgcX, wIspAgcW);
 			}
-
-			wX += wAgcW;
 		}
-		if(bDssOn) {
-			const WORD wShtW = ((gnAeFsc - iShtMax_Agc) * AE_GRAPH_SHT_W) / gnAeFsc;
-			const WORD wDssW = (gbDssRatioLmt > 1) ? bMpDss/*UP(Dss)*/ * AE_GRAPH_DSS_W : 0 ;
+		if(bDeblurOn) {
+			const WORD wDblW = ((SHT_DBL_MAX - SHT_MAX) * AE_GRAPH_SHT_W) / gnAeFsc + 1;
+			wX -= wDblW;
+			if(gbAeStg == AE_STG_DBL) wPos = wX + ((giShtVal - SHT_MAX) * wDblW) / (SHT_DBL_MAX - SHT_MAX);
+			BOX_H(BOX_ID_DEBLUR, wX, wDblW);
+		}
+		if(bTgtOn) {
 
-			if(gbAeStg == AE_STG_DSS) wPos = wX + ((giShtVal>(int)gnAeFsc) ? wShtW + ((giShtVal - gnAeFsc) * wDssW) / (iShtMax_Dss - gnAeFsc) :
-																			 ((giShtVal - iShtMax_Agc) * wShtW) / (gnAeFsc - iShtMax_Agc)) ;
-			BOX_H(BOX_ID_DSS, wX, wShtW+wDssW);
-			wX += wShtW+wDssW;
+		}
+		if(bShtOn) {
+			const WORD wShtW = ((SHT_MAX - SHT_MIN) * AE_GRAPH_SHT_W) / gnAeFsc + 1;
+			wX -= wShtW;
+			if(gbAeStg == AE_STG_SHT) wPos = wX + ((giShtVal - SHT_MIN) * wShtW) / (SHT_MAX - SHT_MIN);
+			BOX_H(BOX_ID_SHT, wX, wShtW);
+		}
+		if(bIrsOn) {
+			wX -= AE_GRAPH_IRS_W;
+			if(gbAeStg == AE_STG_IRS) wPos = wX + giIrsPos * AE_GRAPH_IRS_W / AE_IRS_STAT_Max;
+			BOX_H(BOX_ID_IRIS, wX, AE_GRAPH_IRS_W);
 		}
 
 		/*if(wPos)*/ BOX_H(BOX_ID_AE_POS, wPos, 0);
