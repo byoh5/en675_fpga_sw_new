@@ -451,9 +451,6 @@
 #define BT_YC_HSPIr				(ValSft_R12(_rd32(_REG_BASE_+(0x0009<<2)))&BitMask_01)
 #define BT_YC_HSPIw(val)		_wr32(_REG_BASE_+(0x0009<<2),(UINT)((_rd32(_REG_BASE_+(0x0009<<2))&(~ValSft_L12(BitMask_01)))|ValSft_L12((val)&BitMask_01)))
 
-#define RGB_MIPI_RXr			(ValSft_R11(_rd32(_REG_BASE_+(0x0009<<2)))&BitMask_00)
-#define RGB_MIPI_RXw(val)		_wr32(_REG_BASE_+(0x0009<<2),(UINT)((_rd32(_REG_BASE_+(0x0009<<2))&(~ValSft_L11(BitMask_00)))|ValSft_L11((val)&BitMask_00)))
-
 #define BT_MIPI_YCr				(ValSft_R10(_rd32(_REG_BASE_+(0x0009<<2)))&BitMask_01)
 #define BT_MIPI_YCw(val)		_wr32(_REG_BASE_+(0x0009<<2),(UINT)((_rd32(_REG_BASE_+(0x0009<<2))&(~ValSft_L10(BitMask_01)))|ValSft_L10((val)&BitMask_01)))
 
@@ -1009,9 +1006,6 @@
 #define BT2_PCK_SELr			(ValSft_R00(_rd32(_REG_BASE_+(0x0023<<2)))&BitMask_03)
 #define BT2_PCK_SELw(val)		_wr32(_REG_BASE_+(0x0023<<2),(UINT)((_rd32(_REG_BASE_+(0x0023<<2))&(~ValSft_L00(BitMask_03)))|ValSft_L00((val)&BitMask_03)))
 
-#define RDES_CK_SELr			(ValSft_R31(_rd32(_REG_BASE_+(0x0024<<2)))&BitMask_01)
-#define RDES_CK_SELw(val)		_wr32(_REG_BASE_+(0x0024<<2),(UINT)((_rd32(_REG_BASE_+(0x0024<<2))&(~ValSft_L31(BitMask_01)))|ValSft_L31((val)&BitMask_01)))
-
 #define FPCK_SELr				(ValSft_R28(_rd32(_REG_BASE_+(0x0024<<2)))&BitMask_03)
 #define FPCK_SELw(val)			_wr32(_REG_BASE_+(0x0024<<2),(UINT)((_rd32(_REG_BASE_+(0x0024<<2))&(~ValSft_L28(BitMask_03)))|ValSft_L28((val)&BitMask_03)))
 
@@ -1194,12 +1188,6 @@
 
 #define PCKO_OENr				(ValSft_R31(_rd32(_REG_BASE_+(0x0030<<2)))&BitMask_01)
 #define PCKO_OENw(val)			_wr32(_REG_BASE_+(0x0030<<2),(UINT)((_rd32(_REG_BASE_+(0x0030<<2))&(~ValSft_L31(BitMask_01)))|ValSft_L31((val)&BitMask_01)))
-
-#define SDES_PCr				(ValSft_R26(_rd32(_REG_BASE_+(0x0030<<2)))&BitMask_05)
-#define SDES_PCw(val)			_wr32(_REG_BASE_+(0x0030<<2),(UINT)((_rd32(_REG_BASE_+(0x0030<<2))&(~ValSft_L26(BitMask_05)))|ValSft_L26((val)&BitMask_05)))
-
-#define SDES_PDr				(ValSft_R21(_rd32(_REG_BASE_+(0x0030<<2)))&BitMask_05)
-#define SDES_PDw(val)			_wr32(_REG_BASE_+(0x0030<<2),(UINT)((_rd32(_REG_BASE_+(0x0030<<2))&(~ValSft_L21(BitMask_05)))|ValSft_L21((val)&BitMask_05)))
 
 #define DCKO0_OENr				(ValSft_R20(_rd32(_REG_BASE_+(0x0030<<2)))&BitMask_01)
 #define DCKO0_OENw(val)			_wr32(_REG_BASE_+(0x0030<<2),(UINT)((_rd32(_REG_BASE_+(0x0030<<2))&(~ValSft_L20(BitMask_01)))|ValSft_L20((val)&BitMask_01)))
@@ -1750,6 +1738,9 @@
 #define MIPI_CH3_BMODr			(ValSft_R00(_rd32(_REG_BASE_+(0x0067<<2)))&BitMask_03)
 #define MIPI_CH3_BMODw(val)		_wr32(_REG_BASE_+(0x0067<<2),(UINT)((_rd32(_REG_BASE_+(0x0067<<2))&(~ValSft_L00(BitMask_03)))|ValSft_L00((val)&BitMask_03)))
 
+#define MIPI_RXONr				(ValSft_R31(_rd32(_REG_BASE_+(0x0068<<2)))&BitMask_01)
+#define MIPI_RXONw(val)			_wr32(_REG_BASE_+(0x0068<<2),(UINT)((_rd32(_REG_BASE_+(0x0068<<2))&(~ValSft_L31(BitMask_01)))|ValSft_L31((val)&BitMask_01)))
+
 #define DOL_LBUFS0_ONr			(ValSft_R29(_rd32(_REG_BASE_+(0x0068<<2)))&BitMask_01)
 #define DOL_LBUFS0_ONw(val)		_wr32(_REG_BASE_+(0x0068<<2),(UINT)((_rd32(_REG_BASE_+(0x0068<<2))&(~ValSft_L29(BitMask_01)))|ValSft_L29((val)&BitMask_01)))
 
@@ -1816,32 +1807,32 @@
 #define MIPI_CH3_RYCr			(ValSft_R00(_rd32(_REG_BASE_+(0x0068<<2)))&BitMask_01)
 #define MIPI_CH3_RYCw(val)		_wr32(_REG_BASE_+(0x0068<<2),(UINT)((_rd32(_REG_BASE_+(0x0068<<2))&(~ValSft_L00(BitMask_01)))|ValSft_L00((val)&BitMask_01)))
 
-#define MIPI_CH0_HRPOSr			(ValSft_R16(_rd32(_REG_BASE_+(0x0069<<2)))&BitMask_13)
-#define MIPI_CH0_HRPOSw(val)	_wr32(_REG_BASE_+(0x0069<<2),(UINT)((_rd32(_REG_BASE_+(0x0069<<2))&(~ValSft_L16(BitMask_13)))|ValSft_L16((val)&BitMask_13)))
+#define MIPI_CH0_HRPOSr			(ValSft_R16(_rd32(_REG_BASE_+(0x0069<<2)))&BitMask_14)
+#define MIPI_CH0_HRPOSw(val)	_wr32(_REG_BASE_+(0x0069<<2),(UINT)((_rd32(_REG_BASE_+(0x0069<<2))&(~ValSft_L16(BitMask_14)))|ValSft_L16((val)&BitMask_14)))
 
-#define MIPI_CH0_VRPOSr			(ValSft_R00(_rd32(_REG_BASE_+(0x0069<<2)))&BitMask_12)
-#define MIPI_CH0_VRPOSw(val)	_wr32(_REG_BASE_+(0x0069<<2),(UINT)((_rd32(_REG_BASE_+(0x0069<<2))&(~ValSft_L00(BitMask_12)))|ValSft_L00((val)&BitMask_12)))
+#define MIPI_CH0_VRPOSr			(ValSft_R00(_rd32(_REG_BASE_+(0x0069<<2)))&BitMask_13)
+#define MIPI_CH0_VRPOSw(val)	_wr32(_REG_BASE_+(0x0069<<2),(UINT)((_rd32(_REG_BASE_+(0x0069<<2))&(~ValSft_L00(BitMask_13)))|ValSft_L00((val)&BitMask_13)))
 
-#define MIPI_CH1_HRPOSr			(ValSft_R16(_rd32(_REG_BASE_+(0x006a<<2)))&BitMask_13)
-#define MIPI_CH1_HRPOSw(val)	_wr32(_REG_BASE_+(0x006a<<2),(UINT)((_rd32(_REG_BASE_+(0x006a<<2))&(~ValSft_L16(BitMask_13)))|ValSft_L16((val)&BitMask_13)))
+#define MIPI_CH1_HRPOSr			(ValSft_R16(_rd32(_REG_BASE_+(0x006a<<2)))&BitMask_14)
+#define MIPI_CH1_HRPOSw(val)	_wr32(_REG_BASE_+(0x006a<<2),(UINT)((_rd32(_REG_BASE_+(0x006a<<2))&(~ValSft_L16(BitMask_14)))|ValSft_L16((val)&BitMask_14)))
 
-#define MIPI_CH1_VRPOSr			(ValSft_R00(_rd32(_REG_BASE_+(0x006a<<2)))&BitMask_12)
-#define MIPI_CH1_VRPOSw(val)	_wr32(_REG_BASE_+(0x006a<<2),(UINT)((_rd32(_REG_BASE_+(0x006a<<2))&(~ValSft_L00(BitMask_12)))|ValSft_L00((val)&BitMask_12)))
+#define MIPI_CH1_VRPOSr			(ValSft_R00(_rd32(_REG_BASE_+(0x006a<<2)))&BitMask_13)
+#define MIPI_CH1_VRPOSw(val)	_wr32(_REG_BASE_+(0x006a<<2),(UINT)((_rd32(_REG_BASE_+(0x006a<<2))&(~ValSft_L00(BitMask_13)))|ValSft_L00((val)&BitMask_13)))
 
-#define MIPI_CH2_HRPOSr			(ValSft_R16(_rd32(_REG_BASE_+(0x006b<<2)))&BitMask_13)
-#define MIPI_CH2_HRPOSw(val)	_wr32(_REG_BASE_+(0x006b<<2),(UINT)((_rd32(_REG_BASE_+(0x006b<<2))&(~ValSft_L16(BitMask_13)))|ValSft_L16((val)&BitMask_13)))
+#define MIPI_CH2_HRPOSr			(ValSft_R16(_rd32(_REG_BASE_+(0x006b<<2)))&BitMask_14)
+#define MIPI_CH2_HRPOSw(val)	_wr32(_REG_BASE_+(0x006b<<2),(UINT)((_rd32(_REG_BASE_+(0x006b<<2))&(~ValSft_L16(BitMask_14)))|ValSft_L16((val)&BitMask_14)))
 
-#define MIPI_CH2_VRPOSr			(ValSft_R00(_rd32(_REG_BASE_+(0x006b<<2)))&BitMask_12)
-#define MIPI_CH2_VRPOSw(val)	_wr32(_REG_BASE_+(0x006b<<2),(UINT)((_rd32(_REG_BASE_+(0x006b<<2))&(~ValSft_L00(BitMask_12)))|ValSft_L00((val)&BitMask_12)))
+#define MIPI_CH2_VRPOSr			(ValSft_R00(_rd32(_REG_BASE_+(0x006b<<2)))&BitMask_13)
+#define MIPI_CH2_VRPOSw(val)	_wr32(_REG_BASE_+(0x006b<<2),(UINT)((_rd32(_REG_BASE_+(0x006b<<2))&(~ValSft_L00(BitMask_13)))|ValSft_L00((val)&BitMask_13)))
 
-#define MIPI_CH3_HRPOSr			(ValSft_R16(_rd32(_REG_BASE_+(0x006c<<2)))&BitMask_13)
-#define MIPI_CH3_HRPOSw(val)	_wr32(_REG_BASE_+(0x006c<<2),(UINT)((_rd32(_REG_BASE_+(0x006c<<2))&(~ValSft_L16(BitMask_13)))|ValSft_L16((val)&BitMask_13)))
+#define MIPI_CH3_HRPOSr			(ValSft_R16(_rd32(_REG_BASE_+(0x006c<<2)))&BitMask_14)
+#define MIPI_CH3_HRPOSw(val)	_wr32(_REG_BASE_+(0x006c<<2),(UINT)((_rd32(_REG_BASE_+(0x006c<<2))&(~ValSft_L16(BitMask_14)))|ValSft_L16((val)&BitMask_14)))
 
-#define MIPI_CH3_VRPOSr			(ValSft_R00(_rd32(_REG_BASE_+(0x006c<<2)))&BitMask_12)
-#define MIPI_CH3_VRPOSw(val)	_wr32(_REG_BASE_+(0x006c<<2),(UINT)((_rd32(_REG_BASE_+(0x006c<<2))&(~ValSft_L00(BitMask_12)))|ValSft_L00((val)&BitMask_12)))
+#define MIPI_CH3_VRPOSr			(ValSft_R00(_rd32(_REG_BASE_+(0x006c<<2)))&BitMask_13)
+#define MIPI_CH3_VRPOSw(val)	_wr32(_REG_BASE_+(0x006c<<2),(UINT)((_rd32(_REG_BASE_+(0x006c<<2))&(~ValSft_L00(BitMask_13)))|ValSft_L00((val)&BitMask_13)))
 
-#define LCK_SONr				(ValSft_R31(_rd32(_REG_BASE_+(0x0070<<2)))&BitMask_01)
-#define LCK_SONw(val)			_wr32(_REG_BASE_+(0x0070<<2),(UINT)((_rd32(_REG_BASE_+(0x0070<<2))&(~ValSft_L31(BitMask_01)))|ValSft_L31((val)&BitMask_01)))
+#define WDR_RD_POS_AONr			(ValSft_R31(_rd32(_REG_BASE_+(0x0070<<2)))&BitMask_01)
+#define WDR_RD_POS_AONw(val)	_wr32(_REG_BASE_+(0x0070<<2),(UINT)((_rd32(_REG_BASE_+(0x0070<<2))&(~ValSft_L31(BitMask_01)))|ValSft_L31((val)&BitMask_01)))
 
 #define WDR_LE_ENr				(ValSft_R30(_rd32(_REG_BASE_+(0x0070<<2)))&BitMask_01)
 #define WDR_LE_ENw(val)			_wr32(_REG_BASE_+(0x0070<<2),(UINT)((_rd32(_REG_BASE_+(0x0070<<2))&(~ValSft_L30(BitMask_01)))|ValSft_L30((val)&BitMask_01)))
@@ -1854,12 +1845,6 @@
 
 #define WDR_DOL_VFORCEr			(ValSft_R27(_rd32(_REG_BASE_+(0x0070<<2)))&BitMask_01)
 #define WDR_DOL_VFORCEw(val)	_wr32(_REG_BASE_+(0x0070<<2),(UINT)((_rd32(_REG_BASE_+(0x0070<<2))&(~ValSft_L27(BitMask_01)))|ValSft_L27((val)&BitMask_01)))
-
-#define LSYNCM_SELr				(ValSft_R30(_rd32(_REG_BASE_+(0x0071<<2)))&BitMask_02)
-#define LSYNCM_SELw(val)		_wr32(_REG_BASE_+(0x0071<<2),(UINT)((_rd32(_REG_BASE_+(0x0071<<2))&(~ValSft_L30(BitMask_02)))|ValSft_L30((val)&BitMask_02)))
-
-#define LCK_DLYr				(ValSft_R00(_rd32(_REG_BASE_+(0x0071<<2)))&BitMask_03)
-#define LCK_DLYw(val)			_wr32(_REG_BASE_+(0x0071<<2),(UINT)((_rd32(_REG_BASE_+(0x0071<<2))&(~ValSft_L00(BitMask_03)))|ValSft_L00((val)&BitMask_03)))
 
 #define DOL_NO_BEFORE_LINE_REQr	(ValSft_R16(_rd32(_REG_BASE_+(0x0072<<2)))&BitMask_01)
 #define DOL_NO_BEFORE_LINE_REQw(val)	_wr32(_REG_BASE_+(0x0072<<2),(UINT)((_rd32(_REG_BASE_+(0x0072<<2))&(~ValSft_L16(BitMask_01)))|ValSft_L16((val)&BitMask_01)))
@@ -1876,8 +1861,65 @@
 #define VSPI_DOLr				(ValSft_R00(_rd32(_REG_BASE_+(0x0072<<2)))&BitMask_12)
 #define VSPI_DOLw(val)			_wr32(_REG_BASE_+(0x0072<<2),(UINT)((_rd32(_REG_BASE_+(0x0072<<2))&(~ValSft_L00(BitMask_12)))|ValSft_L00((val)&BitMask_12)))
 
-#define LVDS_RXONr				(ValSft_R31(_rd32(_REG_BASE_+(0x0073<<2)))&BitMask_01)
-#define LVDS_RXONw(val)			_wr32(_REG_BASE_+(0x0073<<2),(UINT)((_rd32(_REG_BASE_+(0x0073<<2))&(~ValSft_L31(BitMask_01)))|ValSft_L31((val)&BitMask_01)))
+#define MIPI_CH0_SYNC_UPr		(ValSft_R31(_rd32(_REG_BASE_+(0x0074<<2)))&BitMask_01)
+#define MIPI_CH0_SYNC_UPw(val)	_wr32(_REG_BASE_+(0x0074<<2),(UINT)((_rd32(_REG_BASE_+(0x0074<<2))&(~ValSft_L31(BitMask_01)))|ValSft_L31((val)&BitMask_01)))
+
+#define MIPI_CH0_HZr			(ValSft_R30(_rd32(_REG_BASE_+(0x0074<<2)))&BitMask_01)
+#define MIPI_CH0_HZw(val)		_wr32(_REG_BASE_+(0x0074<<2),(UINT)((_rd32(_REG_BASE_+(0x0074<<2))&(~ValSft_L30(BitMask_01)))|ValSft_L30((val)&BitMask_01)))
+
+#define MIPI_CH0_HTWOr			(ValSft_R16(_rd32(_REG_BASE_+(0x0074<<2)))&BitMask_14)
+#define MIPI_CH0_HTWOw(val)		_wr32(_REG_BASE_+(0x0074<<2),(UINT)((_rd32(_REG_BASE_+(0x0074<<2))&(~ValSft_L16(BitMask_14)))|ValSft_L16((val)&BitMask_14)))
+
+#define MIPI_CH0_SYNC_BYSr		(ValSft_R13(_rd32(_REG_BASE_+(0x0074<<2)))&BitMask_01)
+#define MIPI_CH0_SYNC_BYSw(val)	_wr32(_REG_BASE_+(0x0074<<2),(UINT)((_rd32(_REG_BASE_+(0x0074<<2))&(~ValSft_L13(BitMask_01)))|ValSft_L13((val)&BitMask_01)))
+
+#define MIPI_CH0_VTWOr			(ValSft_R00(_rd32(_REG_BASE_+(0x0074<<2)))&BitMask_13)
+#define MIPI_CH0_VTWOw(val)		_wr32(_REG_BASE_+(0x0074<<2),(UINT)((_rd32(_REG_BASE_+(0x0074<<2))&(~ValSft_L00(BitMask_13)))|ValSft_L00((val)&BitMask_13)))
+
+#define MIPI_CH1_SYNC_UPr		(ValSft_R31(_rd32(_REG_BASE_+(0x0075<<2)))&BitMask_01)
+#define MIPI_CH1_SYNC_UPw(val)	_wr32(_REG_BASE_+(0x0075<<2),(UINT)((_rd32(_REG_BASE_+(0x0075<<2))&(~ValSft_L31(BitMask_01)))|ValSft_L31((val)&BitMask_01)))
+
+#define MIPI_CH1_HZr			(ValSft_R30(_rd32(_REG_BASE_+(0x0075<<2)))&BitMask_01)
+#define MIPI_CH1_HZw(val)		_wr32(_REG_BASE_+(0x0075<<2),(UINT)((_rd32(_REG_BASE_+(0x0075<<2))&(~ValSft_L30(BitMask_01)))|ValSft_L30((val)&BitMask_01)))
+
+#define MIPI_CH1_HTWOr			(ValSft_R16(_rd32(_REG_BASE_+(0x0075<<2)))&BitMask_14)
+#define MIPI_CH1_HTWOw(val)		_wr32(_REG_BASE_+(0x0075<<2),(UINT)((_rd32(_REG_BASE_+(0x0075<<2))&(~ValSft_L16(BitMask_14)))|ValSft_L16((val)&BitMask_14)))
+
+#define MIPI_CH1_SYNC_BYSr		(ValSft_R13(_rd32(_REG_BASE_+(0x0075<<2)))&BitMask_01)
+#define MIPI_CH1_SYNC_BYSw(val)	_wr32(_REG_BASE_+(0x0075<<2),(UINT)((_rd32(_REG_BASE_+(0x0075<<2))&(~ValSft_L13(BitMask_01)))|ValSft_L13((val)&BitMask_01)))
+
+#define MIPI_CH1_VTWOr			(ValSft_R00(_rd32(_REG_BASE_+(0x0075<<2)))&BitMask_13)
+#define MIPI_CH1_VTWOw(val)		_wr32(_REG_BASE_+(0x0075<<2),(UINT)((_rd32(_REG_BASE_+(0x0075<<2))&(~ValSft_L00(BitMask_13)))|ValSft_L00((val)&BitMask_13)))
+
+#define MIPI_CH2_SYNC_UPr		(ValSft_R31(_rd32(_REG_BASE_+(0x0076<<2)))&BitMask_01)
+#define MIPI_CH2_SYNC_UPw(val)	_wr32(_REG_BASE_+(0x0076<<2),(UINT)((_rd32(_REG_BASE_+(0x0076<<2))&(~ValSft_L31(BitMask_01)))|ValSft_L31((val)&BitMask_01)))
+
+#define MIPI_CH2_HZr			(ValSft_R30(_rd32(_REG_BASE_+(0x0076<<2)))&BitMask_01)
+#define MIPI_CH2_HZw(val)		_wr32(_REG_BASE_+(0x0076<<2),(UINT)((_rd32(_REG_BASE_+(0x0076<<2))&(~ValSft_L30(BitMask_01)))|ValSft_L30((val)&BitMask_01)))
+
+#define MIPI_CH2_HTWOr			(ValSft_R16(_rd32(_REG_BASE_+(0x0076<<2)))&BitMask_14)
+#define MIPI_CH2_HTWOw(val)		_wr32(_REG_BASE_+(0x0076<<2),(UINT)((_rd32(_REG_BASE_+(0x0076<<2))&(~ValSft_L16(BitMask_14)))|ValSft_L16((val)&BitMask_14)))
+
+#define MIPI_CH2_SYNC_BYSr		(ValSft_R13(_rd32(_REG_BASE_+(0x0076<<2)))&BitMask_01)
+#define MIPI_CH2_SYNC_BYSw(val)	_wr32(_REG_BASE_+(0x0076<<2),(UINT)((_rd32(_REG_BASE_+(0x0076<<2))&(~ValSft_L13(BitMask_01)))|ValSft_L13((val)&BitMask_01)))
+
+#define MIPI_CH2_VTWOr			(ValSft_R00(_rd32(_REG_BASE_+(0x0076<<2)))&BitMask_13)
+#define MIPI_CH2_VTWOw(val)		_wr32(_REG_BASE_+(0x0076<<2),(UINT)((_rd32(_REG_BASE_+(0x0076<<2))&(~ValSft_L00(BitMask_13)))|ValSft_L00((val)&BitMask_13)))
+
+#define MIPI_CH3_SYNC_UPr		(ValSft_R31(_rd32(_REG_BASE_+(0x0077<<2)))&BitMask_01)
+#define MIPI_CH3_SYNC_UPw(val)	_wr32(_REG_BASE_+(0x0077<<2),(UINT)((_rd32(_REG_BASE_+(0x0077<<2))&(~ValSft_L31(BitMask_01)))|ValSft_L31((val)&BitMask_01)))
+
+#define MIPI_CH3_HZr			(ValSft_R30(_rd32(_REG_BASE_+(0x0077<<2)))&BitMask_01)
+#define MIPI_CH3_HZw(val)		_wr32(_REG_BASE_+(0x0077<<2),(UINT)((_rd32(_REG_BASE_+(0x0077<<2))&(~ValSft_L30(BitMask_01)))|ValSft_L30((val)&BitMask_01)))
+
+#define MIPI_CH3_HTWOr			(ValSft_R16(_rd32(_REG_BASE_+(0x0077<<2)))&BitMask_14)
+#define MIPI_CH3_HTWOw(val)		_wr32(_REG_BASE_+(0x0077<<2),(UINT)((_rd32(_REG_BASE_+(0x0077<<2))&(~ValSft_L16(BitMask_14)))|ValSft_L16((val)&BitMask_14)))
+
+#define MIPI_CH3_SYNC_BYSr		(ValSft_R13(_rd32(_REG_BASE_+(0x0077<<2)))&BitMask_01)
+#define MIPI_CH3_SYNC_BYSw(val)	_wr32(_REG_BASE_+(0x0077<<2),(UINT)((_rd32(_REG_BASE_+(0x0077<<2))&(~ValSft_L13(BitMask_01)))|ValSft_L13((val)&BitMask_01)))
+
+#define MIPI_CH3_VTWOr			(ValSft_R00(_rd32(_REG_BASE_+(0x0077<<2)))&BitMask_13)
+#define MIPI_CH3_VTWOw(val)		_wr32(_REG_BASE_+(0x0077<<2),(UINT)((_rd32(_REG_BASE_+(0x0077<<2))&(~ValSft_L00(BitMask_13)))|ValSft_L00((val)&BitMask_13)))
 
 #define SHD_MODEr				(ValSft_R30(_rd32(_REG_BASE_+(0x0080<<2)))&BitMask_02)
 #define SHD_MODEw(val)			_wr32(_REG_BASE_+(0x0080<<2),(UINT)((_rd32(_REG_BASE_+(0x0080<<2))&(~ValSft_L30(BitMask_02)))|ValSft_L30((val)&BitMask_02)))
@@ -5476,6 +5518,9 @@
 #define AXI_IDSr				(ValSft_R23(_rd32(_REG_BASE_+(0x0250<<2)))&BitMask_01)
 #define AXI_IDSw(val)			_wr32(_REG_BASE_+(0x0250<<2),(UINT)((_rd32(_REG_BASE_+(0x0250<<2))&(~ValSft_L23(BitMask_01)))|ValSft_L23((val)&BitMask_01)))
 
+#define BUS_WR_PVT_ACOLr		(ValSft_R22(_rd32(_REG_BASE_+(0x0250<<2)))&BitMask_01)
+#define BUS_WR_PVT_ACOLw(val)	_wr32(_REG_BASE_+(0x0250<<2),(UINT)((_rd32(_REG_BASE_+(0x0250<<2))&(~ValSft_L22(BitMask_01)))|ValSft_L22((val)&BitMask_01)))
+
 #define BUS_WR_RSTr				(ValSft_R00(_rd32(_REG_BASE_+(0x0250<<2)))&BitMask_20)
 #define BUS_WR_RSTw(val)		_wr32(_REG_BASE_+(0x0250<<2),(UINT)((_rd32(_REG_BASE_+(0x0250<<2))&(~ValSft_L00(BitMask_20)))|ValSft_L00((val)&BitMask_20)))
 
@@ -8710,32 +8755,38 @@
 #define MIPI_PLLPMSr			(ValSft_R00(_rd32(_REG_BASE_+(0x0475<<2)))&BitMask_19)
 #define MIPI_PLLPMSw(val)		_wr32(_REG_BASE_+(0x0475<<2),(UINT)((_rd32(_REG_BASE_+(0x0475<<2))&(~ValSft_L00(BitMask_19)))|ValSft_L00((val)&BitMask_19)))
 
-#define MIPI_M_TCLKPOSTCTLr		(ValSft_R24(_rd32(_REG_BASE_+(0x0476<<2)))&BitMask_08)
-#define MIPI_M_TCLKPOSTCTLw(val)	_wr32(_REG_BASE_+(0x0476<<2),(UINT)((_rd32(_REG_BASE_+(0x0476<<2))&(~ValSft_L24(BitMask_08)))|ValSft_L24((val)&BitMask_08)))
+#define MIPI_M_TCLKPRPRCTLr		(ValSft_R24(_rd32(_REG_BASE_+(0x0476<<2)))&BitMask_08)
+#define MIPI_M_TCLKPRPRCTLw(val)	_wr32(_REG_BASE_+(0x0476<<2),(UINT)((_rd32(_REG_BASE_+(0x0476<<2))&(~ValSft_L24(BitMask_08)))|ValSft_L24((val)&BitMask_08)))
 
-#define MIPI_M_CLKPRPRCTLr		(ValSft_R16(_rd32(_REG_BASE_+(0x0476<<2)))&BitMask_08)
-#define MIPI_M_CLKPRPRCTLw(val)	_wr32(_REG_BASE_+(0x0476<<2),(UINT)((_rd32(_REG_BASE_+(0x0476<<2))&(~ValSft_L16(BitMask_08)))|ValSft_L16((val)&BitMask_08)))
+#define MIPI_M_TCLKZEROCTLr		(ValSft_R16(_rd32(_REG_BASE_+(0x0476<<2)))&BitMask_08)
+#define MIPI_M_TCLKZEROCTLw(val)	_wr32(_REG_BASE_+(0x0476<<2),(UINT)((_rd32(_REG_BASE_+(0x0476<<2))&(~ValSft_L16(BitMask_08)))|ValSft_L16((val)&BitMask_08)))
 
-#define MIPI_M_TCLKTRAILCTLr	(ValSft_R08(_rd32(_REG_BASE_+(0x0476<<2)))&BitMask_08)
-#define MIPI_M_TCLKTRAILCTLw(val)	_wr32(_REG_BASE_+(0x0476<<2),(UINT)((_rd32(_REG_BASE_+(0x0476<<2))&(~ValSft_L08(BitMask_08)))|ValSft_L08((val)&BitMask_08)))
+#define MIPI_M_TCLKPOSTCTLr		(ValSft_R08(_rd32(_REG_BASE_+(0x0476<<2)))&BitMask_08)
+#define MIPI_M_TCLKPOSTCTLw(val)	_wr32(_REG_BASE_+(0x0476<<2),(UINT)((_rd32(_REG_BASE_+(0x0476<<2))&(~ValSft_L08(BitMask_08)))|ValSft_L08((val)&BitMask_08)))
 
-#define MIPI_M_TCLKZEROCTLr		(ValSft_R00(_rd32(_REG_BASE_+(0x0476<<2)))&BitMask_08)
-#define MIPI_M_TCLKZEROCTLw(val)	_wr32(_REG_BASE_+(0x0476<<2),(UINT)((_rd32(_REG_BASE_+(0x0476<<2))&(~ValSft_L00(BitMask_08)))|ValSft_L00((val)&BitMask_08)))
+#define MIPI_M_TCLKTRAILCTLr	(ValSft_R00(_rd32(_REG_BASE_+(0x0476<<2)))&BitMask_08)
+#define MIPI_M_TCLKTRAILCTLw(val)	_wr32(_REG_BASE_+(0x0476<<2),(UINT)((_rd32(_REG_BASE_+(0x0476<<2))&(~ValSft_L00(BitMask_08)))|ValSft_L00((val)&BitMask_08)))
 
-#define MIPI_M_THSEXITCTLr		(ValSft_R24(_rd32(_REG_BASE_+(0x0477<<2)))&BitMask_08)
-#define MIPI_M_THSEXITCTLw(val)	_wr32(_REG_BASE_+(0x0477<<2),(UINT)((_rd32(_REG_BASE_+(0x0477<<2))&(~ValSft_L24(BitMask_08)))|ValSft_L24((val)&BitMask_08)))
+#define MIPI_M_THSPRPRCTLr		(ValSft_R24(_rd32(_REG_BASE_+(0x0477<<2)))&BitMask_08)
+#define MIPI_M_THSPRPRCTLw(val)	_wr32(_REG_BASE_+(0x0477<<2),(UINT)((_rd32(_REG_BASE_+(0x0477<<2))&(~ValSft_L24(BitMask_08)))|ValSft_L24((val)&BitMask_08)))
 
-#define MIPI_M_THSPRPRCTLr		(ValSft_R16(_rd32(_REG_BASE_+(0x0477<<2)))&BitMask_08)
-#define MIPI_M_THSPRPRCTLw(val)	_wr32(_REG_BASE_+(0x0477<<2),(UINT)((_rd32(_REG_BASE_+(0x0477<<2))&(~ValSft_L16(BitMask_08)))|ValSft_L16((val)&BitMask_08)))
+#define MIPI_M_THSZEROCTLr		(ValSft_R16(_rd32(_REG_BASE_+(0x0477<<2)))&BitMask_08)
+#define MIPI_M_THSZEROCTLw(val)	_wr32(_REG_BASE_+(0x0477<<2),(UINT)((_rd32(_REG_BASE_+(0x0477<<2))&(~ValSft_L16(BitMask_08)))|ValSft_L16((val)&BitMask_08)))
 
 #define MIPI_M_THSTRAILCTLr		(ValSft_R08(_rd32(_REG_BASE_+(0x0477<<2)))&BitMask_08)
 #define MIPI_M_THSTRAILCTLw(val)	_wr32(_REG_BASE_+(0x0477<<2),(UINT)((_rd32(_REG_BASE_+(0x0477<<2))&(~ValSft_L08(BitMask_08)))|ValSft_L08((val)&BitMask_08)))
 
-#define MIPI_M_THSZEROCTLr		(ValSft_R00(_rd32(_REG_BASE_+(0x0477<<2)))&BitMask_08)
-#define MIPI_M_THSZEROCTLw(val)	_wr32(_REG_BASE_+(0x0477<<2),(UINT)((_rd32(_REG_BASE_+(0x0477<<2))&(~ValSft_L00(BitMask_08)))|ValSft_L00((val)&BitMask_08)))
+#define MIPI_M_TLPXCTLr			(ValSft_R00(_rd32(_REG_BASE_+(0x0477<<2)))&BitMask_08)
+#define MIPI_M_TLPXCTLw(val)	_wr32(_REG_BASE_+(0x0477<<2),(UINT)((_rd32(_REG_BASE_+(0x0477<<2))&(~ValSft_L00(BitMask_08)))|ValSft_L00((val)&BitMask_08)))
 
-#define MIPI_M_TLPXCTLr			(ValSft_R00(_rd32(_REG_BASE_+(0x0478<<2)))&BitMask_08)
-#define MIPI_M_TLPXCTLw(val)	_wr32(_REG_BASE_+(0x0478<<2),(UINT)((_rd32(_REG_BASE_+(0x0478<<2))&(~ValSft_L00(BitMask_08)))|ValSft_L00((val)&BitMask_08)))
+#define MIPI_M_THSEXITCTLr		(ValSft_R24(_rd32(_REG_BASE_+(0x0478<<2)))&BitMask_08)
+#define MIPI_M_THSEXITCTLw(val)	_wr32(_REG_BASE_+(0x0478<<2),(UINT)((_rd32(_REG_BASE_+(0x0478<<2))&(~ValSft_L24(BitMask_08)))|ValSft_L24((val)&BitMask_08)))
+
+#define MIPI_S_HSSETTLECTLr		(ValSft_R08(_rd32(_REG_BASE_+(0x0478<<2)))&BitMask_08)
+#define MIPI_S_HSSETTLECTLw(val)	_wr32(_REG_BASE_+(0x0478<<2),(UINT)((_rd32(_REG_BASE_+(0x0478<<2))&(~ValSft_L08(BitMask_08)))|ValSft_L08((val)&BitMask_08)))
+
+#define MIPI_S_CLKSETTLECTLr	(ValSft_R00(_rd32(_REG_BASE_+(0x0478<<2)))&BitMask_02)
+#define MIPI_S_CLKSETTLECTLw(val)	_wr32(_REG_BASE_+(0x0478<<2),(UINT)((_rd32(_REG_BASE_+(0x0478<<2))&(~ValSft_L00(BitMask_02)))|ValSft_L00((val)&BitMask_02)))
 
 #define MIPI_B_DPHYCTL_Hr		(ValSft_R00(_rd32(_REG_BASE_+(0x0479<<2)))&BitMask_32)
 #define MIPI_B_DPHYCTL_Hw(val)	_wr32(_REG_BASE_+(0x0479<<2),(UINT)((_rd32(_REG_BASE_+(0x0479<<2))&(~ValSft_L00(BitMask_32)))|ValSft_L00((val)&BitMask_32)))

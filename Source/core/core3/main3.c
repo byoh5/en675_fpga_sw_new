@@ -8,12 +8,30 @@ void IF_Funcs_Timer_irq(void *ctx)
 }
 #endif
 
+static void CPUtoISPcallback(void *ctx)
+{
+	//while (CPU_TO_ISP_MSG_MUTEX);
+
+	extern void IspMsgFnc(UINT anMsg);
+	IspMsgFnc(SHREG_CMD);
+
+	printf("CPU to ISP!(%X)\n", SHREG_CMD);
+
+	SHREG_CMD = 0;
+	CPU_TO_ISP_MSG_MUTEX = 0;
+
+	BtoAIrqCall();
+}
+
 void main_3(int cpu_id)
 {
 	SYS_REG0 = 0xf;
 	while(SYS_REG0 == 0xf) {} // Wait for CPU0 to be ready.
 
 	enx_externalirq_init_cpu3();
+
+	AtoBIrqCallback(CPUtoISPcallback, NULL);
+	AtoBSetIrqEn(ENX_ON);
 
 #if defined(__SENSOR__)
 
@@ -28,9 +46,12 @@ void main_3(int cpu_id)
 	//INSELw(0x6);
   #endif
 
-	//VIRQI_EN_Tw(1);
+  #if 0
+	VIRQI_EN_Tw(1);
 	//CLI_VLOCKI_Tw(1);		// TODO KSH> 컴파일 문제?
+  #else
 	extern UINT gnViIrqOn;
+  #endif
 
   #if 0
 	#define TIMER_IRQ_CH	0
@@ -46,19 +67,15 @@ void main_3(int cpu_id)
 	{
   #if 0
 		Wait_VLOCKO();
-
 		isp_main();
-
 		IF_Funcs();
   #else
-		if(gnViIrqOn/*ISP_RIRQ_VIr*/) {
-			//CLI_VLOCKI_Tw(1);
-			gnViIrqOn = 0;
-			isp_main();
-		}
-		else {
-			IF_Funcs();
-		}
+	#if 0
+		if(ISP_RIRQ_VIr) { CLI_VLOCKI_Tw(1); isp_main(); }
+	#else
+		if(gnViIrqOn) { gnViIrqOn = 0; isp_main(); }
+	#endif
+		else { IF_Funcs(); }
   #endif
 
 //		ddr_control();	// for DDR Test, 사용하지 않음

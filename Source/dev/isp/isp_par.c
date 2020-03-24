@@ -211,7 +211,6 @@ void UsrParCpy(BYTE *dest, BYTE *src)
 	}
 }
 
-#if 0
 BYTE UsrParSiz(const UINT anIdx)
 {
 	switch(anIdx) {
@@ -219,8 +218,9 @@ BYTE UsrParSiz(const UINT anIdx)
 		#define UP_SET(S,N,D,...)		case UPi(N): return S;
 		USR_PAR_LIST
 	}
+
+	return 0;
 }
-#endif
 
 void UsrParChgAll(void)
 {

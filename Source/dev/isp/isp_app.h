@@ -149,6 +149,8 @@ extern UINT GetByte(BYTE *apAddr, const BYTE abLen);
 extern void UsrParValid(const UINT anValid);
 extern void UsrParChg(const UINT anStrIdx);
 extern void UsrParChgEndIdx(const UINT anEndIdx);
+extern void UsrParCpy(BYTE *dest, BYTE *src);
+extern BYTE UsrParSiz(const UINT anIdx);
 extern void UsrParReset(void);
 extern void UsrParStyle(const int abStyle, const int abInit, const int abValChg);
 extern void UsrParSave(UINT anSaveOn);

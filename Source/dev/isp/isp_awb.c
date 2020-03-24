@@ -224,7 +224,6 @@ void InitAwb(void)
 void ISRT Awb(void)
 {
 	int		iDrSum=0, iDgSum=0, iDbSum=0;
-	UINT	nTcnt=0, nHold=0;
 
 	UINT	nRsum,  nGsum,  nBsum,  nRGain, nBGain, nAwbRgain, nAwbGgain, nAwbBgain;
 
@@ -276,7 +275,7 @@ void ISRT Awb(void)
 //--------------------------------------------------------------------------------------------------
 // Color Matrix control
 
-	nTcnt		= AWBL_CCT_SUM_LOCKr	;											// Total block cnt, 실제 최대 크기 : AWB_WIN1_HW * AWB_WIN1_VW / 2
+	const UINT nTcnt = AWBL_CCT_SUM_LOCKr;											// Total block cnt, 실제 최대 크기 : AWB_WIN1_HW * AWB_WIN1_VW / 2
 //	iDrSum		= AWBL_CRDR_SUM_LOCKr	;     										// CR/DR(32b sign), 실제 최대 크기 : AWB_WIN1_HW * AWB_WIN1_VW / 2 * [-1024 ~ +1023] = 0x770 * 0x850 / 2 * [-1024 ~ +1023] = -2074476544 ~ 2072450688 (32bit)
 //	iDgSum		= AWBL_CY_SUM_LOCKr		;											// CY	(31b)
 //	iDbSum		= AWBL_CBDB_SUM_LOCKr	;	     									// CB/DB(32b sign)
@@ -297,7 +296,7 @@ void ISRT Awb(void)
 	#define bInitAwb 0
 #endif
 
-	nHold = (nTcnt<(UINT)UP(AWB_TCNT_LMT))? 1 : 0;												// AWB Hold flag by block cnt.
+	UINT nHold = (nTcnt<(UINT)UP(AWB_TCNT_LMT))? 1 : 0;												// AWB Hold flag by block cnt.
 
 	if (UP(Awb)==UP_AWB_MNL){																	// Manual Matrix
 		if(UP(AwbMnl) < ARRAY_SIZE(giDbDrMnl)) {

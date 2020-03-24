@@ -18,17 +18,17 @@ void Isp_SensorRst(void)
 	INIT_DELAY(2);
 
 	//	Sensor Init
-#if model_Sens==SENS_OV2718
+  #if model_Sens==SENS_OV2718
 	PCKO_SELw(3);		//	18.5 MHz
 	INIT_DELAY(3);
 	GpioSetOut(SENSOR_RESET_GPIO_CH,0);
 	INIT_DELAY(1);
-#else
+  #else
 	GpioSetOut(SENSOR_RESET_GPIO_CH,0);
-#endif
-
+  #endif
 	INIT_DELAY(4);
 	GpioSetOut(SENSOR_RESET_GPIO_CH,1);
+
 	INIT_DELAY(1);
 }
 
@@ -266,248 +266,6 @@ void OutMode(void)
 #endif
 }
 
-#if 0
-void isp_init_test(void)
-{
-	WaitXms(2000);
-
-	#define DDR0_BASE	0x80000000
-	#define DDR1_BASE	0x90000000
-
-  #if 1
-	const UINT nHW = RP(PO_HW);
-	const UINT nVW = RP(PO_VW);
-	const UINT nHTW = RP(FR_HTW60)-2;
-	const UINT nVTW = RP(FR_VTW60)-1;
-	#define R_LTC_T	0x500
-  #elif 0
-	const UINT nHW = 416;
-	const UINT nVW = 240;
-	const UINT nHTW = 416+300;
-	const UINT nVTW = 240+32;
-	#define R_LTC_T	200
-  #else
-	const UINT nHW = 3848;
-	const UINT nVW = 2168;
-	const UINT nHTW = 4400-2;
-	const UINT nVTW = 2250-1;
-	#define R_LTC_T	0xf80
-  #endif
-	const UINT nWdrAddr = DDR1_BASE;
-	const UINT nFrc0Addr = nWdrAddr  + ((nHW*nVW*10)>>3);
-	const UINT nFrc1Addr = nFrc0Addr + ((nHW*nVW*10)>>3);
-	const UINT nDdrAddrY = nFrc1Addr + ((nHW*nVW*10)>>3);
-	const UINT nDdrAddrC = nDdrAddrY + (nHW*nVW);
-
-	// Isp_PreClk_Config(SP(PreClk), USE_FRC);
-	BT_PCK_PDw(0);
-	FPCK_PDw(0);
-	BT_PCK_SELw(ISP_CLK_74M);
-	FPCK_SELw(ISP_CLK_74M);
-	BT_PCK_PDw(1);
-	FPCK_PDw(1);
-
-	YCW_DCK2_PDw(0);
-	YCW_DCK2_SELw(ISP_CLK_74M);
-	YCW_DCK2_PDw(1);	// WDR 사용 시 필요
-
-	// Isp_PreSync_Config(0, nHTW+2, nVTW+1, SP(PreHSyncOfs), SP(PreVSyncOfs), SP(PreHsp), SP(PreVsp), nHW, nVW, SP(IsASync), SP(IsNSync), SP(PreHSyncPol), SP(PreVSyncPol));
-	PRS_HZw(1);
-
-	HSPIw(0/*SP(PreHsp)*/);
-	VSPIw(2/*SP(PreVsp)*/);	// WDR 사용 시 2 이상 설정
-	HWIw(nHW);
-	VWIw(nVW);
-
-	HTWIw(nHTW);
-	VTWIw(nVTW);
-	SLVw(0);
-
-	//VLOCKI_POSw(SP(PreVSyncOfs));
-	//HLOCKI_POSw(SP(PreHSyncOfs));
-
-	//ASYNC_ONw(SP(IsASync));
-	//VSYN_NAONw(SP(IsNSync));
-	PRS_HZw(0);
-
-	//POL_HSIw(SP(PreHSyncPol));
-	//POL_VSIw(SP(PreVSyncPol));
-
-
-	// Isp_PostClk_Config(ISP_CLK_74M);
-	PSCK_SELw(2);
-	PPCK_SELw(2);
-	FN_CK0_SELw(2);
-	PR_CK0_SELw(2);
-	PSCK_PDw(1);
-	PPCK_PDw(1);
-	PR_CK0_PDw(1);
-	FN_CK0_PDw(1);
-
-	// Isp_PostSync_Config(1, 0, nHTW+2, nVTW+1, 0x3a, 0x2, 0x6, 0x4, nHW, nVW, SP(OCSel))
-	POS_HZw(1);
-	HVWIO_SYNw(0);
-	HWO_1D_ONw(0);
-	//HSPOw(0x6);
-	//VSPOw(0x4);
-	HWOw(nHW);
-	VWOw(nVW);
-	HTWOw(nHTW);
-	VTWOw(nVTW);
-	OSYNC_MODw(1);
-	//VLOCKI2_POSw(0x2);
-	//HLOCKI2_POSw(0x3a);
-	//EXVSYNC_SELw(0);
-	//EXHSYNC_SELw(0);
-	POS_HZw(0);
-
-	Isp_Output_init();
-
-	//YC_OSELw(0x11);
-	SYNC_BYSw(1);
-	INSELw(0x3/*0x5*//*0x6*/);
-
-
-  #if 0	// ddr write test
-	YCW_CK0_SELw(2);
-	YCW_CK0_PDw(1);
-	IM_YADR0w(nDdrAddrY>>4);
-	IM_CADR0w(nDdrAddrC>>4);
-	IM_HWI0w(nHW);
-	IM_IVSEL0w(0);
-	IM_ISEL0w(0xC);
-	#define IM_GO_W	IM_GO0w(1)
-  #else
-	YCW_CK1_SELw(2);
-	YCW_CK1_PDw(1);
-	IM_YADR1_P0w(nDdrAddrY>>4);
-	IM_CADR1_P0w(nDdrAddrC>>4);
-	IM_HWI1w(nHW);
-	IM_IVSEL1w(0);
-	IM_ISEL1w(0xC);
-	#define IM_GO_W	IM_GO1w(1)
-  #endif
-
-	IM_GO_W;
-
-	// Isp_Dnr3d_Config(FN_ON, 0x80, 0x40, 0x20);
-	DNR3D_FKw(0x80);
-	DNR3D_THw(0x40);
-	DNR3D_GAw(0x20);
-
-	DNR3D_RCH_ENw(1);
-	YCR_CK4_PDw(0);
-	YCRCK4_SELw(ISP_CLK_74M);
-	YCR_CK4_PDw(1);
-	DNR3D_ONw(1);
-
-	// WDR 설정
-	WDR_CSELw(1);
-	WDR_LGAINw(0x100);
-	WDR_STEPw(4);
-
-	ACE_DTHw(0x7);
-	ACE_TH1w(0);
-	ACE_TH2w(0);
-	ACE_GMGNw(0);
-	HEQ_WGw(1);
-
-	WDR_GAINw(0x2008);
-	WDR_SGAINw(0x200);
-	//WDR_SGAIN2w(0);
-
-	/*WDR_LCLIPRw(0x2a7);
-	WDR_LCLIPGw(0x3ff);
-	WDR_LCLIPBw(0x221);
-	WDR_SCLIPRw(0x2a7);
-	WDR_SCLIPGw(0x3ff);
-	WDR_SCLIPBw(0x221);*/
-
-	// WDR GAMMA 설정 생략
-	// TMG_TBL 설정 생략
-
-
-	// Isp_DDR_init();
-	WDR_ADR_LEw(nWdrAddr>>4);
-	FRC_ADR0w(nFrc0Addr>>4);
-	FRC_ADR1w(nFrc1Addr>>4);
-
-	RD_MODw(0);
-	AXI_IDSw(0);
-
-	DDR_RDNR_LTCw(R_LTC_T);
-	DDR_RWDR_LTCw(R_LTC_T);
-	DDR_RFRC_LTCw(R_LTC_T);
-	DDR_RYC_LTCw(R_LTC_T);
-	DDR_RENC_LTCw(0x300);	// ENC 는 고정
-
-	SD_MODw(0);			// DDR OFF
-
-	VIRQO_EN_Tw(1);
-
-  #if 0
-	//UartTxStr("★Wait...");
-	//INIT_DELAY(1);
-	//for(volatile int i=0;i<CPU_FREQ;i++) { __asm("C.NOP"); }	// 1 cycle = 15 clock = 15/CPU_FREQ sec,  컴파일 옵션 : -O0
-	for(volatile int i=0;i<2;i++) {
-		while(!(ISP_RIRQ_VOr&0x1));
-		CLI_VLOCKO_Tw(1);
-		IM_GO_W;
-	}
-	//UartTxStr("★Run !!!");
-  #endif
-
-	CPU_FRC_ENw(1);		// DDR OFF,  SD_MODw(0) 이후 1 VLOCK Delay 후 설정해야 함!!!
-	BUS_RD_RSTw(1);
-
-
-	//INIT_DELAY(10);
-
-  #if 1		// WDR ON
-	DOL_LBUFS0_ONw(1);
-	WDR_ONw(1);
-	TMG_ONw(1);
-  #endif
-
-	B30_VSPw(4);
-	B30_HSPw(40);
-	int i=1;
-	char bStr[3];
-
-	while (1)
-	{
-		while(!(ISP_RIRQ_VOr&0x1));
-		CLI_VLOCKO_Tw(1);
-		/*if(i<100)*/ {
-			const UINT nDdrY = nDdrAddrY + (nHW * B30_VSPr) + B30_HSPr;
-			hwflush_dcache_range(nDdrY, 64);
-			//_printf("%2d: %8X %8X %8X %8X\r\n", i++, *pnDdrY, *(pnDdrY+1), *(pnDdrY+2), *(pnDdrY+3));
-
-			BYTE* pbDdrY = (BYTE*)((LONG)nDdrY);
-
-			#define DISP_BYTE_SIZE	16
-
-			UartTx(DEBUG_UART_NUM, 0x02);
-			UartTx(DEBUG_UART_NUM, 0xb0);
-			UartTx(DEBUG_UART_NUM, 3*DISP_BYTE_SIZE+2);
-			for(i=0;i<DISP_BYTE_SIZE;i++) {
-				uint2strh(bStr, *pbDdrY++, 2);
-				UartTx(DEBUG_UART_NUM, bStr[0]);
-				UartTx(DEBUG_UART_NUM, bStr[1]);
-				UartTx(DEBUG_UART_NUM, ' ');
-			}
-			UartTx(DEBUG_UART_NUM, '\r');
-			UartTx(DEBUG_UART_NUM, '\n');
-			UartTx(DEBUG_UART_NUM, 0x03);
-		}
-		IM_GO_W;
-
-		WaitXms(60);
-		Comm();
-	}
-}
-#endif
-
 void Isp_init(void)
 {	// The execution order of the functions is important !!!
 	InitDataSet();				// Data setting for initialization
@@ -620,6 +378,36 @@ void isp_LedCtrl(void)
 }
 #endif
 
+void IspMsgFnc(UINT anMsg)
+{
+	int i;
+	const WORD wAdr = anMsg>>16;
+	const WORD wDat = anMsg&0xFFFF;
+	BYTE *dest = (BYTE*)ISP_MSG_AREA;
+
+	switch(anMsg) {
+		case 0x40000001 :
+			break;
+		case 0x40000003 : {
+				__attribute__((__aligned__(4))) BYTE tmp[USR_PAR_EA];
+				for(i=0; i<UPsti(ISP_BINARY_INFO); i++) tmp[i] = gbUsrParTbl[i];
+				for(   ; i<USR_PAR_EA            ; i++) tmp[i] = *(dest+UPtoMSG(i));
+				UsrParCpy(gbUsrParTbl, tmp);
+			}
+			break;
+		default :
+			if(UPtoMSG(UPstinv(ISP_BINARY_INFO)) < wAdr && wAdr < UPtoMSG(USR_PAR_EA)) {
+				//hwflush_dcache_range(dest, (UPtoMSG(USR_PAR_EA)+63)&~3);
+				//SetByte(dest+wAdr, UsrParSiz(MSGtoUP(wAdr)), wDat);
+				SetByte(gbUsrParTbl+MSGtoUP(wAdr), UsrParSiz(MSGtoUP(wAdr)), wDat);
+				UsrParChg(MSGtoUP(wAdr));
+			}
+	}
+
+	//UsrParCpy(dest, gbUsrParTbl);
+	for(i=2; i<UPtoMSG(USR_PAR_EA); i++) *(dest+i) = gbUsrParTbl[MSGtoUP(i)];
+}
+
 void IF_Funcs(void)
 {
 	const ULONG IspIfTimeSta = rdcycle();
@@ -630,6 +418,7 @@ void IF_Funcs(void)
 		isp_DispTime();
 		isp_DispLogo();
 		//isp_LedCtrl();
+
 		//DebugDisp2(1, Dec, "UPTEST0", 25, 0, gbUsrParTbl[UPi(LckDly)], 4)
 		//DebugDisp2(1, Dec, "UPTEST1", 26, 0, UpList->LckDly, 4)
 		//DebugDisp2(1, Dec, "UPTEST2", 27, 0, UpListEx->Sensor.LckDly, 4)
@@ -648,6 +437,9 @@ void IF_Funcs(void)
 		DebugDisp2(1, Dec, "UPTEST0", 25, 0, gbMnImdCfg(3)->bSizY, 4)
 		DebugDisp2(1, Dec, "UPTEST1", 26, 0, UpList->IMD3.bSizY, 4)
 		DebugDisp2(1, Dec, "UPTEST2", 27, 0, UpListEx->IMD3.bSizY, 4)
+
+		//hwflush_dcache_range(&((UP_LIST_EX*)UPtoMSG(ISP_MSG_AREA))->IMD3.bSizY, 64);
+		DebugDisp2(1, Dec, "UPTEST3", 28, 0, ((UP_LIST_EX*)UPtoMSG(ISP_MSG_AREA))->IMD3.bSizY, 4)
 
 #if 0	// ddr write test
 		const int iX = B30_HSPr;
@@ -766,3 +558,4 @@ void isp_main(void)
 }
 
 #endif
+

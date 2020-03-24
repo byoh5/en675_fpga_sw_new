@@ -464,14 +464,10 @@ void InitAe(void)
 	AE4_SLICE0w(0x0);
 	AE4_CLIP0w(0x3ff);
 
-#if WDR_OLD == 1
-	WDR_MOTION_ONw(0/*UP(AE_WDR_MOTION_SEL)*/);		// 150615 LH
-#else
 	//RGB_WGEN_RB_INVw(1);
 	WDR_CSELw(1);
 	WDR_LGAINw(0x100);
 	WDR_STEPw(4);
-#endif
 
 #if (model_Iris==4)
 
@@ -728,12 +724,12 @@ int ISRT TgtMaxGet(const BYTE abWdrOn, const UINT anLSflag)
 	if(abWdrOn) {
 		if(anLSflag==AeSHORT) {
 //			iTgtOut = (AE_WDR_LTGT_GAIN * UP(Brightness)) + UP(AE_WDR_LTGT_OFST);
-			iTgtOut = (AE_WDR_LTGT_GAIN * UP(Brightness)) + ((UP(AE_WDR_STYLE_SEL)==0)? UP(AE_WDR_LTGT_OFST) : UP(AE_WDR_LTGT_OFST2)) ; // 150802
+			iTgtOut = (AE_WDR_LTGT_GAIN * UP(Brightness)) + (/*(UP(AE_WDR_STYLE_SEL)==0)? UP(AE_WDR_LTGT_OFST) :*/ UP(AE_WDR_LTGT_OFST2)) ; // 150802
 //			iTgtOut = (AE_WDR_LTGT_GAIN * UP(Brightness)) + UP(AE_WDR_LTGT_OFST2) + (int)(0x10*((int)UP(WdrWgt)-3));	// 150802
 		}
 		else {
 //			iTgtOut = (AE_WDR_STGT_GAIN * UP(Brightness)) + UP(AE_WDR_STGT_OFST);
-			iTgtOut = (AE_WDR_STGT_GAIN * UP(Brightness)) + ((UP(AE_WDR_STYLE_SEL)==0)? UP(AE_WDR_STGT_OFST) : (UP(AE_WDR_STGT_OFST2)<<2)) ; // 150802 : if want preserve Short DR
+			iTgtOut = (AE_WDR_STGT_GAIN * UP(Brightness)) + (/*(UP(AE_WDR_STYLE_SEL)==0)? UP(AE_WDR_STGT_OFST) :*/ (UP(AE_WDR_STGT_OFST2)<<2)) ; // 150802 : if want preserve Short DR
 //			iTgtOut = (AE_WDR_STGT_GAIN * UP(Brightness)) + UP(AE_WDR_STGT_OFST) + (int)(0x30*((int)UP(WdrWgt)-3));	// 150802 : if want preserve Short contrast
 		}
 	}
@@ -952,12 +948,12 @@ int ISRT WdrCtrl(void)
 
 		if((gbWdrOn!=WDR_FRAME)||(gnLSflag==AeSHORT))
 		{
-			const UINT anWeight = (gbWdrOn==WDR_FRAME) ? (UP(WdrWgt)==UP_3sLOW) ? 0x100 :
-														 (UP(WdrWgt)==UP_3sMID) ? 0x200 :
-																				  0x400 :
-														 (UP(WdrWgt)==UP_3sLOW) ? 0x80  :
-														 (UP(WdrWgt)==UP_3sMID) ? 0x180 :
-																				  0x500 ;
+			const UINT anWeight = (gbWdrOn==WDR_FRAME) ? (UP(WdrWgt)==UP_3sLOW) ? ((0x100*UP(AE_WDR_SWGT_L))>>7) :
+														 (UP(WdrWgt)==UP_3sMID) ? ((0x200*UP(AE_WDR_SWGT_M))>>7) :
+																				  ((0x400*UP(AE_WDR_SWGT_H))>>7) :
+														 (UP(WdrWgt)==UP_3sLOW) ? ((0x80 *UP(AE_WDR_SWGT_L))>>7) :
+														 (UP(WdrWgt)==UP_3sMID) ? ((0x180*UP(AE_WDR_SWGT_M))>>7) :
+																				  ((0x500*UP(AE_WDR_SWGT_H))>>7) ;
 
 //			iWdrGainS1 = (giSht_L*256)/giSht_S;			// WDR S1 gain = (Long * 256)/Short
 //			iWdrGain   = ((0x3fffff*256)/((0x3ff*giSht_L)/giSht_S));		// WDR last gain

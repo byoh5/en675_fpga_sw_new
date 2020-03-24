@@ -179,13 +179,13 @@ void ISRT Gamma(void) // 180320 LWH
 	static BYTE bWdrOnBuf = 0xAA, bMpGammaBuf = 0xAA, bMpMinGammaYBuf = 0xAA;
 	static BYTE bMpGammaDayBuf = 0xAA, bMpGammaNgtBuf = 0xAA, bMpGammaWdrBuf = 0xAA;
 	static WORD wWdrGmkBuf = 0xFFFF;
-	static BYTE bUpAE_WDR_STYLE_SEL = 0xAA;
+	//static BYTE bUpAE_WDR_STYLE_SEL = 0xAA;
 
 	const BYTE bMpGamma = (gbWdrOn!=WDR_OFF) ? UP(GammaWdr) : UP(Gamma);	// TODO KSH ◆ WDR - Gamma()에서 Line WDR 설정을 Frame WDR로 하는게 더 좋은지 확인 필요
 
 	const BYTE bAutoGammaOff = (UP(GammaDay) <= UP(GammaNgt)) || (UP(GammaDay) == 0) || (bMpGamma != UP_GAMMA_AUTO);
 
-	gbGamma_Excute = (bUpAE_WDR_STYLE_SEL != UP(AE_WDR_STYLE_SEL)) || (bMpGammaWdrBuf != UP(GammaWdr)) || (bMpGammaDayBuf != UP(GammaDay)) || (bMpGammaNgtBuf != UP(GammaNgt)) || (!bAutoGammaOff) || (bWdrOnBuf != gbWdrOn) || (bMpGammaBuf != UP(Gamma)) || (wWdrGmkBuf != gwWdrGmk) || (bMpMinGammaYBuf != UP(MinGammaY)) || ((!AE_SAT_OFF)&&UP(MinGammaY)) ; // When the WDR or Gamma setting changed
+	gbGamma_Excute = /*(bUpAE_WDR_STYLE_SEL != UP(AE_WDR_STYLE_SEL)) ||*/ (bMpGammaWdrBuf != UP(GammaWdr)) || (bMpGammaDayBuf != UP(GammaDay)) || (bMpGammaNgtBuf != UP(GammaNgt)) || (!bAutoGammaOff) || (bWdrOnBuf != gbWdrOn) || (bMpGammaBuf != UP(Gamma)) || (wWdrGmkBuf != gwWdrGmk) || (bMpMinGammaYBuf != UP(MinGammaY)) || ((!AE_SAT_OFF)&&UP(MinGammaY)) ; // When the WDR or Gamma setting changed
 
 	if(gbGamma_Excute)
 	{
@@ -195,11 +195,13 @@ void ISRT Gamma(void) // 180320 LWH
 		if((gbWdrOn!=WDR_OFF) && (bMpGamma >= UP_GAMMA_WDR)) { // WDR Gamma
 			const UINT nWdrGmk = gwWdrGmk>>4;
 
+#if 0
 			if (UP(AE_WDR_STYLE_SEL)==0) {	// 141209
 				for (i=0; i<9; i++) SetIsp(YGAMMA_BASE+i, GetGamma(*(gnTblGamma_OY0+i), *(gnTblGamma_WY0+i), nWdrGmk));	// y gamma exchange
 				for (i=0; i<9; i++) SetIsp(CGAMMA_BASE+i, GetGamma(*(gnTblGamma_OC0+i), *(gnTblGamma_WY0+i), nWdrGmk));	// c gamma exchange
-			}
-			else {
+			} else
+#endif
+			{
 				for (i=0; i<9; i++) SetIsp(YGAMMA_BASE+i, GetGamma(*(gnTblGamma_OY0+i), *(gnTblGamma_WY1+i), nWdrGmk));	// y gamma exchange		// 150802
 				for (i=0; i<9; i++) SetIsp(CGAMMA_BASE+i, GetGamma(*(gnTblGamma_OC0+i), *(gnTblGamma_WC1+i), nWdrGmk));	// c gamma exchange		// 151118
 			}
@@ -291,7 +293,7 @@ void ISRT Gamma(void) // 180320 LWH
 	bMpGammaDayBuf = UP(GammaDay);
 	bMpGammaNgtBuf = UP(GammaNgt);
 	bMpGammaWdrBuf = UP(GammaWdr);
-	bUpAE_WDR_STYLE_SEL = UP(AE_WDR_STYLE_SEL);
+	//bUpAE_WDR_STYLE_SEL = UP(AE_WDR_STYLE_SEL);
 
 	//GrpAe(GA_ERR_DAY) = YGMY_01r;
 

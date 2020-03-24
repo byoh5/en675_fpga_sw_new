@@ -27,21 +27,21 @@ void Isp_SYNC_CODE(WORD awC0, WORD awC1, WORD awC2, WORD awC3_0, WORD awC3_1, WO
 void Isp_SDesPowerOn(BOOL OnOff, BOOL IsMipi, BYTE MipiClkPhase)
 {
 	if(OnOff) {
-		SDES_PDw(0x00);
-		if(IsMipi)	{	RDES_CK_SELw(1);	LSYNCM_SELw(MipiClkPhase);	LVDS_RXONw(0);	}
-		else		{	RDES_CK_SELw(0);	LVDS_RXONw(1);	}
+//		SDES_PDw(0x00);
+//		if(IsMipi)	{	RDES_CK_SELw(1);	LSYNCM_SELw(MipiClkPhase);	LVDS_RXONw(0);	}
+//		else		{	RDES_CK_SELw(0);	LVDS_RXONw(1);	}
 		CH_DSELw(0);
 		CH_HSSELw(0);
 		CH_VSSELw(0);
-		LCK_SONw(1);
+//		LCK_SONw(1);
 	}
 	else {
-		SDES_PDw(0x1f);
-		LVDS_RXONw(0);
+//		SDES_PDw(0x1f);
+//		LVDS_RXONw(0);
 		CH_DSELw(1);
 		CH_HSSELw(1);
 		CH_VSSELw(1);
-		LCK_SONw(0);
+//		LCK_SONw(0);
 	}
 }
 

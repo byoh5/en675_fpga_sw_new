@@ -309,6 +309,14 @@ enum {
 #define CPU3_MSG_MUTEX	SYS_MUTEX3
 #define CPU3_MSG_FLAG	SYS_REG3
 
+#define CPU_TO_ISP_MSG_MUTEX	SYS_MUTEX4
+#define SHREG_CMD				SYS_REG4
+#define SHREG_ADR				SYS_REG5
+#define SHREG_RSP				SYS_REG6
+
+#if 0
+SYS_REG7
+#endif
 
 //******************************************************************************
 // IRQ define
@@ -1026,6 +1034,18 @@ USR_PAR_LIST
 
 #define UPinv(N)			(UPi(N)+UPs(N)-1)
 
+#define UPsti(N)			(N##_UP_START+1)
+#define UPstinv(N)			(N##_UP_START+sizeof(UP_##N))
+
+#if 1	// 사용 시 IspMsgFnc()에서 UsrParCpy()사용 불가
+	#define UPtoMSG(A)		((A)-(UPsti(ISP_BINARY_INFO)-2))
+	#define MSGtoUP(A)		((A)+(UPsti(ISP_BINARY_INFO)-2))
+#else
+	#define UPtoMSG(A)		(A)
+	#define MSGtoUP(A)		(A)
+#endif
+
+#define ISP_MSG_AREA		((ULONG)(IM_YADR2_P0r<<4)/*0x89800000*/)
 
 //------------------------------------------------------------------------------
 #define PAR_IDX1(N,...)		UPi(N),

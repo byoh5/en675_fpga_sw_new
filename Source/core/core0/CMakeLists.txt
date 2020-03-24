@@ -30,6 +30,7 @@ SET ( CORE0_HDRS
 	task/shell/shell_cmd_uart.h
 	task/shell/shell_cmd_spi.h
 	task/shell/shell_cmd_i2c.h
+	task/shell/shell_cmd_isp.h
 	task/shell/shell_cmd_util.h
 	task/ledblink/ledblink.h
 	task/sdcard/sdcard.h
@@ -89,6 +90,7 @@ SET ( CORE0_SRCS
 	task/shell/shell_cmd_uart.c
 	task/shell/shell_cmd_spi.c
 	task/shell/shell_cmd_i2c.c
+	task/shell/shell_cmd_isp.c
 	task/shell/shell_cmd_util.c
 	task/ledblink/ledblink.c
 	task/sdcard/sdcard.c

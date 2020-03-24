@@ -341,6 +341,7 @@ void menu_out(const int aiClearFinger/*const PEXCH* Title*/)
 	}
 }
 
+#if 0
 void UartTxStgLine(void)
 {
 	int i;
@@ -360,17 +361,18 @@ void UartTxStgLine(void)
 		UartTxFnc(bStr[1]);
 		UartTxFnc(' ');
 	}
-#if 0
+  #if 0
 	extern int giGrayOnly;
 	int2str(bStr, giGrayOnly, 2, 1);
 	UartTxFnc(bStr[0]);
 	UartTxFnc(bStr[1]);
 	UartTxFnc(' ');
-#endif
+  #endif
 	UartTxFnc('\r');
 	UartTxFnc('\n');
 	UartTxFnc(0x03);
 }
+#endif
 
 void menu_sta(const int aiOn)
 {
@@ -856,12 +858,12 @@ void Menu(void)
 	// MENU - EXPOSURE - BRIGHTNESS
 	MENU_SET( 3, BRIGHTNESS, DEV_ON,
 			DAY,			//MENU_BARn(UP_ON, , UP(Brightness), 0, 20, 1),
-							menu_bar(UP_ON, &UP(Brightness), 1, 0, 20, 1, _S(), 0);
+							MENU_DEC(UP_ON, UP(Brightness), 0, 20, 1,)
 							SETFONTID(DRAW_Y, MN_SXSP+3, ':');
 							DispClrDec(TgtMaxGet(0,0), DRAW_Y, MN_SXSP+5, 3);
 							MENU_CODE(if_KEY_LR(MENU_REDRAW())),
 			NIGHT,			//MENU_BARn(UP_ON, , UP(BrightnessMin), 0, 20, 1),
-							menu_bar(UP_ON, &UP(BrightnessMin), 1, 0, 20, 1, _S(), 0);
+							MENU_DEC(UP_ON, UP(BrightnessMin), 0, 20, 1,)
 							SETFONTID(DRAW_Y, MN_SXSP+3, ':');
 							DispClrDec(TgtMinGet(TgtMaxGet(0,0), UP(BrightnessMin)), DRAW_Y, MN_SXSP+5, 3);
 							MENU_CODE(if_KEY_LR(MENU_REDRAW())),
@@ -887,16 +889,16 @@ void Menu(void)
 
 	// MENU - EXPOSURE - AE_SPEED
 	MENU_SET( 9, AE_SPEED, UP_ON,
+			IRIS_SPEED,		MENU_BARn(UP_ON, , UP(IrsSpeed), 0, 20, 1),
 			SHTp_SPEED,		MENU_BARn(UP_ON, , UP(ShtSpeed), 1, 20, 1),
 			AGC_SPEED,		MENU_BARn(UP_ON, , UP(AgcSpeed), 1, 20, 1),
-			IRIS_SPEED,		MENU_BARn(UP_ON, , UP(IrsSpeed), 0, 20, 1),
 
-			SHTp_OPEN,		MENU_BARn(UP_ON, , UP(ShtBrtSpeed), 0, 999, 1),
-			SHTp_CLOSE,		MENU_BARn(UP_ON, , UP(ShtDrkSpeed), 0, 999, 1),
-			AGC_OPEN,		MENU_BARn(UP_ON, , UP(AgcBrtSpeed), 0, 999, 1),
-			AGC_CLOSE,		MENU_BARn(UP_ON, , UP(AgcDrkSpeed), 0, 999, 1),
+			SHTp_OPEN,		MENU_BARn(DEV_ON, , UP(ShtBrtSpeed), 0, 999, 1),
+			SHTp_CLOSE,		MENU_BARn(DEV_ON, , UP(ShtDrkSpeed), 0, 999, 1),
+			AGC_OPEN,		MENU_BARn(DEV_ON, , UP(AgcBrtSpeed), 0, 999, 1),
+			AGC_CLOSE,		MENU_BARn(DEV_ON, , UP(AgcDrkSpeed), 0, 999, 1),
 
-			STABILIZING,	MENU_STRn(UP_ON, , UP(SmallSpeed), 3, LOW, MIDDLE, HIGH),
+			STABILIZING,	MENU_STRn(DEV_ON, , UP(SmallSpeed), 3, LOW, MIDDLE, HIGH),
 
 			RETURN,			MENU_ONEo(UP_ON, e, UP_ON, ))
 
@@ -909,7 +911,7 @@ void Menu(void)
 
 
 	#define MENU_STR_SHUTTER_SPEED(MENU_ON,V,CODE) \
-				menu_bar(MENU_ON, &(V), 1, 0, 10, 1, _S(), 0);\
+				MENU_DEC(MENU_ON, V, 0, 10, 1,)\
 				/*SETFONTID(DRAW_Y, MN_SXSP  , '1');  SETFONTID(DRAW_Y, MN_SXSP+1, '/');*/\
 				/*DispClrDec(FPS_VDI * ((V)?2<<((V)-1):1), DRAW_Y, MN_SXSP+2, 5);*/\
 				gbStr[0] = '1';  gbStr[1] = '/';\
@@ -992,12 +994,12 @@ void Menu(void)
 			HSUP_ON,		MENU_STRn(UP_ON, , UP(HSUP_ON), 2, OFF, ON),
 			HSUP_TH,		MENU_BARn(UP_ON, , UP(HSUP_TH), 0, 255, 1 ),
 
-			LSUP_ON,		MENU_STRn(UP_ON, , UP(LSUP_ON), 2, OFF, ON),
-
 			ESUP_W_NOR,		MENU_BARn(UP_ON, , UP(CES_NOR), 0, 40, 1 ),
 			ESUP_W_WDR,		MENU_BARn(UP_ON, , UP(CES_WDR), 0, 40, 1 ),
 			//ESUP_G_NOR,		MENU_BARn(UP_ON, , UP(CES_GAIN), 0, 0x3F, 1 ),
 			//ESUP_G_WDR,		MENU_BARn(UP_ON, , UP(CES_WGAIN), 0, 0x3F, 1 ),
+
+			LSUP_ON,		MENU_STRn(UP_ON, , UP(LSUP_ON), 2, OFF, ON),
 
 			REDp_BY_AGC,	MENU_ONEi(UP_ON, e, UP_ON, REDUCE_BY_AGC, ),
 			RETURN,			MENU_ONEo(UP_ON, e, UP_ON, ))
@@ -1200,7 +1202,7 @@ void Menu(void)
 			PAR_VAL,		menu_bar(UP_ON, (gbUsrParTbl+UPi(UpPAR00)+(gbMnParNum<<2)), 4, 0, 0xFFFFFFFF, 1, _S(), gbMnParType);  MENU_DISABLE(UP_ON)  MENU_CODE( ),
 		#endif
 			PAR_TYPE,		MENU_STRn(UP_ON, if_KEY_LR(MENU_REDRAW()), gbMnParType, 2, DEC, HEX),
-			FONT_TEST,		menu_bar(UP_ON, &gwFontTest, sizeof(gwFontTest), 0, ISP_FONT_CHAR_EA-1, 1, _S(), 0); SETFONTID(DRAW_Y, MN_SXSP+4, ':'); SETFONTID(DRAW_Y, MN_SXSP+6, '\''); SETFONTID(DRAW_Y, MN_SXSP+7, gwFontTest); SETFONTID(DRAW_Y, MN_SXSP+8, '\''); ,	// TODO KSH> Font Test Menu
+			FONT_TEST,		MENU_DEC(UP_ON, gwFontTest, 0, ISP_FONT_CHAR_EA-1, 1,)    SETFONTID(DRAW_Y, MN_SXSP+4, ':'); SETFONTID(DRAW_Y, MN_SXSP+6, '\''); SETFONTID(DRAW_Y, MN_SXSP+7, gwFontTest); SETFONTID(DRAW_Y, MN_SXSP+8, '\''); ,	// TODO KSH> Font Test Menu
 			nEXIT,			MENU_STRo(UP_ON, UP_ON, UsrParSave(gbMnExit==0); gbMnExit = 0;, , gbMnExit, 2, SAVEe, CANCELe))
 
 

@@ -24,6 +24,7 @@
 #include "shell_cmd_uart.h"
 #include "shell_cmd_spi.h"
 #include "shell_cmd_i2c.h"
+#include "shell_cmd_isp.h"
 #include "shell_cmd_util.h"
 #include "string.h"
 
@@ -188,6 +189,7 @@ tMonCmd gCmdList[] =
 #endif
 	{"video",		cmd_test_video,		sTestVideoCmd	},
 	{"jpeg",		cmd_test_jpeg,		sTestJpegCmd	},
+	{"isp",			cmd_isp,			sIspCmd			},
 	{0,				0,					0				}
 };
 

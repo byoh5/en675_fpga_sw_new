@@ -268,6 +268,10 @@ void enx_peri_init(void)
 	EthInit();
 	MdioInit(MDIO_SPEED);
 #endif
+
+	extern void ISPtoCPUcallback(void *ctx);
+	BtoAIrqCallback(ISPtoCPUcallback, NULL);
+	BtoASetIrqEn(ENX_ON);
 }
 
 void enx_sys_init(void)

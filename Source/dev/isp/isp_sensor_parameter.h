@@ -281,7 +281,7 @@ RP_SET(FONT_OFY,	  0x36,    0xf,    0xf,   0x30,      0)	// Font Vertical Positi
 
 //------------------------------------------------------------------------------
 // ISP Function define
-#define IspSensorPowerOn()		Isp_SensorPowerOn(FN_ON,SP(SensorClk))
+#define IspSensorPowerOn()		Isp_SensorPowerOn(FN_ON, SP(SensorClk))
 
 #define IspSDesPowerOn()		Isp_SDesPowerOn(model_Sens_Intf>0, model_Sens_Intf==2, UP(MipiClkPhase))
 

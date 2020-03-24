@@ -1657,6 +1657,7 @@ void enx_externalirq_init_cpu0(void)
 	enx_externalirq_perl(eigiASE, ENX_ON, 0);							// Enable AES Interrupts
 	enx_externalirq_perl(eigiSHA, ENX_ON, 0);							// Enable SHA Interrupts
 	enx_externalirq_perl(eigiOIC, ENX_ON, 0);							// Enable OIC Interrupts
+	enx_externalirq_perl(eigiBTOA, ENX_ON, 0);							// Enable BTOA Interrupts
 	enx_externalirq_perl(eigiGPIO0_3_PWM0_3_SPI0, ENX_ON, 0);			// Enable GPIO0~3, PWM0~3, SPI0 Interrupts
 	enx_externalirq_perl(eigiGPIO4_7_PWM4_7_I2C0_UART0, ENX_ON, 0);		// Enable GPIO4~7, PWM4~7, I2C0, UART0 Interrupts
 	enx_externalirq_perl(eigiGPIO8_11_PWM8_11_SPI1, ENX_ON, 0);			// Enable GPIO8~11, PWM8~11, SPI1 Interrupts
@@ -1689,7 +1690,6 @@ void enx_externalirq_init_cpu1(void)
 //	set_csr(mie, MIP_MEIP);												// Enable External Interrupts
 	set_csr(mstatus, MSTATUS_MIE);										// Machine Interrupt Enable
 
-	enx_externalirq_perl(eigiBTOA, ENX_ON, 0);							// Enable BTOA Interrupts
 	enx_externalirq_perl(eigiDMA1, ENX_ON, 0);							// Enable DMA1 Interrupts
 }
 
@@ -1701,7 +1701,6 @@ void enx_externalirq_init_cpu2(void)
 //	set_csr(mie, MIP_MEIP);												// Enable External Interrupts
 	set_csr(mstatus, MSTATUS_MIE);										// Machine Interrupt Enable
 
-	enx_externalirq_perl(eigiATOB, ENX_ON, 0);							// Enable ATOB Interrupts
 	enx_externalirq_perl(eigiDMA2, ENX_ON, 0);							// Enable DMA2 Interrupts
 }
 
@@ -1717,6 +1716,7 @@ void enx_externalirq_init_cpu3(void)
 	enx_externalirq_perl(eigiVCODEC, ENX_ON, 0);						// Enable Codec Interrupts
 	enx_externalirq_perl(eigiDMA3, ENX_ON, 0);							// Enable DMA3 Interrupts
 	enx_externalirq_perl(eigiGPIO60_63_I2C7_UART7, ENX_OFF, 0);			// Enable GPIO60~63, I2C7, UART7 Interrupts
+	enx_externalirq_perl(eigiATOB, ENX_ON, 0);							// Enable ATOB Interrupts
 //	enx_externalirq_perl(eigiGPIO, ENX_ON, 0);							// Enable GPIO Interrupts
 //	enx_externalirq_perl(eigiTIMER, ENX_ON, 0);							// Enable TIMER Interrupts
 }
