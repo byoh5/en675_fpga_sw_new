@@ -8,7 +8,7 @@
 //#include <stdio.h>
 //#include "hdmi/MCU_Regs.h"
 #include "dev.h"
-#ifdef __HDMI__
+#ifdef __HDMI_SILICON__
 
 #include "defs.h"
 #include "TypeDefs.h"

@@ -46,7 +46,7 @@
 #define __SFLS_MACRONIX__
 #define __SFLS_16MB__
 #endif
-#if 0
+#if 1
 #define __SFLS_MX25U12832F__
 #define __SFLS_MACRONIX__
 #define __SFLS_16MB__
@@ -81,24 +81,33 @@
 #define __FREERTOS__
 #endif // __FREERTOS__
 
-#if 0
+#if 1
 #define __ECM_STRING__
 #endif // __ECM_STRING__
 
-#if 0
+#if 1
 #define __SENSOR__
 #define SENSOR_RESET_GPIO_CH	1
 #define SENSOR_I2C_CH	0
 #define SENSOR_SPI_CH	0
 #endif // __SENSOR__
 
-#if 0
-#define __HDMI__
-#define HDMI_I2C_CA	0x90
+#if 0 || 1
 #define HDMI_I2C_CH	7
-#endif // __HDMI__
+#endif
+
+#if 0
+#define __HDMI_SILICON__
+#define HDMI_I2C_CA	0x90
+#endif // __HDMI_SILICON__
 
 #if 1
+#define __HDMI_LONTIUM__
+//#define   LT8618SX_ADR			0x76		//CI2CA HIGH : 0x76
+#define   LT8618SX_ADR			0x72		//CI2CA LOW : 0x72
+#endif // __HDMI_LONTIUM__
+
+#if 0
 #define __RTC_LOAD__
 #define RTC_I2C_CH	7
 #if 1

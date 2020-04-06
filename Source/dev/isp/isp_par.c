@@ -296,6 +296,10 @@ void UsrParReset(void)
 
 	UsrParStyle(INIT_STYLE, 1, 1);	// INIT_STYLE 로 Style값들 변경
 	//----------------------------------------------------------------------
+#if model_TgtBd == 1
+	UP(ICSel) = 1;
+	UP(OCSel) = 3;
+#endif
 
 	UsrParCpy(gbUsrParTblSaved, gbUsrParTbl);
 }

@@ -1008,6 +1008,7 @@ void enx_exirq_source34(void)
 	uint32 get = IRQ_34_T;
 	_IRQ_33 *irq = (void *)&get;
 	if (irq->G_SOURCE34) {
+		//printf("OK G_SOURCE34 (uart7-tx(%d)rx(%d)\n", UartTxIsIrq(7), UartRxIsIrq(7));
 		if (irq->I2C7){IrqI2c(7);}
 		if (irq->UART7){IrqUart(7);}
 		if (irq->GPIO63){IrqGpio(63);}
@@ -1015,8 +1016,13 @@ void enx_exirq_source34(void)
 		if (irq->GPIO61){IrqGpio(61);}
 		if (irq->GPIO60){IrqGpio(60);}
 	} else {
-		printf("NO G_SOURCE34\n");
-		enx_exirq_view();
+		//printf("NO G_SOURCE34 (uart7-tx(%d)rx(%d), %d\n", UartTxIsIrq(7), UartRxIsIrq(7), UartTxGetIrqEn(7));
+		/*if(UartTxGetIrqEn(7)) UartDebugTxIrq(0);
+		else*/ enx_exirq_view();
+		// IrqUart(7);
+		//UartRxSetIrqEn(7, ENX_OFF);
+		//UartTxSetIrqEn(7, ENX_OFF);
+
 	}
 #else
 	if (IRQ_G_SOURCE34) {
@@ -1536,7 +1542,7 @@ uintptr_t trap_from_machine_mode_async(uintptr_t mcause, uintptr_t mepc, uint64 
 				continue;
 			}
 #if 1 // Test¿ë log
-			else if (source != 1 && source != 4 && source != 9) {
+			else if (source != 1 && source != 4 && source != 9 && source != 34) {
 				printf("CPU%u-FW-IRQ%d (%d/%c)\n", cpuid, source, (cpuidx+i), (cpuidx+i)%2==0 ? 'M':'S');
 			}
 #endif

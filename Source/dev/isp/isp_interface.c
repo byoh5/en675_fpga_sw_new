@@ -2,6 +2,7 @@
 
 void Isp_SYNC_CODE(WORD awC0, WORD awC1, WORD awC2, WORD awC3_0, WORD awC3_1, WORD awC3_2, WORD awS0C3_0, WORD awS0C3_1, WORD awS0C3_2, WORD awS1C3_0, WORD awS1C3_1, WORD awS1C3_2)
 {
+#if 0
 #if (model_Sens_Intf==1) || (model_Sens_Intf==2)	// LVDS or MIPI
 	SYNC_COD0w(awC0);
 	SYNC_COD1w(awC1);
@@ -19,6 +20,7 @@ void Isp_SYNC_CODE(WORD awC0, WORD awC1, WORD awC2, WORD awC3_0, WORD awC3_1, WO
 	SYNC_S1COD3_1w(awS1C3_1);
 	SYNC_S1COD3_2w(awS1C3_2);
 #endif
+#endif
 }
 
 //	OnOff			->	0 : Off, 1 : On
@@ -27,27 +29,22 @@ void Isp_SYNC_CODE(WORD awC0, WORD awC1, WORD awC2, WORD awC3_0, WORD awC3_1, WO
 void Isp_SDesPowerOn(BOOL OnOff, BOOL IsMipi, BYTE MipiClkPhase)
 {
 	if(OnOff) {
-//		SDES_PDw(0x00);
-//		if(IsMipi)	{	RDES_CK_SELw(1);	LSYNCM_SELw(MipiClkPhase);	LVDS_RXONw(0);	}
-//		else		{	RDES_CK_SELw(0);	LVDS_RXONw(1);	}
+		MIPI_RXONw(1);
 		CH_DSELw(0);
 		CH_HSSELw(0);
 		CH_VSSELw(0);
-//		LCK_SONw(1);
 	}
 	else {
-//		SDES_PDw(0x1f);
-//		LVDS_RXONw(0);
+		MIPI_RXONw(0);
 		CH_DSELw(1);
 		CH_HSSELw(1);
 		CH_VSSELw(1);
-//		LCK_SONw(0);
 	}
 }
 
 void Isp_SDesDelay(BYTE Lck)
 {
-#if (model_Sens_Intf==1) || (model_Sens_Intf==2)	// MIPI
+#if 0//(model_Sens_Intf==1) || (model_Sens_Intf==2)	// MIPI
 	LCK_DLYw(Lck);
 #endif
 }

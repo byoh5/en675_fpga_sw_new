@@ -213,7 +213,7 @@ STRING1(CUSTOM,		_B,"CUSTOM");
 
 #define USR_PAR_STYLE \
 /*                      IPC_INDOOR,      IPC_OUTDOOR,     CAR_REC,         ACTION_REC,      WDR,             LOW_BIT,         CUSTOM        */\
-UP_STYLE(Brightness,    4,          6,               4,               4,               4,               4,               4              )\
+UP_STYLE(Brightness,    4,               6,               4,               4,               4,               4,               4              )\
 UP_STYLE(Adnr2D,        8,               4,               8,               8,               8,               8,               8              )\
 UP_STYLE(ShpBigEdge,    0x80,            0x40,            0x80,            0x80,            0x80,            0x80,            0x80           )\
 UP_STYLE(Gamma,         UP_GAMMA_075,    UP_GAMMA_055,    UP_GAMMA_075,    UP_GAMMA_075,    UP_GAMMA_075,    UP_GAMMA_075,    UP_GAMMA_075   )\
@@ -322,7 +322,7 @@ UP_SET(1, Sensor_FPS, model_Sens_Fps, INIT_RUN, UP(Sensor_FPS) = model_Sens_Fps;
 UP_TITLE(MENU_OUTPUT_SET)/*--¡¡MENU:¡¡OUTPUT¡¡SET¡¡--*/\
 UP_SET(1, OutFps, OUT_FPS_DEF, , OutMode(); )/* SYSTEM ¡æ OUTPUT ¡æ FRAMERATE : */\
 UP_SET(1, SysFreq, UP_SYSFREQ_60, , OutMode(); )/* FREQ : 0 = 25Hz, 1 = 30Hz */\
-UP_SET(1, Cvbs, UP_ON, , Isp_Cvbs_Config(UP(Cvbs), NTSC, FREQ_27M, ISP_74M, DS_ISP_FONT_PATH, NO_VLCBIT, 0x7a, 0xe); )/* CVBS : 0 = OFF, 1 = ON */\
+UP_SET(1, Cvbs, UP_OFF, , Isp_Cvbs_Config(UP(Cvbs), NTSC, FREQ_27M, ISP_74M, DS_ISP_FONT_PATH, NO_VLCBIT, 0x7a, 0xe); )/* CVBS : 0 = OFF, 1 = ON */\
 UP_TITLE(MENU_EXPOSURE)/*--¡¡MENU:¡¡EXPOSURE¡¡--*/\
 UP_SET(1, Brightness, 5/*10*/, , )/* BRIGHTNESS ¡æ DAY : 0 ~ 20 */\
 UP_SET(1, BrightnessMin, 20/*17*/, , )/* BRIGHTNESS ¡æ NIGHT : 0 ~ 20 */\

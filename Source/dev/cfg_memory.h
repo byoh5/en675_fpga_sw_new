@@ -147,6 +147,12 @@
 #define REG_BASE_IR				0x45A00000
 #define REG_BASE_OIC			0x46000000
 
+#if model_TgtBd == 1
+	#define REG_BASE_IRQ_0		0x400fd000
+#else
+	#define REG_BASE_IRQ_0		REG_BASE_IRQ
+#endif
+
 //******************************************************************************
 // 3. SFLS Userinfo Base Address / Size
 //------------------------------------------------------------------------------

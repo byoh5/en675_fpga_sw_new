@@ -727,7 +727,7 @@ _regs_ BF_5(UINT EN : 1 ,UINT MAG : 1 ,UINT MUL : 3 ,UINT _rev0 : 11, UINT DAT :
 #define I2S_04_T _am(_I2S_4,REG_BASE_I2S, (4<<3))
 #define I2S_05_T _am(_I2S_5,REG_BASE_I2S, (5<<3))
 
-#define IRQ_01_T _am(_IRQ_0,REG_BASE_IRQ, (0<<3))
+#define IRQ_01_T _am(_IRQ_0,REG_BASE_IRQ_0, (0<<3))
 #define IRQ_02_T _am(_IRQ_1,REG_BASE_IRQ, (1<<3))
 #define IRQ_03_T _am(_IRQ_2,REG_BASE_IRQ, (2<<3))
 #define IRQ_04_T _am(_IRQ_3,REG_BASE_IRQ, (3<<3))

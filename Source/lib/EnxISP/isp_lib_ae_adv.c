@@ -33,6 +33,15 @@ extern int giErr2d;
 #define IRS_PRT(...)	//printf(__VA_ARGS__)
 
 #if 0
+int ISRT0 terms(int aiNum, int aiMul, int aiAdd)
+{
+	const int iOft = (aiMul > 1) ? ((aiMul-1)>>1) : 0 ;
+	const int iNum = (aiNum > aiAdd) ? aiNum - aiAdd : 0;
+	return ((iNum+iOft) / aiMul) * aiMul + aiAdd;
+}
+#endif
+
+#if 0
 const WORD	gwShtLut[] = {
 	279,280,
 	281,282,283,284,285,286,287,288,289,290,

@@ -62,14 +62,14 @@ void main_os(void)
 	vTaskCreate("sdcard", SdcardTask, NULL, LV1_STACK_SIZE, LV3_TASK_PRIO);
 	vTaskCreate("videnc", muxer_videnc_task, NULL, LV5_STACK_SIZE, LV5_TASK_PRIO);
 #endif
-#ifdef __NETWORK__
+#if defined(__NETWORK__) && (model_TgtBd != 1)
 	vTaskCreate("startLwip", startLwip, NULL, LV3_STACK_SIZE, LV7_TASK_PRIO);
 #endif
 	vTaskCreate("ledblink", LedblinkTask, NULL, LV0_STACK_SIZE, LV7_TASK_PRIO);
-#ifdef __NETWORK__
+#if defined(__NETWORK__) && (model_TgtBd != 1)
 	vTaskCreate("netProt", startNetProtocol, NULL, LV2_STACK_SIZE, LV5_TASK_PRIO);
 #endif
-#if defined(__WIFI__)
+#if defined(__WIFI__) && (model_TgtBd != 1)
 	vTaskCreate("Wifi", wifiTask, NULL, LV6_STACK_SIZE, LV7_TASK_PRIO);
 #endif
 #ifdef __AUDIO__

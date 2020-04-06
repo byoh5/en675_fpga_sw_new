@@ -8,7 +8,7 @@
 #ifndef _DEFS_H_
 #define _DEFS_H_
 
-#define DelayMS(MS)		__asm("C.NOP")//WaitXms(MS)		// TODO KSH HDMI에서 Delay없어도 동작함
+#define DelayMS(MS)		__asm("C.NOP")//WaitXms(MS)		// TODO KSH> HDMI에서 Delay없어도 동작함
 
 void TXHAL_InitMicroGpios (void);
 void TXHAL_InitPreReset (void);

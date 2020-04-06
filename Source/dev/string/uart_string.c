@@ -340,6 +340,8 @@ TxIrqEnd:
 
 void UartTxIrq(BYTE abByte)
 {
+	//UartTx(DEBUG_UART_NUM, abByte); return;
+
 	if(gtUartQue.wTxLen >= UART_BUF_SIZE) return;	// The Tx data is lost.
 
 #if 0
@@ -829,7 +831,10 @@ void Comm(void)
 
 //...............................................
 // Key process : Key from PC
-			SetCase(PC_CMD_KEY, bIn==PC_ETX, gbUKeyVal = gnRxData; /*UartTxStrHex("UKeyVal ", gbUKeyVal,4);*/
+			SetCase(PC_CMD_KEY, bIn==PC_ETX, gbUKeyVal = gnRxData;
+										#if model_TgtBd == 1
+											UartTxStrHex("UKeyVal ", gbUKeyVal,4);
+										#endif
 					, 1, gnRxData,1);
 
 //...............................................

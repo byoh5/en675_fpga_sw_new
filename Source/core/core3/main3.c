@@ -35,18 +35,9 @@ void main_3(int cpu_id)
 
 #if defined(__SENSOR__)
 
-  #if 0
-	void isp_init_test(void); isp_init_test();
-  #else
 	Isp_init();
-	////YC_OSELw(0x11);
-	//PCKO_PDw(0);	// Sensor가 Master로 동작하고 있는 경우 SLVw(0)하기 전에 Sensor Clock Off 해야 함
-	//SLVw(0);
-	//SYNC_BYSw(1);
-	//INSELw(0x6);
-  #endif
 
-  #if 0
+  #if 0//model_TgtBd == 1
 	VIRQI_EN_Tw(1);
 	//CLI_VLOCKI_Tw(1);		// TODO KSH> 컴파일 문제?
   #else
@@ -70,7 +61,7 @@ void main_3(int cpu_id)
 		isp_main();
 		IF_Funcs();
   #else
-	#if 0
+	#if 0//model_TgtBd == 1
 		if(ISP_RIRQ_VIr) { CLI_VLOCKI_Tw(1); isp_main(); }
 	#else
 		if(gnViIrqOn) { gnViIrqOn = 0; isp_main(); }

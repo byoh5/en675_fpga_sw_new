@@ -39,33 +39,34 @@ SET ( DEV_HDRS
 	ethernet/ksz8081mnx.h
 	ethernet/ksz8081rnb.h
 	ethernet/ksz9031rnx.h
-	HDMI/AV_Config.h
-	HDMI/Constants.h
-	HDMI/defs.h
-	HDMI/EDID.h
-	HDMI/eHDMI.h
-	HDMI/Externals.h
-	HDMI/HDCP.h
-	HDMI/hdmi.h
-	HDMI/i2c_master_sw.h
-	HDMI/Macros.h
-	HDMI/SerialPort.h
-	HDMI/si_apiCDC.h
-	HDMI/si_apiCEC.h
-	HDMI/si_apiConfigure.h
-	HDMI/si_apiCpi.h
-	HDMI/si_cdc_enums.h
-	HDMI/si_cdc_heac.h
-	HDMI/si_cec_enums.h
-	HDMI/si_cpCDC.h
-	HDMI/si_cpCEC.h
-	HDMI/si_cpi_regs.h
-	HDMI/si_datatypes.h
-	HDMI/TPI.h
-	HDMI/TPI_Access.h
-	HDMI/TPI_Regs.h
-	HDMI/TypeDefs.h
-	HDMI/VideoModeTable.h
+	HDMI/SILICON/AV_Config.h
+	HDMI/SILICON/Constants.h
+	HDMI/SILICON/defs.h
+	HDMI/SILICON/EDID.h
+	HDMI/SILICON/eHDMI.h
+	HDMI/SILICON/Externals.h
+	HDMI/SILICON/HDCP.h
+	HDMI/SILICON/hdmi.h
+	HDMI/SILICON/i2c_master_sw.h
+	HDMI/SILICON/Macros.h
+	HDMI/SILICON/SerialPort.h
+	HDMI/SILICON/si_apiCDC.h
+	HDMI/SILICON/si_apiCEC.h
+	HDMI/SILICON/si_apiConfigure.h
+	HDMI/SILICON/si_apiCpi.h
+	HDMI/SILICON/si_cdc_enums.h
+	HDMI/SILICON/si_cdc_heac.h
+	HDMI/SILICON/si_cec_enums.h
+	HDMI/SILICON/si_cpCDC.h
+	HDMI/SILICON/si_cpCEC.h
+	HDMI/SILICON/si_cpi_regs.h
+	HDMI/SILICON/si_datatypes.h
+	HDMI/SILICON/TPI.h
+	HDMI/SILICON/TPI_Access.h
+	HDMI/SILICON/TPI_Regs.h
+	HDMI/SILICON/TypeDefs.h
+	HDMI/SILICON/VideoModeTable.h
+	HDMI/LONTIUM/lt8618sx.h
 	isp/isp_reg.h
 	isp/isp_reg_ex.h
 	isp/isp_digital_interface.h
@@ -150,22 +151,23 @@ SET ( DEV_SRCS
 	ethernet/ksz8081mnx.c
 	ethernet/ksz8081rnb.c
 	ethernet/ksz9031rnx.c
-	HDMI/AV_Config.c
-	HDMI/EDID.c
-	HDMI/eHDMI.c
-	HDMI/Globals.c
-	HDMI/HDCP.c
-	HDMI/hdmi.c
-	HDMI/i2c_master_sw.c
-	HDMI/si_apiCDC.c
-	HDMI/si_apiCEC.c
-	HDMI/si_apiCpi.c
-	HDMI/si_cdc_heac.c
-	HDMI/si_cpCDC.c
-	HDMI/si_cpCEC.c
-	HDMI/TPI.c
-	HDMI/TPI_Access.c
-	HDMI/VideoModeTable.c
+	HDMI/SILICON/AV_Config.c
+	HDMI/SILICON/EDID.c
+	HDMI/SILICON/eHDMI.c
+	HDMI/SILICON/Globals.c
+	HDMI/SILICON/HDCP.c
+	HDMI/SILICON/hdmi.c
+	HDMI/SILICON/i2c_master_sw.c
+	HDMI/SILICON/si_apiCDC.c
+	HDMI/SILICON/si_apiCEC.c
+	HDMI/SILICON/si_apiCpi.c
+	HDMI/SILICON/si_cdc_heac.c
+	HDMI/SILICON/si_cpCDC.c
+	HDMI/SILICON/si_cpCEC.c
+	HDMI/SILICON/TPI.c
+	HDMI/SILICON/TPI_Access.c
+	HDMI/SILICON/VideoModeTable.c
+	HDMI/LONTIUM/lt8618sx.c
 	isp/isp_digital_interface.c
 	isp/isp_font.c
 	isp/isp_interface.c

@@ -61,6 +61,17 @@ void enx_peri_init(void)
 
 	SflsInit();
 
+#if model_TgtBd == 2
+	GPIO_PIN2_OEN	=	0;		//	Output
+	GPIO_PIN3_OEN	=	0;		//	Output
+	GPIO_PIN2_OUT	=	0;
+	GPIO_PIN3_OUT	=	0;
+	WaitXms(10);
+	GPIO_PIN2_OUT	=	1;
+	GPIO_PIN3_OUT	=	1;
+	INIT_DELAY(1);	// TODO KSH x ÇÊ¿ä?
+#endif
+
 #if USE_I2C0
 	I2cInit(0, I2C0_SPEED);
 //	I2cChCheck(0);
@@ -128,10 +139,10 @@ void enx_peri_init(void)
 #endif
 
 
-#if USE_SDIO0
+#if USE_SDIO0 && (model_TgtBd != 1)
 	SdioInit(0, SDIO0_SPEED);
 #endif
-#if USE_SDIO1
+#if USE_SDIO1 && (model_TgtBd != 1)
 	SdioInit(1, SDIO1_SPEED);
 #endif
 
@@ -264,7 +275,7 @@ void enx_peri_init(void)
 	I2sSlvInit();
 #endif
 
-#if USE_ETH
+#if USE_ETH && (model_TgtBd != 1)
 	EthInit();
 	MdioInit(MDIO_SPEED);
 #endif
@@ -325,8 +336,27 @@ void enx_device_init(void)
 	GpioSetDir(GPIO_LED2, GPIO_DIR_OUT);
 #endif
 
-#ifdef __HDMI__
+#ifdef HDMI_I2C_CH
+  #ifdef __HDMI_SILICON__
 	InitHdmi();
+  #endif
+
+  #ifdef __HDMI_LONTIUM__
+	#if   model_8M && model_15fps
+	LT8618SX_Init(14);
+	#elif model_4M && model_15fps
+	LT8618SX_Init(16);
+	#elif model_4M && model_30fps
+	LT8618SX_Init(12);
+	#elif model_2M && model_60fps
+	LT8618SX_Init(10);
+	#elif (model_2M||model_2M30p) && model_30fps
+	LT8618SX_Init(6);
+	#else
+	#error "HDMI" is not supported.
+	#endif
+  #endif
+
 	D_ITU_YCCH0w(1);				//	For Changing Y/C -> Schematics
 	//	D_BT20_ISEL0w(1);			//	Select YCBCR1 Image	-> Schematics
 #endif
@@ -348,7 +378,7 @@ void enx_device_init(void)
 	audio_init();
 #endif
 
-#ifdef __USE_SDIOCD__
+#if defined(__USE_SDIOCD__) && (model_TgtBd != 1)
 #if 0
 	GpioSetDir(SD_GPIO_RST, GPIO_DIR_OUT);	// New Peri B/d
 #else
@@ -578,9 +608,35 @@ void main_0(int cpu_id)
 
 	enx_pmp_init();
 
+#if model_TgtBd == 2
+	if(SYS_REG0 == 0xff22) main_os();
+	enx_externalirq_init_cpu0();
+
+	enx_externalirq_perl(eigiISP, ENX_ON, 0);							// Enable ISP Interrupts
+	enx_externalirq_perl(eigiVCODEC, ENX_ON, 0);						// Enable Codec Interrupts
+
+//	WaitXms(2000);
+//	UartTxSetIrqEn(DEBUG_UART_NUM, ENX_OFF);
+//	printf("UART-TXe(%d) TXf(%d)\n", UartTxIsEmpty(7), UartTxIsFull(7));
+//	UartTxSetIrqEn(DEBUG_UART_NUM, ENX_ON);
+//	UartTxSetIrqEn(DEBUG_UART_NUM, ENX_OFF);
+//	UartTxSetIrqEn(DEBUG_UART_NUM, ENX_ON);
+
+	Isp_init();
+
+	extern UINT gnViIrqOn;
+
+	while (1) {
+		//WaitXms(100);
+		//Comm();
+		if(gnViIrqOn) { gnViIrqOn = 0; isp_main(); }
+		else { IF_Funcs(); }
+	}
+#endif
+
 	SYS_REG0 = 0x0; // CPU0 Ready!
 
-#ifdef __FREERTOS__
+#if defined(__FREERTOS__)
 	main_os();
 	while(1);
 #else

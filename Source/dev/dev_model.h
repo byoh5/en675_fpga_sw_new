@@ -110,6 +110,9 @@
 
 // Board Evaluation Setting for ISP --------------------------------------------------------------
 
+#define model_TgtBd			0		// Target board
+									// 0 : KU Bd, 1 : KU+VU Bd, 2 : VU Bd, 3 : customer
+
 #define model_Save			0		// 0 : save Parameter value to External EEPROM by I2C(TWI)
 									//*1 : save Parameter value to internal Flash (default)
 									// 2 : None save

@@ -437,6 +437,8 @@ void ISRT FreqAdjust(void)
 	if(FPS_HI) { AE_ETCw(1); }
 	else	   { AE_ETCw(2); }
 	AE_FREQw(gnAeVtw, gnAeHtw);
+#elif (model_Sens == SENS_IMX415)
+	AE_FREQw(gnAeVtw, gnAeHtw>>1);	// 2200:15P, 1100:30P
 #elif (model_Sens == SENS_IMX323)
 	AE_FREQw(gnAeVtw, gnAeHtw>>1);
 #elif model_2M

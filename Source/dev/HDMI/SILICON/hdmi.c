@@ -11,7 +11,7 @@
 #include "dev.h"
 //#include "enx_dev.h"
 
-#ifdef __HDMI__
+#ifdef __HDMI_SILICON__
 
 #include "defs.h"
 #include "TypeDefs.h"

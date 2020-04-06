@@ -2,6 +2,17 @@
 
 #ifdef __SENSOR__
 
+#if model_TgtBd == 1
+	//_regs_ BF_3(UINT _rev0 : 30, UINT PIN0_OUT_AUR : 1 ,UINT PIN0_OEN_AUR : 1 ) _rege_ _GPIO_0_AUR;
+	typedef	union{UINT a; struct{ UINT PIN0_OEN_AUR:1;; UINT PIN0_OUT_AUR:1;;	UINT _rev0:30; };} _GPIO_0_AUR;
+	#define GPIO_PIN0_OUT_AUR _bm(_GPIO_0_AUR,0x400FE000, (0<<3),PIN0_OUT_AUR) // 1 Bit, 1'h0, RW
+	#define GPIO_PIN0_OEN_AUR _bm(_GPIO_0_AUR,0x400FE000, (0<<3),PIN0_OEN_AUR) // 1 Bit, 1'h1, RW
+
+	//_regs_ BF_3(UINT _rev0 : 30, UINT PIN1_OUT_AUR : 1 ,UINT PIN1_OEN_AUR : 1 ) _rege_ _GPIO_1_AUR;
+	typedef	union{UINT a; struct{ UINT PIN1_OEN_AUR:1;; UINT PIN1_OUT_AUR:1;; UINT _rev0:30; };} _GPIO_1_AUR;
+	#define GPIO_PIN1_OUT_AUR _bm(_GPIO_1_AUR,0x400FE000, (1<<3),PIN1_OUT_AUR) // 1 Bit, 1'h0, RW
+	#define GPIO_PIN1_OEN_AUR _bm(_GPIO_1_AUR,0x400FE000, (1<<3),PIN1_OEN_AUR) // 1 Bit, 1'h1, RW
+#endif
 
 #if 0
 void Isp_irq_init(void)
@@ -18,6 +29,20 @@ void Isp_SensorRst(void)
 	INIT_DELAY(2);
 
 	//	Sensor Init
+#if model_TgtBd == 1
+	SYS_GPIO0_MUX = 0;
+	GPIO_PIN0_OEN_AUR = 0;
+	GPIO_PIN0_OUT_AUR = 1;
+
+	SYS_GPIO1_MUX = 0;
+	GPIO_PIN1_OEN_AUR = 0;
+	GPIO_PIN1_OUT_AUR = 1;
+
+	INIT_DELAY(1);
+	GPIO_PIN1_OUT_AUR = 0;
+	INIT_DELAY(4);
+	GPIO_PIN1_OUT_AUR = 1;
+#else
   #if model_Sens==SENS_OV2718
 	PCKO_SELw(3);		//	18.5 MHz
 	INIT_DELAY(3);
@@ -28,14 +53,57 @@ void Isp_SensorRst(void)
   #endif
 	INIT_DELAY(4);
 	GpioSetOut(SENSOR_RESET_GPIO_CH,1);
+#endif
 
 	INIT_DELAY(1);
 }
 
+#if model_TgtBd == 2
+void APB_Write(volatile unsigned long addr, unsigned int data)
+{
+	*((volatile unsigned int *)(addr)) = data;
+}
+
+/*void APB_Write(volatile unsigned int *addr, unsigned int data)
+{
+	*((unsigned int *)(addr)) = data;
+}*/
+#endif
+
 void Isp_Sensor_init(void)
 {
+#if model_TgtBd == 2
+	APCLK_SELw(0);				//	For FPGA 148.5 MHz
+	APCLK_PDw(1);
+	INIT_DELAY(1);	// TODO KSH x 필요?
+
+	APB_Write(0x46500024,0x1f);				// Enable data, Enable clock
+	// ISP CH0
+	#if   (model_Sens==SENS_OS08A10) || (model_Sens==SENS_OV4689)
+	APB_Write(0x46500040,((0x2<<12)|(0x2B<<2)|0x0));	// config : RAW10, VC=0, 4PPI
+	#elif (model_Sens==SENS_IMX415) || (model_Sens==SENS_IMX335) || (model_Sens==SENS_IMX290)
+	APB_Write(0x46500040,((0x2<<12)|(0x2C<<2)|0x0));	// config : RAW12, VC=0, 4PPI
+//	APB_Write(0x46500040,((0x2<<12)|(0x2B<<2)|0x0));	// config : RAW12, VC=0, 4PPI
+	#elif (model_Sens==SENS_AR0234)
+	APB_Write(0x46500040,((0x2<<12)|(0x2C<<2)|0x0));	// config : RAW12, VC=0, 4PPI
+	#else
+	APB_Write(0x46500040,((0x2<<12)|(0x2B<<2)|0x0));	// config : RAW10, VC=0, 4PPI
+	#endif
+
+	#if	(model_Sens==SENS_OS08A10) || (model_Sens==SENS_IMX415)
+	APB_Write(0x46500044,0x08800f10);		// resolution : 3856x2176
+	#elif (model_Sens==SENS_IMX415) || (model_Sens==SENS_IMX335)
+	APB_Write(0x46500044,0x05A00A20);		// resolution : 2560x1440
+	#elif (model_Sens==SENS_OV4689)
+	APB_Write(0x46500044,0x05A00A20);		// resolution : 2560x1440
+	#elif (model_Sens==SENS_AR0234)
+	APB_Write(0x46500044,0x04380788);		// resolution : 1920x1080
+	#else
+	APB_Write(0x46500044,0x04380788);		// resolution : 1920x1080
+	#endif
+#endif
 	//----------------------------------------------------------------------------------------
-	Isp_SensorRst();
+	Isp_SensorRst();	// TODO KSH x enx_device_init()에서 high로 설정하므로 필요 없음?
 
 	IspSDesPowerOn();
 	IspSensorPowerOn();
@@ -44,6 +112,11 @@ void Isp_Sensor_init(void)
 	IspSDesDelay();
 
 	IspSYNC_CODE();
+
+#if model_TgtBd == 2	// TODO KSH x 필요?
+	SLVw(0);
+	POL_VSIw(1);
+#endif
 
 	INIT_STR_SENSOR
 	InitSensRun();
@@ -80,6 +153,62 @@ void Isp_PrePost_init(void)
 #if (model_Sens==SENS_IMX291) || (model_Sens==SENS_OV2718)
 	INIT_DELAY(3);
 	SYNC_UPw(1);
+#endif
+
+#if model_TgtBd == 2
+	APCLK_SELw(0);				//	For FPGA 148.5 MHz		TODO KSH x 필요?
+
+	//	Interrupt Mask
+	APB_Write(0x46500010,0xfff5fcff);		// sync
+
+	APB_Write(0x46500048,0x00040000);		// sync
+	APB_Write(0x46500008, 0xf0);			// clock all enable
+	#if	(model_Sens==SENS_IMX290)
+	APB_Write(0x46500004, 0x000f4301);		// Update shadow, Deskew level[15:13], Deskew enable[12], CH0 only(no data interleave), 4 lane, CSIS enable
+	#else
+	APB_Write(0x46500004, 0x000f5301);		// Update shadow, Deskew level[15:13], Deskew enable[12], CH0 only(no data interleave), 4 lane, CSIS enable
+	#endif
+
+	MIPI_PAGEw(1);
+	MIPI_ISP_CH0_ENw(1);
+
+	#if (model_Sens==SENS_IMX415)
+		MIPI_CH0_BMODw(1);			//	0 : 14bit, 1 : 12bit, 2 : 10bit, 3 : 8bit, 4 : YC 20bit, 5 : YC 16bit,
+		MIPI_CH0_HTWOw(0x112e);
+		MIPI_CH0_VTWOw(0x8c9);
+	#elif (model_Sens==SENS_IMX335)
+		MIPI_CH0_BMODw(1);			//	0 : 14bit, 1 : 12bit, 2 : 10bit, 3 : 8bit, 4 : YC 20bit, 5 : YC 16bit,
+		MIPI_CH0_HTWOw(0xCE2);
+		MIPI_CH0_VTWOw(0x5DB);
+	#elif (model_Sens==SENS_OV4689)
+		MIPI_CH0_BMODw(2);			//	0 : 14bit, 1 : 12bit, 2 : 10bit, 3 : 8bit, 4 : YC 20bit, 5 : YC 16bit,
+		MIPI_CH0_HTWOw(0xCE2);
+		MIPI_CH0_VTWOw(0x5DB);
+	#elif (model_Sens==SENS_IMX290)
+		MIPI_CH0_BMODw(1);			//	0 : 14bit, 1 : 12bit, 2 : 10bit, 3 : 8bit, 4 : YC 20bit, 5 : YC 16bit,
+		MIPI_CH0_HTWOw(0x896);
+		MIPI_CH0_VTWOw(0x464);
+	#elif (model_Sens==SENS_AR0234)
+		MIPI_CH0_BMODw(1);			//	0 : 14bit, 1 : 12bit, 2 : 10bit, 3 : 8bit, 4 : YC 20bit, 5 : YC 16bit,
+		MIPI_CH0_HTWOw(0x896);
+		MIPI_CH0_VTWOw(0x464);
+	#else
+		MIPI_CH0_BMODw(2);			//	0 : 14bit, 1 : 12bit, 2 : 10bit, 3 : 8bit, 4 : YC 20bit, 5 : YC 16bit,
+		MIPI_CH0_HTWOw(0x896);
+		MIPI_CH0_VTWOw(0x464);
+	#endif
+
+	MIPI_CH0_WMODw(0);			//	Memory Write 0 : 4PPI, 1 : 2PPI, 2 : 1PPI
+	MIPI_CH0_RYCw(0);			//	Memory Read  0 : RAW, 1 : YC
+	MIPI_CH0_VRPOSw(0);
+
+	MIPI_CH0_VSYNC_ALNw(1);
+	MIPI_CH0_HSYNC_ALNw(1);
+
+	INIT_DELAY(4);
+
+	MIPI_CH0_SYNC_UPw(1);					//	MIPI Sync Sync-up
+	INIT_DELAY(2);
 #endif
 
 	INIT_STR("ISP Clk/Res configuration...");
@@ -149,7 +278,7 @@ void Isp_Function_init(void)
 	Isp_Dnr3d_Config(FN_ON, 0x80, 0x40, 0x20);
 #endif
 	//Isp_Dnr2d_Config(FN_ON, DNR2D_SUM_MOD, DNR2D_CNT8, 0x38, 0x30);
-	Isp_Dnr2d_Config(FN_ON, SP(Dnr2dICSel), SP(Dnr2dOCSel));
+	Isp_Dnr2d_Config(FN_ON, (model_TgtBd == 1) ? 3 : SP(Dnr2dICSel), SP(Dnr2dOCSel));
 	//Isp_Defect_Config(FN_ON, DF_SUM_6, DF_SUM_4, DF_WGT_CASEB, DF_WGT_CASEB, DF_SLOPE_NOR, DF_GTHRES, DF_RBTHRES, DF_MAX, DF_MIN, 3);
 
 	INIT_STR("ISP Function configuration...");
@@ -186,7 +315,7 @@ void Isp_DDR_init(void)
 	DDR_RENC_LTCw(0x300);	// ENC 는 고정
 
 	//INIT_DELAY(6);
-	SD_MODw(0);			// DDR OFF
+	SD_MODw(0);			// 0 -> FRC 2 Page (Adr2, Adr3, Adr4 Don't care)
 
 	INIT_DELAY(1/*4*/);
 	CPU_FRC_ENw(1);		// DDR OFF,  SD_MODw(0) 이후 1 VLOCK Delay 후 설정해야 함!!!
@@ -256,7 +385,12 @@ void OutMode(void)
 		Isp_PrePost_init();			// ISP Pre & Post의 Clk과 Res 설정
 
 		IspDout0SyncConfig();
+#if model_TgtBd == 2
+		Isp_Dout1_Sync_Config(2200, 0x1b, 0x440, 0, 0x2a, 1920, 1080);							//	For HD-SDI Output (Scaling Image)
+		YCW_DCK2_PDw(0); YCW_DCK2_SELw(CLK_74M); YCW_DCK2_PDw(1);
+#else
 		IspDout1SyncConfig();
+#endif
 		//Isp_Output_init();			// Output 설정
 
 #if 0
@@ -272,7 +406,9 @@ void Isp_init(void)
 	AppLoadPar();				// load parameter from memory
 	InitMenu();					// If hold down a specific key, reset the user parameters.
 
-//	Isp_irq_init();				// Enable External Interrupts & Wait_VLOCKO() 사용을 위한 임시 설정
+#if model_TgtBd == 2	// TODO KSH x 필요?
+	Isp_Ddr_Cong();
+#endif
 
 	InMode();
 
@@ -288,7 +424,71 @@ void Isp_init(void)
 
 	Isp_Function_init();		// OSD Font 및 ISP 기능 설정
 
+#if model_TgtBd == 2	// TODO KSH x 필요?
+	SYNC_UPw(1);
+
+	IBT_PCK_SELw(1);
+	IBT_PCK_PDw(1);
+	BT_PCK_SELw(1);
+	BT_PCK_PDw(1);
+	FPCK_SELw(1);
+	FPCK_PDw(1);
+	PSCK_SELw(1);
+	PSCK_PDw(1);
+	PPCK_SELw(1);
+	PPCK_PDw(1);
+	PR_CK0_SELw(1);
+	PR_CK0_PDw(1);
+	FN_CK0_SELw(1);
+	FN_CK0_PDw(1);
+	DITCK0_SELw(1);
+	DITCK0_PDw(1);
+	OTCK0_SELw(1);
+	OTCK0_PDw(1);
+	DITCK1_SELw(1);
+	DITCK1_PDw(1);
+	OTCK1_SELw(1);
+	OTCK1_PDw(1);
+	ITCK0_SELw(1);
+	ITCK0_PDw(1);
+	ITCK1_SELw(1);
+	ITCK1_PDw(1);
+	DCKO0_SELw(1);
+	DCKO0_PDw(1);
+	DCKO1_SELw(1);
+	DCKO1_PDw(1);
+	DO0_CK_SELw(1);
+	DO1_CK_SELw(1);
+	DO2_CK_SELw(1);
+	DO3_CK_SELw(1);
+	DO0_CK_PDw(1);
+	DO1_CK_PDw(1);
+	DO2_CK_PDw(1);
+	DO3_CK_PDw(1);
+
+	PRE_OSELw(4);
+
+	//	Option
+	DCKO0_DLYw(6);
+
+	DDR_RDNR_LTCw(0x500);
+	DDR_RWDR_LTCw(0x500);
+
+	DDR_RFRC_LTCw(0xf80);
+
+	DDR_RYC_LTCw(0x500);
+	INIT_DELAY(10);			// TODO KSH x Delay 10 ?
+	SD_MODw(0);
+	BUS_RD_RSTw(1);
+	INIT_DELAY(4);
+	CPU_FRC_ENw(1);
+
+//	isp_layer_merge();
+
+	INIT_DELAY(9);
+#else
 	Isp_DDR_init();				// ISP 에서 사용하는 DDR 설정
+#endif
 
 	Isp_Digital_input_init();	// Digital Input configuration
 
@@ -300,11 +500,19 @@ void Isp_init(void)
 	VIRQI_ENw(1);				// Sensor FPS 출력용
 
 	Dzoom_init();
+
+#if 0
+	//YC_OSELw(0x11);
+	PCKO_PDw(0);	// Sensor가 Master로 동작하고 있는 경우 SLVw(0)하기 전에 Sensor Clock Off 해야 함
+	SLVw(0);
+	SYNC_BYSw(1);
+	INSELw(0x6);
+#endif
 }
 
 void Hdmi_Check(void)
 {
-#ifdef __HDMI__
+#ifdef __HDMI_SILICON__
 	BYTE DetFmt0[2] = {0,0};
 
 	Hdmi(DetFmt0);

@@ -145,7 +145,7 @@ void SensMirror(BYTE aOn)
 	SetSens(0x3007, gbMirFlpBuf);
 }
 
-void ISRT0 AE_SHTw(UINT val)
+void ISRT0 AE_SHTw(UINT val)				// SHS1
 {
 	CHANGE_VAL(UINT,0xffffffff,val)
 
@@ -165,7 +165,7 @@ void ISRT0 AE_DSSw(UINT val)				// VMAX
 	SetSensBurst(0x3018, gbBurstBuf, 3);
 }
 
-void ISRT0 AE_AGCw(UINT val)
+void ISRT0 AE_AGCw(UINT val)				// GAIN for LEF (NOR & DOL2 & DOL3)
 {
 	CHANGE_VAL(UINT,0xffffffff,val)
 
@@ -228,14 +228,14 @@ void ISRT0 AE_RHS2w(UINT val)
 	SetSensBurst(0x3034, gbBurstBuf, 3);
 }
 
-void ISRT0 AE_GAIN1w(UINT val)
+void ISRT0 AE_GAIN1w(UINT val)				// GAIN for SEF1 (DOL2 & DOL3)
 {
 	CHANGE_VAL(UINT,0xffffffff,val)
 
 	SetSens(0x30f2, val&0xff);
 }
 
-void ISRT0 AE_GAIN2w(UINT val)
+void ISRT0 AE_GAIN2w(UINT val)				// GAIN for SEF2 (DOL3)
 {
 	CHANGE_VAL(UINT,0xffffffff,val)
 
@@ -310,7 +310,7 @@ const BYTE	gbVHssAgcTbl[]   = {
 
 const UINT gVHssAgcTblEa = ARRAY_SIZE(gbVHssAgcTbl);
 
-int WdrLShtMax(const BYTE abDssRatioLmt);
+int WdrLShtMax(const BYTE abDssRatioLmt);	// VMAX 재설정 때문에 필요
 
 UINT gnVMAX = 1125;
 
@@ -343,8 +343,8 @@ UINT gnVMAX = 1125;
 #define LWDR_2P_L_to_LEF(L)		(LWDR_2P_FSC -((L)+1))				// L to LEF  for Sensor Reg. Setting at DOL 2P
 
 #define LWDR_3P_FSC				(VMAX<<2)							// = 4500
-#define LWDR_3P_RHS2			(LWDR_3P_FSC - LWDR_BRL*3 - 25)		// 4500 - 1109*3 - 25 = 1148
-#define LWDR_3P_RHS1			(1006*VMAX/gnAeVtw)					// = 1006
+#define LWDR_3P_RHS2			(LWDR_3P_FSC - LWDR_BRL*3 - 25)		// 4500 - 1109*3 - 25 = 1148, 3n+14 조건 맞음
+#define LWDR_3P_RHS1			((3*333)*VMAX/gnAeVtw + 7)			// = 1006, 3n+7 조건 맞음
 
 #define LWDR_3P_SEF2_MAX		(LWDR_3P_RHS2 - 2)					// SEF2 Max at DOL 3P, 1148 - 2 = 1146
 #define LWDR_3P_SEF2_MIN		(LWDR_3P_RHS1 + 3)					// SEF2 Min at DOL 3P, 1006 + 3 = 1009

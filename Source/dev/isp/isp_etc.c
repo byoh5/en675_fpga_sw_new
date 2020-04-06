@@ -449,6 +449,16 @@ void DZoom(void)
 
 void Dzoom_init(void)
 {
+#if model_TgtBd != 0
+	YCW_CK1_SELw(2);			// Write Channel Clock 설정 (ISP Clock 74.25MHz)
+	YCW_CK1_PDw(1);				// Clock Enable
+	IM_HWI1w(RP(FR_HW));		// Write할 영상 수평 크기 설정 -> HWOw와 동일한 크기, 실제 DDR 사용 크기와 동일
+	IM_IVSEL1w(0);				// DDR Write Channel1 의 sync 설정 (ISP Sync)
+	IM_ISEL1w(0xC);				// DDR Write Channel1 의 Image 입력 Path 설정 (ISP Image, No Font)
+	IM_WFRC1_ONw(1);			// DDR R/W Channel 1에 FRC  사용 설정. “0”인 경우 Disable
+	IM_CADR1_P0w(IM_YADR1_P0r + ((RP(FR_HW)*RP(FR_VW))>>4));
+	IM_CGO1w(1);				// Write Enable
+#else
 	// DZOOM 설정 : Margin 필요
 	//HWIw(RP(PO_HW)+8);				// DZoom시 Margin이 필요함. Sensor에서도 이 만큼 출력하게 설정.
 	//HWOw(RP(PO_HW)+8);
@@ -493,6 +503,7 @@ void Dzoom_init(void)
 	//IM_RON1w(1);				// Read Enable
 
 	DZoom();
+#endif
 }
 
 

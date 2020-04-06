@@ -57,10 +57,10 @@ const WORD gwTblIMX323[][2] = { // for TWI
 								//{0x0342, 0x08},	// In master mode. Horizontal(H) direction clock number[15:8] designation
 								//{0x0343, 0x98},	// In master mode. Horizontal(H) direction clock number[ 7:0] designation
 
-//								{0x0342, 0x04},	// In master mode. Horizontal(H) direction clock number[15:8] designation
-//								{0x0343, 0x4C} //1101Sony,	// In master mode. Horizontal(H) direction clock number[ 7:0] designation
-								{0x0342, 0x05},	// In master mode. Horizontal(H) direction clock number[15:8] designation
-								{0x0343, 0xa0} //1101Sony,	// In master mode. Horizontal(H) direction clock number[ 7:0] designation
+								{0x0342, 0x04},	// In master mode. Horizontal(H) direction clock number[15:8] designation
+								{0x0343, 0x4C} //1101Sony,	// In master mode. Horizontal(H) direction clock number[ 7:0] designation
+								//{0x0342, 0x05},	// In master mode. Horizontal(H) direction clock number[15:8] designation
+								//{0x0343, 0xa0} //1101Sony,	// In master mode. Horizontal(H) direction clock number[ 7:0] designation
 
 								//{0x3000, 0x30}	// Valid register write / Normal Operation
 								};
@@ -182,7 +182,7 @@ const BYTE	gbVHssAgcTbl[]   = {
 
 const UINT gVHssAgcTblEa = ARRAY_SIZE(gbVHssAgcTbl);
 
-int WdrLShtMax(const BYTE abDssRatioLmt);
+int WdrLShtMax(const BYTE abDssRatioLmt);	// VMAX 재설정 때문에 필요
 
 UINT gnVMAX = 1125;
 

@@ -8,6 +8,9 @@
 //#include "../cpu_main.h"
 
 #include "dev.h"
+
+#ifdef __HDMI_SILICON__
+
 #include "defs.h"
 #include "TypeDefs.h"
 #include "Constants.h"
@@ -272,5 +275,7 @@ byte I2C_ReadSegmentBlock(byte deviceID, byte segment, byte offset, byte *buffer
 	return 0;
 
 }
+#endif
+
 #endif
 
