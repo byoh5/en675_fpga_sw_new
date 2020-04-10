@@ -425,9 +425,6 @@ void Isp_init(void)
 	AppLoadPar();				// load parameter from memory
 	InitMenu();					// If hold down a specific key, reset the user parameters.
 
-#if model_TgtBd == 2	// TODO KSH x 필요?
-	Isp_Ddr_Cong();
-#endif
 
 	InMode();
 
@@ -457,7 +454,7 @@ void Vcap_ChannelSet(void)
 #if model_Sens_Intf == 2
 	Wait_VLOCKO();
 	Wait_VLOCKO();
-	WaitXus(12005);		// 12000 or 12005 or 12010 중 하나로 설정
+	WaitXus(12010);		// 12000 or 12005 or 12010 중 하나로 설정
 
 	SYNC_UPw(1);
 #endif
