@@ -65,8 +65,8 @@ SP_SET(MipiBit,		     0,      0,      0,     10,     12,     12,     10,     12,
 SP_SET(IsSlave,		     1,      0,      1,      1,      1,      1,      1,      1,      1,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 0 : Master Mode, 1 : Slave Mode,  Isp master/slave mode를 설정
 SP_SET(IsASync,		     1,      0,      1,      0,      1,      0,      1,      1,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// Auto sync generation, omni sensor와 같이 Active 이외의 구간에서 sync가 나오지 않는 sensor에서 1로 설정
 SP_SET(IsNSync,		     1,      0,      0,      1,      1,      0,      1,      0,      1,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 입력 sync의 H/V 위상이 일치하지 않는 상황에서 1로 설정
-SP_SET(PreHSyncOfs,	  0x16,   0x12,   0xa8,   0xb8,   0xb8,   0x12,   0xb8,   0xa0,   0x8e,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// Pre module Horizontal Sync Offset, Hsp 인자로 Image 위치가 맞지 않을때 Sync의 위치를 이동하여 image 위치를 맞추는데 사용
-SP_SET(PreVSyncOfs,	   0xa,    0xa,    0xa,    0xa,    0xa,    0xa,    0xa,    0xc,    0xf,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// Pre module Vertical Sync Offset, Vsp 인자로 Image 위치가 맞지 않을때 Sync의 위치를 이동하여 image 위치를 맞추는데 사용
+SP_SET(PreHSyncOfs,	  0x16,   0x12,   0xa8,   0xb8,   0xb8,   0x12,   0xb8, 0x1120,   0x8e,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// Pre module Horizontal Sync Offset, Hsp 인자로 Image 위치가 맞지 않을때 Sync의 위치를 이동하여 image 위치를 맞추는데 사용
+SP_SET(PreVSyncOfs,	   0xa,    0xa,    0xa,    0xa,    0xa,    0xa,    0xa,   0xbf,    0xf,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// Pre module Vertical Sync Offset, Vsp 인자로 Image 위치가 맞지 않을때 Sync의 위치를 이동하여 image 위치를 맞추는데 사용
 SP_SET(PreHsp,		  0x13,   0x15,   0x15,    0x8,    0x8,   0x15,    0x8,   0x15,    0x7,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// Pre module Horizontal image start position, 설정 순서 : PreHSyncOfs -> PreHsp -> ICSel -> OCSel
 SP_SET(PreVsp,		   0x9,    0x7,    0x3,    0x5,    0x5,    0x7,    0x5,    0x2,    0x7,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// Pre module Vertical image start position, 설정 순서 : PreVSyncOfs -> PreVsp -> ICSel -> OCSel
 SP_SET(PreHSyncPol,	     0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 0 : Falling position, 1 : Rising position, Pre module Horizontal sync input polarity
@@ -74,11 +74,11 @@ SP_SET(PreVSyncPol,	     0,      0,      1,      1,      1,      1,      1,     
 SP_SET(ICSel,		     0,      0,      3,      0,      0,      0,      0,      3,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 0 ~ 3,  Pre module color phase selection, RGB interpolator의 위상을 조절, AWB ODM 값으로 올바른지 확인(AWBLNOR_SEL:1, 청색필터:CRDR- CBDB+, 황색필터:CRDR+ CBDB-)		TODO KSH ◆ ICSEL 설정 필요
 SP_SET(OCSel,		     0,      2,      1,      3,      3,      2,      2,      3,      2,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 0 ~ 3,  Post module color phase selection, RGB interpolator의 위상을 조절, 출력단 VLOCKO_IT_POS0w(OutVSyncOfs) & HLOCKO_IT_POS0w(OutHSyncOfs) 설정에 따라 OCSel값을 잘못 설정할 수 있으니 주의!!!	TODO KSH ◆ OCSEL 설정 필요, IMX291 검증 완료
 
-SP_SET(Dnr2dICSel,	     0,      0,      3,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 0 ~ 3,  2D-DNR ICSEL, DNR2D_ON ON/OFF 시 Color 변화 없어야 함		TODO KSH ◆ 2D-DNR ICSEL 설정 필요, IMX291 검증 완료
-SP_SET(Dnr2dOCSel,	     0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 0 ~ 3,  2D-DNR OCSEL, 육안으로 확인 가능, 항상 0으로 설정
+SP_SET(Dnr2dICSel,	     0,      0,      3,      0,      0,      0,      0,      3,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 0 ~ 3,  DNR_CSELw  : 2D-DNR ICSEL, DNR2D_ON ON/OFF 시 Color 변화 없어야 함		TODO KSH ◆ 2D-DNR ICSEL 설정 필요, IMX291 검증 완료
+SP_SET(Dnr2dOCSel,	     0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 0 ~ 3,  DNR_RCSELw : 2D-DNR OCSEL, 육안으로 확인 가능, 항상 0으로 설정
 
 //SP_SET(HSUP_TH,	  0x74,   0x70,   0x72,   0x78,   0x72,   0x72,   0x72,   0x72,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// High Light color suppression threshold (Y domain control) (0 ~ 0xFF)
-SP_SET(HSUP_TH,		  0xb4,   0xb8,   0xc0,   0xb8,   0xb2,   0xb2,   0xb2,   0xb2,   0xb8,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// High Light color suppression threshold (Y domain control) (0 ~ 0xFF)
+SP_SET(HSUP_TH,		  0xb4,   0xb8,   0xc0,   0xb8,   0xb2,   0xb2,   0xb2,   0xa2,   0xb8,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// High Light color suppression threshold (Y domain control) (0 ~ 0xFF)
 //SP_SET(HSUP_TH,	  0xa4,   0xa0,   0xa2,   0xa8,   0xa2,   0xa2,   0xa2,   0xa2,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// High Light color suppression threshold (Y domain control) (0 ~ 0xFF)
 
 SP_SET(AWB_DB_MAX,	    32,     69,    -78,    -78,   -177,   -154,   0x00,   -271,    -19,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// TODO KSH ◆ OV4689 와 IMX415 의 AWB_DB_MAX 값 확인 필요
@@ -92,18 +92,18 @@ SP_SET(AWB_DROFFSET,  0xc5,   0xa1,   0xa7,   0xc5,  0x102,  0x10e,   0x00,  0x1
 SP_SET(AWB_DBGAIN,	  0x0d,   0x0e,   0x0f,   0x0e,   0x0f,   0x0f,   0x00,   0x11,   0x10,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 		"
 SP_SET(AWB_DRGAIN,	  0x0c,   0x0d,   0x0d,   0x0c,   0x0d,   0x0d,   0x00,   0x0f,    0xd,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 		"
 
-SP_SET(Yel_RedToGrn,  0x7c,   0x7c,   0x7c,   0x7c,   0x7c,   0x7c,   0x7c,   0x7c,   0x68,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// Adjust Yellow Hue from Red to Green (0x1:Red, 0x80:Default, 0xFF:Green)
-SP_SET(Yel_Gain,      0x60,   0x60,   0x60,   0x60,   0x60,   0x60,   0x60,   0x60,   0xaa,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// Adjust Yellow Gain (0 ~ 0xFF, Default:0x60)
-SP_SET(Red_YelToBlu,  0x80,   0x80,   0x80,   0x80,   0x80,   0x80,   0x80,   0x80,   0x73,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// Adjust Red Hue from Yellow to Blue (0x1:Yellow, 0x80:Default, 0xFF:Blue)
-SP_SET(Red_Gain,      0x58,   0x58,   0x58,   0x58,   0x58,   0x58,   0x58,   0x58,   0x80,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// Adjust Red Gain (0 ~ 0xFF, Default:0x60)
-SP_SET(Blu_GrnToRed,  0x80,   0x80,   0x80,   0x80,   0x80,   0x80,   0x80,   0x80,   0x6e,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// Adjust Blue Hue from Green to Red (0x1:Green, 0x80:Default, 0xFF:Red)
-SP_SET(Blu_Gain,      0x60,   0x60,   0x60,   0x60,   0x60,   0x60,   0x60,   0x60,   0x80,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// Adjust Blue Gain (0 ~ 0xFF, Default:0x60)
-SP_SET(Grn_BluToYel,  0x90,   0x90,   0x90,   0x90,   0x90,   0x90,   0x90,   0x90,   0x80,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// Adjust Green Hue from Blue to Yellow (0x1:Blue, 0x80:Default, 0xFF:Yellow)
-SP_SET(Grn_Gain,      0xa0,   0xa0,   0xa0,   0xa0,   0xa0,   0xa0,   0xa0,   0xa0,   0x80,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// Adjust Green Gain (0 ~ 0xFF, Default:0x60)
+SP_SET(SaturationR,	    36,     36,     36,     36,     36,     36,     36,     22,     32,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// R-GAIN : 0 ~ 64, 32:Default
+SP_SET(SaturationG,	    34,     34,     34,     34,     34,     34,     34,     22,     30,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// G-GAIN : 0 ~ 64, 32:Default
+SP_SET(SaturationB,	    38,     38,     38,     38,     38,     38,     38,     28,     34,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// B-GAIN : 0 ~ 64, 32:Default
 
-SP_SET(SaturationR,	    36,     36,     36,     36,     36,     36,     36,     36,     32,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// R-GAIN : 0 ~ 64, 32:Default
-SP_SET(SaturationG,	    34,     34,     34,     34,     34,     34,     34,     34,     30,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// G-GAIN : 0 ~ 64, 32:Default
-SP_SET(SaturationB,	    38,     38,     38,     38,     38,     38,     38,     38,     34,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// B-GAIN : 0 ~ 64, 32:Default
+SP_SET(Yel_RedToGrn,  0x7c,   0x7c,   0x7c,   0x7c,   0x7c,   0x7c,   0x7c,   0x80,   0x68,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// Adjust Yellow Hue from Red to Green (0x1:Red, 0x80:Default, 0xFF:Green)
+SP_SET(Yel_Gain,      0x60,   0x60,   0x60,   0x60,   0x60,   0x60,   0x60,   0x60,   0xaa,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// Adjust Yellow Gain (0 ~ 0xFF, Default:0x60)
+SP_SET(Red_YelToBlu,  0x80,   0x80,   0x80,   0x80,   0x80,   0x80,   0x80,   0x78,   0x73,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// Adjust Red Hue from Yellow to Blue (0x1:Yellow, 0x80:Default, 0xFF:Blue)
+SP_SET(Red_Gain,      0x58,   0x58,   0x58,   0x58,   0x58,   0x58,   0x58,   0x58,   0x80,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// Adjust Red Gain (0 ~ 0xFF, Default:0x60)
+SP_SET(Blu_GrnToRed,  0x80,   0x80,   0x80,   0x80,   0x80,   0x80,   0x80,   0x78,   0x6e,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// Adjust Blue Hue from Green to Red (0x1:Green, 0x80:Default, 0xFF:Red)
+SP_SET(Blu_Gain,      0x60,   0x60,   0x60,   0x60,   0x60,   0x60,   0x60,   0x60,   0x80,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// Adjust Blue Gain (0 ~ 0xFF, Default:0x60)
+SP_SET(Grn_BluToYel,  0x90,   0x90,   0x90,   0x90,   0x90,   0x90,   0x90,   0x80,   0x80,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// Adjust Green Hue from Blue to Yellow (0x1:Blue, 0x80:Default, 0xFF:Yellow)
+SP_SET(Grn_Gain,      0xa0,   0xa0,   0xa0,   0xa0,   0xa0,   0xa0,   0xa0,   0xa0,   0x80,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// Adjust Green Gain (0 ~ 0xFF, Default:0x60)
 
 SP_SET(ShtBrtSpeed,	   300,    350,    350,    350,    350,    350,    350,    350,    350,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// AE SPEED → SHT. SPEED → BRIGHTEN : 1 ~ 999 (3E7h), Sensor의 실제 밝기가 클수록(또는 FPS가 낮아질 수록) Shutter 제어 Speed 설정값은 낮아짐
 SP_SET(ShtDrkSpeed,	   160,    350,    300,    350,    350,    350,    350,    350,    350,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// AE SPEED → SHT. SPEED → DARKEN : 1 ~ 999 (3E7h), Sensor의 실제 밝기가 클수록(또는 FPS가 낮아질 수록) Shutter 제어 Speed 설정값은 낮아짐
@@ -112,33 +112,26 @@ SP_SET(AgcDrkSpeed,	   384,     26,    150,     26,     26,     26,     26,     
 
 SP_SET(LWDR_2P_SGAIN_ALP,0,      0,      0,      0,   0x80,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// EN781의 AE_LWDR_SGAIN_ALP : IMX290 & IMX327 & IMX307 = 0x700 / IMX335 5M = 0x100		TODO KSH ◆ WDR - LWDR_2P_SGAIN_ALP 값 Sensor 별로 튜닝 필요
 
-SP_SET(SyncCode0,	 0xfff,  0xfff,  0xfff,      0,      0,      0,      0,      0,  0xfff,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)
-SP_SET(SyncCode1,	     0,      0,      0,      1,      1,      1,      1,      1,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)
-SP_SET(SyncCode2,	     0,      0,      0,      2,      2,      2,      2,      2,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)
-SP_SET(SyncCode3_0,	     0,      0,      0,      3,      3,      3,      3,      3,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)
-SP_SET(SyncCode3_1,	 0x800,  0x800,  0x200,   0xb8,   0xb8,   0xb8,   0xb8,   0xb8,  0x800,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)
-SP_SET(SyncCode3_2,	 0xab0,  0xab0,  0x280,  0xf30,  0xf30,  0xf30,  0xd20, 0x16a4,  0xab0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)
-SP_SET(SyncS0Code3_0,    0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)
-SP_SET(SyncS0Code3_1,    0,      0,      0, 0x2000, 0x2000, 0x2000, 0x2000, 0x2000,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)
-SP_SET(SyncS0Code3_2,    0,      0,      0,   0x2b,   0x2c,   0x2c,   0x2b,   0x2c,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)
-SP_SET(SyncS1Code3_0,    0,      0,      0,      3,      3,      3,      3,      3,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)
-SP_SET(SyncS1Code3_1,    0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)
-SP_SET(SyncS1Code3_2,    0,      0,      0,      3,      3,      3,  0xd20,      3,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)
 
 #if	(model_Sens_Fps==60)
 SP_SET(SensorClk,	     0,     37,      0,     27,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 148, 74, 37, 18, 27, 13, 6 MHz
+SP_SET(MipiClk,		     0, M_148M,      0,  M_74M,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// M_297M, M_148M, M_74M, M_EXT
 SP_SET(PreClk,		     0, C_148M,      0,  C_74M,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// C_PLL, C_148M, C_74M, C_PCK, C_PCKD2, C_PLLD0
 #elif (model_Sens_Fps==30)
-SP_SET(SensorClk,	    13,     37,      0,      0,     13,      0,     27,      0,     37,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 148, 74, 37, 18, 27, 13, 6 MHz
-SP_SET(PreClk,		 C_74M,  C_74M,      0,      0,  C_74M,      0,  C_74M,      0,  C_74M,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// C_PLL, C_148M, C_74M, C_PCK, C_PCKD2, C_PLLD0
+SP_SET(SensorClk,	    13,     37,      0,      0,     13,      0,     27,     27,     37,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 148, 74, 37, 18, 27, 13, 6 MHz
+SP_SET(MipiClk,		 M_74M,  M_74M,      0,      0, M_297M,      0, M_297M, M_297M,  M_74M,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// M_297M, M_148M, M_74M, M_EXT
+SP_SET(PreClk,		 C_74M,  C_74M,      0,      0,  C_74M,      0,  C_74M, C_148M,  C_74M,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// C_PLL, C_148M, C_74M, C_PCK, C_PCKD2, C_PLLD0
 #elif (model_Sens_Fps==20)
 SP_SET(SensorClk,	     0,      0,      0,      0,     13,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 148, 74, 37, 18, 27, 13, 6 MHz
+SP_SET(MipiClk,		     0,      0,      0,      0, M_148M,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// M_297M, M_148M, M_74M, M_EXT
 SP_SET(PreClk,		     0,      0,      0,      0,  C_74M,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// C_PLL, C_148M, C_74M, C_PCK, C_PCKD2, C_PLLD0
 #elif (model_Sens_Fps==15)
 SP_SET(SensorClk,	     0,      0,     13,      0,      0,     13,     13,     27,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 148, 74, 37, 18, 27, 13, 6 MHz
+SP_SET(MipiClk,		     0,      0, M_148M,      0,      0, M_148M, M_148M, M_148M,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// M_297M, M_148M, M_74M, M_EXT
 SP_SET(PreClk,		     0,      0,  C_74M,      0,      0,  C_74M,  C_74M, C_148M,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// C_PLL, C_148M, C_74M, C_PCK, C_PCKD2, C_PLLD0
 #elif (model_Sens_Fps==12)
 SP_SET(SensorClk,	     0,      0,      0,      0,     13,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 148, 74, 37, 18, 27, 13, 6 MHz
+SP_SET(MipiClk,		     0,      0,      0,      0, M_148M,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// M_297M, M_148M, M_74M, M_EXT
 SP_SET(PreClk,		     0,      0,      0,      0,  C_74M,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// C_PLL, C_148M, C_74M, C_PCK, C_PCKD2, C_PLLD0
 #endif
 
@@ -159,8 +152,8 @@ RP_SET(FR_VTW60,	   750,   1125,   1500,   2250,      0)	// Total vertical   wid
 RP_SET(FR_HTW50,	  1980,   2640,   3960,   5280,      0)	// Total horizontal width for 25P/50P
 RP_SET(FR_VTW50,	   750,   1125,   1500,   2250,      0)	// Total vertical   width for 25P/60P
 
-RP_SET(OutHSyncOfs,	  0x82,   0x80,   0x82,   0x8e,      0)	// 0 ~ 0x1fff,  Digital Output formatter Horizontal sync offset, OCSel에 영향을 주므로 가능한 변경하지 않는 것을 권장, 이 값을 조절해도 영상이 화면에 채워지지 않으면 pre/post단의 Hsync offse이나 Hsp를 조절해야 함	TODO KSH - OutHSyncOfs : 2M만 검증 완료
-RP_SET(OutVSyncOfs,	   0x3,  0x449,  0x5bd,  0x8a8,      0)	// 0 ~ 0xfff,   Digital Output formatter Vertical   sync offset, OCSel에 영향을 주므로 가능한 변경하지 않는 것을 권장, 이 값을 조절해도 영상이 화면에 채워지지 않으면 pre/post단의 Vsync offse이나 Vsp를 조절해야 함	TODO KSH - OutVSyncOfs : 2M만 검증 완료
+RP_SET(OutHSyncOfs,	  0x82,   0x80,   0x82,   0x7e,      0)	// 0 ~ 0x1fff,  Digital Output formatter Horizontal sync offset, OCSel에 영향을 주므로 가능한 변경하지 않는 것을 권장, 이 값을 조절해도 영상이 화면에 채워지지 않으면 pre/post단의 Hsync offse이나 Hsp를 조절해야 함	TODO KSH - OutHSyncOfs : 2M만 검증 완료
+RP_SET(OutVSyncOfs,	   0x3,  0x449,  0x5bd,  0x8b1,      0)	// 0 ~ 0xfff,   Digital Output formatter Vertical   sync offset, OCSel에 영향을 주므로 가능한 변경하지 않는 것을 권장, 이 값을 조절해도 영상이 화면에 채워지지 않으면 pre/post단의 Vsync offse이나 Vsp를 조절해야 함	TODO KSH - OutVSyncOfs : 2M만 검증 완료
 
 RP_SET(AE_HSP,		   0x8,    0x8,   0x10,   0x10,      0)
 RP_SET(AE_HEP,		 0x274,  0x3ba,  0x4f8,  0x77a,      0)
@@ -288,15 +281,12 @@ RP_SET(FONT_OFY,	  0x36,    0xf,    0xf,   0x30,      0)	// Font Vertical Positi
 #if (model_Sens_Intf==0)	// Parallel
 	#define IspSDesConfig()		Isp_Parallel_Config(FN_ON/*, ISP_SLAVE*/, PARA_INTER_CLK, PARA_CLK_SDR, 0/*, SYNC_FALL, SYNC_RISE, DIFF_EDGE, NO_USE_AUTOSYNC*/, BIT12TOBit12)
 #elif (model_Sens_Intf==1)	// LVDS
-	#define IspSDesConfig()		Isp_Lvds_Config(SP(LvdsBit), LVDS_4LANE, 0, UP(LvdsPNSel), SP(LvdsSofNo))
+	#define IspSDesConfig()		//Isp_Lvds_Config(SP(LvdsBit), LVDS_4LANE, 0, UP(LvdsPNSel), SP(LvdsSofNo))
 #elif (model_Sens_Intf==2)	// MIPI
 	#define IspSDesConfig()		//Isp_Mipi_Config(SP(MipiBit), MIPI_4LANE, 0, 1, UP(MipiHSyncOfs), USE_ECC_CHECK, SP(MipiUseWcl), NO_USE_CHECK, NO_USE_CHECK, 3)
 #endif
 
 #define IspSDesDelay()			Isp_SDesDelay(UP(LckDly))
-
-#define IspSYNC_CODE()			Isp_SYNC_CODE(SP(SyncCode0), SP(SyncCode1), SP(SyncCode2), SP(SyncCode3_0), SP(SyncCode3_1), SP(SyncCode3_2),\
-											  SP(SyncS0Code3_0), SP(SyncS0Code3_1), SP(SyncS0Code3_2), SP(SyncS1Code3_0), SP(SyncS1Code3_1), SP(SyncS1Code3_2))
 
 #define IspPreClkConfig()		Isp_PreClk_Config(SP(PreClk), USE_FRC)
 #define IspPostClkConfig()		Isp_PostClk_Config(SP(PostClk))
@@ -334,6 +324,9 @@ RP_SET(FONT_OFY,	  0x36,    0xf,    0xf,   0x30,      0)	// Font Vertical Positi
 #define WdrSShtMax			SP(WdrSShtMax)
 #define WdrLShtMax			SP(WdrLShtMax)
 #define WdrMShtMax			SP(WdrMShtMax)
+#define WdrSShtMin			SP(WdrSShtMin)
+#define WdrLShtMin			SP(WdrLShtMin)
+#define WdrMShtMin			SP(WdrMShtMin)
 #define AeAGC_LWDR			SP(AeAGC_LWDR)
 
 #define AE_SHTw				SP(AE_SHTw)

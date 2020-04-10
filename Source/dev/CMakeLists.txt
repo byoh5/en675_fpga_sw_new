@@ -87,6 +87,7 @@ SET ( DEV_HDRS
 	isp/isp_sensor_parameter.h
 	jpeg/isp_jpeg.h
 	key/key.h
+	MCP2515/MCP2515_main.h
 	minilib/aes.h
 	minilib/aes_local.h	
 	minilib/md5.h
@@ -117,6 +118,7 @@ SET ( DEV_HDRS
 	string/vsnprintf.h
 	string/enx_string.h
 	string/uart_string.h
+	TP2827/TP_main.h
 	wifi/wifi_cfg.h
 	wifi/wlif_tools.h
 )
@@ -184,6 +186,7 @@ SET ( DEV_SRCS
 	isp/isp_etc.c
 	jpeg/isp_jpeg.c
 	key/key.c
+	MCP2515/MCP2515_main.c
 	minilib/aes_core.c
 	minilib/aes_cbc.c
 	minilib/cbc128.c
@@ -216,6 +219,7 @@ SET ( DEV_SRCS
 	string/vsnprintf.c
 	string/enx_string.c
 	string/uart_string.c
+	TP2827/TP_main.c
 	wifi/wlif_tools.c
 )
 

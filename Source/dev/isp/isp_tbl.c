@@ -224,8 +224,65 @@ BYTE ISRT0 GetSens(WORD awAddr)
 }
 #endif
 
+#if 0
+//	DownScaler settings
+#define DS_ENABLE(CH, En)		DS##CH##_ONw(En)
+#define CDS_HW(CH, Res)			CDS##CH##_HWw(Res)
+#define CDS_VW(CH, Res)			CDS##CH##_VWw(Res)
+#define DS_DKX(CH, Val)			DS##CH##_DKXw(Val)
+#define DS_DKY(CH, Val)			DS##CH##_DKYw(Val)
+#define DS_HLPF(CH, Val)		DS##CH##_HLPFw(Val)
+#define DS_VLPF(CH, Val)		DS##CH##_VLPFw(Val)
+
+#define CDS_PCK_PD(CH, Val)		CDS##CH##_PCK_PDw(Val)
+#define CDS_PCK_SEL(CH, Sel)	CDS##CH##_PCK_SELw(Sel)
+#define CDS_ISEL(CH, Sel)		CDS##CH##_ISELw(Sel)
+#define CDS_VISEL(CH, Sel)		CDS##CH##_VISELw(Sel)
+
+void DownScalerSet(BYTE bCh, BYTE bEn, BYTE bSrc, UINT nIHRes, UINT nIVRes, UINT nOHRes, UINT nOVRes, BYTE bLPF)
+{
+	if(bEn) {
+
+		switch {
+			case 0 : {
+				DS_ENABLE(0, 0); break;
+			}
+		}
+		CDS_PCK_PD(bCh, 0); // DS Clock Power Down
+
+		// Why??? Need to check..
+		CDS_PCK_SEL(bCh, 2);
+		CDS_ISEL(1);
+		CDS_VISEL(0);
+
+		CDS_HW(bCh, nOHRes);
+		CDS_VW(bCh, nOVRes);
+		DS_DKX(bCh, (nIHRes/nOHRes)*64);
+		DS_DKY(bCh, (nIVRes/nOVRes)*64);
+
+		DS_HLPF(bCh,bLPF);
+		DS_VLPF(bCh,bLPF);
+		CDS_PCK_PD(bCh,1); // DS Clock Power On
+		DS_ENABLE(bCh, 1);
+	}
+	else {
+		switch {
+			case 0 : DS_ENABLE(0, 0); break;
+			case 1 : DS_ENABLE(1, 0); break;
+			case 2 : DS_ENABLE(2, 0); break;
+			case 3 : DS_ENABLE(3, 0); break;
+			case 4 : DS_ENABLE(4, 0); break;
+		}
+	}
+}
+#endif
 
 //	LCD Function
+//#define LCD_DEBUG
+#define model_Lcd			1		// 0 : None
+									// 1 : TFT035
+									// 2 : TFT028
+									// 3 : TFT023
 
 void LCD_INSDAT_Write(UINT INSDAT0, UINT INSDAT1,UINT INSDAT2,UINT INSDAT3, UINT IStep)
 {
@@ -235,71 +292,152 @@ void LCD_INSDAT_Write(UINT INSDAT0, UINT INSDAT1,UINT INSDAT2,UINT INSDAT3, UINT
 	SetIsp(0x34f, INSDAT3);
 	LCD0_INST_STEPw(IStep);
 
+#ifdef LCD_DEBUG
+	printf("\r\nTest LCD controls..\r\n");
+	printf("GetIsp(0x34c) : 0x%08x\r\n", GetIsp(0x34c));
+	printf("GetIsp(0x34d) : 0x%08x\r\n", GetIsp(0x34d));
+	printf("GetIsp(0x34e) : 0x%08x\r\n", GetIsp(0x34e));
+	printf("GetIsp(0x34f) : 0x%08x\r\n", GetIsp(0x34f));
+#endif
+
 	SetIsp(0x034a, 0x80000000);					//	Write LCD Command
 
-	WaitXus(400);
+	while(LCD_CMD_BUSYr);
 
+	//sleep_(2000);
+	WaitXus(2000);
 }
 
-void LCD_FR_TFT035_6_Init(void)
+void LCD_DeviceInit(void)
 {
-	//	Xilinx Board
-
-
 	//	LCD Reset
-//	GpioFuncPin(7,0);				//	GPIO Function
-//	GpioSetDir(7,0);
-//	GpioSetOut(7,1);
-//	WaitXus(10);
-//	GpioSetOut(7,0);
-//	WaitXus(10);
-//	GpioSetOut(7,1);
-
 	SYS_GPIO7_MUX	=	0;
 	GPIO_PIN7_OEN	=	0;
 	GPIO_PIN7_OUT	=	1;
-	WaitXus(1000);
+	WaitXus(5000);
 	GPIO_PIN7_OUT	=	0;
-	WaitXus(1000);
+	WaitXus(5000);
 	GPIO_PIN7_OUT	=	1;
 
+#if model_Lcd==1
+	LCD_INSDAT_Write(0xE0000309,0x08160A3F,0x784C090A,0x08161A0F,16);
+	LCD_INSDAT_Write(0xE1001619,0x030F0532,0x4546040E,0x0D35370F,16);
+	LCD_INSDAT_Write(0xC0171500,0,0,0,3);
+	LCD_INSDAT_Write(0xC1410000,0,0,0,2);
+	LCD_INSDAT_Write(0xC5001280,0,0,0,4);
+	//	Memory Address Set	->	HV Exchange !!
+	LCD_INSDAT_Write(0x2A000001,0xDF000000,0,0,5);			//	SC, EC	->  480
+	LCD_INSDAT_Write(0x2B000001,0x3F000000,0,0,5);			//	SP, EP	->  320
+	LCD_INSDAT_Write(0x36280000,0,0,0,2);
+	LCD_INSDAT_Write(0x3A550000,0,0,0,2);
+	LCD_INSDAT_Write(0xB0000000,0,0,0,2);
+	LCD_INSDAT_Write(0xB1A00000,0,0,0,2);
+	LCD_INSDAT_Write(0xB4020000,0,0,0,2);
+	LCD_INSDAT_Write(0xB6020200,0,0,0,3);
+	LCD_INSDAT_Write(0xE9000000,0,0,0,2);
+	LCD_INSDAT_Write(0xF7A9512C,0x82000000,0,0,5);
+	LCD_INSDAT_Write(0x11000000,0,0,0,1);
+	WaitXus(200000);
+	LCD_INSDAT_Write(0x29000000,0,0,0,1);
 
-	//	Read Channel Setting
-	LCD0_VSELw(0xa);				//	Read Sync 2
-	LCD0_DSELw(0x4);				//	Read Channel 4
+#elif model_Lcd==2
 
-	//	LCD Mode Setting
+	LCD_INSDAT_Write(0x28000000,0,0,0,1); //display OFF
+	LCD_INSDAT_Write(0x11000000,0,0,0,2); //exit SLEEP mode
+	LCD_INSDAT_Write(0xCB392c00,0x34020000,0,0,6); //Power Control A
+	LCD_INSDAT_Write(0xCF008130,0,0,0,4); //Power Control B
+
+	LCD_INSDAT_Write(0xE8850179,0,0,0,4); //Driver timing control A
+	LCD_INSDAT_Write(0xEA000000,0,0,0,3); //Driver timing control B
+	LCD_INSDAT_Write(0xED640312,0x81000000,0,0,5); //Power On sequence control
+
+	LCD_INSDAT_Write(0xF7200000,0,0,0,2); //Pump ratio control
+	LCD_INSDAT_Write(0xC0260400,0,0,0,3); //power control 1
+	LCD_INSDAT_Write(0xC1110000,0,0,0,2); //power control 2
+	LCD_INSDAT_Write(0xC5353E00,0,0,0,3); //VCOM control 1
+	LCD_INSDAT_Write(0xC7BE0000,0,0,0,2); //VCOM control 2
+
+	LCD_INSDAT_Write(0x36680000,0,0,0,2); //memory access control = BGR
+
+	LCD_INSDAT_Write(0xB1001000,0,0,0,3); //frame rate control
+	LCD_INSDAT_Write(0xB60AA200,0,0,0,3); //display function control
+
+	LCD_INSDAT_Write(0x3A550000,0,0,0,2); //pixel format = 16 bit per pixel
+	LCD_INSDAT_Write(0xF2020000,0,0,0,2); //3G Gamma control
+
+	LCD_INSDAT_Write(0x26010000,0,0,0,2); //Gamma curve 3
+	LCD_INSDAT_Write(0x2A000001,0x3F000000,0,0,5); //column address set
+	LCD_INSDAT_Write(0x2B000000,0xEF000000,0,0,5); //page address set
+	//LCD_INSDAT_Write(0x2A000000,0xEF000000,0,0,5); //column address set
+	//LCD_INSDAT_Write(0x2B000001,0x3F000000,0,0,5); //page address set
+	LCD_INSDAT_Write(0xB4020000,0,0,0,2);
+	//LCD_INSDAT_Write(0xB4030000,0,0,0,2); // Display inversion control test (0x000000XX, XX = DINV[1:0])
+
+	WaitXus(200000);
+	LCD_INSDAT_Write(0x29000000,0,0,0,1); //display ON
+
+#endif
+
+	WaitXus(200000);
+	LCD0_INSTPARA0w(0x2c);
+
+	WaitXus(500000);
+	LCD0_ICw(0);								//	Instruction Mode On
+	LCD0_WIMGw(1);								//	Image Pumping Mode On
+}
+
+void Init_LCD_Control(void)
+{
+#ifdef LCD_DEBUG
+	printf("Init LCD controller..\r\n");
+#endif
 
 	//	Down -Scale
 	CDS3_PCK_SET(2);
 	CDS3_ISELw(1);
 	CDS3_VISELw(0);
-	CDS3_HWw(480);
-	CDS3_VWw(320);
-	DS3_DKXw(0x100);				//	1920 -> 480
-	DS3_DKYw(0xd9);					//	1080 -> 320
+#if model_Lcd==1
+	CDS3_HWw(480);					//	1920 -> 480
+	CDS3_VWw(320);					//	1080 -> 320
+	DS3_DKXw(0x100);
+	DS3_DKYw(0xd9);
+
+#elif model_Lcd==2
+	CDS3_HWw(320);					//	1920 -> 320
+	CDS3_VWw(240);					//	1080 -> 240
+	DS3_DKXw(384);
+	DS3_DKYw(288);
+#endif
+	DS3_HLPFw(2);
+	DS3_VLPFw(2);
 	DS3_ONw(1);
 
 	//	Write Channel
-	YCW_CK4_SET(2);				//	PCLK - BT1120 16Bit Input
-	IM_IVSEL4w(0);					//	BT Channel Main
-	IM_ISEL4w(3);					//	Down-Scale 0
-	IM_HWI4w(480);
-	IM_WFRC4_ONw(1);
-	IM_CGO4w(1);
+	YCW_CK1_SET(2);				//	PCLK - BT1120 16Bit Input
+	IM_IVSEL1w(0);					//	BT Channel Main
+	IM_ISEL1w(3);					//	Down-Scale 0
+#if model_Lcd==1
+	IM_HWI1w(480);
+#elif model_Lcd==2
+	IM_HWI1w(320);
+#endif
+
+	IM_WFRC1_ONw(1);
+	IM_CGO1w(1);
 
 	//	Read Channel
-	IM_RVSEL4w(6);
-	IM_RISEL4w(6);
-	IM_RFRC4_ONw(1);
-	IM_RHWI4w(480);
+	IM_RVSEL1w(6);
+	IM_RISEL1w(6);
+	IM_RFRC1_ONw(1);
+#if model_Lcd==1
+	IM_RHWI1w(480);
+#elif model_Lcd==2
+	IM_RHWI1w(320);
+#endif
 	DDR_RYC_LTC2w(0x100);
-	IM_RON4w(1);
-	YCR_CK4_SET(13);
+	IM_RON1w(1);
+	YCR_CK1_SET(13);
 
-
-
-	#ifdef		FR_TFT035_MCU_PARALLEL_16BIT_MODE		//	320 X 480
 	DOMODEw(4);						//
 	LCD0_PMODw(7);					//	MCU18Bit RGB 6-6-6 Interface
 	PCK_EMAX2w(8);					//	PCK_DIV2
@@ -311,16 +449,21 @@ void LCD_FR_TFT035_6_Init(void)
 	PCK_EDIV_PD3w(1);
 
 	RYC_OSYNC_MOD2w(1);
+#if model_Lcd==1
 	RYC_HWI2w(0x1e0);
 	RYC_VWI2w(0x140);
 	RYC_HTWO2w(0x208);
 	RYC_VTWO2w(0x1e0);
+#elif model_Lcd==2
+	RYC_HWI2w(320);
+	RYC_VWI2w(240);
+	RYC_HTWO2w(346);
+	RYC_VTWO2w(360);
+#endif
 	RYC_HSPI2w(8);
 	RYC_VSPI2w(8);
 
-//	IM_FRC4_RLOCKONw(1);							//	For Low Latency Output
-//	IM_FRC4_WLOCKONw(1);							//	For Low Latency Output
-	IM_RCINV4w(0);
+	IM_RCINV1w(0);
 
 	//	Pin Mux
 	VSO_OMODw(5);					//	LCD CSX
@@ -333,152 +476,20 @@ void LCD_FR_TFT035_6_Init(void)
 	//	Output Clock
 	DO0_CK_PDw(0);
 	DO1_CK_PDw(0);
-	DO2_CK_PDw(0);
-	DO3_CK_PDw(0);
 	DO0_CK_SELw(14);				//	PCK_DIV3
 	DO1_CK_SELw(14);
-	DO2_CK_SELw(2);
-	DO3_CK_SELw(2);
 	DO0_CK_PDw(1);
 	DO1_CK_PDw(1);
-	DO2_CK_PDw(1);
-	DO3_CK_PDw(1);
+
 	DCKO2_PDw(0);
+	DCKO2_INVw(1);
 	DCKO2_SELw(13);					//	For Xilinx Board, PCK_EDIV3
 	DCKO2_PDw(1);
-	DCKO2_INVw(1);
-
-	LCD0_INST_CONw(0);
-
-	#elif		FR_TFT035_RGB_16BIT_MODE
-	DOMODEw(4);						//
-	LCD0_PMODw(2);					//	RGB 16Bit  RGB 5-6-5 Interface	1CK -> 1CK
-	PCK_EMAX2w(0x8);				//	PCK_DIV2
-	PCK_EHVL2w(0x4);
-	PCK_EDIV_PD2w(1);
-
-	PCK_EMAX3w(0x8);				//	PCK_DIV3
-	PCK_EHVL3w(0x4);
-	PCK_EDIV_PD3w(1);
-
-	RYC_OSYNC_MOD2w(1);
-	RYC_HWI2w(0x1e0);
-	RYC_VWI2w(0x140);
-	RYC_HTWO2w(0x208);
-	RYC_VTWO2w(0x1e0);
-	RYC_HSPI2w(6);
-	RYC_VSPI2w(6);
-	RYC_SHSO_FP2w(0x10);
-	RYC_SHSO_RP2w(0x20);
-	RYC_SVSO_FP2w(0x0);
-	RYC_SVSO_RP2w(0x6);
-	RYC_DENO_VSPI2w(0x8);
-	RYC_DENO_VEDI2w(0x148);
-	RYC_DENO_HRP2w(0x30);
-	RYC_DENO_HFP2w(0x210);
-
-	//	Pin Mux
-	VSO_OMODw(3);					//	LCD CSX
-	HSO_OMODw(3);					//	LCD DCX
-	DENO_OMODw(3);					//	Stuck '0'
-	HVSO_CK_PDw(0);
-	HVSO_CK_SELw(14);				//	PCK_DIV3
-	HVSO_CK_PDw(1);
-
-	//	Output Clock
-	DO0_CK_PDw(0);
-	DO1_CK_PDw(0);
-	DO2_CK_PDw(0);
-	DO3_CK_PDw(0);
-	DO0_CK_SELw(14);				//	PCK_DIV3
-	DO1_CK_SELw(14);
-	DO2_CK_SELw(2);
-	DO3_CK_SELw(2);
-	DO0_CK_PDw(1);
-	DO1_CK_PDw(1);
-	DO2_CK_PDw(1);
-	DO3_CK_PDw(1);
-	DCKO2_PDw(0);
-	DCKO2_SELw(13);					//	For Xilinx Board, PCK_EDIV3
-	DCKO2_PDw(1);
-	DCKO2_INVw(1);
-
-	LCD0_INST_CONw(0);
-
-	#elif		FR_TFT035_SPI_4LANE_18BIT_MODE
-	DOMODEw(0);						//
-	LCD0_PMODw(0xb);				//	SPI 4 Wire 18Bit
-	PCK_EMAX2w(0xd7);				//	PCK_DIV2
-	PCK_EHVL2w(0x6b);
-	PCK_EDIV_PD2w(1);
-
-	PCK_EMAX3w(0x8);				//	PCK_DIV3		about 30 ns
-	PCK_EHVL3w(0x4);
-	PCK_EDIV_PD3w(1);
-
-	RYC_OSYNC_MOD2w(1);
-	RYC_HWI2w(0x1e0);
-	RYC_VWI2w(0x140);
-	RYC_HTWO2w(0x208);
-	RYC_VTWO2w(0x1e0);
-	RYC_HSPI2w(8);
-	RYC_VSPI2w(8);
-
-	IM_FRC2_RLOCKONw(1);							//	For Low Latency Output
-	IM_FRC2_WLOCKONw(1);							//	For Low Latency Output
-	IM_RCINV2w(0);								//
-
-	//	Pin Mux
-	VSO_OMODw(5);					//	LCD CSX
-	HSO_OMODw(5);					//	LCD DCX
-	DENO_OMODw(5);					//	LCD SDA
-	HVSO_CK_PDw(0);
-	HVSO_CK_SELw(14);				//	PCK_DIV3
-	HVSO_CK_PDw(1);
-
-	LCD0FF_RSw(1);								//	Fifo Reset
-	LCD0_ICw(1);								//	Instrunction Mode On
-	LCD0_CSXw(0);
-	LCD0_DCXw(0);
-	LCD0_DCX_SELw(1);
-
-	//	Output Clock
-	DO0_CK_PDw(0);
-	DO1_CK_PDw(0);
-	DO2_CK_PDw(0);
-	DO3_CK_PDw(0);
-	DO0_CK_SELw(14);				//	PCK_DIV3
-	DO1_CK_SELw(14);
-	DO2_CK_SELw(2);
-	DO3_CK_SELw(2);
-	DO0_CK_PDw(1);
-	DO1_CK_PDw(1);
-	DO2_CK_PDw(1);
-	DO3_CK_PDw(1);
-	DCKO2_PDw(0);
-	DCKO2_SELw(13);					//	For Xilinx Board, PCK_EDIV3
-	DCKO2_PDw(1);
-	DCKO2_INVw(1);
-
-	LCD0_INST_CONw(0);
-
-	#endif
 
 	//	Sync Gen Clock
 	RYCCK2_PDw(0);
 	RYCCK2_SELw(13);				//	PCK_DIV2
 	RYCCK2_PDw(1);
-
-	//	LCD IP Clock
-	LCD_CK_PDw(0);
-	LCD_CK_SELw(11);				//	PCK_DIV2
-	LCD_CK_PDw(1);
-
-	WaitXus(20);						//	LCD Fifo Clear Delay
-
-	LCDO_CK_PDw(0);
-	LCDO_CK_SELw(12);				//	PCK_DIV3
-	LCDO_CK_PDw(1);
 
 	//	LCD Output Clock & DCX, CSX Port Enable
 	VSO_OENw(0);
@@ -489,117 +500,34 @@ void LCD_FR_TFT035_6_Init(void)
 	DCKO2_OENw(0);
 
 
-	#ifdef		FR_TFT035_RGB_16BIT_MODE
-//	LCD0FF_RSw(1);								//	Fifo Reset
-//	LCD0_ICw(1);								//	Instrunction Mode On
-//	LCD0_CSXw(0);
-//	LCD0_DCXw(0);
-////	LCD0_DCX_SELw(1);
-//
-//	LCD_INSDAT_Write(0xE0000309,0x08160A3F,0x784C090A,0x08161A0F,16);
-//	LCD_INSDAT_Write(0xE1001619,0x030F0532,0x4546040E,0x0D35370F,16);
-//	LCD_INSDAT_Write(0xC0171500,0,0,0,3);
-//	LCD_INSDAT_Write(0xC1410000,0,0,0,2);
-//	LCD_INSDAT_Write(0xC5001280,0,0,0,4);
-//	//	Memory Address Set	->	HV Exchange !!
-//	LCD_INSDAT_Write(0x2A000001,0xDF000000,0,0,5);			//	SC, EC	->  480
-//	LCD_INSDAT_Write(0x2B000001,0x3F000000,0,0,5);			//	SP, EP	->  320
-////	LCD_INSDAT_Write(0x36480000,0,0,0,2);
-//	LCD_INSDAT_Write(0x36280000,0,0,0,2);
-//	LCD_INSDAT_Write(0x3A550000,0,0,0,2);
-//	LCD_INSDAT_Write(0xB0000000,0,0,0,2);
-//	LCD_INSDAT_Write(0xB1A00000,0,0,0,2);
-//	LCD_INSDAT_Write(0xB4020000,0,0,0,2);
-//	LCD_INSDAT_Write(0xB6020200,0,0,0,3);
-//	LCD_INSDAT_Write(0xE9000000,0,0,0,2);
-//	LCD_INSDAT_Write(0xF7A9512C,0x82000000,0,0,5);
-//	LCD_INSDAT_Write(0x11000000,0,0,0,1);
-//	WaitXus(24);
-//	LCD_INSDAT_Write(0x29000000,0,0,0,1);
-//	WaitXus(4);
-//	LCD0_INSTPARA0w(0x2c);
+	//---LCD Mode Setting-------
+	//	Read Channel Setting
+	LCD0_VSELw(0xa);				//	Read Sync 2
+	LCD0_DSELw(0x1);				//	Read Channel 1
 
-	LCD0FF_RSw(1);								//	Fifo Reset
-	LCD0_ICw(0);								//	Instrunction Mode On
-	LCD0_CSXw(0);
-	LCD0_DCXw(0);
+	LCD0_INST_CONw(0);
 
-	#endif
+	//	LCD IP Clock
+	LCD_CK_PDw(0);
+	LCD_CK_SELw(11);				//	PCK_DIV2
+	LCD_CK_PDw(1);
 
+	WaitXus(100);						//	LCD Fifo Clear Delay
 
-	#ifdef		FR_TFT035_SPI_4LANE_18BIT_MODE
-	LCD0_SPI_LSBw(0);							//	MSB First
-	LCD0FF_RSw(1);								//	Fifo Reset
-	LCD0_ICw(1);								//	Instrunction Mode On
-	LCD0_CSXw(0);
-	LCD0_DCXw(0);
-	LCD0_DCX_SELw(1);
+	LCDO_CK_PDw(0);
+	LCDO_CK_SELw(12);				//	PCK_DIV3
+	LCDO_CK_PDw(1);
 
-	DCKO2_OENw(0);
-
-	LCD_INSDAT_Write(0xE0000309,0x08160A3F,0x784C090A,0x08161A0F,16);
-	LCD_INSDAT_Write(0xE1001619,0x030F0532,0x4546040E,0x0D35370F,16);
-	LCD_INSDAT_Write(0xC0171500,0,0,0,3);
-	LCD_INSDAT_Write(0xC1410000,0,0,0,2);
-	LCD_INSDAT_Write(0xC5001200,0,0,0,4);
-	//	Memory Address Set	->	HV Exchange !!
-	LCD_INSDAT_Write(0x2A000001,0xDF000000,0,0,5);			//	SC, EC	->  480
-	LCD_INSDAT_Write(0x2B000001,0x3F000000,0,0,5);			//	SP, EP	->  320
-//	LCD_INSDAT_Write(0x36480000,0,0,0,2);					//	320X480
-	LCD_INSDAT_Write(0x36280000,0,0,0,2);					//	480X320	->	MV = 1 !
-	LCD_INSDAT_Write(0x3A660000,0,0,0,2);
-	LCD_INSDAT_Write(0xB0000000,0,0,0,2);
-	LCD_INSDAT_Write(0xB1A00000,0,0,0,2);
-	LCD_INSDAT_Write(0xB4020000,0,0,0,2);
-	LCD_INSDAT_Write(0xB6020200,0,0,0,3);
-	LCD_INSDAT_Write(0xE9000000,0,0,0,2);
-	LCD_INSDAT_Write(0xF7A9512C,0x82000000,0,0,5);
-	LCD_INSDAT_Write(0x11000000,0,0,0,1);
-	WaitXus(2400);
-	LCD_INSDAT_Write(0x29000000,0,0,0,1);
-	WaitXus(400);
-	LCD0_INSTPARA0w(0x2c);
-
-	#endif
-
-	#ifdef		FR_TFT035_MCU_PARALLEL_16BIT_MODE
-	LCD0FF_RSw(1);								//	Fifo Reset
-	LCD0_ICw(1);								//	Instrunction Mode On
+	LCD0FF_RSw(1);								//	FIFO Reset
+	LCD0_ICw(1);								//	Instruction Mode On
 	LCD0_CSXw(0);
 	LCD0_DCXw(0);
 //	LCD0_DCX_SELw(1);
 
-	LCD_INSDAT_Write(0xE0000309,0x08160A3F,0x784C090A,0x08161A0F,16);
-	LCD_INSDAT_Write(0xE1001619,0x030F0532,0x4546040E,0x0D35370F,16);
-	LCD_INSDAT_Write(0xC0171500,0,0,0,3);
-	LCD_INSDAT_Write(0xC1410000,0,0,0,2);
-	LCD_INSDAT_Write(0xC5001280,0,0,0,4);
-	//	Memory Address Set	->	HV Exchange !!
-	LCD_INSDAT_Write(0x2A000001,0xDF000000,0,0,5);			//	SC, EC	->  480
-	LCD_INSDAT_Write(0x2B000001,0x3F000000,0,0,5);			//	SP, EP	->  320
-//	LCD_INSDAT_Write(0x36480000,0,0,0,2);
-	LCD_INSDAT_Write(0x36280000,0,0,0,2);
-	LCD_INSDAT_Write(0x3A550000,0,0,0,2);
-	LCD_INSDAT_Write(0xB0000000,0,0,0,2);
-	LCD_INSDAT_Write(0xB1A00000,0,0,0,2);
-	LCD_INSDAT_Write(0xB4020000,0,0,0,2);
-	LCD_INSDAT_Write(0xB6020200,0,0,0,3);
-	LCD_INSDAT_Write(0xE9000000,0,0,0,2);
-	LCD_INSDAT_Write(0xF7A9512C,0x82000000,0,0,5);
-	LCD_INSDAT_Write(0x11000000,0,0,0,1);
-	WaitXus(2400);
-	LCD_INSDAT_Write(0x29000000,0,0,0,1);
-	WaitXus(400);
-	LCD0_INSTPARA0w(0x2c);
+	LCD_DeviceInit();
 
-	#endif
-
-	WaitXus(1000);
-	LCD0_ICw(0);								//	Instrunction Mode On
-	LCD0_WIMGw(1);											//	Image Pumping Mode On
-
+	D_ITU_YCCH0w(0);							//	DO31 ~ DO16 -> Output Channel 0
 }
-
 
 #if		JPG_ENCODING||JPG_DECODING
 void JPG_Init(void)

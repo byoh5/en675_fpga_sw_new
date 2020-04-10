@@ -159,7 +159,7 @@ extern void ShutterMenuSet(void);
 	//#define DEBUG_OSD		1
 	#define UP_ANTISAT_ON	UP_OFF/*UP_ON*/		// isp_app.c
   #else
-	#define ENABLE_PA		// (+Lib)
+	//#define ENABLE_PA		// (+Lib)
 	#define UP_ANTISAT_ON	UP_OFF				// isp_app.c
   #endif
 

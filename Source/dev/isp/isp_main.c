@@ -58,21 +58,21 @@ void Isp_SensorRst(void)
 	INIT_DELAY(1);
 }
 
-#if model_TgtBd == 2
+#if model_Sens_Intf == 2
 void APB_Write(volatile unsigned long addr, unsigned int data)
 {
 	*((volatile unsigned int *)(addr)) = data;
 }
 
-/*void APB_Write(volatile unsigned int *addr, unsigned int data)
+unsigned int APB_Read(volatile unsigned long addr)
 {
-	*((unsigned int *)(addr)) = data;
-}*/
+	return *((volatile unsigned int *)(addr));
+}
 #endif
 
 void Isp_Sensor_init(void)
 {
-#if model_TgtBd == 2
+#if model_Sens_Intf == 2	// MIPI 설정
 	APCLK_SELw(0);				//	For FPGA 148.5 MHz
 	APCLK_PDw(1);
 	INIT_DELAY(1);	// TODO KSH x 필요?
@@ -111,13 +111,6 @@ void Isp_Sensor_init(void)
 	IspSDesConfig();
 	IspSDesDelay();
 
-	IspSYNC_CODE();
-
-#if model_TgtBd == 2	// TODO KSH x 필요?
-	SLVw(0);
-	POL_VSIw(1);
-#endif
-
 	INIT_STR_SENSOR
 	InitSensRun();
 
@@ -146,6 +139,12 @@ void Isp_PrePost_init(void)
 	IspPreSyncConfig();
 	IspPostSyncConfig();
 
+	// Polling 방식 VLOCKO 사용
+	// - Post Clk & Sync 설정 후 실행되어야 함 (또는 Isp_irq_init() 사용)
+	// - IBT_PCK_SELw() 설정 타이밍 조절 시 필요(테스트 용)
+	// - IF_Funcs() 에서 VLOCKO 에 동기화하여 코드 실행 시 필요(테스트 용)
+	Isp_VLOCKO_init();
+
 #if (model_Sens==SENS_OV2718)
 	ASYNC_DSYNCw(1);
 #endif
@@ -155,9 +154,7 @@ void Isp_PrePost_init(void)
 	SYNC_UPw(1);
 #endif
 
-#if model_TgtBd == 2
-	APCLK_SELw(0);				//	For FPGA 148.5 MHz		TODO KSH x 필요?
-
+#if model_Sens_Intf == 2	// MIPI 설정
 	//	Interrupt Mask
 	APB_Write(0x46500010,0xfff5fcff);		// sync
 
@@ -214,28 +211,6 @@ void Isp_PrePost_init(void)
 	INIT_STR("ISP Clk/Res configuration...");
 }
 
-void Isp_Output_init(void)
-{
-	//	Digital Output Configuration----------------------------------------------------------
-	//IspDout0SyncConfig();
-	//IspDout1SyncConfig();
-
-	//	Digital Output Configuration
-	Isp_DigOut_Config(IFO_OPIN_0TO15,  IFO_BT1120_16BIT, IFO_ISP_SYNC, IFO_1080_30P, IFO_ISP_PATH, 0, 0);		//	For HDMI (PinList, Dout Mode, Read Sync, Resolution, Output Source Path, Vsp, Hsp)
-
-	Isp_DigOut_Config(IFO_OPIN_16TO31, IFO_BT1120_16BIT, IFO_ISP_SYNC, IFO_1080_30P, IFO_ISP_PATH, 0, 0);		//	For HD-SDI (PinList, Dout Mode, Read Sync, Resolution, Output Source Path, Vsp, Hsp)
-//	Isp_DigOut_Config(IFO_OPIN_24TO31, IFO_BT1120_8BIT_SDR, IFO_ISP_SYNC, IFO_1080_30P, IFO_ISP_PATH, 0, 0);		//	For HD-SDI (PinList, Dout Mode, Read Sync, Resolution, Output Source Path, Vsp, Hsp)
-
-
-	Isp_Dout_Clock1_Config(FN_ON, CLK_74M, 0, CLK_INVERSE);														//	DCKO1 Pin Clock Out	->	FPGA HDSDI	(Clken, ClkFrq, ClkDelay, ClkInv)
-//	Isp_Dout_Clock1_Config(FN_ON, CLK_148M, 0, CLK_INVERSE);													//	DCKO1 Pin Clock Out	->	FPGA HDSDI	(Clken, ClkFrq, ClkDelay, ClkInv)
-	Isp_Dout_Clock0_Config(FN_ON, CLK_74M, 0, CLK_INVERSE);														//	DCKO0 Pin Clock Out	->	FPGA HDMI
-
-	Isp_Cvbs_Config(UP(Cvbs), NTSC, FREQ_27M, ISP_74M, DS_ISP_FONT_PATH, NO_VLCBIT, 0x7a, 0xe);
-
-	INIT_STR("Output configuration...");
-}
-
 void Isp_Function_init(void)
 {
 	//	Isp Function Configuration------------------------------------------------------------
@@ -274,8 +249,8 @@ void Isp_Function_init(void)
 	FORCE_ABT_SOFFw(1);
 
 	//	Dnr3d On
-#ifdef	USE_DNR3D
-	Isp_Dnr3d_Config(FN_ON, 0x80, 0x40, 0x20);
+#if defined(USE_DNR3D)
+	Isp_Dnr3d_Config(FN_ON, SP(PreClk), 0x80, 0x40, 0x20);
 #endif
 	//Isp_Dnr2d_Config(FN_ON, DNR2D_SUM_MOD, DNR2D_CNT8, 0x38, 0x30);
 	Isp_Dnr2d_Config(FN_ON, (model_TgtBd == 1) ? 3 : SP(Dnr2dICSel), SP(Dnr2dOCSel));
@@ -289,14 +264,6 @@ void Isp_DDR_init(void)
 	//	DDR Init---------------------------------------
 	Isp_Ddr_Cong();
 
-	//FIFO_ROSELw(1);
-	//WR_MSELw(1);
-	RD_MODw(0);
-	AXI_IDSw(0);
-
-
-//	bus_init();											//	Bus Monitor Init
-
 #ifdef	USE_FRC
 	#if model_1M
 		#define R_LTC	0x260
@@ -308,18 +275,18 @@ void Isp_DDR_init(void)
 		#define R_LTC	0x500
 	#endif
 
+	// R_LTC값은 ASIC 에서 바뀔 수 있음
 	DDR_RDNR_LTCw(R_LTC);
 	DDR_RWDR_LTCw(R_LTC);
 	DDR_RFRC_LTCw(R_LTC);
 	DDR_RYC_LTCw(R_LTC);
-	DDR_RENC_LTCw(0x300);	// ENC 는 고정
 
-	//INIT_DELAY(6);
+	//INIT_DELAY(1);
 	SD_MODw(0);			// 0 -> FRC 2 Page (Adr2, Adr3, Adr4 Don't care)
 
+	BUS_RD_RSTw(1);
 	INIT_DELAY(1/*4*/);
 	CPU_FRC_ENw(1);		// DDR OFF,  SD_MODw(0) 이후 1 VLOCK Delay 후 설정해야 함!!!
-	BUS_RD_RSTw(1);
 #endif
 }
 
@@ -366,7 +333,7 @@ void Isp_Digital_input_init(void)
   #endif
 #endif
 
-	INIT_STR("Digital Input configuration...");
+	//INIT_STR("Digital Input configuration...");
 }
 
 void OutMode(void)
@@ -385,9 +352,11 @@ void OutMode(void)
 		Isp_PrePost_init();			// ISP Pre & Post의 Clk과 Res 설정
 
 		IspDout0SyncConfig();
-#if model_TgtBd == 2
-		Isp_Dout1_Sync_Config(2200, 0x1b, 0x440, 0, 0x2a, 1920, 1080);							//	For HD-SDI Output (Scaling Image)
-		YCW_DCK2_PDw(0); YCW_DCK2_SELw(CLK_74M); YCW_DCK2_PDw(1);
+
+#if model_TgtBd == 2	// Test HD-SDI Output by Down-Scale
+		//Isp_Dout1_Sync_Config(2200, 0x1b, 0x440, 0, 0x2a, 1920, 1080);							//	For HD-SDI Output (Scaling Image)
+		//Isp_Frc_Adr_Config(0x80a0000, 0x8140000, 0x0000000, 0x0000000, 0x0000000);			//	4 K
+		//YCW_DCK2_PDw(0); YCW_DCK2_SELw(CLK_74M); YCW_DCK2_PDw(1);
 #else
 		IspDout1SyncConfig();
 #endif
@@ -398,6 +367,56 @@ void OutMode(void)
 		bSysFreq = UP(SysFreq);
 	}
 #endif
+}
+
+void Digital_OutputSet(void)
+{
+	//	Digital Output Configuration----------------------------------------------------------
+	//IspDout0SyncConfig();
+	//IspDout1SyncConfig();
+
+	//	Digital Output Configuration
+	Isp_DigOut_Config(IFO_OPIN_0TO15,  IFO_BT1120_16BIT, IFO_ISP_SYNC, (SP(PostClk)==C_148M) ? IFO_1080_60P : IFO_1080_30P, IFO_ISP_PATH, 0, 0);		//	For HDMI (PinList, Dout Mode, Read Sync, Resolution, Output Source Path, Vsp, Hsp)
+
+	Isp_DigOut_Config(IFO_OPIN_16TO31, IFO_BT1120_16BIT, IFO_ISP_SYNC, (SP(PostClk)==C_148M) ? IFO_1080_60P : IFO_1080_30P, IFO_ISP_PATH, 0, 0);		//	For HD-SDI (PinList, Dout Mode, Read Sync, Resolution, Output Source Path, Vsp, Hsp)
+//	Isp_DigOut_Config(IFO_OPIN_24TO31, IFO_BT1120_8BIT_SDR, IFO_ISP_SYNC, IFO_1080_30P, IFO_ISP_PATH, 0, 0);		//	For HD-SDI (PinList, Dout Mode, Read Sync, Resolution, Output Source Path, Vsp, Hsp)
+
+
+	Isp_Dout_Clock1_Config(FN_ON, SP(PostClk), 6, CLK_INVERSE);														//	DCKO1 Pin Clock Out	->	FPGA HDSDI	(Clken, ClkFrq, ClkDelay, ClkInv),  DCKO1_DLYw 0 -> 6 for VU Bd.
+//	Isp_Dout_Clock1_Config(FN_ON, CLK_148M, 0, CLK_INVERSE);													//	DCKO1 Pin Clock Out	->	FPGA HDSDI	(Clken, ClkFrq, ClkDelay, ClkInv)
+	Isp_Dout_Clock0_Config(FN_ON, SP(PostClk), 6, CLK_INVERSE);														//	DCKO0 Pin Clock Out	->	FPGA HDMI,  DCKO0_DLYw 0 -> 6 for VU Bd.
+
+
+#if 1 // For image write dump
+    YCW_CK1_SELw(SP(PostClk));	// Write Channel Clock 설정 (ISP Clock 74.25MHz)
+	YCW_CK1_PDw(1);				// Clock Enable
+	IM_HWI1w(RP(FR_HW));		// Write할 영상 수평 크기 설정 -> HWOw와 동일한 크기, 실제 DDR 사용 크기와 동일
+	IM_IVSEL1w(0);				// DDR Write Channel1 의 sync 설정 (ISP Sync)
+	IM_ISEL1w(0xC);				// DDR Write Channel1 의 Image 입력 Path 설정 (ISP Image, No Font)
+	IM_WFRC1_ONw(1);			// DDR R/W Channel 1에 FRC  사용 설정. “0”인 경우 Disable
+	IM_CADR1_P0w(IM_YADR1_P0r + ((RP(FR_HW)*RP(FR_VW))>>4));
+	//INIT_DELAY(1);			// Delay need ?
+	IM_CGO1w(1);				// Write Enable
+#else
+	//Dzoom_init();
+	Init_LCD_Control();
+#endif
+#if 0
+	//extern void TVI_Init(void);
+	//TVI_Init(); // I2C 1 Initialization needed for TP2827
+	INIT_STR("TP2827 Initialization...");
+
+	//void MCP2515_Init(void);
+	//MCP2515_Init(); // SPI 2,3 Initialization needed for CAN Deviece
+	INIT_STR("MCP2515 Initialization...");
+#endif
+
+	//INIT_STR("Output configuration...");
+}
+
+void Analog_OutputSet(void)
+{
+	Isp_Cvbs_Config(UP(Cvbs), NTSC, FREQ_27M, ISP_74M, DS_ISP_FONT_PATH, NO_VLCBIT, 0x7a, 0xe);
 }
 
 void Isp_init(void)
@@ -420,86 +439,64 @@ void Isp_init(void)
 
 	OutMode();
 
-	Isp_Output_init();			// Output 설정
-
 	Isp_Function_init();		// OSD Font 및 ISP 기능 설정
+}
 
-#if model_TgtBd == 2	// TODO KSH x 필요?
-	SYNC_UPw(1);
-
-	IBT_PCK_SELw(1);
-	IBT_PCK_PDw(1);
-	BT_PCK_SELw(1);
-	BT_PCK_PDw(1);
-	FPCK_SELw(1);
-	FPCK_PDw(1);
-	PSCK_SELw(1);
-	PSCK_PDw(1);
-	PPCK_SELw(1);
-	PPCK_PDw(1);
-	PR_CK0_SELw(1);
-	PR_CK0_PDw(1);
-	FN_CK0_SELw(1);
-	FN_CK0_PDw(1);
-	DITCK0_SELw(1);
-	DITCK0_PDw(1);
-	OTCK0_SELw(1);
-	OTCK0_PDw(1);
-	DITCK1_SELw(1);
-	DITCK1_PDw(1);
-	OTCK1_SELw(1);
-	OTCK1_PDw(1);
-	ITCK0_SELw(1);
-	ITCK0_PDw(1);
-	ITCK1_SELw(1);
-	ITCK1_PDw(1);
-	DCKO0_SELw(1);
-	DCKO0_PDw(1);
-	DCKO1_SELw(1);
-	DCKO1_PDw(1);
-	DO0_CK_SELw(1);
-	DO1_CK_SELw(1);
-	DO2_CK_SELw(1);
-	DO3_CK_SELw(1);
-	DO0_CK_PDw(1);
-	DO1_CK_PDw(1);
-	DO2_CK_PDw(1);
-	DO3_CK_PDw(1);
-
-	PRE_OSELw(4);
-
-	//	Option
-	DCKO0_DLYw(6);
-
-	DDR_RDNR_LTCw(0x500);
-	DDR_RWDR_LTCw(0x500);
-
-	DDR_RFRC_LTCw(0xf80);
-
-	DDR_RYC_LTCw(0x500);
-	INIT_DELAY(10);			// TODO KSH x Delay 10 ?
-	SD_MODw(0);
-	BUS_RD_RSTw(1);
-	INIT_DELAY(4);
-	CPU_FRC_ENw(1);
-
-//	isp_layer_merge();
-
-	INIT_DELAY(9);
-#else
-	Isp_DDR_init();				// ISP 에서 사용하는 DDR 설정
-#endif
-
+void Digital_InputSet(void)
+{
 	Isp_Digital_input_init();	// Digital Input configuration
+}
 
-//	extern void ParFncTest(void); ParFncTest();		// TODO KSH ◆ ParFncTest()
+void DownScaleSet(void)
+{
 
-	Isp_VLOCKO_init();			// IF_Funcs() 에서 VLOCKO 에 동기화하여 코드 실행 시 필요(테스트 용), OutMode() -> Isp_PrePost_init() 에서 Post Clk & Sync 설정 후 실행되어야 함, Isp_irq_init() 사용 시 필요 없음
+}
+
+void Vcap_ChannelSet(void)
+{
+#if model_Sens_Intf == 2
+	Wait_VLOCKO();
+	Wait_VLOCKO();
+	WaitXus(12005);		// 12000 or 12005 or 12010 중 하나로 설정
+
+	SYNC_UPw(1);
+#endif
+	IBT_PCK_SELw((model_Sens_Intf==0) ? M_EXT : SP(MipiClk));
+	IBT_PCK_PDw(1);
+
+	Isp_DDR_init();				// ISP 에서 사용하는 DDR 설정
+}
+
+void Init_Visp(void)
+{
+	Isp_init(); // ISP & Sensor Initial
+
+	Digital_InputSet(); // BT.XXX Input interface setting
+}
+
+void Init_Vcap(void)
+{
+	DownScaleSet();
+
+	Vcap_ChannelSet();
+}
+
+void Init_Vout(void)
+{
+	Digital_OutputSet(); // BT.XXX Output interface setting
+
+	Analog_OutputSet(); // CVBS, HD Analog
+}
+
+void Init_Virq(void)
+{
+	//extern void ParFncTest(void); ParFncTest();		// TODO KSH ◆ ParFncTest()
 
 	VIRQO_ENw(1);				// VLOCKO IRQ Routine Test, enx_exirq_source1() 함수에서 CLI_VLOCKOw(1) 실행됨
 	VIRQI_ENw(1);				// Sensor FPS 출력용
 
-	Dzoom_init();
+	VIRQI_EN_Tw(1);
+	//CLI_VLOCKI_Tw(1);		// TODO KSH> 컴파일 문제?
 
 #if 0
 	//YC_OSELw(0x11);
@@ -731,38 +728,59 @@ void IF_Funcs(void)
 	FontBenchTime(1/*gbMnDebugFnc==1*/, 23, 0, "ISP_I", IspIfTimeSta, 6);
 }
 
-void isp_main(void)
+void Vcap(void)
 {
-	const ULONG IspMainTimeSta = BenchTimeStart();
+	// Downscale, Video capture setting
+}
 
-	if(!gbMnDebugBypass) {
+void Visp(void)
+{
+	extern UINT gnViIrqOn;
 
-		Ae();								// Auto exposure
+#if 0	// ECM Control Only
+	WaitXms(100);
+	Comm();
+#else
 
-		Af();								// Auto exposure
+  #if 0		// Polling operation
+	if(ISP_RIRQ_VIr) { CLI_VLOCKI_Tw(1);
+  #else		// Interrupt operation
+	if(gnViIrqOn) { gnViIrqOn = 0;
+  #endif
 
-		AceDefog(); 						// ACE & Defog
+		const ULONG IspMainTimeSta = BenchTimeStart();
 
-		Awb();								// Auto white balance
+		if(!gbMnDebugBypass) {
 
-		Adnr();								// DNR 2D/3D
+			Ae();								// Auto exposure
 
-		Sharpness();						// Sharpness (aperture)
+			Af();								// Auto exposure
 
-		CSup(); 							// Color surpression
+			AceDefog(); 						// ACE & Defog
 
-		IMD();								// Motion detector
+			Awb();								// Auto white balance
 
-		DefectAuto();						// Defect correction
+			Adnr();								// DNR 2D/3D
 
-		BoxLast();							// Last Box control
+			Sharpness();						// Sharpness (aperture)
 
-		UartTxGrpRun();
+			CSup(); 							// Color surpression
 
-		AeDev();
+			IMD();								// Motion detector
+
+			DefectAuto();						// Defect correction
+
+			BoxLast();							// Last Box control
+
+			UartTxGrpRun();
+
+			AeDev();
+		}
+
+		FontBenchTime(1/*gbMnDebugFnc==1*/, 22, 0, "ISP_M", IspMainTimeSta, 6);
 	}
-
-	FontBenchTime(1/*gbMnDebugFnc==1*/, 22, 0, "ISP_M", IspMainTimeSta, 6);
+	else { IF_Funcs(); }
+#endif
 }
 
 #endif

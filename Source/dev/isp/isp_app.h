@@ -24,7 +24,7 @@ extern void Wait_VLOCKO_M(UINT Cnt);
 //*************************************************************************************************
 // LCD Function
 //-------------------------------------------------------------------------------------------------
-extern void LCD_FR_TFT035_6_Init(void);
+extern void Init_LCD_Control(void);
 
 
 //*************************************************************************************************
@@ -36,7 +36,6 @@ extern void Isp_Ddr_Cong(void);
 //*************************************************************************************************
 // isp_interface.c
 //-------------------------------------------------------------------------------------------------
-extern void Isp_SYNC_CODE(WORD awC0, WORD awC1, WORD awC2, WORD awC3_0, WORD awC3_1, WORD awC3_2, WORD awS0C3_0, WORD awS0C3_1, WORD awS0C3_2, WORD awS1C3_0, WORD awS1C3_1, WORD awS1C3_2);
 extern void Isp_SDesPowerOn(BOOL OnOff, BOOL IsMipi, BYTE MipiClkPhase);
 extern void Isp_SDesDelay(BYTE Lck);
 extern void Isp_SensorPowerOn(BOOL OnOff, UINT Clk);
@@ -47,12 +46,14 @@ extern void Isp_PostSync_Config(BOOL OSyncMode, BOOL ExSyncSel, UINT Htw, UINT V
 extern void Isp_PostClk_Config(BYTE Clk);
 extern void Isp_Gamma_Config(BOOL Y_OnOff, BOOL C_OnOff);
 extern void Isp_Edge_Config(BOOL OnOff);
-extern void Isp_Dnr3d_Config(BOOL OnOff, BYTE DnrFk, BYTE DnrTh, BYTE DnrGain);
+extern void Isp_Dnr3d_Config(BOOL OnOff, BYTE Clk, BYTE DnrFk, BYTE DnrTh, BYTE DnrGain);
 //extern void Isp_Defect_Config(BOOL OnOff, BOOL GsumCnt, BOOL RBSumCnt, BYTE GWgt, BYTE RBWgt, BYTE DfSlope, UINT GThres, UINT RBThres, UINT DfMax, UINT DfMin, BYTE DfCsel);
 //extern void Isp_Dnr2d_Config(BOOL OnOff, BOOL Dnr2dMode, BYTE Dnr2dCnt, BYTE Dnr2dDth, BYTE Dnr2dGain);
 extern void Isp_Dnr2d_Config(BOOL OnOff, BYTE Icsel, BYTE Ocsel);
-extern void Isp_Frc_Adr_Config(UINT Adr0, UINT Adr1, UINT Adr2, UINT Adr3, UINT Adr4);
-
+extern UINT Isp_Frc_Adr_Config(UINT Page, UINT Hw, UINT Vw, UINT Hmargin, UINT Vmargin, UINT Adr);
+extern UINT Isp_Wdr_Adr_config(UINT Page, UINT Hw, UINT Vw, UINT Hmargin, UINT Vmargin, UINT Adr);
+extern UINT Isp_Cvb_Adr_Config(UINT Hw, UINT Vw, UINT Adr);
+extern UINT Isp_YC_Adr_Config(UINT Ch, UINT Page, UINT Hw, UINT Vw, UINT Hmargin, UINT Vmargin, UINT Adr);
 
 //*************************************************************************************************
 // digital_interface.c
@@ -171,18 +172,15 @@ extern void menu_redraw(int iChg, int iGrayOnly);
 //*************************************************************************************************
 // isp main
 //-------------------------------------------------------------------------------------------------
-extern void Isp_irq_init(void);
-extern void Isp_Sensor_init(void);
-extern void Isp_PrePost_init(void);
-extern void Isp_Output_init(void);
-extern void Isp_Function_init(void);
-extern void Isp_DDR_init(void);
-extern void Isp_Digital_input_init(void);
-extern void Isp_init(void);
-extern void Hdmi_Check(void);
-extern void IF_Funcs(void);
-extern void isp_main(void);
 extern void OutMode(void);
+
+extern void Init_Visp(void);
+extern void Init_Vcap(void);
+extern void Init_Vout(void);
+extern void Init_Virq(void);
+
+extern void Visp(void);
+extern void Vcap(void);
 
 #define INIT_DELAY(T)	WaitXms(34*T)/*Wait_VLOCKO_M(T)*/	// Uint of T is 1/30 sec
 

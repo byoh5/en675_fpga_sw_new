@@ -699,6 +699,29 @@ int WdrMShtMax(const BYTE abDssRatioLmt)		// 0:FWDR, 1:LWDR 2P, 2:LWDR 3P
 									   NOR_SHT_MAX;
 }
 
+int WdrSShtMin(const BYTE abDssRatioLmt)	// 0:FWDR, 1:LWDR 2P, 2:LWDR 3P
+{
+	const UINT nVMAX = MAX(abDssRatioLmt, 1) * gnAeVtw;
+	return	(gbWdrOn == WDR_LINE_2P) ? LWDR_2P_S_MIN :
+			(gbWdrOn == WDR_LINE_3P) ? LWDR_3P_S_MIN :
+									   NOR_SHT_MIN;
+}
+
+int WdrLShtMin(const BYTE abDssRatioLmt)		// 0:FWDR, 1:LWDR 2P, 2:LWDR 3P
+{
+	const UINT nVMAX = MAX(abDssRatioLmt, 1) * gnAeVtw;
+	return	(gbWdrOn == WDR_LINE_2P) ? LWDR_2P_L_MIN :
+			(gbWdrOn == WDR_LINE_3P) ? LWDR_3P_L_MIN :
+									   NOR_SHT_MIN;
+}
+
+int WdrMShtMin(const BYTE abDssRatioLmt)		// 0:FWDR, 1:LWDR 2P, 2:LWDR 3P
+{
+	const UINT nVMAX = MAX(abDssRatioLmt, 1) * gnAeVtw;
+	return	(gbWdrOn == WDR_LINE_3P) ? LWDR_3P_M_MIN :
+									   NOR_SHT_MIN;
+}
+
 #if 0
 int ISRT AeETC(int aiVal)
 {

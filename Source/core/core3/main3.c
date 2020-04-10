@@ -13,7 +13,7 @@ static void CPUtoISPcallback(void *ctx)
 	//while (CPU_TO_ISP_MSG_MUTEX);
 
 	extern void IspMsgFnc(UINT anMsg);
-	IspMsgFnc(SHREG_CMD);
+	//IspMsgFnc(SHREG_CMD);
 
 	printf("CPU to ISP!(%X)\n", SHREG_CMD);
 
@@ -23,7 +23,7 @@ static void CPUtoISPcallback(void *ctx)
 	BtoAIrqCall();
 }
 
-void main_3(int cpu_id)
+void Init_Vsys(void) // System
 {
 	SYS_REG0 = 0xf;
 	while(SYS_REG0 == 0xf) {} // Wait for CPU0 to be ready.
@@ -32,45 +32,29 @@ void main_3(int cpu_id)
 
 	AtoBIrqCallback(CPUtoISPcallback, NULL);
 	AtoBSetIrqEn(ENX_ON);
+}
+
+void main_3(int cpu_id)
+{
+	Init_Vsys(); INIT_STR("Init_Vsys...");	// CPU3 System initial
 
 #if defined(__SENSOR__)
 
-	Isp_init();
-
-  #if 0//model_TgtBd == 1
-	VIRQI_EN_Tw(1);
-	//CLI_VLOCKI_Tw(1);		// TODO KSH> 컴파일 문제?
-  #else
-	extern UINT gnViIrqOn;
-  #endif
-
-  #if 0
-	#define TIMER_IRQ_CH	0
-	TimerSetFreq(TIMER_IRQ_CH, 24, 29999, 1);
-	TimerIrqCallback(TIMER_IRQ_CH, IF_Funcs_Timer_irq, 0);
-	TimerSetIrqEn(TIMER_IRQ_CH, ENX_ON);
-	TimerStart(TIMER_IRQ_CH);
-  #endif
+	Init_Visp(); INIT_STR("Init_Visp...");	// ISP initial
+	Init_Vcap(); INIT_STR("Init_Vcap...");	// Video path set
+	Init_Vout(); INIT_STR("Init_Vout...");	// Digital/Analog Output set
+	Init_Virq(); INIT_STR("Init_Virq...");	// Video interrupt enable
 
 	INIT_STR("--------- Main Loop Start ---------");
 
 	while (1)
 	{
-  #if 0
-		Wait_VLOCKO();
-		isp_main();
-		IF_Funcs();
-  #else
-	#if 0//model_TgtBd == 1
-		if(ISP_RIRQ_VIr) { CLI_VLOCKI_Tw(1); isp_main(); }
-	#else
-		if(gnViIrqOn) { gnViIrqOn = 0; isp_main(); }
-	#endif
-		else { IF_Funcs(); }
-  #endif
-
-//		ddr_control();	// for DDR Test, 사용하지 않음
+		Visp();
+		Vcap();
+		//Venc();
+		//Vdec();
 	}
+
 #else
 	while (1) {
   #ifdef __ECM_STRING__

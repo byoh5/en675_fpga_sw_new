@@ -119,6 +119,9 @@ extern int FrameSetCount(const BYTE abDssRatioLmt);
 extern int WdrSShtMax(const BYTE abDssRatioLmt);
 extern int WdrLShtMax(const BYTE abDssRatioLmt);
 extern int WdrMShtMax(const BYTE abDssRatioLmt);
+extern int WdrSShtMin(const BYTE abDssRatioLmt);
+extern int WdrLShtMin(const BYTE abDssRatioLmt);
+extern int WdrMShtMin(const BYTE abDssRatioLmt);
 extern void AeAGC_LWDR(int, int, int, int);
 
 extern void SetAeDevDly(const BYTE, const BYTE);
@@ -1391,10 +1394,11 @@ void ISRT AeAdv(void)
 		}
 
 		if(ParAe(PA_SHT_MANUAL)==0) {
-			const int LONG_SHT_LMT = WdrLShtMax(1);
-			SHT_MIN = MIN(LONG_SHT_LMT,SHT_MIN);
-			SHT_MAX = MIN(LONG_SHT_LMT,SHT_MAX);
-			SHT_DBL_MAX = MIN(LONG_SHT_LMT,SHT_DBL_MAX);
+			const int LONG_SHT_MIN = WdrLShtMin(1);
+			const int LONG_SHT_MAX = WdrLShtMax(1);
+			SHT_MIN = CLAMP(SHT_MIN, LONG_SHT_MIN, LONG_SHT_MAX);
+			SHT_MAX = CLAMP(SHT_MAX, LONG_SHT_MIN, LONG_SHT_MAX);
+			SHT_DBL_MAX = CLAMP(SHT_DBL_MAX, LONG_SHT_MIN, LONG_SHT_MAX);
 		}
 
 		if(ParAe(PA_AGC_MANUAL)) {
@@ -1717,7 +1721,7 @@ AeCtrl:
 		//if(iErrS1 < (-iErrMgn-1)) iErrS1 = -iErrMgn-1 - LibUtlInterp1D_CLAMP( giCurAgc, UP(AE_WDR_ON_AGC), AE_WDR_OFF_AGC, (iErrS1+iErrMgn+1)>>0, (iErrS1+iErrMgn+1)>>10);	// Sensor AGC
 		GrpAe(GA_ERR_DAY_ORI) = iErrS1;
 
-	#if (model_Sens==SENS_IMX327) || (model_Sens==SENS_OV2718)	// Shutter line 에 따른 밝기가 큰 경우 WDR Short에서 20 이하의 제어가 필요
+	#if (model_Sens==SENS_IMX327) || (model_Sens==SENS_OV2718) || (model_Sens==SENS_IMX415)	// Shutter line 에 따른 밝기가 큰 경우 WDR Short에서 20 이하의 제어가 필요
 		#define FWDR_SHORT_MIN1	/*8*/ParAe(PA_WDR_SHORT_MIN1)	// 너무 빠른 Shutter에서는 AGC를 써도 SUM2가 크게 변화하여 헌팅이 발생 -> 1에서 8로 변경
 		#define WDR_SHORT_MIN1	FWDR_SHORT_MIN1
 		const int iShtSValMax0 = (giShtVal)>>1;																// WDR Short limit 50% of Long
@@ -1733,14 +1737,14 @@ AeCtrl:
 		// Short과 Long이 너무 벌어지지 않도록 개선, Short VHSS 보정 AGC 와 Long AGC 동시 적용 방지
 		const int iWdrSLmt = LibUtlInterp1D_CLAMP(giShtVal, WdrLShtMax(1)>>1, WdrLShtMax(1)-1, WDR_SHORT_MIN1, WDR_SHORT_MIN2);	// Sht limit
 
-		const int iShtSMax = CLAMP(iShtSValMax0, 1, WdrSShtMax(gbDssRatioLmt));
-		const int iShtSMin = MIN(iShtSMax, iWdrSLmt);
+		const int iShtSMax = CLAMP(iShtSValMax0, WdrSShtMin(1), WdrSShtMax(gbDssRatioLmt));
+		const int iShtSMin = MAX(MIN(iShtSMax, iWdrSLmt), WdrSShtMin(1));
 
 		//if(iShtSMax<iWdrSLmt && iErrS1 < (-iErrMgn-1)) iErrS1 = (-iErrMgn-1) - ((iErrS1+iErrMgn+1)>>3);
 
 		// ShtCtrl(1, ...)에서 abAgcOn를 1로 사용하기 위해서는 AgcCtrl()의 giAgcVal도 2개가 있어야 함 -> 현재는 gbVHssSAgc + giAgcVal(Long Shutter) 로 동작 -> WDR 사용 시 AGC_MIN 적용하지 않음
 		// 너무 빠른 Shutter에서는 AGC를 써도 SUM2가 크게 변화하여 헌팅이 발생 -> iErrMgn에 +4 적용
-		if(bInitAe==0) ShtCtrl(1, iErrS1, iErrMgn+4, (iShtSpd/*>>NO_EST_SPD_DOWN_BIT*/), MAX(iShtSMin,1), iShtSMax/*giShtVal-1*/, 0, 0, 0, 0);	// over than short limit, under than long
+		if(bInitAe==0) ShtCtrl(1, iErrS1, iErrMgn+4, (iShtSpd/*>>NO_EST_SPD_DOWN_BIT*/), iShtSMin, iShtSMax/*giShtVal-1*/, 0, 0, 0, 0);	// over than short limit, under than long
 
 		const int iWdrAgcWgt = LibUtlInterp1D_CLAMP( giCurAgc, UP(AE_WDR_ON_AGC), AE_WDR_OFF_AGC, AE_WDR_MAX_WGT, UP(AE_WDR_MIN_WGT));	// Sensor AGC
 		const int iShtSVal = WdrAgcWgt(bInitAe, UP(AE_WDR_ON_AGC) < giCurAgc, iWdrAgcWgt, iShtSMax/*giShtVal-1*/, 30, 18);	// CAUTION ! -> iShtSVal 와 gbVHssSAgc 는 비동기
@@ -1759,7 +1763,7 @@ AeCtrl:
 
 			if(gbWdrOn==WDR_LINE_3P) {
 				giSht_M = (giSht_L - giSht_S)/3 + giSht_S;
-				giSht_M = MIN(giSht_M, WdrMShtMax(gbDssRatioLmt));
+				giSht_M = CLAMP(giSht_M, WdrMShtMin(1), WdrMShtMax(gbDssRatioLmt));
 			} else {
 				giSht_M = 0;
 			}

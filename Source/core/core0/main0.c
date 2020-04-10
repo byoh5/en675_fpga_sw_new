@@ -61,7 +61,7 @@ void enx_peri_init(void)
 
 	SflsInit();
 
-#if model_TgtBd == 2
+#if 0//model_TgtBd == 2		// RX Phy Reset
 	GPIO_PIN2_OEN	=	0;		//	Output
 	GPIO_PIN3_OEN	=	0;		//	Output
 	GPIO_PIN2_OUT	=	0;
@@ -608,29 +608,26 @@ void main_0(int cpu_id)
 
 	enx_pmp_init();
 
-#if model_TgtBd == 2
+#if model_TgtBd == 2	// CPU 1core
 	if(SYS_REG0 == 0xff22) main_os();
 	enx_externalirq_init_cpu0();
 
 	enx_externalirq_perl(eigiISP, ENX_ON, 0);							// Enable ISP Interrupts
 	enx_externalirq_perl(eigiVCODEC, ENX_ON, 0);						// Enable Codec Interrupts
 
-//	WaitXms(2000);
-//	UartTxSetIrqEn(DEBUG_UART_NUM, ENX_OFF);
-//	printf("UART-TXe(%d) TXf(%d)\n", UartTxIsEmpty(7), UartTxIsFull(7));
-//	UartTxSetIrqEn(DEBUG_UART_NUM, ENX_ON);
-//	UartTxSetIrqEn(DEBUG_UART_NUM, ENX_OFF);
-//	UartTxSetIrqEn(DEBUG_UART_NUM, ENX_ON);
+	Init_Visp(); INIT_STR("Init_Visp...");	// ISP initial
+	Init_Vcap(); INIT_STR("Init_Vcap...");	// Video path set
+	Init_Vout(); INIT_STR("Init_Vout...");	// Digital/Analog Output set
+	Init_Virq(); INIT_STR("Init_Virq...");	// Video interrupt enable
 
-	Isp_init();
+	INIT_STR("--------- Main Loop Start ---------");
 
-	extern UINT gnViIrqOn;
-
-	while (1) {
-		//WaitXms(100);
-		//Comm();
-		if(gnViIrqOn) { gnViIrqOn = 0; isp_main(); }
-		else { IF_Funcs(); }
+	while (1)
+	{
+		Visp();
+		Vcap();
+		//Venc();
+		//Vdec();
 	}
 #endif
 

@@ -6,6 +6,17 @@
 #define		ISP_148M		1
 #define		ISP_297M		0
 
+//	MIPI Clock----------------------------------------------------- isp_interface.c
+#define MIPI_297M			0
+#define MIPI_148M			1
+#define MIPI_74M			2
+#define MIPI_EXT			3
+
+#define M_297M				MIPI_297M
+#define M_148M				MIPI_148M
+#define M_74M				MIPI_74M
+#define M_EXT				MIPI_EXT
+
 //	Sensor Clock--------------------------------------------------- isp_interface.c
 #define	SENS_148M			0
 #define	SENS_74M			1

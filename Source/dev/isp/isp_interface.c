@@ -1,28 +1,5 @@
 #include "dev.h"
 
-void Isp_SYNC_CODE(WORD awC0, WORD awC1, WORD awC2, WORD awC3_0, WORD awC3_1, WORD awC3_2, WORD awS0C3_0, WORD awS0C3_1, WORD awS0C3_2, WORD awS1C3_0, WORD awS1C3_1, WORD awS1C3_2)
-{
-#if 0
-#if (model_Sens_Intf==1) || (model_Sens_Intf==2)	// LVDS or MIPI
-	SYNC_COD0w(awC0);
-	SYNC_COD1w(awC1);
-	SYNC_COD2w(awC2);				//	Short Packet Line Start
-	SYNC_COD3_0w(awC3_0);			//	Short Packet Line End
-	SYNC_COD3_1w(awC3_1);
-	SYNC_COD3_2w(awC3_2);
-#endif
-
-#if (model_Sens_Intf==2)	// MIPI
-	SYNC_S0COD3_0w(awS0C3_0);
-	SYNC_S0COD3_1w(awS0C3_1);
-	SYNC_S0COD3_2w(awS0C3_2);			//	Long Packet Line Start - Raw 10Bit or
-	SYNC_S1COD3_0w(awS1C3_0);			//	Long Packet Line End
-	SYNC_S1COD3_1w(awS1C3_1);
-	SYNC_S1COD3_2w(awS1C3_2);
-#endif
-#endif
-}
-
 //	OnOff			->	0 : Off, 1 : On
 //	IsMipi			->	0 : LVDS, 1 : Mipi
 //	MipiClkPhase	->	Select Mipi 1/4 Clock Phase 0, 1, 2, 3
@@ -131,7 +108,7 @@ void Isp_Parallel_Config(BOOL OnOff/*, BOOL IsSlave*/, BOOL IsUseExtClk, BOOL Is
 //	if(IsSlave)		SLVw(3);
 //	else			SLVw(0);
 
-	IBT_PCK_SET(0);
+	//IBT_PCK_SET(0);
 
 	if(IsUseExtClk==PARA_EXTER_CLK)	{	BT_PCK_SET(3);	}			//	External Sensor Pixel Clock
 	else							{	BT_PCK_SET(2);	}			//	Internal 74.25 MHz
@@ -167,7 +144,7 @@ void Isp_PreClk_Config(BYTE Clk, BOOL Usefrc)
 	if(Clk==5)		BT_PCK_SELw(7);
 	else			BT_PCK_SELw(Clk);
 
-	FPCK_SELw(Clk);
+	FPCK_SELw(Clk);		// PreClk
 
 	BT_PCK_PDw(1);	FPCK_PDw(1);
 
@@ -176,7 +153,7 @@ void Isp_PreClk_Config(BYTE Clk, BOOL Usefrc)
 		if(Clk==ISP_CLK_PCLK_DIV2)		{ YCW_DCK2_SELw(7); }
 		else if(Clk==ISP_CLK_PLL_DIV0)	{ YCW_DCK2_SELw(12); }
 		else							{ YCW_DCK2_SELw(Clk); }
-		YCW_DCK2_PDw(1);	// WDR 사용 시 필요
+		YCW_DCK2_PDw(1);	// WDR 사용 시 필요, DS_WCH2_ENw 가 0이면 ISP_FRC, 1이면 DDR YC write전용 채널
 	}
 	else YCW_DCK2_PDw(0);
 }
@@ -262,7 +239,7 @@ void Isp_PostClk_Config(BYTE Clk)
 	PSCK_PDw(0);	PPCK_PDw(0);	PR_CK0_PDw(0);	FN_CK0_PDw(0);
 
 	PSCK_SELw(Clk);
-	PPCK_SELw(Clk);
+	PPCK_SELw(Clk);		// PostClk
 	FN_CK0_SELw(Clk);
 	PR_CK0_SELw(Clk);
 
@@ -308,16 +285,16 @@ void Isp_Edge_Config(BOOL OnOff)
 //	DnrFk	->	3D dnr 동작 시 feedback되는 image의 강도를 조절한다.
 //	DnrTh	->	현재 이미지와 전 이미지의 difference가 이 threshold 값보다 작은 영역에서 3d dnr이 동작하게 된다.
 //	DnrGain	->	Gain보다 Dnrth의 값이 3D dnr 동작에 더 큰 영향을 준다. 보통 0x20으로 사용한다.
-void Isp_Dnr3d_Config(BOOL OnOff, BYTE DnrFk, BYTE DnrTh, BYTE DnrGain)
+void Isp_Dnr3d_Config(BOOL OnOff, BYTE Clk, BYTE DnrFk, BYTE DnrTh, BYTE DnrGain)
 {
 	DNR3D_FKw(DnrFk);
 	DNR3D_THw(DnrTh);
 	DNR3D_GAw(DnrGain);
 
 	if(OnOff)	{	DNR3D_RCH_ENw(1);
-					if(FPCK_SELr==4)		{	YCR_CK4_SET(7);         }
-					else if(FPCK_SELr==5)	{	YCR_CK4_SET(11);        }
-					else					{	YCR_CK4_SET(FPCK_SELr);	}
+					if(Clk==ISP_CLK_PCLK_DIV2)		{	YCR_CK4_SET(7);     }
+					else if(Clk==ISP_CLK_PLL_DIV0)	{	YCR_CK4_SET(11);    }
+					else							{	YCR_CK4_SET(Clk);	}
 					DNR3D_ONw(1);
 				}
 	else		{	DNR3D_RCH_ENw(0);	DNR3D_ONw(0);	YCR_CK4_PDw(0);	}
@@ -381,15 +358,122 @@ void Isp_Dnr2d_Config(BOOL OnOff, BOOL Dnr2dMode, BYTE Dnr2dCnt, BYTE Dnr2dDth, 
 //	SD_MODw : 0 -> FRC 2 Page (Adr2, Adr3, Adr4 Don't care)
 //			  1 -> FRC 3 Page (Adr3, Adr4 Don't care)
 //			  4 -> FRC 5 Page
-void Isp_Frc_Adr_Config(UINT Adr0, UINT Adr1, UINT Adr2, UINT Adr3, UINT Adr4)
+UINT Isp_Frc_Adr_Config(UINT Page, UINT Hw, UINT Vw, UINT Hmargin, UINT Vmargin, UINT Adr)
 {
-	FRC_ADR0w(DDR_BASE_ISP+Adr0);
-	FRC_ADR1w(DDR_BASE_ISP+Adr1);
-	FRC_ADR2w(DDR_BASE_ISP+Adr2);
-	FRC_ADR3w(DDR_BASE_ISP+Adr3);
-	FRC_ADR4w(DDR_BASE_ISP+Adr4);
+	const UINT nFrcSize = ((Hw+Hmargin) * (Vw+Vmargin) * 10)>>(3+4);
+	const UINT nFrcAdr0 = Adr;
+	const UINT nFrcAdr1 = nFrcAdr0 + nFrcSize;
+	const UINT nFrcAdr2 = nFrcAdr1 + nFrcSize;
+	const UINT nFrcAdr3 = nFrcAdr2 + nFrcSize;
+	const UINT nFrcAdr4 = nFrcAdr3 + nFrcSize;
+	const UINT nFrcAdrE = nFrcAdr4 + nFrcSize;
+
+	if(Page<=1) return nFrcAdr0;
+
+	FRC_ADR0w(nFrcAdr0); FRC_ADR1w(nFrcAdr1);
+	if(Page==2) return nFrcAdr2;
+
+	FRC_ADR2w(nFrcAdr2);
+	if(Page==3) return nFrcAdr3;
+
+	FRC_ADR3w(nFrcAdr3);
+	if(Page==4) return nFrcAdr4;
+
+	FRC_ADR4w(nFrcAdr4);
+	return nFrcAdrE;
 }
 
+UINT Isp_Wdr_Adr_config(UINT Page, UINT Hw, UINT Vw, UINT Hmargin, UINT Vmargin, UINT Adr)
+{
+	const UINT nWdrSize = ((Hw+Hmargin) * (Vw+Vmargin) * 10)>>(3+4);
+	const UINT nWdrAdr0 = Adr;
+	const UINT nWdrAdr1 = nWdrAdr0 + nWdrSize;
+	const UINT nWdrAdrE = nWdrAdr1 + nWdrSize;
 
+	if(Page<=0) return nWdrAdr0;
 
+	 WDR_ADR_LEw(nWdrAdr0);
+	if(Page==1) return nWdrAdr1;
+
+	WDR_ADR_SEw(nWdrAdr1);
+	return nWdrAdrE;
+}
+
+UINT Isp_Cvb_Adr_Config(UINT Hw, UINT Vw, UINT Adr)
+{
+	const UINT nCvbSize = (((Hw * Vw)<<4)>>(3+4));
+	const UINT nCvbAdr0 = Adr;
+	const UINT nCvbAdr1 = nCvbAdr0 + nCvbSize;
+	const UINT nCvbAdr2 = nCvbAdr1 + nCvbSize;
+	const UINT nCvbAdr3 = nCvbAdr2 + nCvbSize;
+	const UINT nCvbAdrE = nCvbAdr3 + nCvbSize;
+
+	ENC_ADR0w(nCvbAdr0);
+	ENC_ADR1w(nCvbAdr1);
+	ENC_ADR2w(nCvbAdr2);
+	ENC_ADR3w(nCvbAdr3);
+
+	return nCvbAdrE;
+}
+
+UINT Isp_YC_Adr_Config(UINT Ch, UINT Page, UINT Hw, UINT Vw, UINT Hmargin, UINT Vmargin, UINT Adr)
+{
+	const UINT nYSize = (((Hw+Hmargin)*(Vw+Vmargin))<<3)>>(3+4);
+	const UINT nCSize = (((Hw+Hmargin)*(Vw+Vmargin))<<2)>>(3+4);
+
+	const UINT nYAdr0 = Adr;
+	const UINT nCAdr0 = nYAdr0 + nYSize;
+	const UINT nYAdr1 = nCAdr0 + nCSize;
+	const UINT nCAdr1 = nYAdr1 + nYSize;
+	const UINT nYAdr2 = nCAdr1 + nCSize;
+	const UINT nCAdr2 = nYAdr2 + nYSize;
+	const UINT nCAdrE = nCAdr2 + nCSize;
+
+	if(Page<=0) return nYAdr0;
+
+	switch (Ch) {
+		case 0 : IM_YADR0w(nYAdr0); IM_CADR0w(nCAdr0); return nYAdr1;
+				 break;
+		case 1 : IM_YADR1_P0w(nYAdr0); IM_CADR1_P0w(nCAdr0); if(Page==1) return nYAdr1;
+				 IM_YADR1_P1w(nYAdr1); IM_CADR1_P1w(nCAdr1); if(Page==2) return nYAdr2;
+				 IM_YADR1_P2w(nYAdr2); IM_CADR1_P2w(nCAdr2); return nCAdrE;
+				 break;
+		case 2 : IM_YADR2_P0w(nYAdr0); IM_CADR2_P0w(nCAdr0); if(Page==1) return nYAdr1;
+				 IM_YADR2_P1w(nYAdr1); IM_CADR2_P1w(nCAdr1); if(Page==2) return nYAdr2;
+				 IM_YADR2_P2w(nYAdr2); IM_CADR2_P2w(nCAdr2); return nCAdrE;
+				 break;
+		case 3 : IM_YADR3_P0w(nYAdr0); IM_CADR3_P0w(nCAdr0); if(Page==1) return nYAdr1;
+				 IM_YADR3_P1w(nYAdr1); IM_CADR3_P1w(nCAdr1); if(Page==2) return nYAdr2;
+				 IM_YADR3_P2w(nYAdr2); IM_CADR3_P2w(nCAdr2); return nCAdrE;
+				 break;
+		case 4 : IM_YADR4_P0w(nYAdr0); IM_CADR4_P0w(nCAdr0); if(Page==1) return nYAdr1;
+				 IM_YADR4_P1w(nYAdr1); IM_CADR4_P1w(nCAdr1); if(Page==2) return nYAdr2;
+				 IM_YADR4_P2w(nYAdr2); IM_CADR4_P2w(nCAdr2); return nCAdrE;
+				 break;
+	}
+
+	return nYAdr0;
+}
+
+#if 0
+//	OnOff	->	FN_ON							//	FRC Clock Enable
+//				FN_OFF							//	FRC Clock Disable
+//	Clk	->		CLK_297M						//	ISP PLL	Clock (297MHz)
+//				CLK_148M               	    	//	ISP PLL	Clock (148.5MHz)
+//				CLK_74M                	    	//	ISP PLL	Clock (74.25MHz)
+//				CLK_DIG_CH0            	    	//	Digital Input Channel Pixel Clock 0	EN675 Pin : SS_CKI)
+//				CLK_DIG_CH1            	    	//	Digital Input Channel Pixel Clock 1 EN675 Pin : GPIO4)
+//				CLK_DIG_CH2            	    	//	Digital Input Channel Pixel Clock 2 EN675 Pin : GPIO5)
+//				CLK_DIG_CH3            	    	//	Digital Input Channel Pixel Clock 3 EN675 Pin : GPIO6)
+//				CLK_DIG_CH0_DIV2       	    	//	Digital Input Channel Pixel Clock 0	1/2 Divide Clock
+//				CLK_DIG_CH1_DIV2       	    	//	Digital Input Channel Pixel Clock 1 1/2 Divide Clock
+//				CLK_DIG_CH2_DIV2       	    	//	Digital Input Channel Pixel Clock 2 1/2 Divide Clock
+//				CLK_DIG_CH3_DIV2       	    	//	Digital Input Channel Pixel Clock 3 1/2 Divide Clock
+//				CLK_PLL_DIV0           	    	//	ISP PLL Adjust Clock (Special)
+void Isp_Frc_Config(BOOL OnOff, BYTE Clk)
+{
+	if(OnOff)		{	YCW_DCK2_SET(Clk);	}			//	FRC Enable
+	else 			{	YCW_DCK2_PDw(0);	}			//	FRC Disable
+}
+#endif
 

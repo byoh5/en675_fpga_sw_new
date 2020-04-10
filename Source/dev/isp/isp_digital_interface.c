@@ -2062,7 +2062,7 @@ void Isp_RdCh4_Config(BYTE Path, SHORT Hw, BYTE Color, BYTE Clk, BYTE RdSync, BY
 	else		{	IM_RON4w(0);	YCR_CK4_PDw(0);		}
 }
 
-//	Read Channel0 Manual Read Address Setting	-> Read Channel 0 is only using manual adress
+//	Read Channel0 Manual Read Address Setting	-> Read Channel 0 is only using manual address
 void Isp_RdCh0_MAdr(UINT YAdr, UINT CAdr)
 {
 	IM_YADR0w(YAdr);
@@ -2695,6 +2695,10 @@ UINT Isp_Img_HMerge(BOOL OnOff, BYTE Clk, BYTE ChCnt, BYTE RdSync, UINT HtwSync,
 
 void Isp_Cvbs_Config(BOOL OnOff, BOOL IsNtsc, BYTE CvbsFreq, BYTE SourceFrq, BYTE SourcePath, BYTE VlcMode, UINT Hsp, UINT Vsp)
 {
+#if model_TgtBd == 2	// CVBS Æ÷ÇÔ ¾ÈµÊ
+	OnOff = UP_OFF;
+#endif
+
 	UINT i, SourceSiz=0;
 	const UINT *Source;
 

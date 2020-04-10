@@ -283,6 +283,24 @@ int WdrMShtMax(const BYTE abDssRatioLmt)		// 0:FWDR, 1:LWDR 2P, 2:LWDR 3P
 	return	NOR_SHT_MAX;
 }
 
+int WdrSShtMin(const BYTE abDssRatioLmt)	// 0:FWDR, 1:LWDR 2P, 2:LWDR 3P
+{
+	const UINT nVMAX = MAX(abDssRatioLmt, 1) * gnAeVtw;
+	return	NOR_SHT_MIN;
+}
+
+int WdrLShtMin(const BYTE abDssRatioLmt)		// 0:FWDR, 1:LWDR 2P, 2:LWDR 3P
+{
+	const UINT nVMAX = MAX(abDssRatioLmt, 1) * gnAeVtw;
+	return	NOR_SHT_MIN;
+}
+
+int WdrMShtMin(const BYTE abDssRatioLmt)		// 0:FWDR, 1:LWDR 2P, 2:LWDR 3P
+{
+	const UINT nVMAX = MAX(abDssRatioLmt, 1) * gnAeVtw;
+	return	NOR_SHT_MIN;
+}
+
 void ISRT AeAGC0(int aiVal)
 {	// AGC driver
 	aiVal = CLAMP(aiVal, 0, (AE_GAIN_UNIT_EA*AE_GAIN_UNIT_MAX));
