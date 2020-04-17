@@ -50,10 +50,10 @@ extern void Isp_Dnr3d_Config(BOOL OnOff, BYTE Clk, BYTE DnrFk, BYTE DnrTh, BYTE 
 //extern void Isp_Defect_Config(BOOL OnOff, BOOL GsumCnt, BOOL RBSumCnt, BYTE GWgt, BYTE RBWgt, BYTE DfSlope, UINT GThres, UINT RBThres, UINT DfMax, UINT DfMin, BYTE DfCsel);
 //extern void Isp_Dnr2d_Config(BOOL OnOff, BOOL Dnr2dMode, BYTE Dnr2dCnt, BYTE Dnr2dDth, BYTE Dnr2dGain);
 extern void Isp_Dnr2d_Config(BOOL OnOff, BYTE Icsel, BYTE Ocsel);
-extern UINT Isp_Frc_Adr_Config(UINT Page, UINT Hw, UINT Vw, UINT Hmargin, UINT Vmargin, UINT Adr);
-extern UINT Isp_Wdr_Adr_config(UINT Page, UINT Hw, UINT Vw, UINT Hmargin, UINT Vmargin, UINT Adr);
-extern UINT Isp_Cvb_Adr_Config(UINT Hw, UINT Vw, UINT Adr);
-extern UINT Isp_YC_Adr_Config(UINT Ch, UINT Page, UINT Hw, UINT Vw, UINT Hmargin, UINT Vmargin, UINT Adr);
+extern UINT Isp_Frc_Adr_Config(UINT Adr, UINT Page, UINT Hw, UINT Vw, UINT Hmargin, UINT Vmargin);
+extern UINT Isp_Wdr_Adr_config(UINT Adr, UINT Page, UINT Hw, UINT Vw, UINT Hmargin, UINT Vmargin);
+extern UINT Isp_Cvb_Adr_Config(UINT Adr, UINT Hw, UINT Vw);
+extern UINT Isp_YC_Adr_Config(UINT Adr, UINT Ch, UINT Page, UINT Hw, UINT Vw, UINT Hmargin, UINT Vmargin);
 
 //*************************************************************************************************
 // digital_interface.c
@@ -182,7 +182,7 @@ extern void Init_Virq(void);
 extern void Visp(void);
 extern void Vcap(void);
 
-#define INIT_DELAY(T)	WaitXms(34*T)/*Wait_VLOCKO_M(T)*/	// Uint of T is 1/30 sec
+#define INIT_DELAY(T)	WaitXms(((1000/(model_Sens_Fps))+1)*T)/*Wait_VLOCKO_M(T)*/		// Uint of T is 1/FPS sec
 
 //*************************************************************************************************
 // TDN

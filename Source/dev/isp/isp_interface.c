@@ -357,8 +357,9 @@ void Isp_Dnr2d_Config(BOOL OnOff, BOOL Dnr2dMode, BYTE Dnr2dCnt, BYTE Dnr2dDth, 
 
 //	SD_MODw : 0 -> FRC 2 Page (Adr2, Adr3, Adr4 Don't care)
 //			  1 -> FRC 3 Page (Adr3, Adr4 Don't care)
+//			  3 -> FRC OFF
 //			  4 -> FRC 5 Page
-UINT Isp_Frc_Adr_Config(UINT Page, UINT Hw, UINT Vw, UINT Hmargin, UINT Vmargin, UINT Adr)
+UINT Isp_Frc_Adr_Config(UINT Adr, UINT Page, UINT Hw, UINT Vw, UINT Hmargin, UINT Vmargin)
 {
 	const UINT nFrcSize = ((Hw+Hmargin) * (Vw+Vmargin) * 10)>>(3+4);
 	const UINT nFrcAdr0 = Adr;
@@ -383,7 +384,7 @@ UINT Isp_Frc_Adr_Config(UINT Page, UINT Hw, UINT Vw, UINT Hmargin, UINT Vmargin,
 	return nFrcAdrE;
 }
 
-UINT Isp_Wdr_Adr_config(UINT Page, UINT Hw, UINT Vw, UINT Hmargin, UINT Vmargin, UINT Adr)
+UINT Isp_Wdr_Adr_config(UINT Adr, UINT Page, UINT Hw, UINT Vw, UINT Hmargin, UINT Vmargin)
 {
 	const UINT nWdrSize = ((Hw+Hmargin) * (Vw+Vmargin) * 10)>>(3+4);
 	const UINT nWdrAdr0 = Adr;
@@ -399,7 +400,7 @@ UINT Isp_Wdr_Adr_config(UINT Page, UINT Hw, UINT Vw, UINT Hmargin, UINT Vmargin,
 	return nWdrAdrE;
 }
 
-UINT Isp_Cvb_Adr_Config(UINT Hw, UINT Vw, UINT Adr)
+UINT Isp_Cvb_Adr_Config(UINT Adr, UINT Hw, UINT Vw)
 {
 	const UINT nCvbSize = (((Hw * Vw)<<4)>>(3+4));
 	const UINT nCvbAdr0 = Adr;
@@ -416,7 +417,7 @@ UINT Isp_Cvb_Adr_Config(UINT Hw, UINT Vw, UINT Adr)
 	return nCvbAdrE;
 }
 
-UINT Isp_YC_Adr_Config(UINT Ch, UINT Page, UINT Hw, UINT Vw, UINT Hmargin, UINT Vmargin, UINT Adr)
+UINT Isp_YC_Adr_Config(UINT Adr, UINT Ch, UINT Page, UINT Hw, UINT Vw, UINT Hmargin, UINT Vmargin)
 {
 	const UINT nYSize = (((Hw+Hmargin)*(Vw+Vmargin))<<3)>>(3+4);
 	const UINT nCSize = (((Hw+Hmargin)*(Vw+Vmargin))<<2)>>(3+4);
@@ -449,6 +450,14 @@ UINT Isp_YC_Adr_Config(UINT Ch, UINT Page, UINT Hw, UINT Vw, UINT Hmargin, UINT 
 		case 4 : IM_YADR4_P0w(nYAdr0); IM_CADR4_P0w(nCAdr0); if(Page==1) return nYAdr1;
 				 IM_YADR4_P1w(nYAdr1); IM_CADR4_P1w(nCAdr1); if(Page==2) return nYAdr2;
 				 IM_YADR4_P2w(nYAdr2); IM_CADR4_P2w(nCAdr2); return nCAdrE;
+				 break;
+		case 5 : IM_YADR0_DSw(nYAdr0); IM_CADR0_DSw(nCAdr0); return nYAdr1;
+				 break;
+		case 6 : IM_YADR1_DSw(nYAdr0); IM_CADR1_DSw(nCAdr0); return nYAdr1;
+				 break;
+		case 7 : IM_YADR2_DSw(nYAdr0); IM_CADR2_DSw(nCAdr0); return nYAdr1;
+				 break;
+		case 8 : IM_YADR3_DSw(nYAdr0); IM_CADR3_DSw(nCAdr0); return nYAdr1;
 				 break;
 	}
 

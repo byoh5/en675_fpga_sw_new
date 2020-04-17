@@ -111,7 +111,7 @@
 // Board Evaluation Setting for ISP --------------------------------------------------------------
 
 #define model_TgtBd			0		// Target board
-									// 0 : KU Bd, 1 : KU+VU Bd, 2 : VU Bd, 3 : customer
+									// 0 : KU Bd, 1 : KU+VU Bd, 2 : VU Bd(CPU0:RTOS, CPU1:ISP+CODEC), 3 : customer
 
 //#define model_Lcd			2		// 0 : None
 									// 1 : TFT035

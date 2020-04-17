@@ -8,6 +8,25 @@ void main_1(int cpu_id)
 
 	enx_externalirq_init_cpu1();
 
+#if model_TgtBd == 2	// CPU 2core
+	enx_externalirq_perl(eigiISP, ENX_ON, 0);							// Enable ISP Interrupts
+	enx_externalirq_perl(eigiVCODEC, ENX_ON, 0);						// Enable Codec Interrupts
+
+	Init_Visp(); INIT_STR("Init_Visp...");	// ISP initial
+	Init_Vcap(); INIT_STR("Init_Vcap...");	// Video path set
+	Init_Vout(); INIT_STR("Init_Vout...");	// Digital/Analog Output set
+	Init_Virq(); INIT_STR("Init_Virq...");	// Video interrupt enable
+
+	INIT_STR("--------- Main Loop Start ---------");
+
+	while (1)
+	{
+		Visp();
+		Vcap();
+		//Venc();
+		//Vdec();
+	}
+#else
 	while (1) {
 #if TEST_CPU1
 		testloop1();
@@ -22,4 +41,5 @@ void main_1(int cpu_id)
 		}
 #endif
 	}
+#endif
 }

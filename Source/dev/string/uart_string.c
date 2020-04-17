@@ -709,7 +709,7 @@ void UartRxAddr(const int aiWrite)
 
 	#if model_Pana || model_Aptn
 
-	#elif SENS_IMX323
+	#elif (model_Sens==SENS_IMX323)
 		#define SENS_ADDR_OFS		((wAddr < 0x1000) ? 0x0 : 0x2000)
 	#elif model_Sony || model_Omni
 		#define SENS_ADDR_OFS		0x3000

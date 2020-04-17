@@ -198,8 +198,10 @@
 									{0x3060,    0x25},
 									{0x30C1,    0x00},
 									{0x30CF,    0x00},
-									{0x30E2,    0x00},
-									{0x30E3,    0x00},
+
+									{0x30E2,    0x00},	// BLKLEVEL
+									{0x30E3,    0x00},	// BLKLEVEL
+
 									{0x30D9,    0x06},
 									{0x30DA,    0x02},
 									{0x3115,    0x00},
@@ -310,9 +312,9 @@
 
 void InitSensRun(void)
 {
-	SetSens(0x3000, 0x1);		WaitXus(1000);
-	SetSens(0x3002, 0x1);		WaitXus(1000);
-	SetSens(0x3001, 0x1);
+	SetSens(0x3000, 0x1);	// STANDBY : Standby
+	SetSens(0x3002, 0x1);	// XMSTA : Master mode operation Stop
+	SetSens(0x3001, 0x1);	// REGHOLD : Valid - 레지스터 설정만하고 적용하지 않음
 
 	for(UINT i=0;i<ARRAY_SIZE(gwTblIMX415); i++)
 	{
@@ -320,11 +322,11 @@ void InitSensRun(void)
 		//WaitXus(200);
 	}
 
-	SetSens(0x3001, 0x0);
-	SetSens(0x3000, 0x0);		WaitXus(20000);
-	SetSens(0x3002, 0x0);		WaitXus(20000);
+	SetSens(0x30e2, 0x0);
 
-	SetSens(0x30e2, 0x0);		WaitXus(20000);
+	SetSens(0x3001, 0x0);	// REGHOLD : Invalid - 설정된 레지스터 전부 적용
+	SetSens(0x3000, 0x0);		WaitXus(24000);		// STANDBY : Operating, Initial requlator stabilization period 24 ms
+	SetSens(0x3002, 0x0);	// XMSTA : Master mode operation Start
 }
 
 BYTE gbBurstBuf[3]={0,0,0};

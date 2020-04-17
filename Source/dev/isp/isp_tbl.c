@@ -701,13 +701,14 @@ void JPG_Decoding(UINT jpg_adr)
 void Isp_Ddr_Cong(void)
 {
 	const UINT Isp_Wdr_Adr = DDR_BASE_ISP;
-	const UINT Isp_Frc_Adr = Isp_Wdr_Adr_config(1, RP(PO_HW), RP(PO_VW), 0, 0, Isp_Wdr_Adr);
-	const UINT Isp_Cvb_Adr = Isp_Frc_Adr_Config(2, RP(PO_HW), RP(PO_VW), 0, 0, Isp_Frc_Adr);
-	const UINT Isp_YC_Adr1 = Isp_Cvb_Adr_Config(720/*960*/, 576, Isp_Cvb_Adr);
-	const UINT Isp_YC_Adr2 = Isp_YC_Adr_Config(1, 3, RP(PO_HW), RP(PO_VW), 8, 0, Isp_YC_Adr1);
-	const UINT Isp_YC_Adr3 = Isp_YC_Adr_Config(2, 3, RP(PO_HW), RP(PO_VW), 0, 0, Isp_YC_Adr2);
-//	const UINT Isp_YC_Adr4 = Isp_YC_Adr_Config(3, 3, RP(PO_HW), RP(PO_VW), 0, 0, Isp_YC_Adr3);
-//	const UINT Isp_YC_AdrE = Isp_YC_Adr_Config(4, 3, RP(PO_HW), RP(PO_VW), 0, 0, Isp_YC_Adr4);
+	const UINT Isp_Frc_Adr = Isp_Wdr_Adr_config(Isp_Wdr_Adr, 1, RP(PO_HW), RP(PO_VW), 0, 0);
+	const UINT Isp_Cvb_Adr = Isp_Frc_Adr_Config(Isp_Frc_Adr, 2, RP(PO_HW), RP(PO_VW), 0, 0);
+	const UINT Isp_YC_Adr1 = Isp_Cvb_Adr_Config(Isp_Cvb_Adr, 720/*960*/, 576);
+
+	const UINT Isp_YC_Adr2 = Isp_YC_Adr_Config(Isp_YC_Adr1, 1, 3, RP(PO_HW), RP(PO_VW), 8, 0);
+	const UINT Isp_YC_Adr3 = Isp_YC_Adr_Config(Isp_YC_Adr2, 2, 3, RP(PO_HW), RP(PO_VW), 0, 0);
+//	const UINT Isp_YC_Adr4 = Isp_YC_Adr_Config(Isp_YC_Adr3, 3, 3, RP(PO_HW), RP(PO_VW), 0, 0);
+//	const UINT Isp_YC_AdrE = Isp_YC_Adr_Config(Isp_YC_Adr4, 4, 3, RP(PO_HW), RP(PO_VW), 0, 0);
 }
 
 #endif

@@ -73,6 +73,10 @@ unsigned int APB_Read(volatile unsigned long addr)
 void Isp_Sensor_init(void)
 {
 #if model_Sens_Intf == 2	// MIPI 설정
+	//SYNC_UPw(1);
+	IBT_PCK_SELw((model_Sens_Intf==0) ? M_EXT : SP(MipiClk));	// MIPI 설정전에 가장 먼저 해야 함
+	IBT_PCK_PDw(1);
+
 	APCLK_SELw(0);				//	For FPGA 148.5 MHz
 	APCLK_PDw(1);
 	INIT_DELAY(1);	// TODO KSH x 필요?
@@ -118,6 +122,8 @@ void Isp_Sensor_init(void)
 	#define SENSOR_BLACK_LEVEL	0xf0	// 포화영역 경계부분 노이즈 감소
 #elif (model_Sens==SENS_IMX323)
 	#define SENSOR_BLACK_LEVEL	0x3c	// 암부영역 컬러노이즈(자주색) 감소, 미적용 시 WDR Short 채널에 자주색 발생
+#elif (model_Sens==SENS_IMX415)
+	#define SENSOR_BLACK_LEVEL	0x0//(0x32<<2)	// IMX415 12bit출력이면 x4
 #else
 	#define SENSOR_BLACK_LEVEL	0x0
 #endif
@@ -264,7 +270,7 @@ void Isp_DDR_init(void)
 	//	DDR Init---------------------------------------
 	Isp_Ddr_Cong();
 
-#ifdef	USE_FRC
+#if defined(USE_FRC)
 	#if model_1M
 		#define R_LTC	0x260
 	#elif model_4M
@@ -282,7 +288,7 @@ void Isp_DDR_init(void)
 	DDR_RYC_LTCw(R_LTC);
 
 	//INIT_DELAY(1);
-	SD_MODw(0);			// 0 -> FRC 2 Page (Adr2, Adr3, Adr4 Don't care)
+	SD_MODw(0);			// 0 -> FRC 2 Page (Adr2, Adr3, Adr4 Don't care),  3 -> FRC OFF
 
 	BUS_RD_RSTw(1);
 	INIT_DELAY(1/*4*/);
@@ -416,7 +422,7 @@ void Digital_OutputSet(void)
 
 void Analog_OutputSet(void)
 {
-	Isp_Cvbs_Config(UP(Cvbs), NTSC, FREQ_27M, ISP_74M, DS_ISP_FONT_PATH, NO_VLCBIT, 0x7a, 0xe);
+	Isp_Cvbs_Config(UP(Cvbs), NTSC, FREQ_27M, ISP_148M/*ISP_74M*/, DS_ISP_FONT_PATH, NO_VLCBIT, 0x7a, 0xe);
 }
 
 void Isp_init(void)
@@ -451,16 +457,6 @@ void DownScaleSet(void)
 
 void Vcap_ChannelSet(void)
 {
-#if model_Sens_Intf == 2
-	Wait_VLOCKO();
-	Wait_VLOCKO();
-	WaitXus(12010);		// 12000 or 12005 or 12010 중 하나로 설정
-
-	SYNC_UPw(1);
-#endif
-	IBT_PCK_SELw((model_Sens_Intf==0) ? M_EXT : SP(MipiClk));
-	IBT_PCK_PDw(1);
-
 	Isp_DDR_init();				// ISP 에서 사용하는 DDR 설정
 }
 
@@ -617,6 +613,7 @@ void IF_Funcs(void)
 
 	if(ISP_RIRQ_VOr) {			// VLOCKO 에 동기화하여 실행
 		CLI_VLOCKO_Tw(1);
+
 		isp_DispTime();
 		isp_DispLogo();
 		//isp_LedCtrl();

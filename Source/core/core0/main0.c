@@ -608,7 +608,7 @@ void main_0(int cpu_id)
 
 	enx_pmp_init();
 
-#if model_TgtBd == 2	// CPU 1core
+#if 0//model_TgtBd == 2	// CPU 1core
 	if(SYS_REG0 == 0xff22) main_os();
 	enx_externalirq_init_cpu0();
 
