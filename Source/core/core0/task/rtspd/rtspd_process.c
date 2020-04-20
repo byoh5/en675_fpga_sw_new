@@ -715,6 +715,23 @@ int rtspd_client_rtsp_process_describe(rtsp_client *prcInfo, char *buf, int *buf
 				case ENX_RTSP_STREAM_LIVE_H265_1:
 				case ENX_RTSP_STREAM_LIVE_H265_2:
 					{
+#ifdef EN675_HEVC_TEST
+						const char* sdpH265Line =	"m=video 0 RTP/AVP %u\n" // mediaType(video, audio), port(def 0), payloadType
+													"b=AS:20480\n"
+													"a=rtpmap:%u H265/90000\n" // payloadType, payloadFormatName(H.264, H.265, JPEG, etc..), TimestampFrequency(H.264/H.265 def 90kHZ, JPEG...?),
+													"a=control:%s/%s\n" // track1 ~ track?? => session ´ç 1
+													"a=recvonly\n"//
+													//"a=fmtp:%u sprop-sps=QgEBAWAAAAMAsAAAAwAAAwB7oAPAgBDlja5JMvwCAAADAAIAAAMAeUI=; sprop-pps=RAHA8vA8kAA=\n"
+													//"a=fmtp:%u sprop-sps=QgEBAWAAAAMAAAMAAAMAAAMAlqAB4CACHHxOWuSTBrliQA==; sprop-pps=RAHgcrAGQA==\n"
+													//"a=fmtp:%u sprop-sps=QgEBAWAAAAMAAAMAAAMAAAMAlqADwIAQ5Za5JMGuWA==; sprop-pps=RAHgcrAGQA==\n"
+													//"a=Media_header:MEDIAINFO=494D4B48010200000400050000000000000000000000000000000000000000000000000000000000;\n"
+													//"a=Media_header:MEDIAINFO=40010C01FFFF01600000030000030000030000030096AC0C00000FA000004E2140;\n"
+													//"a=appversion:1.0\n"
+//													"a=fmtp:%u packetization-mode=1\n"
+													;
+						sdp_len  = sprintf(strSdp, sdpSessionFmt, strIP, "H265Stream", prcInfo->strUrl, "H265Stream");
+						sdp_len += sprintf(strSdp + sdp_len, sdpH265Line, RTP_numPayload_H265, RTP_numPayload_H265, prcInfo->strUrl, ENX_RTSP_SDP_URL_VIDEO/*, RTP_numPayload_H265*/);
+#else
 //						flprintf("Live Type(%d)\n", prcInfo->isLive);
 						const char* sdpH265Line =	"m=video 0 RTP/AVP %u\n" // mediaType(video, audio), port(def 0), payloadType
 													"b=AS:20480\n"
@@ -726,6 +743,7 @@ int rtspd_client_rtsp_process_describe(rtsp_client *prcInfo, char *buf, int *buf
 													"a=appversion:1.0\n"
 //													"a=fmtp:%u packetization-mode=1\n"
 													;
+#endif
 						sdp_len  = sprintf(strSdp, sdpSessionFmt, strIP, "H265Stream", prcInfo->strUrl, "H265Stream");
 						sdp_len += sprintf(strSdp + sdp_len, sdpH265Line, RTP_numPayload_H265, RTP_numPayload_H265, prcInfo->strUrl, ENX_RTSP_SDP_URL_VIDEO, RTP_numPayload_H265);
 					}

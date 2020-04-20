@@ -187,6 +187,7 @@ int rtspd_client_rtp_h265_main(rtsp_client *prcInfo)
 					switch(rtpSession->rtp_pk.naltype) {
 						case 0x01:	// P
 						case 0x13:	// I
+						case 0x15:	// I HEVC
 							if (prcInfo->eTransport == ENX_RTSP_TRANSPORT_TCP || prcInfo->eTransport == ENX_RTSP_TRANSPORT_HTTP) {
 								if (h265left > (remaining - sizeof(rthInterleaved) - sizeof(rthRTPHeader))) {
 									fuSize = sizeof(hevcFUHeader);

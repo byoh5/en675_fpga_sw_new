@@ -347,7 +347,7 @@ typedef enum {
 	eigiUSB = 14,
 	eigiCHKSUM = 15,
 	eigiSHA = 16,
-	eigiASE = 17,
+	eigiAES = 17,
 	eigiOIC = 18,
 	eigiGPIO0_3_PWM0_3_SPI0 = 19,
 	eigiGPIO4_7_PWM4_7_I2C0_UART0 = 20,

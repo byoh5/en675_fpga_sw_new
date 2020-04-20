@@ -121,6 +121,29 @@ SET ( DEV_HDRS
 	TP2827/TP_main.h
 	wifi/wifi_cfg.h
 	wifi/wlif_tools.h
+	codec/component_list_encoder.h
+	#codec/component_list_decoder.h
+	codec/component/component_list.h
+	codec/component/cnm_app.h
+	codec/vpuapi/product.h
+	codec/vpuapi/vpuapi.h
+	codec/vpuapi/vpuapifunc.h
+	codec/vpuapi/vpuconfig.h
+	codec/vpuapi/vpuerror.h
+	codec/vpuapi/vputypes.h
+	codec/vpuapi/wave/wave5.h
+	codec/vpuapi/wave/wave5_regdefine.h
+        codec/vpuapi/coda9/coda9_regdefine.h
+	codec/helper/main_helper.h
+	codec/helper/misc/debug.h
+	codec/helper/misc/header_struct.h
+	codec/helper/misc/pbu.h
+	codec/component/cnm_app.h
+	codec/component/cnm_app_internal.h
+	codec/component/component.h
+	codec/component/component_list.h
+	codec/component_encoder/encoder_listener.h
+	#codec/component_decoder/decoder_listener.h	
 )
 
 SET ( DEV_SRCS
@@ -221,6 +244,51 @@ SET ( DEV_SRCS
 	string/uart_string.c
 	TP2827/TP_main.c
 	wifi/wlif_tools.c
+	codec/main_enc_test.c
+	codec/main_dec_test.c
+	codec/main_multi_instance_test.c
+#	codec/main_enc_dec_test.c
+#	codec/main_enc_test_directmem.c
+	codec/helper/main_helper.c
+	codec/helper/vpuhelper.c
+	codec/helper/bitstream/bitstreamfeeder.c
+	codec/helper/bitstream/bsfeeder_fixedsize_impl.c
+	codec/helper/bitstream/bsfeeder_framesize_impl.c
+	codec/helper/bitstream/bsfeeder_size_plus_es_impl.c
+	codec/helper/bitstream/bitstreamreader.c
+	codec/helper/comparator/bin_comparator_impl.c
+	codec/helper/comparator/comparator.c
+	codec/helper/comparator/md5_comparator_impl.c
+	codec/helper/comparator/yuv_comparator_impl.c
+	codec/helper/misc/cfgParser.c
+	codec/helper/misc/cnm_video_helper.c
+	codec/helper/misc/container.c
+	codec/helper/misc/datastructure.c
+	codec/helper/misc/debug.c
+	codec/helper/misc/bw_monitor.c
+	codec/helper/misc/pf_monitor.c
+	codec/helper/yuv/yuvfeeder.c
+	codec/helper/yuv/yuvLoaderfeeder.c
+	codec/helper/yuv/yuvCfbcfeeder.c
+	codec/component_encoder/component_enc_encoder.c
+	codec/component_encoder/component_enc_feeder.c
+	codec/component_encoder/component_enc_reader.c
+	codec/component_encoder/encoder_listener.c
+	codec/component_decoder/component_dec_decoder.c
+	codec/component_decoder/component_dec_feeder.c
+	codec/component_decoder/component_dec_renderer.c
+	codec/component_decoder/decoder_listener.c
+	codec/component/cnm_app.c
+	codec/component/cnm_task.c
+	codec/component/component.c
+	codec/vdi/nonos/vdi.c
+	codec/vdi/nonos/vdi_osal.c
+	codec/vdi/mm.c
+	codec/vpuapi/product.c
+	codec/vpuapi/vpuapifunc.c
+	codec/vpuapi/vpuapi.c
+	codec/vpuapi/coda9/coda9.c
+	codec/vpuapi/wave/wave5.c		
 )
 
 # 라이브러리 생성

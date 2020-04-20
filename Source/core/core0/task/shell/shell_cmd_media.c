@@ -66,6 +66,53 @@ static void testVideoTimer_irq(void *ctx)
 	static int i = 0;
 	static int j = 0;
 
+#ifdef EN675_HEVC_TEST
+	//while(BIT_STREAM_LOCK==1)
+	//	WaitXms(1);
+	static UINT prev_STREAM_ADDR = 0;
+	static UINT prev_BIT_STREAM_FRNUM = 0;
+	//printf(">>BIT_STREAM_LOCK 0x%d BIT_STREAM_ADDR 0x%x \n", BIT_STREAM_LOCK, BIT_STREAM_ADDR);
+	if(BIT_STREAM_LOCK == 0 && BIT_STREAM_ADDR != 0 && prev_STREAM_ADDR != BIT_STREAM_ADDR)
+	{
+		BIT_STREAM_LOCK = 1;
+		//printf(">>BIT_STREAM_ADDR 0x%x BIT_STREAM_SIZE %d\n", BIT_STREAM_ADDR, BIT_STREAM_SIZE);
+		//dbgprintf("[debug] %s %d SAVED BITSTREAM (%d) 0x%x size %d [offset 0x%x]\n",__func__,__LINE__, instanceIndex, TESTOUT+TESTOFFSET[instanceIndex], bitstreamSize, TESTOFFSET[instanceIndex] + bitstreamSize);
+		vid_info[i].addr = BIT_STREAM_ADDR;
+		vid_info[i].size = BIT_STREAM_SIZE;
+		prev_STREAM_ADDR = BIT_STREAM_ADDR;
+
+		if(BIT_STREAM_FRNUM - prev_BIT_STREAM_FRNUM > 1)
+			printf("[pre %d cur %d frame gap [%d]]", prev_BIT_STREAM_FRNUM, BIT_STREAM_FRNUM, BIT_STREAM_FRNUM - prev_BIT_STREAM_FRNUM);
+		prev_BIT_STREAM_FRNUM = BIT_STREAM_FRNUM;
+		vid_info[i].ts = 30000;//3fps 22500;//fps 4   7500;//12fps//3000;//30fps 18000;//5fps 9000;//10fps  //6000;//15fps
+		//hwflush_dcache_range(BIT_STREAM_ADDR, BIT_STREAM_SIZE);
+		//hwflush_dcache_range_rtos((u32)BIT_STREAM_ADDR, BIT_STREAM_SIZE);
+		if(BIT_STREAM_TYPE == 0) // i frame
+		{//printf("BIT_STREAM_TYPE %d BIT_STREAM_ADDR 0x%x BIT_STREAM_SIZE %d\n",BIT_STREAM_TYPE,  BIT_STREAM_ADDR, BIT_STREAM_SIZE);
+#if (VID_CODEC==0)
+			cpu1_BIT_STREAM_TYPE = eSTREAMMSG_H264I;
+#elif (VID_CODEC==1)
+			vid_info[i].type = eSTREAMMSG_H265I;
+#endif
+		}
+		else //p frame
+		{
+#if (VID_CODEC==0)
+			cpu1_BIT_STREAM_TYPE = eSTREAMMSG_H264P;
+#elif (VID_CODEC==1)
+			vid_info[i].type = eSTREAMMSG_H265P;
+#endif
+		}
+
+
+		BIT_STREAM_LOCK = 0;
+	}
+	else
+	{
+		return;
+	}
+#endif
+	//printf("testVideoTimer_irq MsgStmPut vid_info[i].addr 0x%x \n", vid_info[i].addr);
 	if (MsgStmPut(vid_info[i].addr, vid_info[i].size, vid_info[i].ts, vid_info[i].type) == ENX_OK) {
 		IsrStreamdata();
 		i++;

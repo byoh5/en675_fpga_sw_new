@@ -1,6 +1,22 @@
 #ifndef __DEV_FUNCTIONS_H__
 #define __DEV_FUNCTIONS_H__
 
+//#define EN675_HEVC_TEST
+#ifdef EN675_HEVC_TEST
+extern BYTE test_isp_codec_flag;
+extern BYTE test_isp_codec_done;
+extern BYTE test_isp_update_flag;
+extern BYTE test_isp_done_flag;
+
+extern UINT BIT_STREAM_LOCK;
+extern UINT BIT_STREAM_ADDR;
+extern UINT BIT_STREAM_SIZE;
+extern UINT BIT_STREAM_TYPE;
+extern UINT BIT_STREAM_FRNUM;
+extern UINT BIT_STREAM_RECNUM;
+extern ULONG CodecENCTimeStart;
+extern ULONG CodecENConlyTimeStart;
+#endif
 //******************************************************************************
 // x. Function
 //------------------------------------------------------------------------------

@@ -694,7 +694,7 @@ WORD my_chksum(const void *dataptr, WORD len)
 //	}
 
 //	ULONG stime = BenchTimeStart();
-#if 1
+#if 0 //EN675_HEVC_TEST
 #if 1
 	BYTE *ptr;
 	WORD hw_chksum1 = 0;

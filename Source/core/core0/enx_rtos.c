@@ -50,6 +50,17 @@ void startNetProtocol(void *arg)
 }
 #endif
 
+#ifdef EN675_HEVC_TEST
+void testapp(void)
+{
+	vTaskDelay(500);
+	printf("testApp!!!!!!!!!\n");
+	char *arg[2] = {"video", "start"};
+	cmd_test_video(2, arg);
+	vTaskDelete(NULL);
+}
+#endif
+
 
 void main_os(void)
 {
@@ -78,7 +89,9 @@ void main_os(void)
 #if USE_IR
 	vTaskCreate("IrRx", ir_recv_task, NULL, LV3_STACK_SIZE, LV5_TASK_PRIO);
 #endif
-
+#ifdef EN675_HEVC_TEST
+	vTaskCreate("testapp", testapp, NULL, LV3_STACK_SIZE, LV5_TASK_PRIO);
+#endif
 	vTaskStartScheduler();
 #endif
 }

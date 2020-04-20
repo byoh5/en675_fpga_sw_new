@@ -4,7 +4,7 @@ MEMORY
 {
 	FLASH   : ORIGIN = 0xC0000000,                              LENGTH = 0x10000
 	SRAM    : ORIGIN = 0xA0000000,                              LENGTH = 0x40000
-	DDR     : ORIGIN = 0x80000000,                              LENGTH = 0x4000000
+	DDR     : ORIGIN = 0x80000000,                              LENGTH = 0x20000000
 }
 
 stack_size  = 4 * 4 * 1024;

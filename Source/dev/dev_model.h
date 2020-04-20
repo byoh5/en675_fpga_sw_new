@@ -35,18 +35,19 @@
 //	Sensor Setting--------------------------------------------------------------
 //#define model_Sens		SENS_OS08A10	// Sensor selection
 //#define model_Sens		SENS_IMX291	// Sensor selection
-#define model_Sens		SENS_IMX323	// Sensor selection
+//#define model_Sens		SENS_IMX323	// Sensor selection
+#define model_Sens		SENS_IMX415	// Sensor selection
 
 #define model_Sens_Ctrl		1		// 0 : SPI, supported Sony Sensor Only
 									// 1 : TWI, supported All Sensor
 
-#define model_Sens_Intf		0
+#define model_Sens_Intf		2
 //#define model_Sens_Intf		1		// 0 : Parallel, supported IMX225, IMX323
 									// 1 : LVDS, supported OS08A10, IMX291, OV2718,
 									// 2 : MIPI, supported OV4689, IMX335, IMX274, IMX225, IMX415
 
 //#define model_Sens_Fps		15
-#define model_Sens_Fps		30		// 60 fps : supported IMX225
+#define model_Sens_Fps		15		// 60 fps : supported IMX225
 									// 30 fps : supported IMX335, OV4689, OV2718, IMX291, IMX323
 									// 20 fps : supported IMX335
 									// 15 fps : supported IMX274, OV4689, OS08A10, IMX415
@@ -110,7 +111,7 @@
 
 // Board Evaluation Setting for ISP --------------------------------------------------------------
 
-#define model_TgtBd			0		// Target board
+#define model_TgtBd			2		// Target board
 									// 0 : KU Bd, 1 : KU+VU Bd, 2 : VU Bd(CPU0:RTOS, CPU1:ISP+CODEC), 3 : customer
 
 //#define model_Lcd			2		// 0 : None
