@@ -1660,7 +1660,7 @@ void enx_externalirq_init_cpu0(void)
 	enx_externalirq_perl(eigiI2S, ENX_ON, 0);							// Enable I2S Interrupts
 	enx_externalirq_perl(eigiUSB, ENX_ON, 0);							// Enable USB Interrupts
 	enx_externalirq_perl(eigiCHKSUM, ENX_ON, 0);						// Enable CHKSUM Interrupts
-	enx_externalirq_perl(eigiASE, ENX_ON, 0);							// Enable AES Interrupts
+	enx_externalirq_perl(eigiAES, ENX_ON, 0);							// Enable AES Interrupts
 	enx_externalirq_perl(eigiSHA, ENX_ON, 0);							// Enable SHA Interrupts
 	enx_externalirq_perl(eigiOIC, ENX_ON, 0);							// Enable OIC Interrupts
 	enx_externalirq_perl(eigiBTOA, ENX_ON, 0);							// Enable BTOA Interrupts

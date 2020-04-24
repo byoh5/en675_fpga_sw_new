@@ -651,13 +651,13 @@ void ISRT Awb(void)
 	DebugDisp2(gbAwbDebugOn, Dec, "R     ",  6, AWB_DEBUG_X, nRsum, 4)
 	DebugDisp2(gbAwbDebugOn, Dec, "G     ",  7, AWB_DEBUG_X, nGsum, 4)
 	DebugDisp2(gbAwbDebugOn, Dec, "B     ",  8, AWB_DEBUG_X, nBsum, 4)
-	DebugDisp2(gbAwbDebugOn, Dec, "R_GAIN", 10, AWB_DEBUG_X, nAwbRgain, 4)
-	DebugDisp2(gbAwbDebugOn, Dec, "B_GAIN", 11, AWB_DEBUG_X, nAwbBgain, 4)
+	DebugDisp2(gbAwbDebugOn, Dec, "R_GAIN", 10, AWB_DEBUG_X, nAwbRgain, 4)	// IIR(nRGain) + MENU(R-GAIN)
+	DebugDisp2(gbAwbDebugOn, Dec, "B_GAIN", 11, AWB_DEBUG_X, nAwbBgain, 4)	// IIR(nBGain) + MENU(B-GAIN)
 	DebugDisp2(gbAwbDebugOn, Dec, "WGT   ", 13, AWB_DEBUG_X, iWgt, 4)
 	DebugDisp2(gbAwbDebugOn, Dec, "HOLD  ", 14, AWB_DEBUG_X, nHold, 4)
 	DebugDisp2(gbAwbDebugOn, Dec, "DONE  ", 15, AWB_DEBUG_X, gnAwbErr, 4)
-	DebugDisp2(gbAwbDebugOn, Dec, "RGAIN ", 17, AWB_DEBUG_X, nRGain, 4)
-	DebugDisp2(gbAwbDebugOn, Dec, "BGAIN ", 18, AWB_DEBUG_X, nBGain, 4)
+	DebugDisp2(gbAwbDebugOn, Dec, "RGAIN0", 17, AWB_DEBUG_X, nRGain, 4)
+	DebugDisp2(gbAwbDebugOn, Dec, "BGAIN0", 18, AWB_DEBUG_X, nBGain, 4)
 #endif
 
 }	// end of AWB

@@ -700,7 +700,10 @@ void JPG_Decoding(UINT jpg_adr)
 
 void Isp_Ddr_Cong(void)
 {
-	const UINT Isp_Wdr_Adr = DDR_BASE_ISP;
+	BYTE *heap_end;
+	asm volatile("la %0, _heap_end" : "=r"(heap_end));
+
+	const UINT Isp_Wdr_Adr = (((intptr_t)heap_end)/*DDR1_BASE*/>>4);
 	const UINT Isp_Frc_Adr = Isp_Wdr_Adr_config(Isp_Wdr_Adr, 1, RP(PO_HW), RP(PO_VW), 0, 0);
 	const UINT Isp_Cvb_Adr = Isp_Frc_Adr_Config(Isp_Frc_Adr, 2, RP(PO_HW), RP(PO_VW), 0, 0);
 	const UINT Isp_YC_Adr1 = Isp_Cvb_Adr_Config(Isp_Cvb_Adr, 720/*960*/, 576);

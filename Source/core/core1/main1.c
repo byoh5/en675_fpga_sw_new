@@ -1,7 +1,7 @@
 #include "dev.h"
 #include "test_nonos.h"
 
-#ifdef EN675_HEVC_TEST
+#if 1//defined(EN675_HEVC_TEST)
 BYTE test_isp_codec_flag = 0;
 BYTE test_isp_codec_done = 0;
 BYTE test_isp_update_flag = 0;

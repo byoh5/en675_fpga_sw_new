@@ -58,7 +58,7 @@ void Isp_SensorRst(void)
 	INIT_DELAY(1);
 }
 
-#if model_Sens_Intf == 2
+#if model_Sens_Intf == 2	// MIPI 설정
 void APB_Write(volatile unsigned long addr, unsigned int data)
 {
 	*((volatile unsigned int *)(addr)) = data;
@@ -293,6 +293,13 @@ void Isp_DDR_init(void)
 	BUS_RD_RSTw(1);
 	INIT_DELAY(1/*4*/);
 	CPU_FRC_ENw(1);		// DDR OFF,  SD_MODw(0) 이후 1 VLOCK Delay 후 설정해야 함!!!
+#else	// FRC OFF for IMX415
+	BUS_RD_RSTw(1);
+	SYNC_UPw(1);
+	INIT_DELAY(1);
+	VLOCKI_POSw(0x23);
+	HLOCKI_POSw(0x10e0);
+	OCSELw(2);
 #endif
 }
 

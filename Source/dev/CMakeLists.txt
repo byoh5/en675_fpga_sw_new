@@ -122,7 +122,7 @@ SET ( DEV_HDRS
 	wifi/wifi_cfg.h
 	wifi/wlif_tools.h
 	codec/component_list_encoder.h
-	#codec/component_list_decoder.h
+#	codec/component_list_decoder.h
 	codec/component/component_list.h
 	codec/component/cnm_app.h
 	codec/vpuapi/product.h
@@ -133,7 +133,7 @@ SET ( DEV_HDRS
 	codec/vpuapi/vputypes.h
 	codec/vpuapi/wave/wave5.h
 	codec/vpuapi/wave/wave5_regdefine.h
-        codec/vpuapi/coda9/coda9_regdefine.h
+	codec/vpuapi/coda9/coda9_regdefine.h
 	codec/helper/main_helper.h
 	codec/helper/misc/debug.h
 	codec/helper/misc/header_struct.h
@@ -143,7 +143,7 @@ SET ( DEV_HDRS
 	codec/component/component.h
 	codec/component/component_list.h
 	codec/component_encoder/encoder_listener.h
-	#codec/component_decoder/decoder_listener.h	
+#	codec/component_decoder/decoder_listener.h
 )
 
 SET ( DEV_SRCS

@@ -337,7 +337,7 @@ void ISRT AceDefog(void)
 
 		ACE_BPw(0);			// Block bypass OFF
 
-		bAceGmgnMin = 0;
+		bAceGmgnMin = (UP(Ace) != UP_4sOFF) ? UP(AceGmgn) : 0;
 //		ACE_DTHw(0x4);
 
 		iAceDth = 0x7;
@@ -349,7 +349,7 @@ void ISRT AceDefog(void)
 
 			ACE_BPw(0);		// Block bypass OFF
 
-			if (UP(Defog)==UP_ON)	{
+			if (UP(Defog)==UP_ON && UP(Ace) == UP_4sOFF)	{
 				bAceGmgnMin = 0;
 				bAceTblSel = UP_4sMID;
 			}
@@ -520,7 +520,7 @@ void ISRT AceDefog(void)
 //	else nDefogWeight = 1;	// 2015921 - WHL : 25% at EN771								// Defog off
 	else nDefogWeight = 64;	// 2015921 - WHL : 25% at EN673								// Defog off
 
-	if (gbWdrOn!=WDR_OFF) nDefogWeight = 1;	// 180426 KSH
+	if (gbWdrOn!=WDR_OFF && gbContrastMode!=UP_ON) nDefogWeight = 1;	// 180426 KSH
 
 	DebugDisp(gbContDebugOn, , "DFG_THRS", 7, 24, nDefogThres);
 

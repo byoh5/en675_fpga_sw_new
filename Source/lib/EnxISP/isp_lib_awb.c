@@ -26,6 +26,7 @@ void ISRT LibAwbCmat(int aiDb, int aiDr, float32 alMtxCf[9][6])
 	fDb2 		= _fmul(fDb, fDb);
 	fDr2 		= _fmul(fDr, fDr);
 
+	//const float32 f32AwbMatGain = (PAR00) ? (float32)((double)PAR00 * 25.6 / 100000000000000.) : gf32AwbMatGain;
 
 	for(j=0; j<3; j++) {
 		for(i=0; i<3; i++) {

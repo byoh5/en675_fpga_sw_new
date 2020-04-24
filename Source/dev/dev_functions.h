@@ -2,7 +2,7 @@
 #define __DEV_FUNCTIONS_H__
 
 //#define EN675_HEVC_TEST
-#ifdef EN675_HEVC_TEST
+#if 1//defined(EN675_HEVC_TEST)
 extern BYTE test_isp_codec_flag;
 extern BYTE test_isp_codec_done;
 extern BYTE test_isp_update_flag;
