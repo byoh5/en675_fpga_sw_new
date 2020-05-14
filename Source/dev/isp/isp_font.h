@@ -99,9 +99,11 @@ extern UINT dec2hex(UINT dec);
 #define SetFontAlpha(anAddr,anAlpha)  {_wr32(REG_BASE_ISP+((ISP_BASE_FONT_IDATTR0 +(UINT)(anAddr))<<2), (0x20000000|((UINT)(anAlpha<<11)&0x1800)));\
 									/*gnFontdummy = *(volatile unsigned int*)(unsigned long)(REG_BASE_ISP+((ISP_BASE_FONT_IDATTR0 +(UINT)(anAddr))<<2));*/ }
 
-#define SETFONTID(Y,X,ID)			{ if(X<gnFontXw) SetFontID((((Y)*(gnFontXw+1))+(X)), ID); }			//	Line Return -> (gnFontXw+1)
-#define SETFONTATTR(Y,X,ATTR)		{ if(X<gnFontXw) SetFontAttr((((Y)*(gnFontXw+1))+(X)), ATTR); }		//	Line Return -> (gnFontXw+1)
-#define SETFONTALPHA(Y,X,ALPHA)		{ if(X<gnFontXw) SetFontAlpha((((Y)*(gnFontXw+1))+(X)), ALPHA); }		//	Line Return -> (gnFontXw+1)
+extern int giMenuChkOn;
+
+#define SETFONTID(Y,X,ID)			{ if(X<gnFontXw && !giMenuChkOn) SetFontID((((Y)*(gnFontXw+1))+(X)), ID); }			//	Line Return -> (gnFontXw+1)
+#define SETFONTATTR(Y,X,ATTR)		{ if(X<gnFontXw && !giMenuChkOn) SetFontAttr((((Y)*(gnFontXw+1))+(X)), ATTR); }		//	Line Return -> (gnFontXw+1)
+#define SETFONTALPHA(Y,X,ALPHA)		{ if(X<gnFontXw && !giMenuChkOn) SetFontAlpha((((Y)*(gnFontXw+1))+(X)), ALPHA); }		//	Line Return -> (gnFontXw+1)
 
 
 #endif /* __ISP_FONT_H__ */

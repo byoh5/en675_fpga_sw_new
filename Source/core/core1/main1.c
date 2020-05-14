@@ -30,6 +30,10 @@ void main_1(int cpu_id)
 #if model_TgtBd == 2	// CPU 2core
 	enx_externalirq_perl(eigiISP, ENX_ON, 0);							// Enable ISP Interrupts
 	//enx_externalirq_perl(eigiVCODEC, ENX_ON, 0);						// Enable Codec Interrupts
+	enx_externalirq_perl(eigiATOB, ENX_ON, 0);							// Enable ATOB Interrupts
+
+	AtoBIrqCallback(CPUtoISPcallback, NULL);
+	AtoBSetIrqEn(ENX_ON);
 
 	Init_Visp(); INIT_STR("Init_Visp...");	// ISP initial
 	Init_Vcap(); INIT_STR("Init_Vcap...");	// Video path set

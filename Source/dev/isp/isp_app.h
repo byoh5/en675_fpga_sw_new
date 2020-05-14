@@ -148,6 +148,7 @@ extern void UsrDataReset(void);
 extern void SetByte(BYTE *apAddr, const BYTE abLen, UINT anData);
 extern UINT GetByte(BYTE *apAddr, const BYTE abLen);
 extern void UsrParValid(const UINT anValid);
+extern UINT UsrParBit(const UINT anIdx);
 extern void UsrParChg(const UINT anStrIdx);
 extern void UsrParChgEndIdx(const UINT anEndIdx);
 extern void UsrParCpy(BYTE *dest, BYTE *src);
@@ -167,11 +168,13 @@ extern void ChangeMenuSize(void);
 extern void InitMenu(void);
 extern void Menu(void);
 extern void menu_redraw(int iChg, int iGrayOnly);
+extern void menu_val_chack(void);
 
 
 //*************************************************************************************************
 // isp main
 //-------------------------------------------------------------------------------------------------
+extern void CPUtoISPcallback(void *ctx);
 extern void OutMode(void);
 
 extern void Init_Visp(void);
@@ -358,6 +361,11 @@ extern void Flip(void);
 
 //------------------------------------------------------------------------------
 // Digital Zoom
+#define DZ_HW_MR	0//((model_8M) ? 16 : 8)	// DZOOM HW Margin, 8M의 경우 RP(PO_HW)+8 이 16의 배수가 안됨
+
+#define DZ_HW	RP(FR_HW)//(RP(PO_HW)+DZ_HW_MR)
+#define DZ_VW	RP(FR_VW)//RP(PO_VW)
+
 extern void Dzoom_init(void);
 extern void DZoom(void);
 

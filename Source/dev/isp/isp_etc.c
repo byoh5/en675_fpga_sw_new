@@ -492,22 +492,22 @@ void DZoom(void)
 {
 	DZ_VSP_KYw((10<<12)/UP(DZoom));
 
-	const int iDZoomPosHmin = (RP(PO_HW)+8)*5/UP(DZoom);
-	const int iDZoomPosVmin = (RP(PO_VW)  )*5/UP(DZoom);
-	const int iDZoomPosHmax = (UP(DZoom)-5)*(RP(PO_HW)+8)/UP(DZoom);
-	const int iDZoomPosVmax = (UP(DZoom)-5)*(RP(PO_VW)  )/UP(DZoom);
+	const int iDZoomPosHmin = DZ_HW*5/UP(DZoom);
+	const int iDZoomPosVmin = DZ_VW*5/UP(DZoom);
+	const int iDZoomPosHmax = (UP(DZoom)-5)*DZ_HW/UP(DZoom);
+	const int iDZoomPosVmax = (UP(DZoom)-5)*DZ_VW/UP(DZoom);
 	UP(DZoomPosH) = CLAMP(UP(DZoomPosH), iDZoomPosHmin, iDZoomPosHmax);
 	UP(DZoomPosV) = CLAMP(UP(DZoomPosV), iDZoomPosVmin, iDZoomPosVmax);
 
-	const int iDZoomPosH = (UP(DZoomPosH)<<12) - ((((RP(PO_HW)+8)<<11)*10) / UP(DZoom));
-	const int iDZoomPosV = (UP(DZoomPosV)<<12) - ((((RP(PO_VW)  )<<11)*10) / UP(DZoom));
+	const int iDZoomPosH = (UP(DZoomPosH)<<12) - (((DZ_HW<<11)*10) / UP(DZoom));
+	const int iDZoomPosV = (UP(DZoomPosV)<<12) - (((DZ_VW<<11)*10) / UP(DZoom));
 	DZ_HSP_POSw((iDZoomPosH < 0) ? 0 : iDZoomPosH);
 	DZ_VSP_POSw((iDZoomPosV < 0) ? 0 : iDZoomPosV);
 
-	if(UP(DZoom) == 10)	// Off
+	if(UP(DZoom) <= 10)	// Off
 	{
-		HWIw(RP(PO_HW));				// DZoom시 Margin이 필요함. Sensor에서도 이 만큼 출력하게 설정.
-		HWOw(RP(PO_HW));
+		//HWIw(RP(PO_HW));				// DZoom시 Margin이 필요함. Sensor에서도 이 만큼 출력하게 설정.
+		//HWOw(RP(PO_HW));
 
 		OSD_ISEL0w(0);				// OSD & Fonc 입력 Path 설정 (DZOOM Module 출력)
 
@@ -518,8 +518,8 @@ void DZoom(void)
 		YCR_CK1_PDw(0);				// DDR Read Channel 1 Clock Enable
 	}
 	else {
-		HWIw(RP(PO_HW)+8);				// DZoom시 Margin이 필요함. Sensor에서도 이 만큼 출력하게 설정.
-		HWOw(RP(PO_HW)+8);
+		//HWIw(RP(PO_HW)+DZ_HW_MR);				// DZoom시 Margin이 필요함. Sensor에서도 이 만큼 출력하게 설정.
+		//HWOw(RP(PO_HW)+DZ_HW_MR);
 
 		YCW_CK1_PDw(1);				// Clock Enable
 		YCR_CK1_PDw(1);				// DDR Read Channel 1 Clock Enable
@@ -538,47 +538,47 @@ void DZoom(void)
 void Dzoom_init(void)
 {
 	// DZOOM 설정 : Margin 필요
-	//HWIw(RP(PO_HW)+8);				// DZoom시 Margin이 필요함. Sensor에서도 이 만큼 출력하게 설정.
-	//HWOw(RP(PO_HW)+8);
+	//HWIw(RP(PO_HW)+DZ_HW_MR);		// DZoom시 Margin이 필요함. Sensor에서도 이 만큼 출력하게 설정.
+	//HWOw(RP(PO_HW)+DZ_HW_MR);
 
 	// DZOOM 설정 : Write 설정
-	IM_IVSEL1w(0);				// DDR Write Channel1 의 sync 설정 (ISP Sync)
-	IM_ISEL1w(0x11);			// DDR Write Channel1 의 Image 입력 Path 설정 (ISP Image, No Font)
-	IM_HWI1w(RP(PO_HW)+8);		// Write할 영상 수평 크기 설정 -> HWOw와 동일한 크기, 실제 DDR 사용 크기와 동일
-	IM_WFRC1_ONw(1);			// DDR R/W Channel 1에 FRC  사용 설정. “0”인 경우 Disable
-	YCW_CK1_SELw(2);			// Write Channel Clock 설정 (ISP Clock 74.25MHz)
+	IM_IVSEL1w(0);					// DDR Write Channel1 의 sync 설정 (ISP Sync)
+	IM_ISEL1w(0x11);				// DDR Write Channel1 의 Image 입력 Path 설정 (ISP Image, No Font)
+	IM_HWI1w(DZ_HW/*RP(PO_HW)+DZ_HW_MR*/);	// Write할 영상 수평 크기 설정 -> HWOw와 동일한 크기, 실제 DDR 사용 크기와 동일 -> 임시로 DZ_HW로 설정
+	IM_WFRC1_ONw(1);				// DDR R/W Channel 1에 FRC  사용 설정. “0”인 경우 Disable
+	YCW_CK1_SELw(SP(PostClk));		// Write Channel Clock 설정 (ISP Clock 74.25MHz)
 	//YCW_CK1_PDw(1);				// Clock Enable
 
 	// DZOOM 설정 : Read 설정
-	IM_RFRC1_ONw(1);			// DDR Read Channel 1 FRC Enable
-	IM_RHWI1w(RP(PO_HW)+8);		// DDR Read Channel 1의 Read Image 수평 크기 설정 -> IM_HWI1w와 동일한 크기, 실제 DDR 사용 크기와 동일
-	IM_RVSEL1w(0);				// DDR Read Channel 1의 Read Sync 설정 (ISP Sync)
-	IM_RISEL1w(4);				// DDR Read Channel 1의 Read Active Path 설정 (ISP Sync 동기된 Active)
-	IM_RYCB_MOD1w(1);			// Y C 출력 Enable
-	YCRCK1_SELw(2);				// DDR Read Channel 1 Clock 설정
+	IM_RFRC1_ONw(1);				// DDR Read Channel 1 FRC Enable
+	IM_RHWI1w(DZ_HW/*RP(PO_HW)+DZ_HW_MR*/);	// DDR Read Channel 1의 Read Image 수평 크기 설정 -> IM_HWI1w와 동일한 크기, 실제 DDR 사용 크기와 동일 -> 임시로 DZ_HW로 설정
+	IM_RVSEL1w(0);					// DDR Read Channel 1의 Read Sync 설정 (ISP Sync)
+	IM_RISEL1w(4);					// DDR Read Channel 1의 Read Active Path 설정 (ISP Sync 동기된 Active)
+	IM_RYCB_MOD1w(1);				// Y C 출력 Enable
+	YCRCK1_SELw(SP(PostClk));		// DDR Read Channel 1 Clock 설정
 	//YCR_CK1_PDw(1);				// DDR Read Channel 1 Clock Enable
 
 	// DZOOM 설정
 	DZ_DAONw(0/*1*/);				// DZOOM Position Auto On
-	DZ_DKXY_ONw(1);				// DKY 연동 기능 On
-	DZ_CH_SELw(1);				// DZOOM 할 Source,  DDR Read Channel1 선택
-	DZ_ZHLOCK_SELw(0);			// DZOOM HLOCK 설정 (ISP 동기 H)
-	DZ_BUF_ASELw(0);			// DZOOM Active 설정 (ISP 동기 Active)
-	DZ_VWOw(RP(FR_VW));			// DZOOM Vertical 크기 설정
-	DZOOM_VSPw(0x9);			// DZOOM V 위치 조정    -> 영상 위치가 안 맞으면 이 넘을 조절 -> sensor마다 다를 수 있음.
-	DZOOM_HSPw(0x65/*0x63*/);			// DZOOM H 위치 조정   -> 영상 위치가 안 맞으면 이 넘을 조절 -> sensor마다 다를 수 있음.
+	DZ_DKXY_ONw(1);					// DKY 연동 기능 On
+	DZ_CH_SELw(1);					// DZOOM 할 Source,  DDR Read Channel1 선택
+	DZ_ZHLOCK_SELw(0);				// DZOOM HLOCK 설정 (ISP 동기 H)
+	DZ_BUF_ASELw(0);				// DZOOM Active 설정 (ISP 동기 Active)
+	DZ_VWOw(RP(FR_VW));				// DZOOM Vertical 크기 설정
+	DZOOM_VSPw(0x9);				// DZOOM V 위치 조정    -> 영상 위치가 안 맞으면 이 넘을 조절 -> sensor마다 다를 수 있음.
+	DZOOM_HSPw(0x65/*0x63*/);		// DZOOM H 위치 조정   -> 영상 위치가 안 맞으면 이 넘을 조절 -> sensor마다 다를 수 있음.
 	//DZ_VSP_KYw(0x800);			// DZOOM 배율 설정      -> 계속 제어
-	DZ_DZOOM_ONw(1);			// DZOOM On
-	DZPCK_SELw(2);				// DZOOM Clock 설정
-	//DZPCK_PDw(1);				// Clock Enable
+	DZ_DZOOM_ONw(1);				// DZOOM On
+	DZPCK_SELw(SP(PostClk));		// DZOOM Clock 설정
+	//DZPCK_PDw(1);					// Clock Enable
 
 	// DZOOM 설정 : 최종 설정
-	OSD_IVSEL0w(0);				// Post단 출력 Sync 설정 (ISP Sync)
-	//OSD_ISEL0w(0xb);			// OSD & Fonc 입력 Path 설정 (DZOOM Module 출력)
+	OSD_IVSEL0w(0);					// Post단 출력 Sync 설정 (ISP Sync)
+	//OSD_ISEL0w(0xb);				// OSD & Fonc 입력 Path 설정 (DZOOM Module 출력)
 
-	//IM_CGO1w(1);				// Write Enable
+	//IM_CGO1w(1);					// Write Enable
 	//INIT_DELAY(1);				// 1 VLOCKI 기다린 후
-	//IM_RON1w(1);				// Read Enable
+	//IM_RON1w(1);					// Read Enable
 
 	DZoom();
 }

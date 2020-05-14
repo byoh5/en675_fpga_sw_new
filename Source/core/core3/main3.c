@@ -8,21 +8,6 @@ void IF_Funcs_Timer_irq(void *ctx)
 }
 #endif
 
-static void CPUtoISPcallback(void *ctx)
-{
-	//while (CPU_TO_ISP_MSG_MUTEX);
-
-	extern void IspMsgFnc(UINT anMsg);
-	//IspMsgFnc(SHREG_CMD);
-
-	printf("CPU to ISP!(%X)\n", SHREG_CMD);
-
-	SHREG_CMD = 0;
-	CPU_TO_ISP_MSG_MUTEX = 0;
-
-	BtoAIrqCall();
-}
-
 void Init_Vsys(void) // System
 {
 	SYS_REG0 = 0xf;

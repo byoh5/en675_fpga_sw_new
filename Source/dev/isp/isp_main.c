@@ -583,8 +583,9 @@ void isp_LedCtrl(void)
 }
 #endif
 
-void IspMsgFnc(UINT anMsg)
+UINT IspMsgFnc(UINT anMsg)
 {
+	UINT nErrBit = 0;
 	int i;
 	const WORD wAdr = anMsg>>16;
 	const WORD wDat = anMsg&0xFFFF;
@@ -594,10 +595,32 @@ void IspMsgFnc(UINT anMsg)
 		case 0x40000001 :
 			break;
 		case 0x40000003 : {
+#if 0
 				__attribute__((__aligned__(4))) BYTE tmp[USR_PAR_EA];
 				for(i=0; i<UPsti(ISP_BINARY_INFO); i++) tmp[i] = gbUsrParTbl[i];
 				for(   ; i<USR_PAR_EA            ; i++) tmp[i] = *(dest+UPtoMSG(i));
 				UsrParCpy(gbUsrParTbl, tmp);
+#else
+				__attribute__((__aligned__(4))) BYTE ParOri[USR_PAR_EA];
+				for(i=0; i<USR_PAR_EA; i++) ParOri[i] = gbUsrParTbl[i];
+				for(i=UPstinv(ISP_BINARY_INFO)+1; i<USR_PAR_EA; i++) gbUsrParTbl[i] = *(dest+UPtoMSG(i));
+				menu_val_chack();
+
+				for(i=UPstinv(ISP_BINARY_INFO)+1; i<USR_PAR_EA; i++) {
+					if(gbUsrParTbl[i] != *(dest+UPtoMSG(i))) {
+						gbUsrParTbl[i] = ParOri[i];
+						nErrBit |= UsrParBit(i);
+						printf("[%X] : %d is wrong. Change to %d.\n", i, *(dest+UPtoMSG(i)), ParOri[i]);
+					}
+
+					if(gbUsrParTbl[i] != ParOri[i]) {
+						printf("[%X] : %d to %d change completed.\n", i, ParOri[i], gbUsrParTbl[i]);
+					}
+				}
+
+				UsrParCpy(ParOri, gbUsrParTbl);
+				//if(nErrBit) printf("Error Bit : %.32b\n", nErrBit);
+#endif
 			}
 			break;
 		default :
@@ -611,6 +634,22 @@ void IspMsgFnc(UINT anMsg)
 
 	//UsrParCpy(dest, gbUsrParTbl);
 	for(i=2; i<UPtoMSG(USR_PAR_EA); i++) *(dest+i) = gbUsrParTbl[MSGtoUP(i)];
+
+	return nErrBit;
+}
+
+void CPUtoISPcallback(void *ctx)
+{
+	//while (CPU_TO_ISP_MSG_MUTEX);
+
+	SHREG_RSP = IspMsgFnc(SHREG_CMD);	// SHREG_RSP 임시 사용
+
+	printf("CPU to ISP!(%X)\n", SHREG_CMD);
+
+	SHREG_CMD = 0;
+	CPU_TO_ISP_MSG_MUTEX = 0;
+
+	BtoAIrqCall();
 }
 
 void IF_Funcs(void)

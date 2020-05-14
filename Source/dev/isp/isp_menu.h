@@ -579,17 +579,27 @@ extern BYTE gbBlcOsdOn;
 	/*UINT DRAW_Y;*/	\
 menu_start:\
 	DRAW_ON = (KEY_L || KEY_R || giMenuDispPos);\
-	/*DRAW_Y = gbMenuY+giStgPos[giLV];*/	\
-	if(0) {}
+	/*DRAW_Y = gbMenuY+giStgPos[giLV];*/
 
 #define MENU_DISPLAY_END(...)\
-	else if(MENU_TITLE != _S(OFF)) { menu_pos(MENU_TITLE, 0, 0); if(giMenuDispChg==1) { giMenuDispChg = 0;\
-										DrawStr(MENU_IS_NOT_AVAILABLE, gbMenuY+1, MN_MXSP+1, 21);\
-										DrawStr(ENTER_d_RETURN,	gbMenuY+4, MN_MXSP+4, 14); }\
+	if(MENU_TITLE != _S(OFF)) { menu_pos(MENU_TITLE, 0, 0); if(giMenuDispChg==1) { giMenuDispChg = 0;\
+								DrawStr(MENU_IS_NOT_AVAILABLE, gbMenuY+1, MN_MXSP+1, 21);\
+								DrawStr(ENTER_d_RETURN,	gbMenuY+4, MN_MXSP+4, 14); }\
 		MENU_OUT(/*OUT_ON*/1, 0, )\
 	}\
-	/*menu_display_end:*/	\
-	if(giMenuDispPos) {\
+menu_display_end:\
+	if(giMenuChkOn) {\
+		if(giStgPos[giLV] < 15) {/* 15 : 현재M_CODE16까지지원 */\
+			giStgPos[giLV]++;\
+			goto menu_start;\
+		} else {\
+			giLV = giMenuChkLV;\
+			if(giLV >= 0) giStgPos[giLV] = giMenuChkPos;\
+			giMenuChkOn = 0;\
+			return;\
+		}\
+	}\
+	else if(giMenuDispPos) {\
 		gbMenuList	= 0;\
 		gbMenuVal	= 0;\
 		if(giLV >= 0) {\
@@ -645,15 +655,17 @@ menu_start:\
 #define _P(...)		{ __VA_ARGS__, 0 }
 
 #define MENU_EXT(TITLE,MENU_ON/*,OUT_ON*/,OUT_CODE, ...)\
-	else if((MENU_TITLE == _S(TITLE)) && (MENU_ON)) { menu_pos(_S(TITLE), 0, 0); if(giMenuDispChg==1) { giMenuDispChg = 0; __VA_ARGS__ }\
+	if((MENU_TITLE == _S(TITLE)) && (MENU_ON)) { menu_pos(_S(TITLE), 0, 0); if(giMenuDispChg==1) { giMenuDispChg = 0; __VA_ARGS__ }\
 		MENU_OUT(/*OUT_ON*/1, 0, OUT_CODE;)\
+		if(giMenuChkOn == 0) goto menu_display_end;\
 	}
 #define MENU_SET0(NUM,TITLE,MENU_ON/*,OUT_ON*/, ...)\
-	else if((MENU_TITLE == _S(TITLE)) && (MENU_ON)) { MENU_SET_NUM(TITLE, NUM, __VA_ARGS__)\
+	if(((MENU_TITLE == _S(TITLE)) && (MENU_ON)) || giMenuChkOn) { MENU_SET_NUM(TITLE, NUM, __VA_ARGS__)\
 		/*if(OUT_ON) {\
 			if(giMenuDispPos) { DrawStr(ENTER_d_RETURN, MN_YSTART+NUM+1, MN_MXSP+2, 14); }\
 			MENU_OUT(UP_ON, 1, DispClr(MN_YSTART+NUM+1, MN_MXSP+2, 14);)\
 		}*/\
+		if(giMenuChkOn == 0) goto menu_display_end;\
 	}
 #define MENU_SET(NUM,TITLE,MENU_ON/*,OUT_ON*/, ...)	MENU_SET0(NUM,TITLE,MENU_ON/*,OUT_ON*/, __VA_ARGS__)
 

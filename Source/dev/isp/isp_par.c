@@ -129,6 +129,24 @@ void UsrParValid(const UINT anValid)
 	}
 }
 
+UINT UsrParBit(const UINT anIdx)
+{
+	UINT nBit = 0;
+
+	#undef UP_SET
+	#define UP_SET(...)
+	#undef UP_TITLE
+	#define UP_TITLE(N)		if(N##_UP_START < anIdx && anIdx <= (N##_UP_START + sizeof(UP_##N))) {\
+								/*_printf("UP %d : "#N" (%d~%d) : %d\r\n", anIdx, N##_UP_START+1, (N##_UP_START + sizeof(UP_##N)), nBit);*/\
+								return 1<<nBit;\
+							} nBit++;
+	USR_PAR_LIST
+	#undef UP_TITLE
+	#define UP_TITLE(N)
+
+	return 0;
+}
+
 void UsrParChg(const UINT anStrIdx)
 {
 	if(gbUsrParChgOn == 0) return;
@@ -154,14 +172,13 @@ void UsrParChg(const UINT anStrIdx)
 			UsrParStyle(0, 0, anStrIdx);	// Style 값들 변경여부 체크 -> 값이 변경되었으면 /*CUSTOMIZE*/PREVIOUS 로
 		}
 
+#if 0
 		static UINT anStrIdx1d = 0;
-		#undef UP_SET
-		#define UP_SET(...)
-		#undef UP_TITLE
-		#define UP_TITLE(N)		if(N##_UP_START < anStrIdx && anStrIdx <= (N##_UP_START + sizeof(UP_##N)) && anStrIdx1d != anStrIdx) { anStrIdx1d = anStrIdx; _printf/*_printf_irq*/("UP %d : "#N" (%d~%d)\r\n", anStrIdx, N##_UP_START+1, (N##_UP_START + sizeof(UP_##N))); }
-		USR_PAR_LIST
-		#undef UP_TITLE
-		#define UP_TITLE(N)
+		if(anStrIdx1d != anStrIdx) {
+			anStrIdx1d = anStrIdx;
+			UsrParBit(anStrIdx);
+		}
+#endif
 
 		//void TestInterp1D(void); TestInterp1D();
 
@@ -222,27 +239,24 @@ BYTE UsrParSiz(const UINT anIdx)
 	return 0;
 }
 
-void UsrParChgAll(void)
+void InitUsrParChgAll(void)
 {
+	gbUsrParChgOn = 1;			// INIT_RUN 설정된 User Parameter 코드 실행
+
 #if 0
 	#undef UP_SET
 	#define UP_SET(S,N,D,...)		UsrParChg(UPi(N));
 	USR_PAR_LIST
 #else
-	if(gbUsrParChgOn == 0) return;
 	for(UINT i=1; i<UP_END; i++) {
-		UsrParChg(i);
+		UsrParChg(i);			// SensFlip(), SensMirror() 실행을 위해 Isp_Sensor_init()이 먼저 설정되어야 함, gbUsrParChgOn = 2 상태에서 UsrParChg()사용하는 경우 PrivacyBox()함수가 중복 호출됨!!!
+
 		//if(UPi(LvdsPNSel) <= i && i <= UPi(OutVSyncOfs)) { if(gbUsrParChgOn==2) UsrParChg(i); }
 		//else if(UPi(CamTitleOn) <= i && i <= UPi(CamTitle7)) { if(gbUsrParChgOn==2) UsrParChg(i); }
 		//else { UsrParChg(i); }
 	}
 #endif
-}
 
-void InitUsrParChgAll(void)
-{
-	gbUsrParChgOn = 1;			// INIT_RUN 설정된 User Parameter 코드 실행
-	UsrParChgAll();				// SensFlip(), SensMirror() 실행을 위해 Isp_Sensor_init()이 먼저 설정되어야 함
 	gbUsrParChgOn = 2;			// User Parameter 변경 시 실행
 }
 

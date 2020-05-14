@@ -240,11 +240,34 @@ int  giMenuDispChg	= 0;
 int  giGrayOnly		= 0;
 int  giMenuNum		= 0;
 
+int  giMenuChkLV	= 0;
+int  giMenuChkPos	= 0;
+int  giMenuChkOn	= 0;
+
 PEXCH *gbMenuTitle	= (PEXCH*)_S(OFF);
 PEXCH *gbMenuList	= 0;
 PEXCH *gbMenuVal	= 0;
 
 PEXCH *gbStgTitle[MENU_STAGE_LV] = {(PEXCH*)_S(OFF),};
+
+void menu_val_chack(void)
+{
+	giMenuDispPos = 0;
+	giMenuDispChg = 0;
+	giGrayOnly = 0;
+
+	giMenuChkLV = giLV;
+	giMenuChkPos = (giLV < 0) ? 0 : giStgPos[giLV];
+	giMenuChkOn = 1;
+
+	giLV = 0;
+	giStgPos[giLV] = 0;
+
+	KEY = 0;
+	pKEY = 0;
+
+	Menu();
+}
 
 void menu_redraw(int iChg, int iGrayOnly)
 {
@@ -376,6 +399,8 @@ void UartTxStgLine(void)
 
 void menu_sta(const int aiOn)
 {
+	if(giMenuChkOn) return;
+
 	if(giMenuDispChg==2) {
 		if(aiOn || giGrayOnly)	giStgPosLine[giStgPos[giLV]] = giStgLine++;
 		else					giStgPosLine[giStgPos[giLV]] = giStgLine;
@@ -388,6 +413,8 @@ void menu_sta(const int aiOn)
 
 void menu_dir(const int aiOn)
 {
+	if(giMenuChkOn) return;
+
 	if(!aiOn) {
 		if(giGrayOnly) OsdAttrsStgPosAr(giStgPosLine[giStgPos[giLV]], MN_GRAY);
 		gbMenuVal = (PEXCH*)_S(NOT_USED);
@@ -407,6 +434,8 @@ void menu_dir(const int aiOn)
 
 void menu_pos(const PEXCH* Title, int MenuNum, const PEXCH** Str)
 {
+	if(giMenuChkOn) return;
+
 	if(giMenuDispChg==1)
 	{
 		gMenuNames = Str;
@@ -459,6 +488,8 @@ void menu_pos(const PEXCH* Title, int MenuNum, const PEXCH** Str)
 
 void menu_one(const int aiOn, const PEXCH* Str)
 {
+	if(giMenuChkOn) return;
+
 	menu_sta(aiOn);
 
 	if(giMenuDispPos && (aiOn || giGrayOnly)) {
@@ -471,6 +502,8 @@ void menu_one(const int aiOn, const PEXCH* Str)
 
 BYTE menu_push(const int aiOn, volatile BYTE *Val, const PEXCH* StrNor, const PEXCH* StrPush, const BYTE abDelay)
 {
+	if(giMenuChkOn) return 0;
+
 	menu_sta(aiOn);
 
 	BYTE bPushOn = 0;
@@ -517,7 +550,7 @@ void menu_str(const int aiOn, BYTE *Val, const BYTE abValSize, int OpNum, const 
 	const UINT nOri = GetByte(Val,abValSize);
 	UINT nVal = nOri;
 
-	if(giMenuDispPos && aiOn) {		// 170530 KSH
+	if((giMenuDispPos && aiOn) || giMenuChkOn) {		// 170530 KSH
 		if(nVal >= OpNum) nVal = 0;
 		const UINT nOld = nVal;
 		gbMenuVal = (PEXCH*)Str[nVal];
@@ -526,8 +559,14 @@ void menu_str(const int aiOn, BYTE *Val, const BYTE abValSize, int OpNum, const 
 			nVal++;
 			if(nVal >= OpNum) nVal = 0;
 			gbMenuVal = (PEXCH*)Str[nVal];
-			if(nVal == nOld) goto DISPLAY_STR;
+			if(nVal == nOld && giMenuChkOn == 0) goto DISPLAY_STR;
 		}
+	}
+
+	if(giMenuChkOn) {
+		//if(Val == &UP(Flip)) printf("Flip : %d -> %d\n", nOri, nVal);
+		if(nOri != nVal) SetByte(Val,abValSize,nVal);
+		return;
 	}
 
 	if(giMenuDispPos == 0 && aiOn) {
@@ -556,7 +595,7 @@ UINT menu_val(void *Val, const BYTE abValSize, UINT anMin, UINT anMax, UINT anRo
 	const UINT nOri = GetByte(Val,abValSize);
 	UINT nVal = nOri;
 
-	if(giMenuDispPos == 0) {
+	if(giMenuDispPos == 0 && giMenuChkOn == 0) {
 		UINT nA, nB;
 
 		if(anRotation) {
@@ -604,7 +643,8 @@ void menu_bar(const int aiOn, void *Val, const BYTE abValSize, const UINT anMin,
 	menu_sta(aiOn);
 
 	UINT nUpChgOn = 0;
-	if(aiOn) nUpChgOn = menu_val(Val, abValSize, anMin, anMax, anRotation);
+	if(aiOn || giMenuChkOn) nUpChgOn = menu_val(Val, abValSize, anMin, anMax, anRotation);
+	if(giMenuChkOn) return;
 
 	const UINT nVal = GetByte(Val,abValSize);
 
@@ -645,17 +685,22 @@ void menu_dzoom(const int aiOn)
 	menu_sta(aiOn);
 
 	#define DZOOM_HIGH_VAL	200
+	#define DZOOM_MAX_VAL	640
+
 	UINT nUpChgOn = 0;
-	if(aiOn) {
+
+	if(aiOn || giMenuChkOn) {
 		if((UP(DZoom)<DZOOM_HIGH_VAL) || (UP(DZoom)==DZOOM_HIGH_VAL&&KEY_L)) {
 			nUpChgOn = menu_val(&UP(DZoom), sizeof(UP(DZoom)), 10, DZOOM_HIGH_VAL, 0);
 		}
 		else {
 			UP(DZoom) /= 10;
-			nUpChgOn = menu_val(&UP(DZoom), sizeof(UP(DZoom)), (DZOOM_HIGH_VAL/10), 64, 0);
+			nUpChgOn = menu_val(&UP(DZoom), sizeof(UP(DZoom)), (DZOOM_HIGH_VAL/10), (DZOOM_MAX_VAL/10), 0);
 			UP(DZoom) *= 10;
 		}
 	}
+
+	if(giMenuChkOn) return;
 
 	if((giMenuDispPos || KEY_R || KEY_L) && (aiOn || giGrayOnly)) {
 		gbStr[0] = 'X';
@@ -1078,8 +1123,8 @@ void Menu(void)
 	// MENU - IMAGE - DZOOM
 	MENU_SET( 4, DZOOM, DEV_ON,
 			DZOOM,			menu_dzoom(UP_ON);  MENU_DISABLE(UP_ON)  MENU_CODE(if_KEY_LR(MENU_REDRAW_GRAY_ONLY())),
-			HPOS,			MENU_BARn(UP(DZoom)>10, , UP(DZoomPosH), (RP(PO_HW)+8)*5/UP(DZoom), (UP(DZoom)-5)*(RP(PO_HW)+8)/UP(DZoom), 0),
-			VPOS,			MENU_BARn(UP(DZoom)>10, , UP(DZoomPosV), (RP(PO_VW)  )*5/UP(DZoom), (UP(DZoom)-5)*(RP(PO_VW)  )/UP(DZoom), 0),
+			HPOS,			MENU_BARn(UP(DZoom)>10, , UP(DZoomPosH), DZ_HW*5/UP(DZoom), (UP(DZoom)-5)*DZ_HW/UP(DZoom), 0),
+			VPOS,			MENU_BARn(UP(DZoom)>10, , UP(DZoomPosV), DZ_VW*5/UP(DZoom), (UP(DZoom)-5)*DZ_VW/UP(DZoom), 0),
 			RETURN,			MENU_ONEo(UP_ON, e, UP_ON, ))
 
 	// MENU - IMAGE - PRIVACY
@@ -1125,7 +1170,8 @@ void Menu(void)
 			RETURN,			MENU_ONEo(UP_ON, e, UP_ON, ))
 
 // MENU - OUTPUTSET ----------------------------------------------------------------------------------------------------
-	MENU_SET( 3, OUTPUTSET, UP_ON,
+	MENU_SET( 4, OUTPUTSET, UP_ON,
+			FRAMERATE,		MENU_DECn(UP_ON, , UP(OutFps), 0, 0, 1, ),
 			FREQ,			MENU_STRn(UP_ON, if_KEY_LR(MENU_REDRAW()), UP(SysFreq), 2, 50HZ, 60HZ),
 			CVBS,			MENU_STRn(UP_ON, , UP(Cvbs), 2, OFF, ON),
 			RETURN,			MENU_ONEo(UP_ON, e, UP_ON, ))
