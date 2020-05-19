@@ -10,11 +10,12 @@
 //#include "sound4p.h"
 //#include "AUD_8000_CH1.h"
 //#include "AUD_8000_CH1_BE.h"
-#include "AUD_8000_CH2_BE.h"
+//#include "AUD_8000_CH2_BE.h"
 //#include "g711_8k_16bit.h"
 
 AudioPool audpool;
 
+#if 0
 void audtx11_irq(void *ctx)
 {
 	audpool.audtx_now_pos = I2sTxPos();
@@ -29,6 +30,7 @@ void audtx11_irq(void *ctx)
 		I2S_TXLR = 3;
 	}
 }
+#endif
 
 void audrx11_irq(void *ctx)
 {
@@ -95,7 +97,7 @@ void audtx_irq(void *ctx)
 	}
 #elif 0
 	UINT size = G711DATA_LEN;
-	if (pos >= ((intptr_t)g711data) + size) {
+	if (audpool.audtx_now_pos >= ((intptr_t)g711data) + size) {
 		I2S_TXLR = 0;
 		I2sSetTxEn(ENX_OFF);
 		I2sSetTxEn(ENX_ON);
@@ -138,7 +140,7 @@ void audrx_irq(void *ctx)
 //	printf("AUDRX: 0x%08X\n", audpool.audrx_now_pos);
 	audpool.audrx_irq_count++;
 
-#if 1
+#if 0
 #if 1
 #if 1
 #if 1
@@ -341,7 +343,7 @@ void audrx_irq(void *ctx)
 void audtx_start(void)
 {
 #if 0
-#if 1
+#if 0
 	audpool.audtx_buffer = audpool.audtx_malloc = (BYTE *)AUD_8000_CH2_BE;
 	audpool.audtx_buffer_length = audpool.audtx_malloc_length = AUD_8000_CH2_BE_LEN;
 #else

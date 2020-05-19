@@ -8,6 +8,7 @@
 
 #include "cgissi.h"
 
+#if defined(__NETWORK__)
 #if (LOAD_FS_SDCARD==1)
 #include "sdcard.h"
 #include "muxer_videnc.h"
@@ -334,7 +335,7 @@ static void SSI_entry_date(char *pcInsert, int iInsertLen)
 #else
 			-1, 
 #endif
-			gptMsgShare.UPTIME, gptMsgShare.TIME + gptMsgShare.TIMEZONE, gtUser.nTimeSummer, gtUser.nTimeZone);	// SNTP¼­¹ö¸í, ±â±âÀÛµ¿½Ã°£, ±â±âÀÇ½Ã°£°ª(sntpµ¿±â°ª/jiffies), TimeZone
+			gptMsgShare.UPTIME, gptMsgShare.TIME + gptMsgShare.TIMEZONE, gtUser.nTimeSummer, gtUser.nTimeZone);	// SNTPì„œë²„ëª…, ê¸°ê¸°ì‘ë™ì‹œê°„, ê¸°ê¸°ì˜ì‹œê°„ê°’(sntpë™ê¸°ê°’/jiffies), TimeZone
 }
 
 static void SSI_entry_vinfo(char *pcInsert, int iInsertLen)
@@ -1114,10 +1115,10 @@ const char *App_EN675CGIHandler(int iIndex, int iNumParams, char *pcParam[], cha
 					break;
 			}
 #if (model_2M)
-			if(MP(FrameMode) == 3 || MP(FrameMode) == 5)	// 50/60 fps(WDRÀÌ ¾Æ´Ñ »óÅÂ)
+			if(MP(FrameMode) == 3 || MP(FrameMode) == 5)	// 50/60 fps(WDRì´ ì•„ë‹Œ ìƒíƒœ)
 			{
 				if(gtUser.uviH264[0].eResolution == e_res1920x1080)
-				{	// 0chÀÌ FHDÀÎ »óÅÂ¿¡¼­0chÀÌ max fps¸¸Å­H.264 ÀÎÄÚµùÀ» ÇÒ ¼ö ¾ø´Ù.
+				{	// 0chì´ FHDì¸ ìƒíƒœì—ì„œ0chì´ max fpsë§Œí¼H.264 ì¸ì½”ë”©ì„ í•  ìˆ˜ ì—†ë‹¤.
 					if(gtUser.uviH264[0].sfFPS == 0)
 						gtUser.uviH264[0].sfFPS = 1;
 				}
@@ -1176,10 +1177,10 @@ const char *App_EN675CGIHandler(int iIndex, int iNumParams, char *pcParam[], cha
 					break;
 			}
 #if (model_2M)
-			if(MP(FrameMode) == 3 || MP(FrameMode) == 5)	// 50/60 fps(WDRÀÌ ¾Æ´Ñ »óÅÂ)
+			if(MP(FrameMode) == 3 || MP(FrameMode) == 5)	// 50/60 fps(WDRì´ ì•„ë‹Œ ìƒíƒœ)
 			{
 				if(gtUser.uviH264[0].eResolution == e_res1920x1080)
-				{	// 0chÀÌ FHDÀÎ »óÅÂ¿¡¼­1chÀÌ max fps¸¸Å­H.264 ÀÎÄÚµùÀ» ÇÒ ¼ö ¾ø´Ù.
+				{	// 0chì´ FHDì¸ ìƒíƒœì—ì„œ1chì´ max fpsë§Œí¼H.264 ì¸ì½”ë”©ì„ í•  ìˆ˜ ì—†ë‹¤.
 					if(gtUser.uviH264[1].sfFPS == 0)
 						gtUser.uviH264[1].sfFPS = 1;
 				}
@@ -1293,13 +1294,13 @@ const char *AppUpdate_CGIHandler(int iIndex, int iNumParams, char *pcParam[], ch
 	printf("call %s\n", __func__);
 #if 0
 	FWUPDATE_INFO* fwinfo = (FWUPDATE_INFO*)pvPortCalloc(1, sizeof(FWUPDATE_INFO));
-	fwinfo->ddr_addr = (BYTE *)FW_UPDATE_BASE;	// ÀÌ¹Ì DDR¿¡ Æß¿ş¾î ÆÄÀÏÀÌ ¿Ã¶ó¿Í ÀÖ´Ù. ¿Ã¶ó¿Â ÁÖ¼Ò¸¦ ÀúÀåÇÑ´Ù.
-	fwinfo->type = eFWT_DDR;			// ÀÌ¹Ì DDR¿¡ Æß¿ş¾î ÆÄÀÏÀÌ ¿Ã¶ó¿Í ÀÖ´Ù.
-	fwinfo->is_areachange = DEF_YES;	// fw write Áß Àü¿øÂ÷´Ü µîÀ» ¿¹¹æÇÏ±â À§ÇØ areaÀ» º¯°æ ÈÄ writeÇÑ´Ù.
-	fwinfo->is_bootwrite = DEF_NO;		// boot.binÀº writeÇÏÁö ¾Ê´Â´Ù.
-	fwinfo->is_autoreboot = DEF_NO;		// CGIÃ³¸®¿¡ ÀÇÇØ ÀçºÎÆÃ ÇÒ°ÍÀÌ¹Ç·Î ÀÚµ¿ÀçºÎÆÃ ÇÏÁö ¾Ê´Â´Ù.
-	fwinfo->is_malloc = DEF_YES;		// ÀÌ ±¸Á¶Ã¼´Â malloc ÇßÀ¸¹Ç·Î free¸¦ À§ÇØ ¼±¾ğµÇ¾ú´Ù.
-	fwinfo->is_encodingstop = DEF_NO;	// httpd_post_begin¿¡¼­ encoding stop ¸í·ÉÀ» ³»¸°´Ù.
+	fwinfo->ddr_addr = (BYTE *)FW_UPDATE_BASE;	// ì´ë¯¸ DDRì— íŒì›¨ì–´ íŒŒì¼ì´ ì˜¬ë¼ì™€ ìˆë‹¤. ì˜¬ë¼ì˜¨ ì£¼ì†Œë¥¼ ì €ì¥í•œë‹¤.
+	fwinfo->type = eFWT_DDR;			// ì´ë¯¸ DDRì— íŒì›¨ì–´ íŒŒì¼ì´ ì˜¬ë¼ì™€ ìˆë‹¤.
+	fwinfo->is_areachange = DEF_YES;	// fw write ì¤‘ ì „ì›ì°¨ë‹¨ ë“±ì„ ì˜ˆë°©í•˜ê¸° ìœ„í•´ areaì„ ë³€ê²½ í›„ writeí•œë‹¤.
+	fwinfo->is_bootwrite = DEF_NO;		// boot.binì€ writeí•˜ì§€ ì•ŠëŠ”ë‹¤.
+	fwinfo->is_autoreboot = DEF_NO;		// CGIì²˜ë¦¬ì— ì˜í•´ ì¬ë¶€íŒ… í• ê²ƒì´ë¯€ë¡œ ìë™ì¬ë¶€íŒ… í•˜ì§€ ì•ŠëŠ”ë‹¤.
+	fwinfo->is_malloc = DEF_YES;		// ì´ êµ¬ì¡°ì²´ëŠ” malloc í–ˆìœ¼ë¯€ë¡œ freeë¥¼ ìœ„í•´ ì„ ì–¸ë˜ì—ˆë‹¤.
+	fwinfo->is_encodingstop = DEF_NO;	// httpd_post_beginì—ì„œ encoding stop ëª…ë ¹ì„ ë‚´ë¦°ë‹¤.
 	vTaskCreate("fwup", fwupdate_Task, fwinfo, JABBU_STACK_SIZE, LV5_TASK_PRIO);
 #endif
 	printf("==============================================================\n");
@@ -1318,13 +1319,13 @@ const char *AppUpdate2_CGIHandler(int iIndex, int iNumParams, char *pcParam[], c
 	printf("call %s\n", __func__);
 #if 0
 	FWUPDATE_INFO* fwinfo = (FWUPDATE_INFO*)pvPortCalloc(1, sizeof(FWUPDATE_INFO));
-	fwinfo->ddr_addr = (BYTE *)FW_UPDATE_BASE;	// ÀÌ¹Ì DDR¿¡ Æß¿ş¾î ÆÄÀÏÀÌ ¿Ã¶ó¿Í ÀÖ´Ù. ¿Ã¶ó¿Â ÁÖ¼Ò¸¦ ÀúÀåÇÑ´Ù.
-	fwinfo->type = eFWT_DDR;			// ÀÌ¹Ì DDR¿¡ Æß¿ş¾î ÆÄÀÏÀÌ ¿Ã¶ó¿Í ÀÖ´Ù.
-	fwinfo->is_areachange = DEF_YES;	// fw write Áß Àü¿øÂ÷´Ü µîÀ» ¿¹¹æÇÏ±â À§ÇØ areaÀ» º¯°æ ÈÄ writeÇÑ´Ù.
-	fwinfo->is_bootwrite = DEF_NO;		// boot.binÀº writeÇÏÁö ¾Ê´Â´Ù.
-	fwinfo->is_autoreboot = DEF_YES;	// ONVIF¿¡ ÀÇÇØ ¿äÃ»ÀÌ µé¾î¿Â °Í ÀÌ¹Ç·Î ÀÚµ¿ ÀçºÎÆÃÇÑ´Ù.
-	fwinfo->is_malloc = DEF_YES;		// ÀÌ ±¸Á¶Ã¼´Â malloc ÇßÀ¸¹Ç·Î free¸¦ À§ÇØ ¼±¾ğµÇ¾ú´Ù.
-	fwinfo->is_encodingstop = DEF_NO;	// httpd_post_begin¿¡¼­ encoding stop ¸í·ÉÀ» ³»¸°´Ù.
+	fwinfo->ddr_addr = (BYTE *)FW_UPDATE_BASE;	// ì´ë¯¸ DDRì— íŒì›¨ì–´ íŒŒì¼ì´ ì˜¬ë¼ì™€ ìˆë‹¤. ì˜¬ë¼ì˜¨ ì£¼ì†Œë¥¼ ì €ì¥í•œë‹¤.
+	fwinfo->type = eFWT_DDR;			// ì´ë¯¸ DDRì— íŒì›¨ì–´ íŒŒì¼ì´ ì˜¬ë¼ì™€ ìˆë‹¤.
+	fwinfo->is_areachange = DEF_YES;	// fw write ì¤‘ ì „ì›ì°¨ë‹¨ ë“±ì„ ì˜ˆë°©í•˜ê¸° ìœ„í•´ areaì„ ë³€ê²½ í›„ writeí•œë‹¤.
+	fwinfo->is_bootwrite = DEF_NO;		// boot.binì€ writeí•˜ì§€ ì•ŠëŠ”ë‹¤.
+	fwinfo->is_autoreboot = DEF_YES;	// ONVIFì— ì˜í•´ ìš”ì²­ì´ ë“¤ì–´ì˜¨ ê²ƒ ì´ë¯€ë¡œ ìë™ ì¬ë¶€íŒ…í•œë‹¤.
+	fwinfo->is_malloc = DEF_YES;		// ì´ êµ¬ì¡°ì²´ëŠ” malloc í–ˆìœ¼ë¯€ë¡œ freeë¥¼ ìœ„í•´ ì„ ì–¸ë˜ì—ˆë‹¤.
+	fwinfo->is_encodingstop = DEF_NO;	// httpd_post_beginì—ì„œ encoding stop ëª…ë ¹ì„ ë‚´ë¦°ë‹¤.
 	vTaskCreate("fwup", fwupdate_Task, fwinfo, JABBU_STACK_SIZE, LV5_TASK_PRIO);
 #endif
 	printf("==============================================================\n");
@@ -1402,10 +1403,10 @@ static const char *AppJpegSave(void)
 #if (JPEG_SDSAVE==1)
 	UINT idle_ck = 0;
 	switch (getSDState()) {
-		case sd_OFF:	// sdÄ«µåx <- sdÄ«µå ¾øÀ½À» ¾Ë¸°´Ù.
+		case sd_OFF:	// sdì¹´ë“œx <- sdì¹´ë“œ ì—†ìŒì„ ì•Œë¦°ë‹¤.
 			printf("%s(%d) : sd_OFF state\n", __func__, __LINE__);
 			return strUrl_sdnotready;
-		case sd_INIT:	// sdÄ«µåo, ÃÊ±âÈ­ Áß <- ´ë±â..?
+		case sd_INIT:	// sdì¹´ë“œo, ì´ˆê¸°í™” ì¤‘ <- ëŒ€ê¸°..?
 		case sd_READY:
 			printf("%s(%d) : sd_INIT/sd_READY state\n", __func__, __LINE__);
 			while (getSDState() == sd_INIT || getSDState() == sd_READY) {
@@ -1416,17 +1417,17 @@ static const char *AppJpegSave(void)
 			}
 			if(getSDState() != sd_IDLE)
 				break;
-		case sd_IDLE:	// sdÄ«µåo, IDLE <- Áï½Ã Ã³¸® °¡´É
+		case sd_IDLE:	// sdì¹´ë“œo, IDLE <- ì¦‰ì‹œ ì²˜ë¦¬ ê°€ëŠ¥
 			printf("%s(%d) : sd_IDLE state\n", __func__, __LINE__);
 			muxer_jpegstill_request();
 			return strUrl_submit;
-		case sd_SAVE:	// sdÄ«µåo, ³ìÈ­ Áß <- jpeg save ÀÛ¾÷À» videnc·Î ³Ñ±ä´Ù.
+		case sd_SAVE:	// sdì¹´ë“œo, ë…¹í™” ì¤‘ <- jpeg save ì‘ì—…ì„ videncë¡œ ë„˜ê¸´ë‹¤.
 			printf("%s(%d) : sd_SAVE state\n", __func__, __LINE__);
 			if (muxer_videnc_state(eRecSnapshot) == 0) {
 				muxer_videnc_go(eRecSnapshot);
 			}
 			return strUrl_submit;
-		case sd_ERR:	// sdÄ«µåo, ¿À·ù <- sdÄ«µå ¿À·ù »óÅÂÀÓÀ» ¾Ë¸°´Ù.
+		case sd_ERR:	// sdì¹´ë“œo, ì˜¤ë¥˜ <- sdì¹´ë“œ ì˜¤ë¥˜ ìƒíƒœì„ì„ ì•Œë¦°ë‹¤.
 			printf("%s(%d) : sd_ERR state\n", __func__, __LINE__);
 			break;
 	}
@@ -1522,5 +1523,6 @@ const char *AppJpegStill_CGIHandler(int iIndex, int iNumParams, char *pcParam[],
 	UNUSED(pcParam);
 	UNUSED(pcValue);
 }
+#endif
 #endif
 #endif

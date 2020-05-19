@@ -4,6 +4,7 @@
 
 #include <stdlib.h>
 
+#if (USE_ETH==1)
 static EthTestStr_nonos ethnonostest;
 
 static UINT *pRX_LEN_INFO = (UINT *)(REG_BASE_ETH + 0x80000);
@@ -105,7 +106,11 @@ void test_eth_start(void)
 			p[4] = SYS_MARK4;
 			printf("SYS_MAKR [%s]\n", strName);
 			hexDump("SYS_MARK", strName, 20);
+#if EN675_SINGLE
+			printf("SYS_RTL  %04u-%02u-%02u %02u:%02u:%02u\n", SYS_RTL_YEAR + 2000, SYS_RTL_MONTH, SYS_RTL_DAY, SYS_RTL_HOUR, SYS_RTL_MIN, SYS_RTL_SEC);
+#else
 			printf("SYS_RTL  %04X-%02X-%02X %02X:%02X:%02X\n", SYS_RTL_YEAR, SYS_RTL_MONTH, SYS_RTL_DAY, SYS_RTL_HOUR, SYS_RTL_MINUTE, SYS_RTL_SECOND);
+#endif
 			printf("=======================================\n");
 			printf("SYS_REG0(0x%08X) ", SYS_REG0);
 			printf("SYS_REG1(0x%08X) ", SYS_REG1);
@@ -149,3 +154,4 @@ void test_eth_init(void)
 
 	WaitXus(100);
 }
+#endif

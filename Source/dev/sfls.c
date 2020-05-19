@@ -72,6 +72,7 @@ void SflsInit(void)
 		sfls_master->func_init_2();
 	}
 #endif
+	ENX_DEBUGF(DBG_SFLS_STATUS, "SFLS Init - %s%uHz%s\n", TTY_COLOR_GREEN, SflsGetClk(), TTY_COLOR_RESET);
 }
 
 void SflsSetClkdiv(UINT Clkdiv)
@@ -101,7 +102,7 @@ void SflsSetClk(UINT Speed_Hz)
 
 UINT SflsGetClk(void)
 {
-	ENX_DEBUGF(DBG_SFLS_LOG, "SFLS Init - %uHz(%u)\n", APB_FREQ / ((SFLS_IO_CLKDIV + 1) * 2), SFLS_IO_CLKDIV);
+	ENX_DEBUGF(DBG_SFLS_LOG, "SFLS Clk %uHz(%u)\n", APB_FREQ / ((SFLS_IO_CLKDIV + 1) * 2), SFLS_IO_CLKDIV);
 	return APB_FREQ / ((SFLS_IO_CLKDIV + 1) * 2);
 }
 

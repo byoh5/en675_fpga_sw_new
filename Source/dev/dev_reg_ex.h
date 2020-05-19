@@ -4,7 +4,11 @@
 //******************************************************************************
 // x. Register
 //------------------------------------------------------------------------------
-#include "dev_reg.h"
+#if EN675_SINGLE
+#include "dev_reg_s.h"
+#else
+#include "dev_reg_m.h"
+#endif
 
 _regs_ BF_8(UINT GPIO_IN : 1 ,UINT GPIO_OUT : 1 ,UINT GPIO_OEN : 1 ,UINT GPIO_IRQ_DIR : 2 ,UINT GPIO_IRQ_EN : 1 ,UINT GPIO_IRQ_CLR : 1 ,UINT GPIO_IRQ : 1 , UINT _rev0 : 24 ) _rege_ _GPIO_PIN;
 _regs_ BF_2(UINT _rev0 : 30, UINT GPIO_MUX : 2 ) _rege_ _GPIO_MUX;
@@ -40,7 +44,11 @@ _regs_ BF_2(UINT CLK_DIV : 16 , UINT _rev0 : 16 ) _rege_ _I2C_REG1;
 _regs_ BF_7(UINT _rev0 : 26, UINT MST_COL : 1 ,UINT MST_ACK : 1 ,UINT MST_REPEAT : 1 ,UINT MST_LAST : 1 ,UINT MST_RW : 1 ,UINT MST_GO : 1 ) _rege_ _I2C_REG2;
 _regs_ BF_8(UINT _rev0 : 19, UINT I2C_SDA : 1 ,UINT I2C_SCL : 1 ,UINT SLV_ACK_IN : 1 ,UINT SLV_GO : 1 ,UINT SLV_RW : 1 ,UINT SLV_ACK_OUT : 1 ,UINT SLV_ADR : 7 ) _rege_ _I2C_REG3;
 
+#if EN675_SINGLE
+_regs_ BF_12(UINT FULL : 1 ,UINT DONE_VAL : 1 ,UINT _rev0 : 4, UINT DONE_PTR : 4 ,UINT _rev1 : 4, UINT JOB_PTR : 4 ,UINT IRQ : 1 ,UINT IRQ_EN : 1 ,UINT IRQ_CLR : 1 ,UINT VALUE : 8 ,UINT MODE : 2 ,UINT GO : 1 ) _rege_ _DMA_REG0;
+#else
 _regs_ BF_12(UINT _rev0 : 1, UINT DONE_VAL : 1 ,UINT _rev1 : 2, UINT DONE_PTR : 6 ,UINT _rev2 : 2, UINT JOB_PTR : 6 ,UINT IRQ : 1 ,UINT IRQ_EN : 1 ,UINT IRQ_CLR : 1 ,UINT VALUE : 8 ,UINT MODE : 2 ,UINT GO : 1 ) _rege_ _DMA_REG0;
+#endif
 _regs_ BF_1(UINT SRC : 32 ) _rege_ _DMA_REG1;
 _regs_ BF_1(UINT DST : 32 ) _rege_ _DMA_REG2;
 _regs_ BF_1(UINT LEN : 32 ) _rege_ _DMA_REG3;
@@ -545,6 +553,7 @@ _regs_ BF_5(UINT EN : 1 ,UINT MAG : 1 ,UINT MUL : 3 ,UINT _rev0 : 11, UINT DAT :
 #define AES_15_T _am(_AES_15,REG_BASE_AES, (15<<3))
 
 #define SHA_00_T _am(_SHA_0,REG_BASE_SHA, (0<<3))
+#define SHA_01_T _am(_SHA_0,REG_BASE_SHA, (1<<3))
 #define SHA_02_T _am(_SHA_2,REG_BASE_SHA, (2<<3))
 #define SHA_03_T _am(_SHA_3,REG_BASE_SHA, (3<<3))
 #define SHA_04_T _am(_SHA_4,REG_BASE_SHA, (4<<3))

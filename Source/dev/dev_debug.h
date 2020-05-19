@@ -32,6 +32,9 @@
 
 #define DGB_DMA_MSG				(ENX_DBG_OFF)
 
+#define DBG_SDIO_LOG			(ENX_DBG_OFF)
+#define DBG_SDIO_STATUS			(ENX_DBG_ON)
+
 #define DBG_SDIO_CD_CMD			(ENX_DBG_OFF) // (ENX_DBG_ON | ENX_DBG_STATE)
 #define DBG_SDIO_CD_DAT			(ENX_DBG_OFF) // (ENX_DBG_ON)
 #define DBG_SDIO_CD_ERR			(ENX_DBG_ON)
@@ -48,13 +51,22 @@
 //#define DBG_ETHPHY_LOG			(ENX_DBG_OFF)
 #define DBG_ETHPHY_ERR			(ENX_DBG_ON)
 #define DBG_ETHPHY_PANIC		(ENX_DBG_ON | ENX_DBG_HALT)
-#define DBG_MDIO_LOG			(ENX_DBG_ON)
 
-#define DBG_UART_LOG			(ENX_DBG_ON)
-#define DBG_I2C_LOG				(ENX_DBG_ON)
-#define DBG_SPI_LOG				(ENX_DBG_ON)
+#define DBG_MDIO_LOG			(ENX_DBG_OFF)
+#define DBG_MDIO_STATUS			(ENX_DBG_ON)
+
+#define DBG_UART_LOG			(ENX_DBG_OFF)
+#define DBG_UART_STATUS			(ENX_DBG_ON)
+
+#define DBG_I2C_LOG				(ENX_DBG_OFF)
+#define DBG_I2C_STATUS			(ENX_DBG_ON)
+
+#define DBG_SPI_LOG				(ENX_DBG_OFF)
+#define DBG_SPI_STATUS			(ENX_DBG_ON)
+
 #define DBG_GPIO_LOG			(ENX_DBG_ON)
 #define DGB_GPIO_ERR			(ENX_DBG_ON | ENX_DBG_HALT)
+
 #define DBG_ADC_LOG				(ENX_DBG_ON)
 
 #define DBG_SFLS_LOG			(ENX_DBG_OFF)

@@ -14,6 +14,8 @@ static SFLScontrol sfls_mx25u12832f = {
 	.iors_cmd = MX25U12832F_IORS_CMD,
 	.iors_dat = MX25U12832F_IORS_DAT,
 
+	.is_qpi = 0,
+
 	.cmd_read = MX25U12832F_CMD_FAST_READ,
 	.cmd_page_program = MX25U12832F_CMD_PAGE_PROGRAM,
 	.cmd_write_enable = MX25U12832F_CMD_WRITE_ENABLE,
@@ -21,6 +23,7 @@ static SFLScontrol sfls_mx25u12832f = {
 
 	.gap = MX25U12832F_READ_GAP,
 	.rdltc = MX25U12832F_RDLTC,
+	.size = MX25U12832F_SIZE,
 
 	.func_init_1 = SflsMx25u12832f_Init1,
 	.func_init_2 = SflsMx25u12832f_Init2,
@@ -34,22 +37,28 @@ static SFLScontrol sfls_mx25u12832f = {
 	.func_read_sfdp = SflsMx25u12832f_ReadSFDP,
 	.func_enter_4b = 0,
 	.func_exit_4b = 0,
+	.func_is_4b = 0,
 #if (MX25U12832F_ENABLE_QPI==1)
 	.func_enter_qpi = SflsMx25u12832f_EnterQPI,
 	.func_exit_qpi = SflsMx25u12832f_ExitQPI,
+	.func_is_qpi = SflsMx25u12832f_IsQPI,
 #else
 	.func_enter_qpi = 0,
 	.func_exit_qpi = 0,
+	.func_is_qpi = 0,
 #endif
 #if (MX25U12832F_ENABLE_QE==1)
 	.func_enter_qe = SflsMx25u12832f_EnterQE,
 	.func_exit_qe = SflsMx25u12832f_ExitQE,
+	.func_is_qe = SflsMx25u12832f_IsQE,
 #else
 	.func_enter_qe = 0,
 	.func_exit_qe = 0,
+	.func_is_qe = 0,
 #endif
 	.func_enter_protection = SflsMx25u12832f_EnterProtection,
 	.func_exit_protection = SflsMx25u12832f_ExitProtection,
+	.func_is_protection = SflsMx25u12832f_IsProtection,
 };
 
 void SflsMx25u12832f_Init1(void)
@@ -64,7 +73,11 @@ void SflsMx25u12832f_Init2(void)
 
 void SflsMx25u12832f_WriteEnable(void)
 {
-	SFLS_USR_CMD_MODE	= sfls_mx25u12832f.iowe_cmd;
+	if (sfls_mx25u12832f.is_qpi) {
+		SFLS_USR_CMD_MODE = 2;
+	} else {
+		SFLS_USR_CMD_MODE = 0;
+	}
 	SFLS_USR_ADR_EN 	= 0;
 	SFLS_USR_GAP_EN 	= 0;
 	SFLS_USR_RD_EN 		= 0;
@@ -76,13 +89,24 @@ void SflsMx25u12832f_WriteEnable(void)
 
 static void SflsMx25u12832f_Erase(SFLS_ERASE erase_type, UINT addr)
 {
-	SFLS_USR_CMD_MODE 	= sfls_mx25u12832f.iow_cmd;
+	if (sfls_mx25u12832f.is_qpi) {
+		SFLS_USR_RDLTC	= SFLS_IO_RDLTC;
+		SFLS_USR_CMD_MODE = 2;
+		SFLS_USR_ADR_MODE = 2;
+		SFLS_USR_RDREG_CMD_MODE = 2;
+		SFLS_USR_RDREG_DAT_MODE	= 2;
+	} else {
+		SFLS_USR_RDLTC	= 1;
+		SFLS_USR_CMD_MODE = 0;
+		SFLS_USR_ADR_MODE = 0;
+		SFLS_USR_RDREG_CMD_MODE = 0;
+		SFLS_USR_RDREG_DAT_MODE	= 0;
+	}
+
 	if (erase_type == SFLS_E_ALL) {
-		SFLS_USR_ADR_MODE= 0;
 		SFLS_USR_ADR_EN	= 0;
 		SFLS_USR_ADR	= 0;
 	} else {
-		SFLS_USR_ADR_MODE= sfls_mx25u12832f.iow_adr;
 		SFLS_USR_ADR_EN	= 1;
 		SFLS_USR_ADR	= addr;
 	}
@@ -92,8 +116,6 @@ static void SflsMx25u12832f_Erase(SFLS_ERASE erase_type, UINT addr)
 	SFLS_USR_GAP 		= 0;
 	SFLS_USR_ADR_EXT 	= 0;
 	SFLS_USR_BUSY_EN 	= 1;
-	SFLS_USR_RDREG_CMD_MODE = sfls_mx25u12832f.iors_cmd;
-	SFLS_USR_RDREG_DAT_MODE	= sfls_mx25u12832f.iors_dat;
 	switch (erase_type) {
 	case SFLS_E_ALL:
 		SFLS_USR_CMD	= MX25U12832F_CMD_CHIP_ERASE;
@@ -140,20 +162,31 @@ void SflsMx25u12832f_ReadSFDP(BYTE *sfdp_bin)
 {
 	UINT *data = (UINT *)sfdp_bin;
 
-	SFLS_USR_CMD_MODE	= 0;
-	SFLS_USR_ADR_MODE	= 0;
-	SFLS_USR_DAT_MODE	= 0;
+	if (sfls_mx25u12832f.is_qpi) {
+		SFLS_USR_RDLTC	= SFLS_IO_RDLTC;
+		SFLS_USR_CMD_MODE = 2;
+		SFLS_USR_ADR_MODE = 2;
+		SFLS_USR_DAT_MODE = 2;
+	} else {
+		SFLS_USR_RDLTC	= 1;
+		SFLS_USR_CMD_MODE = 0;
+		SFLS_USR_ADR_MODE = 0;
+		SFLS_USR_DAT_MODE = 0;
+	}
 	SFLS_USR_ADR_EN		= 1;
 	SFLS_USR_GAP_EN		= 1;
-	SFLS_USR_GAP		= 7;
+	if (sfls_mx25u12832f.is_qpi) {
+		SFLS_USR_GAP	= SFLS_BUS_GAP;
+	} else {
+		SFLS_USR_GAP	= 7;
+	}
 	SFLS_USR_RD_EN		= 1;
 	SFLS_USR_WR_EN		= 0;
 	SFLS_USR_LEN		= 3;
 	SFLS_USR_ADR_EXT	= 0;
 	SFLS_USR_BUSY_EN	= 0;
-	SFLS_USR_CMD		= 0x5A;
+	SFLS_USR_CMD		= MX25U12832F_CMD_READ_SFDP;
 	SFLS_USR_WRDAT		= 0;
-	SFLS_USR_RDLTC		= 1;
 
 	for (UINT i = 0; i < (256 / 4); i++) {
 		SFLS_USR_ADR	= i * 4;
@@ -165,8 +198,15 @@ void SflsMx25u12832f_ReadSFDP(BYTE *sfdp_bin)
 
 BYTE SflsMx25u12832f_ReadStatus(void)
 {
-	SFLS_USR_CMD_MODE	= sfls_mx25u12832f.iors_cmd;
-	SFLS_USR_DAT_MODE	= sfls_mx25u12832f.iors_dat;
+	if (sfls_mx25u12832f.is_qpi) {
+		SFLS_USR_RDLTC	= SFLS_IO_RDLTC;
+		SFLS_USR_CMD_MODE = 2;
+		SFLS_USR_DAT_MODE = 2;
+	} else {
+		SFLS_USR_RDLTC	= 1;
+		SFLS_USR_CMD_MODE = 0;
+		SFLS_USR_DAT_MODE = 0;
+	}
 	SFLS_USR_ADR_EN		= 0;
 	SFLS_USR_GAP_EN		= 0;
 	SFLS_USR_GAP 		= 0;
@@ -175,7 +215,6 @@ BYTE SflsMx25u12832f_ReadStatus(void)
 	SFLS_USR_LEN		= 0;
 	SFLS_USR_BUSY_EN	= 0;
 	SFLS_USR_CMD		= MX25U12832F_CMD_READ_STATUS;
-	SFLS_USR_RDLTC		= SFLS_IO_RDLTC;
 	SFLS_USR_REQ		= 1;
 	while (SFLS_USR_REQ);
 //	printf("CMD%02X: SFLS-RD:0x%08X, MODE(%d,%d)\n", SFLS_USR_CMD, SFLS_USR_RDDAT, SFLS_USR_CMD_MODE, SFLS_USR_DAT_MODE);
@@ -198,8 +237,15 @@ void SflsMx25u12832f_WriteStatus(BYTE status)
 	SflsMx25u12832f_WriteEnable();
 	while (SFLS_USR_REQ);
 
-	SFLS_USR_CMD_MODE	= sfls_mx25u12832f.iors_cmd;
-	SFLS_USR_DAT_MODE	= sfls_mx25u12832f.iors_dat;
+	if (sfls_mx25u12832f.is_qpi) {
+		SFLS_USR_RDLTC	= SFLS_IO_RDLTC;
+		SFLS_USR_CMD_MODE = 2;
+		SFLS_USR_DAT_MODE = 2;
+	} else {
+		SFLS_USR_RDLTC	= 1;
+		SFLS_USR_CMD_MODE = 0;
+		SFLS_USR_DAT_MODE = 0;
+	}
 	SFLS_USR_ADR_EN		= 0;
 	SFLS_USR_GAP_EN		= 0;
 	SFLS_USR_GAP 		= 0;
@@ -209,7 +255,6 @@ void SflsMx25u12832f_WriteStatus(BYTE status)
 	SFLS_USR_BUSY_EN	= 1;
 	SFLS_USR_CMD		= MX25U12832F_CMD_WRITE_STATUS;
 	SFLS_USR_WRDAT		= status << 24;
-	SFLS_USR_RDLTC		= SFLS_IO_RDLTC;
 	SFLS_USR_REQ		= 1;
 	while (SFLS_USR_REQ);
 //	printf("CMD%02X: SFLS-WD:0x%08X, MODE(%d,%d)\n", SFLS_USR_CMD, status, SFLS_USR_CMD_MODE, SFLS_USR_DAT_MODE);
@@ -218,12 +263,27 @@ void SflsMx25u12832f_WriteStatus(BYTE status)
 #if (MX25U12832F_ENABLE_QPI==1)
 void SflsMx25u12832f_EnterQPI(void)
 {
-	SflsSingleCommand(MX25U12832F_CMD_ENTER_QPI);
+	if (sfls_mx25u12832f.is_qpi == 0) {
+		SflsSingleCommand(MX25U12832F_CMD_ENTER_QPI, 0);
+		sfls_mx25u12832f.is_qpi = 1;
+	} else {
+		ENX_DEBUGF(DBG_SFLS_WARNING, "already enter QPI\n");
+	}
 }
 
 void SflsMx25u12832f_ExitQPI(void)
 {
-	SflsSingleCommand(MX25U12832F_CMD_EXIT_QPI);
+	if (sfls_mx25u12832f.is_qpi == 1) {
+		SflsSingleCommand(MX25U12832F_CMD_EXIT_QPI, 2);
+		sfls_mx25u12832f.is_qpi = 0;
+	} else {
+		ENX_DEBUGF(DBG_SFLS_WARNING, "already exit QPI\n");
+	}
+}
+
+UINT SflsMx25u12832f_IsQPI(void)
+{
+	return sfls_mx25u12832f.is_qpi;
 }
 #endif
 
@@ -249,6 +309,16 @@ void SflsMx25u12832f_ExitQE(void)
 		ENX_DEBUGF(DBG_SFLS_WARNING, "already exit QE\n");
 	}
 }
+
+UINT SflsMx25u12832f_IsQE(void)
+{
+	BYTE status = SflsMx25u12832f_ReadStatus();
+	if (status & 0x40) {
+		return 1;
+	} else {
+		return 0;
+	}
+}
 #endif
 
 void SflsMx25u12832f_EnterProtection(void)
@@ -270,6 +340,16 @@ void SflsMx25u12832f_ExitProtection(void)
 		SflsMx25u12832f_WriteStatus(status);
 	} else {
 		ENX_DEBUGF(DBG_SFLS_WARNING, "already exit protection\n");
+	}
+}
+
+UINT SflsMx25u12832f_IsProtection(void)
+{
+	BYTE status = SflsMx25u12832f_ReadStatus();
+	if (status & 0x3C) {
+		return 1;
+	} else {
+		return 0;
 	}
 }
 #endif

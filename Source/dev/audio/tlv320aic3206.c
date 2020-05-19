@@ -34,7 +34,7 @@ const BYTE TLV320AIC3206_SetupA[][2] =
 
 	//	Codec PLL Setting (MCLK 24.576MHz)
 #if (PCM_FREQUENCY==PCM_16BIT_8000HZ)
-	//	Fs 8KHz = 24576/2¡¿1¡¿8/3/32/128 = 8
+	//	Fs 8KHz = 24576/2Ã—1Ã—8/3/32/128 = 8
 	{0x00, 0x00},	//	00 Select Page 0
 	{0x04, 0x03},	//	04 Clock Setting - Multiplexers
 	{0x05, 0xA1},	//	05 PLL P&R : P = 0x02, R = 0x01
@@ -58,7 +58,7 @@ const BYTE TLV320AIC3206_SetupA[][2] =
 #endif
 
 #if (PCM_FREQUENCY==PCM_16BIT_16000HZ)
-	//	Fs 16KHz = 24576/2¡¿1¡¿16/3/32/128 = 16
+	//	Fs 16KHz = 24576/2Ã—1Ã—16/3/32/128 = 16
 	{0x00, 0x00},	//	00 Select Page 0
 	{0x04, 0x03},	//	04 Clock Setting - Multiplexers
 	{0x05, 0xA1},	//	05 PLL P&R : P = 0x02, R = 0x01
@@ -82,7 +82,7 @@ const BYTE TLV320AIC3206_SetupA[][2] =
 #endif
 
 #if (PCM_FREQUENCY==PCM_16BIT_32000HZ)
-	//	Fs 32KHz = 24576/2¡¿1¡¿16/3/16/128 = 32
+	//	Fs 32KHz = 24576/2Ã—1Ã—16/3/16/128 = 32
 	{0x00, 0x00},	//	00 Select Page 0
 	{0x04, 0x03},	//	04 Clock Setting - Multiplexers
 	{0x05, 0xA1},	//	05 PLL P&R : P = 0x02, R = 0x01
@@ -106,7 +106,7 @@ const BYTE TLV320AIC3206_SetupA[][2] =
 #endif
 
 #if (PCM_FREQUENCY==PCM_16BIT_11025HZ)
-	//	Fs 11.025KHz = 24576/2¡¿1¡¿7.35/1/64/128 = 11.025
+	//	Fs 11.025KHz = 24576/2Ã—1Ã—7.35/1/64/128 = 11.025
 	{0x00, 0x00},	//	00 Select Page 0
 	{0x04, 0x03},	//	04 Clock Setting - Multiplexers
 	{0x05, 0xA1},	//	05 PLL P&R : P = 0x02, R = 0x01
@@ -130,7 +130,7 @@ const BYTE TLV320AIC3206_SetupA[][2] =
 #endif
 
 #if (PCM_FREQUENCY==PCM_16BIT_22050HZ)
-	//	Fs 22.05KHz = 24576/2¡¿1¡¿7.35/1/32/128 = 22.05
+	//	Fs 22.05KHz = 24576/2Ã—1Ã—7.35/1/32/128 = 22.05
 	{0x00, 0x00},	//	00 Select Page 0
 	{0x04, 0x03},	//	04 Clock Setting - Multiplexers
 	{0x05, 0xA1},	//	05 PLL P&R : P = 0x02, R = 0x01
@@ -154,7 +154,7 @@ const BYTE TLV320AIC3206_SetupA[][2] =
 #endif
 
 #if (PCM_FREQUENCY==PCM_16BIT_44100HZ)
-	//	Fs 44.1KHz = 24576/2¡¿1¡¿7.35/1/16/128 = 44.1
+	//	Fs 44.1KHz = 24576/2Ã—1Ã—7.35/1/16/128 = 44.1
 	{0x00, 0x00},	//	00 Select Page 0
 	{0x04, 0x03},	//	04 Clock Setting - Multiplexers
 	{0x05, 0xA1},	//	05 PLL P&R : P = 0x02, R = 0x01
@@ -285,7 +285,7 @@ void tlv320aic3206_init(void)
 				tlv320aic3206_delay((UINT)TLV320AIC3206_SetupA[i][1]);
 			} else {
 				tlv320aic3206_write_reg(TLV320AIC3206_SetupA[i][0],TLV320AIC3206_SetupA[i][1]);
-
+#if 0
 				BYTE u8Read;
 				tlv320aic3206_read_reg(TLV320AIC3206_SetupA[i][0], &u8Read);
 				if (u8Read != TLV320AIC3206_SetupA[i][1]) {
@@ -304,6 +304,7 @@ void tlv320aic3206_init(void)
 				} else {
 //					printf("  >>TLV320AIC3206 Setting OK\n");
 				}
+#endif
 //				printf("Read Adr = %08x  Reg = %08x\n", TLV320AIC3206_SetupA[i][0], u8Read);
 			}
 		}

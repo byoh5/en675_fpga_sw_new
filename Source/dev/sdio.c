@@ -67,7 +67,7 @@ void SdioInit(UINT nCH, UINT Speed_Hz)
 
 	arrSDIODefSpeed[nCH] = Speed_Hz;
 
-	printf("SDIO%d Init - %uHz\n", nCH, APB_FREQ / ((arrSDIOReg1[nCH]->CLK_DIV + 1) * 2));
+	ENX_DEBUGF(DBG_SDIO_STATUS, "SDIO%d Init - %s%uHz%s\n", nCH, TTY_COLOR_GREEN, SdioGetClock(nCH), TTY_COLOR_RESET);
 }
 
 ENX_OKFAIL SdioCmd(UINT nCH, BYTE Cmd, UINT Arg, UINT *nResp, eCmdRespType cmdType)
@@ -242,6 +242,11 @@ void SdioSetClock(UINT nCH, UINT Speed_Hz)
 	arrSDIOReg1[nCH]->CLK_DIV = (APB_FREQ / (2 * Speed_Hz) - 1);
 }
 
+UINT SdioGetClock(UINT nCH)
+{
+	return APB_FREQ / ((arrSDIOReg1[nCH]->CLK_DIV + 1) * 2);
+}
+
 void SdioSetClockDiv(UINT nCH, UINT nClkDiv)
 {
 	if (nClkDiv == 0xffff) {
@@ -275,7 +280,7 @@ ENX_SWITCH SdioGetClockEn(UINT nCH)
 void SdioClockDivPrint(UINT nCH, char *strBuffer)
 {
 	if (arrSDIOReg1[nCH]->CLK_SELECT) {
-		sprintf(strBuffer, "%uHz/CLK_SELCT:%u,CLK_DIV:%u", APB_FREQ / ((arrSDIOReg1[nCH]->CLK_DIV + 1) * 2), arrSDIOReg1[nCH]->CLK_SELECT, arrSDIOReg1[nCH]->CLK_DIV);
+		sprintf(strBuffer, "%uHz/CLK_SELCT:%u,CLK_DIV:%u", SdioGetClock(nCH), arrSDIOReg1[nCH]->CLK_SELECT, arrSDIOReg1[nCH]->CLK_DIV);
 	} else {
 		sprintf(strBuffer, "%uHz/CLK_SELCT:%u,CLK_DIV:%u", APB_FREQ, arrSDIOReg1[nCH]->CLK_SELECT, arrSDIOReg1[nCH]->CLK_DIV);
 	}
@@ -331,7 +336,7 @@ UINT SdioIsDataEn(UINT nCH)
 	return arrSDIOReg13[nCH]->DAT_EN;
 }
 
-ENX_OKFAIL SdioDataIO(UINT nCH, eSDIO_DIO_TYPE iotype, ULONG MemDst, UINT BlkAdr, UINT BlkCnt)
+ENX_OKFAIL SdioDataIO(UINT nCH, eSDIO_DIO_TYPE iotype, ULONG MemAdr, UINT BlkAdr, UINT BlkCnt)
 {
 	int k = 0;
 	UINT myselcmd = SdioGetDataCmd(nCH, iotype);
@@ -349,7 +354,7 @@ ENX_OKFAIL SdioDataIO(UINT nCH, eSDIO_DIO_TYPE iotype, ULONG MemDst, UINT BlkAdr
 		delay[nCH](1);
 	}
 
-	arrSDIOReg10[nCH]->DAT_ADR = MemDst;
+	arrSDIOReg10[nCH]->DAT_ADR = MemAdr;
 	arrSDIOReg11[nCH]->DAT_BLKNUM = BlkCnt;
 	arrSDIOReg12[nCH]->DAT_BLKADR = BlkAdr;
 	arrSDIOReg13[nCH]->DAT_WE = iotype & 0x1;
@@ -403,13 +408,13 @@ ENX_OKFAIL SdioDataIO(UINT nCH, eSDIO_DIO_TYPE iotype, ULONG MemDst, UINT BlkAdr
 		//printf("SDIO%u CMD(%u) Arg(0x%08X) CMDCRC(%u:0x%02X), RESPTOUT(%u), DATCRC(%u) 2\n", nCH, selcmd, BlkAdr, arrSDIOReg3[nCH]->CMD_RESP_CRCERR, arrSDIOReg4[nCH]->CMD_RESP_CRC, arrSDIOReg3[nCH]->CMD_RESP_TOUT, arrSDIOReg13[nCH]->DAT_CRCERR);
 		return ENX_FAIL;
 	}
-
+//	_Gprintf("RSEP: 0x%08X\n", SDIO0_CMD_RESP_DAT127_96);
 	return ENX_OK;
 }
 
-ENX_OKFAIL SdioDataIO_async(UINT nCH, eSDIO_DIO_TYPE iotype, ULONG MemDst, UINT BlkAdr, UINT BlkCnt)
+ENX_OKFAIL SdioDataIO_async(UINT nCH, eSDIO_DIO_TYPE iotype, ULONG MemAdr, UINT BlkAdr, UINT BlkCnt)
 {
-	arrSDIOReg10[nCH]->DAT_ADR = MemDst;
+	arrSDIOReg10[nCH]->DAT_ADR = MemAdr;
 	arrSDIOReg11[nCH]->DAT_BLKNUM = BlkCnt;
 	arrSDIOReg12[nCH]->DAT_BLKADR = BlkAdr;
 	arrSDIOReg13[nCH]->DAT_WE = iotype & 0x1;

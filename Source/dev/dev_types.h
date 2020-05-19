@@ -20,8 +20,13 @@
 //------------------------------------------------------------------------------
 #define CPU_ID					read_csr(mhartid)
 
+#if EN675_SINGLE
+#define BDMA_CNT				16
+#define CDMA_CNT				16
+#else
 #define BDMA_CNT				4
 #define CDMA_CNT				4
+#endif
 #define GPIO_CNT				72
 #define SDIO_CNT				2
 #define UART_CNT				9
@@ -333,10 +338,17 @@ typedef struct {
 typedef enum {
 	eigiISP = 1,
 	eigiVCODEC = 2,
+#if EN675_SINGLE
+	eigiDMA0_3 = 3,
+	eigiDMA4_7 = 4,
+	eigiDMA8_11 = 5,
+	eigiDMA12_15 = 6,
+#else
 	eigiDMA0 = 3,
 	eigiDMA1 = 4,
 	eigiDMA2 = 5,
 	eigiDMA3 = 6,
+#endif
 	eigiATOB = 7,
 	eigiBTOA = 8,
 	eigiETH = 9,
@@ -666,6 +678,19 @@ typedef enum {
 	eSHA256 = 1,	// SHA_MODE=1
 } SHAmode;
 
+typedef enum {
+	eSHACmdInit = 0,	// SHA_CMD=0
+	eSHACmdUpdate = 1,	// SHA_CMD=1
+	eSHACmdFinal = 2,	// SHA_CMD=2
+} SHAChopCmd;
+
+typedef struct {
+	BYTE *base;
+	UINT tot_len;
+	SHAmode mode;
+	SHAChopCmd cmd;
+} SHAChopitem;
+
 typedef enum {				//				bit		type	mode
 	eAES128_ECB_DEC = 0,	// AES_MODE=0	128		ecb		dec
 	eAES128_ECB_ENC = 1,	// AES_MODE=1	128		ecb		enc
@@ -954,7 +979,7 @@ typedef	union{
 #define PVC_EA				16//32			// number of privacy box (max 32ea, CAUTION. share with IMD box ea)
 #define MASK_EA				4				// number of IMD area box
 
-typedef struct _tagPRIVACY{				// 5 byte Å©±â, ¸ðµÎ BYTEÇüÀÌ¹Ç·Î aligned ÇÊ¿ä ¾øÀ½
+typedef struct _tagPRIVACY{				// 5 byte í¬ê¸°, ëª¨ë‘ BYTEí˜•ì´ë¯€ë¡œ aligned í•„ìš” ì—†ìŒ
 	BYTE	bAction;
 	BYTE	bPosX;
 	BYTE	bPosY;
@@ -988,7 +1013,7 @@ typedef struct _IMD_RECT_B {
 #define _UP_TYPEDEF_2(N,...)	typedef WORD UPt(N);
 #define _UP_TYPEDEF_4(N,...)	typedef UINT UPt(N);
 
-#define	UP_TITLE_ALIGNED	2	// !!! User Parameter¿¡¼­ UINT »ç¿ë ½Ã 4·Î ¼³Á¤ÇØ¾ß ÇÔ !!!
+#define	UP_TITLE_ALIGNED	2	// !!! User Parameterì—ì„œ UINT ì‚¬ìš© ì‹œ 4ë¡œ ì„¤ì •í•´ì•¼ í•¨ !!!
 #define UP_TITLE(N)
 #define UP_SET(S,N,...)		_UP_TYPEDEF_##S(N,...)
 USR_PAR_LIST
@@ -1037,7 +1062,7 @@ USR_PAR_LIST
 #define UPsti(N)			(N##_UP_START+1)
 #define UPstinv(N)			(N##_UP_START+sizeof(UP_##N))
 
-#if 1	// »ç¿ë ½Ã IspMsgFnc()¿¡¼­ UsrParCpy()»ç¿ë ºÒ°¡
+#if 1	// ì‚¬ìš© ì‹œ IspMsgFnc()ì—ì„œ UsrParCpy()ì‚¬ìš© ë¶ˆê°€
 	#define UPtoMSG(A)		((A)-(UPsti(ISP_BINARY_INFO)-2))
 	#define MSGtoUP(A)		((A)+(UPsti(ISP_BINARY_INFO)-2))
 #else
@@ -1119,7 +1144,7 @@ USR_PAR_LIST
 #define UP_TITLE(N)		__attribute__((__aligned__(UP_TITLE_ALIGNED))) UP_##N	N;
 typedef struct {
 	BYTE Start;
-	USR_PAR_LIST		// !!! ECMÀÇ UP_END À§Ä¡¶§¹®¿¡ ¸¶Áö¸· ±¸Á¶Ã¼´Â ¸ðµÎ BYTEÀÌ¾î¾ß ÇÔ !!!
+	USR_PAR_LIST		// !!! ECMì˜ UP_END ìœ„ì¹˜ë•Œë¬¸ì— ë§ˆì§€ë§‰ êµ¬ì¡°ì²´ëŠ” ëª¨ë‘ BYTEì´ì–´ì•¼ í•¨ !!!
 	BYTE End;
 	_PRIVACY	PVC0;
 	_PRIVACY	PVC1;
@@ -1219,7 +1244,7 @@ extern BYTE gbUsrDataTbl[USR_DATA_EA];
 	#define EXCH_ADD	0
 #endif
 
-#define DispDec(Y, X, VAL, LEN)						FontDecEx(Y, X, NO_ALPHA, MN_WHITE, VAL, LEN, 1)						// TODO KSH> Font Fnc ³ªÁß¿¡ Á¦°Å
+#define DispDec(Y, X, VAL, LEN)						FontDecEx(Y, X, NO_ALPHA, MN_WHITE, VAL, LEN, 1)						// TODO KSH> Font Fnc ë‚˜ì¤‘ì— ì œê±°
 #define DispDatHex(STR, Y, X, VAL)					FontStrHex( UP_ON, Y, X, MN_GREEN, STR, MN_WHITE, VAL, 8)
 #define DispDatDec(STR, Y, X, VAL)					FontStrDec( UP_ON, Y, X, MN_GREEN, STR, MN_WHITE, VAL, MN_FONT_MAX_PATH, 1)
 
@@ -1409,7 +1434,7 @@ typedef float float32;
 #define _fdiv(F1,F2)	((F1)/(F2))
 #define _fadd(F1,F2)	((F1)+(F2))
 #define _ftoi(F)		((int)(F))
-//#define TOFLOAT32(f)	f				// TODO KSH> AWB ÃÊ±âÈ­ ÄÚµå ÃÖÀûÈ­ °¡´É?
+//#define TOFLOAT32(f)	f				// TODO KSH> AWB ì´ˆê¸°í™” ì½”ë“œ ìµœì í™” ê°€ëŠ¥?
 
 //******************************************************************************
 //

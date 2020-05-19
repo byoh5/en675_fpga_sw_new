@@ -85,6 +85,7 @@ typedef struct {
 	BYTE *arrSendBuffer;
 	BYTE *arrBuffer[ETHPHY_LOOPBACK_PACKET_CNT];
 	BYTE u8Index;
+	BYTE u8Option;
 	UINT u32Loop;
 	eEthphyLoopbackMode eRunMode;
 	eEthphyLoopbackRes eRes;

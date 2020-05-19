@@ -8,7 +8,9 @@ ISRD static tIhnd arrI2SRXIrq;
 void I2sInit(void)
 {
 	I2S_PIN_INIT;
-
+#if EN675_SINGLE
+	I2S_PD = 1;
+#endif
 	arrI2STXIrq.irqfn = NULL;
 	arrI2STXIrq.arg = NULL;
 

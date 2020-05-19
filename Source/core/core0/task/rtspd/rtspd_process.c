@@ -57,7 +57,7 @@ int rtspd_client_rtsp_header_parse(rtsp_client *prcInfo, char *buf, UINT buf_len
 	int res = 0;
 	char *strData, *strTemp;
 
-	// °øÅë»çÇ×
+	// ê³µí†µì‚¬í•­
 	if (strncmp(ENX_RTSP_HEADER_strCSEQ, buf, sizeof(ENX_RTSP_HEADER_strCSEQ) - 1) == 0) {
 		strData = buf + sizeof(ENX_RTSP_HEADER_strCSEQ);
 		prcInfo->nCSeq = atoi(strData);
@@ -382,11 +382,11 @@ int rtspd_client_rtsp_state(rtsp_client *prcInfo, rtsp_client_state state)
 	}
 
 	if (res == 0) {
-		switch (state) { // ÇöÀç state¸¦ º¯°æÇÏÁö ¾ÊÀ» stateµé
+		switch (state) { // í˜„ìž¬ stateë¥¼ ë³€ê²½í•˜ì§€ ì•Šì„ stateë“¤
 			case ENX_RTSP_STATE_GET_PARAMETER:
 			case ENX_RTSP_STATE_SET_PARAMETER:
 				break;
-			default: // state¸¦ º¯°æÇÒ stateµé
+			default: // stateë¥¼ ë³€ê²½í•  stateë“¤
 				prcInfo->state = state;
 				break;
 		}
@@ -455,14 +455,14 @@ int rtspd_client_rtsp_method_parse(rtsp_client *prcInfo, BYTE *buf, UINT buf_len
 //	flprintf("    Url : [%s]\n", prcInfo->strUrl);
 //	flprintf("Version : [%s]\n", prcInfo->strVersion);
 
-	// 1È¸¼º º¯¼ö ÃÊ±âÈ­
+	// 1íšŒì„± ë³€ìˆ˜ ì´ˆê¸°í™”
 	prcInfo->isAccept = ENX_NO;
 	prcInfo->isTransport = ENX_NO;
 	prcInfo->setup_query = ENX_RTSP_STRTYPE_NONE;
 	prcInfo->nQuery = ENX_RTSP_STRTYPE_numNONE;
 	flprintf("1(V:0x%08X)\n", prcInfo->rtp_queue_video);
 	while (1) {
-		strHeader = strEnd + 2; // CRLF ³Ñ±â±â
+		strHeader = strEnd + 2; // CRLF ë„˜ê¸°ê¸°
 		strEnd = strstr(strHeader, RTSP_strCRLF);
 		if (strEnd == NULL) {
 			break;
@@ -498,7 +498,7 @@ int rtspd_client_rtsp_check_url(rtsp_client *prcInfo, char *url)
 	prcInfo->nVEncoderIdx = -1;
 	if (url) {
 		if (prcInfo->isLive == ENX_RTSP_STREAM_NONE) {
-			prcInfo->isLive = ENX_RTSP_STREAM_ERROR;	// fail µÉ °æ¿ì default °ª
+			prcInfo->isLive = ENX_RTSP_STREAM_ERROR;	// fail ë  ê²½ìš° default ê°’
 
 			char *strpIP, *strEnd;
 			strpIP = strstr(url, "//");
@@ -511,11 +511,11 @@ int rtspd_client_rtsp_check_url(rtsp_client *prcInfo, char *url)
 						strEnd = strchr(strEnd, '/');
 						flprintf("SDcard Path: [%s]\n", strEnd);
 
-						// ÇØ´ç ÆÄÀÏÀÌ ½ÇÁ¦·Î Á¸ÀçÇÏ´ÂÁö È®ÀÎ!
+						// í•´ë‹¹ íŒŒì¼ì´ ì‹¤ì œë¡œ ì¡´ìž¬í•˜ëŠ”ì§€ í™•ì¸!
 						res = 0;
 						prcInfo->isLive = ENX_RTSP_STREAM_FILE_H264_TYPE;
 					} else {
-						char strUrlBuf[STREAM_URL_LENGTH + 2]; // '/'¿Í '\0'¸¦ À§ÇØ +2¸¦ Ãß°¡ÇÔ
+						char strUrlBuf[STREAM_URL_LENGTH + 2]; // '/'ì™€ '\0'ë¥¼ ìœ„í•´ +2ë¥¼ ì¶”ê°€í•¨
 						for (UINT i = 0 ; i < VIDEO_CHANNEL_CNT; i++) {
 							snprintf(strUrlBuf, STREAM_URL_LENGTH + 2, "/%s", (char *)gtUser.vcVideo[i].strStmUrl);
 							if (strcmp(strEnd, strUrlBuf) == 0) {
@@ -547,7 +547,7 @@ int rtspd_client_rtsp_check_url(rtsp_client *prcInfo, char *url)
 				flprintf("Error URL\n");
 			}
 		} else {
-			// ½ÂÀÎµÈ ¼­ºñ½º ¸®½ºÆ®
+			// ìŠ¹ì¸ëœ ì„œë¹„ìŠ¤ ë¦¬ìŠ¤íŠ¸
 			switch (prcInfo->isLive) {
 				case ENX_RTSP_STREAM_FILE_H264_TYPE:
 				case ENX_RTSP_STREAM_FILE_H265_TYPE:
@@ -599,15 +599,15 @@ int rtspd_client_rtsp_process_error(rtsp_client *prcInfo, char *buf, int *buf_le
 	int res = 0;
 
 	if (strcmp(ENX_RTSP_RESPONSE_404, strError) == 0) {
-		; // 404 errorÀº state¸¦ ERROR·Î º¯°æÇÏÁö ¾Ê´Â´Ù.
+		; // 404 errorì€ stateë¥¼ ERRORë¡œ ë³€ê²½í•˜ì§€ ì•ŠëŠ”ë‹¤.
 	} else if (strcmp(ENX_RTSP_RESPONSE_461, strError) == 0) {
-		; // 461 errorÀº state¸¦ ERROR·Î º¯°æÇÏÁö ¾Ê´Â´Ù.
+		; // 461 errorì€ stateë¥¼ ERRORë¡œ ë³€ê²½í•˜ì§€ ì•ŠëŠ”ë‹¤.
 	} else if (strcmp(ENX_RTSP_RESPONSE_458, strError) == 0) {
-		; // 458 errorÀº state¸¦ ERROR·Î º¯°æÇÏÁö ¾Ê´Â´Ù. SET_PARAMETERÀº Ç×»ó 458ÀÌ¹Ç·Î...
+		; // 458 errorì€ stateë¥¼ ERRORë¡œ ë³€ê²½í•˜ì§€ ì•ŠëŠ”ë‹¤. SET_PARAMETERì€ í•­ìƒ 458ì´ë¯€ë¡œ...
 	} else if (strcmp(ENX_RTSP_RESPONSE_453, strError) == 0) {
-		; // 453 errorÀº state¸¦ ERROR·Î º¯°æÇÏÁö ¾Ê´Â´Ù.
+		; // 453 errorì€ stateë¥¼ ERRORë¡œ ë³€ê²½í•˜ì§€ ì•ŠëŠ”ë‹¤.
 	} else if (strcmp(ENX_RTSP_RESPONSE_401, strError) == 0) {
-		; // 401 errorÀº state¸¦ ERROR·Î º¯°æÇÏÁö ¾Ê´Â´Ù. RTSP Authorization.
+		; // 401 errorì€ stateë¥¼ ERRORë¡œ ë³€ê²½í•˜ì§€ ì•ŠëŠ”ë‹¤. RTSP Authorization.
 	} else {
 		flprintf("%s\n", strError);
 		rtspd_client_rtsp_state(prcInfo, ENX_RTSP_STATE_ERROR);
@@ -702,7 +702,7 @@ int rtspd_client_rtsp_process_describe(rtsp_client *prcInfo, char *buf, int *buf
 						const char* sdpH264Line =	"m=video 0 RTP/AVP %u\n" // mediaType(video, audio), port(def 0), payloadType
 													"b=AS:20480\n"
 													"a=rtpmap:%u H264/90000\n" // payloadType, payloadFormatName(H.264, H.265, JPEG, etc..), TimestampFrequency(H.264/H.265 def 90kHZ, JPEG...?),
-													"a=control:%s/%s\n" // track1 ~ track?? => session ´ç 1
+													"a=control:%s/%s\n" // track1 ~ track?? => session ë‹¹ 1
 													"a=recvonly\n"
 													"a=fmtp:%u packetization-mode=1\n"
 //													"a=fmtp:96 packetization-mode=1;profile-level-id=420029;sprop-parameter-sets=Z0IAKZWgFAFsQA==,aM4eDA==\n" // sps(720), pps(q25)
@@ -719,7 +719,7 @@ int rtspd_client_rtsp_process_describe(rtsp_client *prcInfo, char *buf, int *buf
 						const char* sdpH265Line =	"m=video 0 RTP/AVP %u\n" // mediaType(video, audio), port(def 0), payloadType
 													"b=AS:20480\n"
 													"a=rtpmap:%u H265/90000\n" // payloadType, payloadFormatName(H.264, H.265, JPEG, etc..), TimestampFrequency(H.264/H.265 def 90kHZ, JPEG...?),
-													"a=control:%s/%s\n" // track1 ~ track?? => session ´ç 1
+													"a=control:%s/%s\n" // track1 ~ track?? => session ë‹¹ 1
 													"a=recvonly\n"//
 													//"a=fmtp:%u sprop-sps=QgEBAWAAAAMAsAAAAwAAAwB7oAPAgBDlja5JMvwCAAADAAIAAAMAeUI=; sprop-pps=RAHA8vA8kAA=\n"
 													//"a=fmtp:%u sprop-sps=QgEBAWAAAAMAAAMAAAMAAAMAlqAB4CACHHxOWuSTBrliQA==; sprop-pps=RAHgcrAGQA==\n"
@@ -736,7 +736,7 @@ int rtspd_client_rtsp_process_describe(rtsp_client *prcInfo, char *buf, int *buf
 						const char* sdpH265Line =	"m=video 0 RTP/AVP %u\n" // mediaType(video, audio), port(def 0), payloadType
 													"b=AS:20480\n"
 													"a=rtpmap:%u H265/90000\n" // payloadType, payloadFormatName(H.264, H.265, JPEG, etc..), TimestampFrequency(H.264/H.265 def 90kHZ, JPEG...?),
-													"a=control:%s/%s\n" // track1 ~ track?? => session ´ç 1
+													"a=control:%s/%s\n" // track1 ~ track?? => session ë‹¹ 1
 													"a=recvonly\n"
 													"a=fmtp:%u sprop-sps=QgEBAWAAAAMAsAAAAwAAAwB7oAPAgBDlja5JMvwCAAADAAIAAAMAeUI=; sprop-pps=RAHA8vA8kAA=\n"
 													"a=Media_header:MEDIAINFO=494D4B48010200000400050000000000000000000000000000000000000000000000000000000000;\n"
@@ -755,7 +755,7 @@ int rtspd_client_rtsp_process_describe(rtsp_client *prcInfo, char *buf, int *buf
 						const char* sdpJPEGLine =	"m=video 0 RTP/AVP %u\n" // mediaType(video, audio), port(def 0), payloadType
 													"b=AS:20480\n"
 													"a=rtpmap:%u JPEG/90000\n" // payloadType, payloadFormatName(H264, JPEG, etc..), TimestampFrequency(H264 def 90kHZ, JPEG...?),
-													"a=control:%s/%s\n" // track1 ~ track?? => session ´ç 1
+													"a=control:%s/%s\n" // track1 ~ track?? => session ë‹¹ 1
 													"a=recvonly\n"
 													;
 						sdp_len  = sprintf(strSdp, sdpSessionFmt, strIP, "JPEGStream", prcInfo->strUrl, "JPEGStream");
@@ -770,7 +770,7 @@ int rtspd_client_rtsp_process_describe(rtsp_client *prcInfo, char *buf, int *buf
 						const char* sdpJPEGLine =	"m=video 0 RTP/AVP %u\n" // mediaType(video, audio), port(def 0), payloadType
 													"b=AS:2048\n"
 													"a=rtpmap:%u JPEG/90000\n" // payloadType, payloadFormatName(H264, JPEG, etc..), TimestampFrequency(H264 def 90kHZ, JPEG...?),
-													"a=control:%s/%s\n" // track1 ~ track?? => session ´ç 1
+													"a=control:%s/%s\n" // track1 ~ track?? => session ë‹¹ 1
 													"a=recvonly\n"
 													;
 						sdp_len  = sprintf(strSdp, sdpSessionFmt, strIP, "JPEGStream", prcInfo->strUrl, "JPEGStream");
@@ -861,7 +861,7 @@ int rtspd_client_rtsp_process_setup(rtsp_client *prcInfo, char *buf, int *buf_le
 		xSemaphoreTake(xSemSetup, portMAX_DELAY);
 
 		do {
-			// Á¢¼ÓÀÌ Ãß°¡·Î °¡´ÉÇÑÁö ÆÇ´ÜÇÑ´Ù.
+			// ì ‘ì†ì´ ì¶”ê°€ë¡œ ê°€ëŠ¥í•œì§€ íŒë‹¨í•œë‹¤.
 			int check_count = rtspd_player_count();
 			_Yprintf("Check Count: %u\n", check_count);
 			if (check_count >= RTSP_play_MAX) {
@@ -882,7 +882,7 @@ int rtspd_client_rtsp_process_setup(rtsp_client *prcInfo, char *buf, int *buf_le
 //					sizeof(rtp_session), prcInfo->rtp_ss, prcInfo->setup_query, prcInfo->nQuery, prcInfo->isLive);
 
 			if (prcInfo->isTransport == ENX_YES) {
-				// Àü¼Û °¡´ÉÇÑ Åë½ÅÇÁ·ÎÅäÄÝ·Î ¿äÃ»Çß´ÂÁö ÆÇ´ÜÇÑ´Ù.
+				// ì „ì†¡ ê°€ëŠ¥í•œ í†µì‹ í”„ë¡œí† ì½œë¡œ ìš”ì²­í–ˆëŠ”ì§€ íŒë‹¨í•œë‹¤.
 				switch (prcInfo->eTransport) {
 					case ENX_RTSP_TRANSPORT_TCP:
 					case ENX_RTSP_TRANSPORT_UDP:
@@ -898,7 +898,7 @@ int rtspd_client_rtsp_process_setup(rtsp_client *prcInfo, char *buf, int *buf_le
 					break;
 				}
 
-				// ¿Ã¹Ù¸¥ URLÀ» ¿äÃ»¿´´ÂÁö È®ÀÎÇÑ´Ù.
+				// ì˜¬ë°”ë¥¸ URLì„ ìš”ì²­ì˜€ëŠ”ì§€ í™•ì¸í•œë‹¤.
 				switch (prcInfo->setup_query) {
 					case ENX_RTSP_STRTYPE_VIDEO:
 						switch (prcInfo->isLive) {
@@ -952,9 +952,9 @@ int rtspd_client_rtsp_process_setup(rtsp_client *prcInfo, char *buf, int *buf_le
 					break;
 				}
 
-				// ¸ðµÎ°¡ ¿Ã¹Ù¸£¹Ç·Î Àü¼ÛÇÒ ±¸¹® ÀÛ¼º ¹× client Àü¼Û¼¼¼ÇÀÇ ÃÊ±âÈ­ ÀÛ¾÷À» ÇÑ´Ù.
+				// ëª¨ë‘ê°€ ì˜¬ë°”ë¥´ë¯€ë¡œ ì „ì†¡í•  êµ¬ë¬¸ ìž‘ì„± ë° client ì „ì†¡ì„¸ì…˜ì˜ ì´ˆê¸°í™” ìž‘ì—…ì„ í•œë‹¤.
 				if (prcInfo->nSession == 0) {
-					// sessionID´Â ·£´ýÇÏ°Ô °áÁ¤µÈ clientID°ªÀ¸·Î ¼³Á¤ÇÑ´Ù.
+					// sessionIDëŠ” ëžœë¤í•˜ê²Œ ê²°ì •ëœ clientIDê°’ìœ¼ë¡œ ì„¤ì •í•œë‹¤.
 					prcInfo->nSession = prcInfo->clientid;
 				}
 
@@ -1074,7 +1074,7 @@ int rtspd_client_rtsp_process_play(rtsp_client *prcInfo, char *buf, int *buf_len
 //					nLen = sprintf(strRtpinfo + offset, ENX_RTSP_RESPONSE_RTPINFO_B, prcInfo->strUrl, ENX_RTSP_SDP_URL_BACKCHANNEL, prcInfo->rtp_ss[ENX_RTSP_STRTYPE_numBACKCHANNEL].start_seq, prcInfo->rtp_ss[ENX_RTSP_STRTYPE_numBACKCHANNEL].start_rtptime);
 //					offset += nLen;
 //				}
-				nLen = sprintf(strRtpinfo + offset - 1, RTSP_strCRLF); // - 1 => ¹®ÀÚ¿­ ³¡¿¡ ÀÖ´Â ','¸¦ Á¦°ÅÇÏ°í CLRF¸¦ ºÙÀÎ´Ù.
+				nLen = sprintf(strRtpinfo + offset - 1, RTSP_strCRLF); // - 1 => ë¬¸ìžì—´ ëì— ìžˆëŠ” ','ë¥¼ ì œê±°í•˜ê³  CLRFë¥¼ ë¶™ì¸ë‹¤.
 				offset += nLen;											// $CMT-hjlee-180220 - 
 				if (offset >= 1024) {									// $CMT-hjlee-180220 - 
 					flprintf("buffer overflow(%dbyte)\n", offset);	// $CMT-hjlee-180220 -

@@ -19,7 +19,7 @@ const char *sIspCmd[] = {"Control ISP",          (char*)0};
 //
 void ISPtoCPUcallback(void *ctx)
 {
-	printf("ISP to CPU!(%.32b)\n", SHREG_RSP);	// MUTEX Àû¿ë ÇÊ¿ä
+	printf("ISP to CPU!(%.32b)\n", SHREG_RSP);	// MUTEX ì ìš© í•„ìš”
 }
 
 int atoh(const char *s, const int len)

@@ -53,7 +53,7 @@ void MdioSetClk(UINT Speed_Hz)
 
 UINT MdioGetClk(void)
 {
-	ENX_DEBUGF(DBG_MDIO_LOG, "MDIO Init - %uHz(%u)\n", APB_FREQ / ((ETH_MDIO_CLKLMT + 1) * 2), ETH_MDIO_CLKLMT);
+//	ENX_DEBUGF(DBG_MDIO_LOG, "MDIO Init - %uHz(%u)\n", APB_FREQ / ((ETH_MDIO_CLKLMT + 1) * 2), ETH_MDIO_CLKLMT);
 	return APB_FREQ / ((ETH_MDIO_CLKLMT + 1) * 2);
 }
 
@@ -64,8 +64,8 @@ void MdioInit(UINT Speed_Hz)
 	ETH_MDIO_RDLTC = 1;
 
 	MdioSetClk(Speed_Hz);
-	ETH_MDIO_CLKEN	= 1;
-	MdioGetClk();
+
+	ENX_DEBUGF(DBG_MDIO_STATUS, "MDIO Init - %s%uHz%s\n", TTY_COLOR_GREEN, MdioGetClk(), TTY_COLOR_RESET);
 }
 
 void EthInit(void)
@@ -85,6 +85,28 @@ void EthInit(void)
 	hETHERNETRXIrq.irqfn = NULL;
 	hETHERNETRXIrq.arg = NULL;
 }
+
+#if EN675_SINGLE
+void EthSetTxClockPowerEn(ENX_SWITCH sw)
+{
+	ETH_TX_CLKPD = sw;
+}
+
+ENX_SWITCH EthGetTxClockPowerEn(void)
+{
+	return ETH_TX_CLKPD;
+}
+
+void EthSetRxClockPowerEn(ENX_SWITCH sw)
+{
+	ETH_RX_CLKPD = sw;
+}
+
+ENX_SWITCH EthGetRxClockPowerEn(void)
+{
+	return ETH_RX_CLKPD;
+}
+#endif
 
 void EthRxFilterMacAdr(BYTE *addr)
 {
@@ -172,21 +194,32 @@ void EthRxTxClockDly(BYTE u8TXe, BYTE u8TXd, BYTE u8RXe, BYTE u8RXd)
 	ETH_RX_RCKDLY = u8RXd;
 }
 
+void EthTxDly(BYTE u8TXEN, BYTE u8TXD)
+{
+	ETH_TX_TXENDLY		= u8TXEN;
+	ETH_TX_TXD0DLY		= u8TXD;
+	ETH_TX_TXD1DLY		= u8TXD;
+	ETH_TX_TXD2DLY		= u8TXD;
+	ETH_TX_TXD3DLY		= u8TXD;
+}
+
 void EthRxTxInit(UINT type, UINT speed, UINT duplex)
 {
 	switch (type) {
 	case ETHPHY_TYPE_RGMII:
-		ETH_TX_COLEN		= 0;
+
 		switch (duplex) {
 		case ETHPHY_DUPLEX_HALF:
 			ETH_TX_CRSCHK	= 1;
 			ETH_TX_COLCHK	= 1;
 			ETH_TX_COLSEL	= 1;
+			ETH_TX_COLEN	= 1;
 			break;
 		case ETHPHY_DUPLEX_FULL:
 			ETH_TX_CRSCHK	= 0;
 			ETH_TX_COLCHK	= 0;
 			ETH_TX_COLSEL	= 0;
+			ETH_TX_COLEN	= 0;
 			break;
 		}
 		ETH_RX_RMII10		= 0;
@@ -209,7 +242,15 @@ void EthRxTxInit(UINT type, UINT speed, UINT duplex)
 		// Edge & Delay
 		// eth lbm 1000 2
 		// eth lbt 1000
-#if 1 // 200130(S)/mcs
+#if 1 // 200303(JHJ)/VU/bit
+		EthRxTxClockDly(0, 0x3, 0, 0x1);
+#elif 1 // 200217(MJS)/mcs
+		if (speed == ETHPHY_SPD_1000) {
+			EthRxTxClockDly(1, 0xB, 0, 0x2);
+		} else {
+			EthRxTxClockDly(1, 0x1, 1, 0xC);
+		}
+#elif 1 // 200130(S)/mcs
 		if (speed == ETHPHY_SPD_1000) {
 			ETH_TX_CLKEDGE = 1;
 			ETH_TX_TCKDLY = 0xC;
@@ -245,16 +286,12 @@ void EthRxTxInit(UINT type, UINT speed, UINT duplex)
 		}
 #endif
 
-		ETH_TX_TXENDLY		= 0;
-		ETH_TX_TXD0DLY		= 0;
-		ETH_TX_TXD1DLY		= 0;
-		ETH_TX_TXD2DLY		= 0;
-		ETH_TX_TXD3DLY		= 0;
+		EthTxDly(0, 0);
 
 #if 0
 		Ethernet Speed (25?, 125? , 5?, ETC MHz) -> AXI Speed (FPGA : 74.25 MHz, ASIC : 400 MHz)
 
-		FPGA¿« ∞ÊøÏ ¿ß¿« Speed∏¶ ∞Ì∑¡«œ∏È ¥Ÿ¿Ω∞˙ ∞∞¿Ã ∞ËªÍ«ÿæﬂ «’¥œ¥Ÿ. (º“ºˆ¡°¿∫ «œ≥™ø√∏≤)
+		FPGAÏùò Í≤ΩÏö∞ ÏúÑÏùò SpeedÎ•º Í≥†Î†§ÌïòÎ©¥ Îã§ÏùåÍ≥º Í∞ôÏù¥ Í≥ÑÏÇ∞Ìï¥Ïïº Ìï©ÎãàÎã§. (ÏÜåÏàòÏ†êÏùÄ ÌïòÎÇòÏò¨Î¶º)
 		AXI Frq : FPGA -> 74.25MHz,      ASIC -> 400MHz
 		APB Frq : FPGA -> 37.125MHz,     ASIC -> 200MHz
 
@@ -262,11 +299,11 @@ void EthRxTxInit(UINT type, UINT speed, UINT duplex)
 		ETH_TX_LTC = (AXI Frq / Ethernet Frq) + 3   ->  *_LTC = (74.25 MHz / 5 MHz ) + 3 = 18
 
 		2.	ETH_RX_LTC (Ethernet Frq -> AXI Frq)
-		ASICø°º≠¥¬ «◊ªÛ AXI Clock¿Ã ∫¸∏£±‚ ∂ßπÆø° 3¿∏∑Œ º≥¡§«œ∞Ì ªÁøÎ«œ∏È µ .
-		FPGAø°º≠ 125MHz ªÁøÎΩ√¥¬ AXI∞° 74.25MHz∂Ûº≠ ¥¿∏Æ¡ˆ∏∏ 3¿∏∑Œ º≥¡§«œ∏È µ .
+		ASICÏóêÏÑúÎäî Ìï≠ÏÉÅ AXI ClockÏù¥ Îπ†Î•¥Í∏∞ ÎïåÎ¨∏Ïóê 3ÏúºÎ°ú ÏÑ§Ï†ïÌïòÍ≥† ÏÇ¨Ïö©ÌïòÎ©¥ Îê®.
+		FPGAÏóêÏÑú 125MHz ÏÇ¨Ïö©ÏãúÎäî AXIÍ∞Ä 74.25MHzÎùºÏÑú ÎäêÎ¶¨ÏßÄÎßå 3ÏúºÎ°ú ÏÑ§Ï†ïÌïòÎ©¥ Îê®.
 
 		3.	ETH_TX_GO_LTC (AXI Frq -> APB Frq)
-		Clock¿Ã 1/2  ∞¸∞Ë¿Ã±‚ ∂ßπÆø° 3¿∏∑Œ º≥¡§«œ∞Ì ªÁøÎ«œ∏È µ .
+		ClockÏù¥ 1/2  Í¥ÄÍ≥ÑÏù¥Í∏∞ ÎïåÎ¨∏Ïóê 3ÏúºÎ°ú ÏÑ§Ï†ïÌïòÍ≥† ÏÇ¨Ïö©ÌïòÎ©¥ Îê®.
 #endif
 
 		if (speed == ETHPHY_SPD_1000) {
@@ -282,15 +319,16 @@ void EthRxTxInit(UINT type, UINT speed, UINT duplex)
 		break;
 
 	case ETHPHY_TYPE_MII:
-		ETH_TX_COLEN		= 0;
 		switch (duplex) {
 		case ETHPHY_DUPLEX_HALF:
 			ETH_TX_CRSCHK	= 1;
 			ETH_TX_COLCHK	= 1;
+			ETH_TX_COLEN	= 1;
 			break;
 		case ETHPHY_DUPLEX_FULL:
 			ETH_TX_CRSCHK	= 0;
 			ETH_TX_COLCHK	= 0;
+			ETH_TX_COLEN	= 0;
 			break;
 		}
 		ETH_TX_COLSEL		= 0;
@@ -310,11 +348,7 @@ void EthRxTxInit(UINT type, UINT speed, UINT duplex)
 		ETH_RX_RCKEDGE		= 1;
 		ETH_RX_RCKDLY		= 0x0;
 
-		ETH_TX_TXENDLY		= 0;
-		ETH_TX_TXD0DLY		= 0;
-		ETH_TX_TXD1DLY		= 0;
-		ETH_TX_TXD2DLY		= 0;
-		ETH_TX_TXD3DLY		= 0;
+		EthTxDly(0, 0);
 
 		if (speed == ETHPHY_SPD_100) {
 			ETH_TX_LTC = (AXI_FREQ / (25*1000*1000)) + 4;	// 25MHz SDR
@@ -402,11 +436,7 @@ void EthRxTxInit(UINT type, UINT speed, UINT duplex)
 		ETH_RX_RCKEDGE		= 0;
 		ETH_RX_RCKDLY		= 0x0;
 
-		ETH_TX_TXENDLY		= 0;
-		ETH_TX_TXD0DLY		= 0;
-		ETH_TX_TXD1DLY		= 0;
-		ETH_TX_TXD2DLY		= 0;
-		ETH_TX_TXD3DLY		= 0;
+		EthTxDly(0x0, 0x0);
 
 		if (speed == ETHPHY_SPD_100) {
 			// ETH_TX_LTC = (AXI_FREQ / (50*1000*1000)) + 4;	// 50MHz SDR

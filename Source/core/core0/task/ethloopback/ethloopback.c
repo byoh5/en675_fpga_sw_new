@@ -69,6 +69,7 @@ static void EthLoopbackAuto(EthLoopbackGp *elg)
 	//	vTaskDelay(1);
 	//}
 
+	int case_count = 0, pass_count = 0;
 	int old_ok_acc = 0, ok_acc = 0, ok_txe = 0, ok_rxe = 0, ok_txd = 0, ok_rxd = 0;
 	printf("Ethernet Loopback Test(step loop %d)\n", elg->u32Loop);
 	printf("O:pass, 2:compare fail, 3:zero data, 4:data length underflow or overflow, X:timeout\n");
@@ -119,8 +120,10 @@ static void EthLoopbackAuto(EthLoopbackGp *elg)
 				for(BYTE u8RXd = 0; u8RXd < 16; u8RXd++) { // RX dly
 					EthRxTxClockDly(u8TXe, u8TXd, u8RXe, u8RXd);
 					UINT TestRes = EthphyLoopbackTest(elg);
+					case_count++;
 					if (TestRes == ePlb_ok) {	// 0:none, idle
-						_Gprintf("O ");			// 1:test oK
+						pass_count++;
+						_Gprintf("O ");			// O:test oK
 						ok_acc++;
 						if (old_ok_acc < ok_acc) {
 							old_ok_acc = ok_acc;
@@ -131,7 +134,7 @@ static void EthLoopbackAuto(EthLoopbackGp *elg)
 						}
 					} else {
 						if (TestRes == 5) {
-							_Zprintf("X ");				// 5:timeout
+							_Zprintf("X ");				// X:timeout
 						} else {						// 2:data error, compare fail
 							_Rprintf("%d ", TestRes);	// 3:zero data
 						}								// 4:data length underflow or overflow
@@ -144,8 +147,12 @@ static void EthLoopbackAuto(EthLoopbackGp *elg)
 	}
 #endif
 
-	printf("AccOK(%d) TXe(%d) TXd(%d) RXe(%d) RXd(%d)\n", old_ok_acc, ok_txe, ok_txd, ok_rxe, ok_rxd);
-
+//	printf("AccOK(%d) TXe(%d) TXd(%d) RXe(%d) RXd(%d)\n", old_ok_acc, ok_txe, ok_txd, ok_rxe, ok_rxd);
+	{
+		char buf[64] = {0};
+		snprintf(buf, 64, "%4d/%4d, %.2f%%", pass_count, case_count, (pass_count / (float)case_count) * 100.0);
+		printf("\nTest done: %s\n", buf);
+	}
 
 	//while (MsgPut(&gptMsgCpu1to0, MSG_CMD_SW_VLOCK_IRQ, DEF_ON) == ENX_FAIL) {
 	//	vTaskDelay(1);
@@ -200,7 +207,11 @@ void EthloopbackTask(void *ctx)
 {
 	vTaskDelay(100);
 	eEthphyLoopbackRes lpRes;
-
+#if EN675_SINGLE
+	ENX_SWITCH txpd, rxpd;
+	txpd = EthGetTxClockPowerEn();
+	rxpd = EthGetRxClockPowerEn();
+#endif
 	ethlp.eRunMode = ePlk_init;
 	ethlp.u32Loop = 0;
 	ethlp.u8Index = 0;
@@ -231,15 +242,31 @@ void EthloopbackTask(void *ctx)
 
 			switch (ethlp.eRunMode) {
 			case ePlk_single:
+#if EN675_SINGLE
+				EthSetTxClockPowerEn(ENX_ON);
+				EthSetRxClockPowerEn(ENX_ON);
+#endif
 				EthSetRxEn(ENX_ON);
 				lpRes = EthphyLoopbackTest(&ethlp);
+#if EN675_SINGLE
 				EthSetRxEn(ENX_OFF);
+				EthSetTxClockPowerEn(txpd);
+				EthSetRxClockPowerEn(rxpd);
+#endif
 				printf("The test is complete(%d).\n", lpRes);
 				break;
 			case ePlk_auto:
+#if EN675_SINGLE
+				EthSetTxClockPowerEn(ENX_ON);
+				EthSetRxClockPowerEn(ENX_ON);
+#endif
 				EthSetRxEn(ENX_ON);
 				EthLoopbackAuto(&ethlp);
 				EthSetRxEn(ENX_OFF);
+#if EN675_SINGLE
+				EthSetTxClockPowerEn(txpd);
+				EthSetRxClockPowerEn(rxpd);
+#endif
 				printf("The test is complete.\n");
 				break;
 			case ePlk_stop:
@@ -288,5 +315,10 @@ void EthloopbackSetMode(eEthphyLoopbackMode eRunMode)
 void EthloopbackSetLoop(UINT u32Loop)
 {
 	ethlp.u32Loop = u32Loop;
+}
+
+void EthloopbackSetOption(BYTE u8Option)
+{
+	ethlp.u8Option = u8Option;
 }
 #endif

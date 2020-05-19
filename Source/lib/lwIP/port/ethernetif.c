@@ -185,7 +185,7 @@ void network_ethif_pkt_input_irq(void *ctx)
 //	struct netif *netif = netif_state[enlETHERNET]._netif;
 	BYTE gRxPktHead = ((pRX_LEN_INFO[gRxPktTail]&0xff000000)>>24);
 	while (gRxPktTail != gRxPktHead) {
-		UINT u32PktSize = (pRX_LEN_INFO[gRxPktTail] & 0x7ff) - 4;
+		UINT u32PktSize = (pRX_LEN_INFO[gRxPktTail] & 0x7ff) - 4; // Delete FCS(4byte)
 		if (gptMsgDebug.ETH_RX_CHECK == 1) {
 			printf("EthRX Idx[%s%3u%s/%s%3u%s] - %u\n", TTY_COLOR_YELLOW, gRxPktHead, TTY_COLOR_RESET, TTY_COLOR_GREEN, gRxPktTail, TTY_COLOR_RESET, u32PktSize);
 		}
@@ -209,9 +209,28 @@ void network_ethif_pkt_input_irq(void *ctx)
 #if 0
 		hwflush_dcache_range((ULONG)pkinfo->data, 128);
 		struct eth_hdr *ethhdr = (struct eth_hdr *)pkinfo->data;
+
+		struct pbuf* p = pbuf_alloc(PBUF_RAW, u32PktSize + ETH_PAD_SIZE, PBUF_REF);
+		BYTE *pkt = qEthernetRX.pkt_data[gRxPktTail].buffer;
+		WORD nTotLen = 0;
+		for (struct pbuf *q = p; q != NULL; q = q->next) {
+			if (q->len) { // Copy to "pbuf"
+				BDmaMemCpy_isr(0, q->payload, pkt + nTotLen, (UINT)q->len);
+				hwdiscard_dcache_range((ULONG)q->payload, (UINT)q->len);
+			}
+			nTotLen += q->len;
+		}
+
 		switch (htons(ethhdr->type)) {
 			case ETHTYPE_IP:
 			case ETHTYPE_ARP:
+				// full packet send to tcpip_thread to process
+				if (netif_state[enlETHERNET]._netif->input(p, netif_state[enlETHERNET]._netif) != ERR_OK) {
+					LWIP_DEBUGF(NETIF_DEBUG, ("if_input: IP input error\n"));
+					pbuf_free(p);
+					p = NULL;
+				}
+				break;
 			case ETHTYPE_IPV6:
 			case ETHTYPE_WOL: // Wake-on-LAN[9]
 			case 0x22F3: // IETF TRILL Protocol
@@ -281,7 +300,15 @@ void network_ethif_pkt_input_irq(void *ctx)
 		gRxPktTail++; // 0 ~ 255
 		gRxPktHead = ((pRX_LEN_INFO[gRxPktTail]&0xff000000)>>24); // next header
 	}
-#if 1
+#if 0
+	if (netif_state[enlETHERNET].xrx_sem) {
+		portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
+		xSemaphoreGiveFromISR(netif_state[enlETHERNET].xrx_sem, &xHigherPriorityTaskWoken);
+		if (xHigherPriorityTaskWoken) {
+			gbXsrTaskSwitchNeeded = 1;
+		}
+	}
+#else
 	if (netif_state[enlETHERNET].xrx_notity) {
 		portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
 		vTaskNotifyGiveFromISR(netif_state[enlETHERNET].xrx_notity, &xHigherPriorityTaskWoken);
@@ -315,7 +342,7 @@ void network_ethif_pkt_input_loopback_irq(void *ctx)
 			}
 
 			// Data compare
-			u32PktSize -= 4; // delete CRC(4byte)
+			u32PktSize -= 4; // delete FCS(4byte)
 			for (UINT i = 0; i < u32PktSize; i++) {
 				if (qEthernetRX.pkt_data[gRxPktTail].buffer[i] != ethlp->arrBuffer[ethlp->u8Index][i]) {
 					ethlp->eRes = ePlb_data;
@@ -489,10 +516,15 @@ static void network_ethif_pkt_input(void *ctx)
 //	pmp_entry_set(5, PMP_R|PMP_W|PMP_X|PMP_L, 0x80000000ul, DDR1_SIZE); // DDR enabled area
 //	pmp_entry_set(6, PMP_L, 0x80000000ul, 0x20000000ul);				// DDR disabled area
 
+//	priv->xrx_sem = xSemaphoreCreateCounting(NETRX_BUF_COUNT, 0);
+
+	gRxPktTail = ((pRX_LEN_INFO[gRxPktTail]&0xff000000)>>24); // 2020.04.16
+
 	network_ethif_rx_start();
 
 	for (;;) {
-		if (ulTaskNotifyTake(pdTRUE, portMAX_DELAY)) {
+//		if (xSemaphoreTake(priv->xrx_sem, portMAX_DELAY) == pdTRUE) { // ping이 느려지는 증상(1~10ms)
+		if (ulTaskNotifyTake(pdTRUE, portMAX_DELAY)) { // ping이 1~2ms 이하
 			while ((p = low_level_input(netif))) {
 #if 1
 				// hwflush_dcache_range((ULONG)p->payload, (UINT)p->len);
@@ -762,10 +794,18 @@ init:
 			UINT u32LinkStatus = EthphyLinkCheck();
 			switch (u32LinkStatus) {
 			case ETHPHY_LINKSTATUS_UP:
+#if EN675_SINGLE
+				EthSetTxClockPowerEn(ENX_ON);
+				EthSetRxClockPowerEn(ENX_ON);
+#endif
 				network_interface_link(enlETHERNET, ENX_ON);
 				break;
 			case ETHPHY_LINKSTATUS_DOWN:
 				network_interface_link(enlETHERNET, ENX_OFF);
+#if EN675_SINGLE
+				EthSetTxClockPowerEn(ENX_OFF);
+				EthSetRxClockPowerEn(ENX_OFF);
+#endif
 				break;
 			case ETHPHY_LINKSTATUS_ERROR:
 				printf("Ethernet PHY restart!");

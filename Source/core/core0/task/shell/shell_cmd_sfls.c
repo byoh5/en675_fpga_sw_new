@@ -268,7 +268,7 @@ static void SflsReadTestTask(void *ctx)
 
 		printf("%3u%% %5u/%5u Test Addr(0x%08X ~ 0x%08X) Count(%8u) - ", ((i+1) * 100) / sflsitem.u32TestCount, i+1, sflsitem.u32TestCount, startAddr, endAddr, readCount);
 
-		// Á¤´äÁö ¸¸µé±â
+		// ì •ë‹µì§€ ë§Œë“¤ê¸°
 		for (UINT j = 0; j < readCount; j++) {
 			for (UINT j2 = 0; j2 < (SFLSDATA_PP_SIZE/4); j2 += 4) {
 				UINT inx = j * (SFLSDATA_PP_SIZE / 4) + j2;
@@ -376,6 +376,13 @@ static void SflsWriteTestTask(void *ctx)
 	char buf[64] = {0};
 	ULONG start_time = BenchTimeStart();
 	for (UINT i = 0; i < sflsitem.u32TestCount; i++) {
+		if (i != 0 && i % 1000 == 0) {
+			snprintf(buf, 64, "%.2f", (size1000 / 1024.0) / (time1000 / 1000.0 / 1000.0));
+			printf("%7u/%7u ing... %3u%%, ", i, sflsitem.u32TestCount, (i * 100) / sflsitem.u32TestCount);
+			_Gprintf("%sKbyte/s\n", buf);
+			size1000 = time1000 = 0;
+		}
+
 		UINT *arr32Src = (UINT *)sflsitem.arrSrc;
 		for (UINT j = 0; j < (SFLSDATA_PP_SIZE/4); j += 4) {
 			UINT addr = ((intptr_t)p8Pos) + (4 * j);
@@ -396,13 +403,6 @@ static void SflsWriteTestTask(void *ctx)
 		time1000 += BenchTimeStop(a);
 		total_size += SFLSDATA_PP_SIZE;
 		size1000 += SFLSDATA_PP_SIZE;
-
-		if (i % 1000 == 0) {
-			snprintf(buf, 64, "%.2f", (size1000 / 1024.0) / (time1000 / 1000.0 / 1000.0));
-			printf("%7u/%7u ing... %3u%%, ", i, sflsitem.u32TestCount, (i * 100) / sflsitem.u32TestCount);
-			_Gprintf("%sKbyte/s\n", buf);
-			size1000 = time1000 = 0;
-		}
 
 		p8Pos += SFLSDATA_PP_SIZE;
 	}
@@ -608,7 +608,7 @@ int cmd_test_sfls(int argc, char *argv[])
 			}
 #if 0
 		} else if (strcmp(argv[1], "t") == 0) {
-			// Erase ÈÄ Áï½Ã Write ÇÒ ¶§ Ã¹¹øÂ° PP°¡ ¾È½áÁö´Â ¹®Á¦ Å×½ºÆ®¿ë...
+			// Erase í›„ ì¦‰ì‹œ Write í•  ë•Œ ì²«ë²ˆì§¸ PPê°€ ì•ˆì¨ì§€ëŠ” ë¬¸ì œ í…ŒìŠ¤íŠ¸ìš©...
 			BYTE *p8Base = (BYTE *)SFLS_BASE;
 			printf("Test address: %u\n", (UINT)(intptr_t)p8Base);
 
@@ -734,8 +734,8 @@ int cmd_test_sfls(int argc, char *argv[])
 
 			sflsitem.u8Close = 0;
 			sflsitem.u64BufSize = SFLSDATA_PP_SIZE * u32TestBlock + SFLSDATA_PP_SIZE;
-			sflsitem.u32TestCount = nLoop; // ¹Ýº¹ È½¼ö ÀÚÃ¼
-			sflsitem.u32TestBlock = u32TestBlock; // ÇÑ¹ø¿¡ Write/ReadÇÒ ´ÜÀ§ 1(512B) ~ 1024(512KB)
+			sflsitem.u32TestCount = nLoop; // ë°˜ë³µ íšŸìˆ˜ ìžì²´
+			sflsitem.u32TestBlock = u32TestBlock; // í•œë²ˆì— Write/Readí•  ë‹¨ìœ„ 1(512B) ~ 1024(512KB)
 			sflsitem.taskHandle = vTaskCreate("SflsT", SflsTestTask, NULL, LV3_STACK_SIZE, LV4_TASK_PRIO);
 #endif
 #if 1
@@ -787,8 +787,8 @@ int cmd_test_sfls(int argc, char *argv[])
 
 			sflsitem.u8Close = 0;
 			sflsitem.u64BufSize = SFLSDATA_PP_SIZE * u32TestBlock + SFLSDATA_PP_SIZE;
-			sflsitem.u32TestCount = nLoop; // ¹Ýº¹ È½¼ö ÀÚÃ¼
-			sflsitem.u32TestBlock = u32TestBlock; // ÇÑ¹ø¿¡ ReadÇÒ ´ÜÀ§ 1(512B) ~ 2048(1024KB)
+			sflsitem.u32TestCount = nLoop; // ë°˜ë³µ íšŸìˆ˜ ìžì²´
+			sflsitem.u32TestBlock = u32TestBlock; // í•œë²ˆì— Readí•  ë‹¨ìœ„ 1(512B) ~ 2048(1024KB)
 			sflsitem.taskHandle = vTaskCreate("SflsRT", SflsReadTestTask, NULL, LV3_STACK_SIZE, LV4_TASK_PRIO);
 		} else if (strcmp(argv[1], "stop") == 0) {
 #if 1
@@ -815,7 +815,7 @@ int cmd_test_sfls(int argc, char *argv[])
 			BYTE *binbase = (BYTE *)EXBL;
 			UINT binsize = EXBL_LEN;
 
-			binsize = 1214464; // 256ÀÇ ¹è¼ö...
+			binsize = 1214464; // 256ì˜ ë°°ìˆ˜...
 
 			printf("binary copy.: %ubyte\n", binsize);
 
@@ -828,10 +828,6 @@ int cmd_test_sfls(int argc, char *argv[])
 			for (int i = 0 ; i < binsize; i += 256) {
 				BDmaMemCpy_rtos(0, p8WBase+i, (BYTE *)binbase+i, 256);
 			}
-
-
-
-
 
 			printf("Write Done!\n");
 #if 0
@@ -856,101 +852,3 @@ int cmd_test_sfls(int argc, char *argv[])
 	}
 	return 0;
 }
-
-#if 0
-
-int cmd_test_sfls(int argc, char *argv[])
-{
-	static BYTE iomode = 2;
-	static BYTE gap = 0;
-
-	if (strcmp(argv[1], "init") == 0) {
-		printf("call SflsInit\n");
-		SflsInit();
-	} else if (strcmp(argv[1], "info") == 0) {
-		printf("call SflsGetinfo\n");
-		SflsGetinfo();
-	} else if (strcmp(argv[1], "io") == 0) {
-		BYTE old_iomode = iomode;
-		iomode = atoi(argv[2]);
-		if (iomode > 2) {
-			printf("Error IOmode (%u)\n", iomode);
-			iomode = old_iomode;
-		} else {
-			printf("IOmode %u -> %u\n", old_iomode, iomode);
-		}
-#if 0
-	} else if (strcmp(argv[1], "gap") == 0) {
-		BYTE old_gap = gap;
-		gap = atoi(argv[2]);
-		if (gap > 0xf) {
-			printf("Error GAP (%u)\n", gap);
-			gap = old_gap;
-		} else {
-			printf("GAP %u -> %u\n", old_gap, gap);
-		}
-#endif
-	} else if (strcmp(argv[1], "clk") == 0) {
-		if (argc == 3) {
-			BYTE old_clk = SFLS_IO_CLKDIV;
-			SFLS_IO_CLKDIV = atoi(argv[2]);
-			printf("Set SFLS_IO_CLKDIV = %u -> %u\n", old_clk, SFLS_IO_CLKDIV);
-		} else {
-			printf("Get SFLS_IO_CLKDIV = %u\n", SFLS_IO_CLKDIV);
-		}
-	} else if (strcmp(argv[1], "rd") == 0) {
-		ULONG u64Raddr = 0;
-		if (argc == 3) {
-			u64Raddr = atoi(argv[2]);
-		}
-		BYTE *p8Base = (BYTE *)(SFLS_BASE + u64Raddr);
-		printf("SFLS data read(0x%08lX)\n", (intptr_t)p8Base);
-
-		hwflush_dcache_range((ulong)p8Base, 1024);
-		hexDump("READ", p8Base, 1024);
-	} else if (strcmp(argv[1], "wd") == 0) {
-		ULONG u64Waddr = 0;
-		if (argc == 3) {
-			u64Waddr = atoi(argv[2]);
-		}
-		BYTE *p8Base = (BYTE *)(SFLS_BASE + u64Waddr);
-
-		SflsSectErase(p8Base - SFLS_BASE, ENX_YES);
-		BYTE u8Data[4][256] = {0};
-		for (int i = 0; i < 256; i++) {
-			u8Data[0][i] = i;
-			u8Data[1][i] = i;
-			u8Data[2][i] = i;
-			u8Data[3][i] = i;
-		}
-		hwflush_dcache_range((ulong)u8Data, 1024);
-
-		//vTaskDelay(100);
-
-		BDmaMemCpy_rtos(0, p8Base, u8Data[0], 64);
-		//vTaskDelay(10);
-		BDmaMemCpy_rtos(0, p8Base+66, u8Data[2], 32);
-		//vTaskDelay(10);
-		BDmaMemCpy_rtos(0, p8Base+100, u8Data[1], 32);
-		//vTaskDelay(10);
-		BDmaMemCpy_rtos(0, p8Base+150, u8Data[3], 32);
-		//vTaskDelay(10);
-
-		printf("SFLS data write(0x%08lX)\n", (intptr_t)p8Base);
-		hexDump("WRITE", u8Data, 1024);
-	} else if (strcmp(argv[1], "e") == 0) {
-		BYTE *p8Base = (BYTE *)SFLS_BASE;
-		SflsSectErase(p8Base - SFLS_BASE, ENX_YES);
-		printf("SFLS data erase(0x%08lX)\n", (intptr_t)p8Base);
-	} else if (strcmp(argv[1], "reg") == 0) {
-		BYTE u8ReadAddr = strtol(argv[2], NULL, 16);
-		UINT u32ReadData = SflsReadReg(u8ReadAddr, iomode, gap);
-		printf("SFLS reg(0x%02X) read(0x%08X)\n", u8ReadAddr, u32ReadData);
-	} else {
-		Shell_Unknown();
-	}
-	printf("done.\n");
-
-	return 0;
-}
-#endif

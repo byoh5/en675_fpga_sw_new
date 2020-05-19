@@ -21,7 +21,8 @@ SET ( DEV_HDRS
 	dev_functions.h
 	dev_model.h
 	dev_peri.h
-	dev_reg.h
+	dev_reg_m.h
+	dev_reg_s.h
 	dev_reg_ex.h
 	dev_types.h
 	dev_verify.h

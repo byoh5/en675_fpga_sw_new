@@ -16,6 +16,8 @@
 #ifndef __DEV_DEVICE_H__
 #define __DEV_DEVICE_H__
 
+#define EN675_SINGLE ${USE_EN675_SINGLE}
+
 #define OSC_FREQ	${OSC_FREQ}
 #define APB_FREQ	${APB_FREQ}
 #define AXI_FREQ	${AXI_FREQ}

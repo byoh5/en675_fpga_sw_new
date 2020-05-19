@@ -112,7 +112,8 @@ static void testVideoTimer_irq(void *ctx)
 		return;
 	}
 #endif
-	//printf("testVideoTimer_irq MsgStmPut vid_info[i].addr 0x%x \n", vid_info[i].addr);
+
+#if defined(__NETWORK__)
 	if (MsgStmPut(vid_info[i].addr, vid_info[i].size, vid_info[i].ts, vid_info[i].type) == ENX_OK) {
 		IsrStreamdata();
 		i++;
@@ -122,7 +123,9 @@ static void testVideoTimer_irq(void *ctx)
 	if (i == stream_count) {
 		i = 0;
 	}
+#endif
 
+#if (LOAD_FS_SDCARD==1)
 	if (MsgRecPut(vid_info[j].addr, vid_info[j].size, vid_info[j].ts, vid_info[j].type) == ENX_OK) {
 		IsrRecorddata();
 		j++;
@@ -132,6 +135,7 @@ static void testVideoTimer_irq(void *ctx)
 	if (j == stream_count) {
 		j = 0;
 	}
+#endif
 }
 
 int cmd_test_video(int argc, char *argv[])
@@ -222,6 +226,7 @@ int cmd_test_video(int argc, char *argv[])
 		printf("Start Video Timer: %uHz\n", TEST_VIDEO_TIMER_HZ);
 		TimerStart(TEST_VIDEO_TIMER_CH);
 
+#if (LOAD_FS_SDCARD==1)
 #if (VID_CODEC==0)
 		gtUser.vcVideo[e_vcVEncoder1].eCodec = e_vcodecH264;
 		muxer_videnc_set_vcodec(eRecNormal, e_vcVEncoder1);
@@ -235,21 +240,29 @@ int cmd_test_video(int argc, char *argv[])
 		muxer_videnc_set_vcodec(eRecEvent, e_vcVEncoder1);
 #endif
 #endif
+#endif
+#if (ENX_RTSP_use==1)
 	} else if (strcmp("check", argv[1]) == 0) {
 		printf("last number: %d\n", rtp_step);
 	}
+#else
+	}
+#endif
 	return 0;
 }
 
 int cmd_test_jpeg(int argc, char *argv[])
 {
+#if 1
 	if (argc == 2 && (strcmp(argv[1], "start") == 0)) {
 		printf("jpeg on!\n");
 		enx_jpeg_on();
+#if (LOAD_FS_SDCARD==1)
 	} else if (argc == 2 && (strcmp(argv[1], "save") == 0)) {
 		if (muxer_jpegstill_request() == ENX_OK) {
 			printf("Save ok!\n");
 		}
+#endif
 	} else if (argc == 3 && (strcmp(argv[1], "q") == 0)) {
 		int qp = atoi(argv[2]);
 		enx_jpeg_set_quantize(qp);
@@ -274,6 +287,71 @@ int cmd_test_jpeg(int argc, char *argv[])
 			hexDump("Memory Dump", (void *)(intptr_t)newaddr, 64);
 		}
 #endif
+#if defined(__FILESYSTEM__)
+	} else if (argc == 2 && (strcmp(argv[1], "dec") == 0)) {
+		FIL fp;
+		FRESULT fres;
+		if ((fres=f_open(&fp, "1:/snapshot/2m.jpg", FA_READ)) != FR_OK) {
+			printf("file open fail\n");
+		} else {
+			UINT read_size = 0;
+			FSIZE_t jpeg_size = f_size(&fp);
+			printf("file open ok(%ubyte)\n", jpeg_size);
+			BYTE *src_addr = pvPortMalloc(jpeg_size);
+			if (src_addr == NULL) {
+				printf("src malloc file\n");
+				f_close(&fp);
+				return 0;
+			}
+
+			fres = f_read(&fp, src_addr, jpeg_size, &read_size);
+			if (fres != FR_OK) {
+				printf("file read fail(read:%u)\n", read_size);
+			} else {
+				printf("file read ok(read:%u)\n", read_size);
+				if (jpeg_size == read_size) {
+					printf("read ok!\n");
+				}
+			}
+
+			hexDump("JPEG", src_addr, 512);
+
+			f_close(&fp);
+			vPortFree(src_addr);
+
+			if ((fres=f_open(&fp, "1:/snapshot/2m.raw", FA_WRITE | FA_CREATE_ALWAYS)) != FR_OK) {
+				printf("dec file open fail\n");
+			} else {
+#define JPEG_DEC_YUV_SIZE (4*1024*1024)
+				UINT write_size = 0;
+				BYTE *dst_addr = pvPortCalloc(1, JPEG_DEC_YUV_SIZE);
+				if (dst_addr == NULL) {
+					printf("dst malloc file\n");
+					f_close(&fp);
+					return 0;
+				}
+
+				flprintf("\n");
+				FRESULT fexp = f_expand(&fp, JPEG_DEC_YUV_SIZE, 1);
+				if (fexp != FR_OK) {
+					printf("f_expand fail\n");
+				} else {
+					printf("f_expand ok\n");
+				}
+
+				flprintf("JPEG DEC START\n");
+
+				if (f_write(&fp, dst_addr, JPEG_DEC_YUV_SIZE, &write_size) != FR_OK) {
+					printf("file write fail(write:%u)\n", write_size);
+				} else {
+					printf("file write ok(write:%u)\n", write_size);
+				}
+
+				f_close(&fp);
+				vPortFree(dst_addr);
+			}
+		}
+#endif
 	} else {
 		while (gptMsgShare.JPEG_STILL_FLAG == JPEG_SNAP_PROC) {
 			vTaskDelay(1);
@@ -286,17 +364,6 @@ int cmd_test_jpeg(int argc, char *argv[])
 	}
 
 
-
-
-
-
-
-
-
-
-
-
-
-
+#endif
 	return 0;
 }

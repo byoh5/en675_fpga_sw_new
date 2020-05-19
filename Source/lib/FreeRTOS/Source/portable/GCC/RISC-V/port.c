@@ -208,7 +208,7 @@ void vMemoryHeapInit(void)
 	for (int i = 0; i < len; i++) {
 		if (xHeapRegions[i].xSizeInBytes > 0) {
 			printf("Heap[%d] memory 0x%08X ~ 0x%08X, %ubyte\n", i, xHeapRegions[i].pucStartAddress, xHeapRegions[i].pucStartAddress + xHeapRegions[i].xSizeInBytes, xHeapRegions[i].xSizeInBytes);
-#if 1
+#if 0
 			memset(xHeapRegions[i].pucStartAddress, 0, xHeapRegions[i].xSizeInBytes);
 #else
 			hwflush_dcache_range(xHeapRegions[i].pucStartAddress, xHeapRegions[i].xSizeInBytes);
@@ -254,7 +254,7 @@ uint32_t xPortGetTotalHeapSize(void)
 void vTaskInfoPrint(void)
 {
 //#define TaskStatusCount 40
-	const char * const task_state[5] = {"   Run   ", "  Ready  ", " Blocked ", "Suspended", " Deleted "};
+	const char * const task_state[5] = {"Run", "Ready", "Blocked", "Suspended", "Deleted"};
 	uint32_t uiTotal = 0;
 	UBaseType_t uxTask = 0;
 	//TaskStatus_t etiList[TaskStatusCount];
@@ -267,12 +267,13 @@ void vTaskInfoPrint(void)
 	uxTask = uxTaskGetSystemState(etiList, TaskStatusCount, &uiTotal);
 
 	printf("----------------------------------Task List(%02d)---------------------------------\n", uxTask);
-	printf(" TaskID  Task      State   Priority  Remained/Stack    RunTimeCounter Percentage\n");
+	printf("ID Task       Handle     State   Priority  Remained/Stack     Counter Percentage\n");
 	printf("--------------------------------------------------------------------------------\n");
 	for (UBaseType_t i = 0; i < uxTask; i++) {
-		printf(" %-6lu %-8s %-9s    %lu/%lu    %4lu/0x%08X   %14u      %-lu%%\n",
+		printf("%2lu %-8s 0x%08X %9s    %lu/%lu    %4lu/0x%08X %10u      %3lu%%\n",
 				etiList[i].xTaskNumber,
 				etiList[i].pcTaskName,
+				etiList[i].xHandle,
 				task_state[etiList[i].eCurrentState],
 				etiList[i].uxCurrentPriority,
 				etiList[i].uxBasePriority,

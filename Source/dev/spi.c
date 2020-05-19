@@ -34,7 +34,7 @@ void SpiInit(UINT nCH, UINT Speed_Hz, BYTE nBIT, BYTE isLSB)
 		case 8:	SPI8_PIN_INIT;	break;
 	}
 
-	printf("SPI%u Init - %uHz\n", nCH, APB_FREQ / ((arrSPI[nCH]->CLK_DIV + 1) * 4));
+	ENX_DEBUGF(DBG_SPI_STATUS, "SPI%u Init - %s%uHz%s\n", nCH, TTY_COLOR_GREEN, SpiGetClk(nCH), TTY_COLOR_RESET);
 }
 
 void SpiDeinit(UINT nCH)

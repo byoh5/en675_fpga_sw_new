@@ -15,10 +15,17 @@ volatile uint64* mtime =      (uint64*)(CLINT_BASE + 0xbff8);
 
 #define IRQ_PRIO01_BASE				0x0C000004 // RW: Source  1 priority (ISP)
 #define IRQ_PRIO02_BASE				0x0C000008 // RW: Source  2 priority (VCODEC)
+#if EN675_SINGLE
+#define IRQ_PRIO03_BASE				0x0C00000C // RW: Source  3 priority (DMA0~3)
+#define IRQ_PRIO04_BASE				0x0C000010 // RW: Source  4 priority (DMA4~7)
+#define IRQ_PRIO05_BASE				0x0C000014 // RW: Source  5 priority (DMA8~11)
+#define IRQ_PRIO06_BASE				0x0C000018 // RW: Source  6 priority (DMA12~15)
+#else
 #define IRQ_PRIO03_BASE				0x0C00000C // RW: Source  3 priority (DMA0)
 #define IRQ_PRIO04_BASE				0x0C000010 // RW: Source  4 priority (DMA1)
 #define IRQ_PRIO05_BASE				0x0C000014 // RW: Source  5 priority (DMA2)
 #define IRQ_PRIO06_BASE				0x0C000018 // RW: Source  6 priority (DMA3)
+#endif
 #define IRQ_PRIO07_BASE				0x0C00001C // RW: Source  7 priority (Core0)
 #define IRQ_PRIO08_BASE				0x0C000020 // RW: Source  8 priority (Core1)
 #define IRQ_PRIO09_BASE				0x0C000024 // RW: Source  9 priority (ETH)
@@ -49,8 +56,8 @@ volatile uint64* mtime =      (uint64*)(CLINT_BASE + 0xbff8);
 #define IRQ_PRIO34_BASE				0x0C000088 // RW: Source 34 priority (GPIO60~63, I2C7, UART7)
 #define IRQ_PRIO35_BASE				0x0C00008C // RW: Source 35 priority (GPIO64~67, SPI8)
 #define IRQ_PRIO36_BASE				0x0C000090 // RW: Source 36 priority (GPIO68~71, I2C8, UART8)
-#define IRQ_PRIO37_BASE				0x0C000094 // RW: Source 37 priority (Reserved)
-#define IRQ_PRIO38_BASE				0x0C000098 // RW: Source 38 priority (Reserved)
+#define IRQ_PRIO37_BASE				0x0C000094 // RW: Source 37 priority (IR)
+#define IRQ_PRIO38_BASE				0x0C000098 // RW: Source 38 priority (OMC)
 #define IRQ_PRIO39_BASE				0x0C00009C // RW: Source 39 priority (Reserved)
 #define IRQ_PRIO40_BASE				0x0C0000A0 // RW: Source 40 priority (Reserved)
 
@@ -217,7 +224,7 @@ void enx_exirq_source1(void)
 			const ULONG cur_time = rdcycle();
 			const ULONG dep = (pre_time < cur_time) ? cur_time - pre_time : (0xFFFFFFFFFFFFFFFF - pre_time) + cur_time + 1;
 
-			if(gnVDI_CHG || dep > (4008*(CPU_FREQ/1000))) {	// 4000 = 4sec, 8 = 8ms : 60fpsÀÏ °æ¿ì ÃÖ¾Ç Á¶°Ç¿¡¼­ IRQ Ã³¸® ÇÔ¼ö ÁøÀÔ ½Ã°£ÀÌ 1È¸ 1~31ms, 2È¸ 17~47ms ÀÌ µÉ ¼ö ÀÖÀ¸¸ç ÆÇÁ¤ ºÒ°¡´É, ÆÇÁ¤ÀÌ °¡´ÉÇÑ ÃÖ´ë Á¶°ÇÀº 1È¸ 9~23 ms, 2È¸ 25~39 ÀÌ¹Ç·Î 24(=16+8)·Î ÆÇ´ÜÇØ¾ß ÇÔ
+			if(gnVDI_CHG || dep > (4008*(CPU_FREQ/1000))) {	// 4000 = 4sec, 8 = 8ms : 60fpsì¼ ê²½ìš° ìµœì•… ì¡°ê±´ì—ì„œ IRQ ì²˜ë¦¬ í•¨ìˆ˜ ì§„ìž… ì‹œê°„ì´ 1íšŒ 1~31ms, 2íšŒ 17~47ms ì´ ë  ìˆ˜ ìžˆìœ¼ë©° íŒì • ë¶ˆê°€ëŠ¥, íŒì •ì´ ê°€ëŠ¥í•œ ìµœëŒ€ ì¡°ê±´ì€ 1íšŒ 9~23 ms, 2íšŒ 25~39 ì´ë¯€ë¡œ 24(=16+8)ë¡œ íŒë‹¨í•´ì•¼ í•¨
 				pre_time = cur_time;
 				if(gnVDI_CHG)	gnVDI_CHG--;
 				else			gnVDI_4FPS = gnViIrqCnt;
@@ -230,22 +237,29 @@ void enx_exirq_source1(void)
 		if (IRQ_ISP1){CLI_VLOCKWw(1);}
 		if (IRQ_ISP2){CLI_VLOCKOw(1);// gnVoIrqOn = 1;
 			gnVoIrqCnt++;
-			//if(!(gnVoIrqCnt%(FPS_VDO*5))) _printf("VLOCKO_IRQ %d!!!\n", gnVoIrqCnt/FPS_VDO);	// TODO KSH ¡ß VLOCKO IRQ test
+			//if(!(gnVoIrqCnt%(FPS_VDO*5))) _printf("VLOCKO_IRQ %d!!!\n", gnVoIrqCnt/FPS_VDO);	// TODO KSH â—† VLOCKO IRQ test
 			//else if(!(gnVoIrqCnt%FPS_VDO)) _printf_irq("VLOCKO_IRQ %d\n", gnVoIrqCnt/FPS_VDO);
 			IRQ_ISP_PRINTF("VLOCKO_IRQ\n");
 			//printf("2");
 
 			gptMsgShare.VIDEO_TICK++;
 			//if (jpeg_enc.enable == 1) {
+#if 0
 			if (SYS_REG6 == 0) {
 				while(SYS_MUTEX10);
 				enx_jpeg_enc_start(30, 0, 0);
 				SYS_MUTEX10 = 0;
 			}
+#endif
 		}
 		if (IRQ_ISP3) {
 			//printf("J");
-			jpeg_irq_handler(NULL);
+
+			// JPEG enc mode
+			// jpeg_irq_handler(NULL);
+
+			// JPEG dec mode
+			printf("JPEG dec done?");
 
 			CLI_JPGw(1);
 		}
@@ -301,6 +315,14 @@ void enx_exirq_source3(void)
 	if (irq->G_DMA0) {
 		if (irq->BDMA0){IrqBDma(0);}
 		if (irq->CDMA0){IrqCDma(0);}
+#if EN675_SINGLE
+		if (irq->BDMA1){IrqBDma(1);}
+		if (irq->CDMA1){IrqCDma(1);}
+		if (irq->BDMA2){IrqBDma(2);}
+		if (irq->CDMA2){IrqCDma(2);}
+		if (irq->BDMA3){IrqBDma(3);}
+		if (irq->CDMA3){IrqCDma(3);}
+#endif
 	} else {
 		printf("NO IRQ_G_DMA0\n");
 		enx_exirq_view();
@@ -312,8 +334,19 @@ void enx_exirq_source4(void)
 	uint32 get = IRQ_04_T;
 	_IRQ_3 *irq = (void *)&get;
 	if (irq->G_DMA1) {
+#if EN675_SINGLE
+		if (irq->BDMA4){IrqBDma(4);}
+		if (irq->CDMA4){IrqCDma(4);}
+		if (irq->BDMA5){IrqBDma(5);}
+		if (irq->CDMA5){IrqCDma(5);}
+		if (irq->BDMA6){IrqBDma(6);}
+		if (irq->CDMA6){IrqCDma(6);}
+		if (irq->BDMA7){IrqBDma(7);}
+		if (irq->CDMA7){IrqCDma(7);}
+#else
 		if (irq->BDMA1){IrqBDma(1);}
 		if (irq->CDMA1){IrqCDma(1);}
+#endif
 	} else {
 		printf("NO IRQ_G_DMA1\n");
 		enx_exirq_view();
@@ -325,8 +358,19 @@ void enx_exirq_source5(void)
 	uint32 get = IRQ_05_T;
 	_IRQ_4 *irq = (void *)&get;
 	if (irq->G_DMA2) {
+#if EN675_SINGLE
+		if (irq->BDMA8){IrqBDma(8);}
+		if (irq->CDMA8){IrqCDma(8);}
+		if (irq->BDMA9){IrqBDma(9);}
+		if (irq->CDMA9){IrqCDma(9);}
+		if (irq->BDMA10){IrqBDma(10);}
+		if (irq->CDMA10){IrqCDma(10);}
+		if (irq->BDMA11){IrqBDma(11);}
+		if (irq->CDMA11){IrqCDma(11);}
+#else
 		if (irq->BDMA2){IrqBDma(2);}
 		if (irq->CDMA2){IrqCDma(2);}
+#endif
 	} else {
 		printf("NO IRQ_G_DMA2\n");
 		enx_exirq_view();
@@ -338,8 +382,19 @@ void enx_exirq_source6(void)
 	uint32 get = IRQ_06_T;
 	_IRQ_5 *irq = (void *)&get;
 	if (irq->G_DMA3) {
+#if EN675_SINGLE
+		if (irq->BDMA12){IrqBDma(12);}
+		if (irq->CDMA12){IrqCDma(12);}
+		if (irq->BDMA13){IrqBDma(13);}
+		if (irq->CDMA13){IrqCDma(13);}
+		if (irq->BDMA14){IrqBDma(14);}
+		if (irq->CDMA14){IrqCDma(14);}
+		if (irq->BDMA15){IrqBDma(15);}
+		if (irq->CDMA15){IrqCDma(15);}
+#else
 		if (irq->BDMA3){IrqBDma(3);}
 		if (irq->CDMA3){IrqCDma(3);}
+#endif
 	} else {
 		printf("NO IRQ_G_DMA3\n");
 		enx_exirq_view();
@@ -446,9 +501,19 @@ void enx_exirq_source15(void)
 void enx_exirq_source16(void)
 {
 //	printf("16 ChksumIsIrq(%d/%d) ShaIsIrq(%d/%d) AesIsIrq(%d/%d)\n", IRQ_CHKSUM, ChksumIsIrq(), IRQ_SHA, ShaIsIrq(), IRQ_AES, AesIsIrq());
+#if EN675_SINGLE
+	uint32 get = IRQ_16_T;
+	_IRQ_15 *irq = (void *)&get;
+	if (irq->SHA_ONESHOT) {
+		IrqShaOneshot();
+	} else if (irq->SHA_CHOP) {
+		IrqShaChop();
+	} else {
+#else
 	if (IRQ_SHA) {
 		IrqSha();
 	} else {
+#endif
 		printf("NO IRQ_SHA\n");
 		enx_exirq_view();
 	}
@@ -1008,7 +1073,6 @@ void enx_exirq_source34(void)
 	uint32 get = IRQ_34_T;
 	_IRQ_33 *irq = (void *)&get;
 	if (irq->G_SOURCE34) {
-		//printf("OK G_SOURCE34 (uart7-tx(%d)rx(%d)\n", UartTxIsIrq(7), UartRxIsIrq(7));
 		if (irq->I2C7){IrqI2c(7);}
 		if (irq->UART7){IrqUart(7);}
 		if (irq->GPIO63){IrqGpio(63);}
@@ -1016,13 +1080,8 @@ void enx_exirq_source34(void)
 		if (irq->GPIO61){IrqGpio(61);}
 		if (irq->GPIO60){IrqGpio(60);}
 	} else {
-		//printf("NO G_SOURCE34 (uart7-tx(%d)rx(%d), %d\n", UartTxIsIrq(7), UartRxIsIrq(7), UartTxGetIrqEn(7));
-		/*if(UartTxGetIrqEn(7)) UartDebugTxIrq(0);
-		else*/ enx_exirq_view();
-		// IrqUart(7);
-		//UartRxSetIrqEn(7, ENX_OFF);
-		//UartTxSetIrqEn(7, ENX_OFF);
-
+		printf("NO G_SOURCE34\n");
+		enx_exirq_view();
 	}
 #else
 	if (IRQ_G_SOURCE34) {
@@ -1168,7 +1227,9 @@ void enx_swirq_hart0(void)
 
 	if (msg_flag & eCPU0_MSG_STREAM_INFO) {
 		msg_flag &= ~eCPU0_MSG_STREAM_INFO;
+#if defined(__NETWORK__)
 		IsrStreamdata();
+#endif
 	}
 
 	if (msg_flag) {
@@ -1304,7 +1365,9 @@ static void __attribute__((noreturn)) bad_trap(uintptr_t mcause, uintptr_t mepc,
 	uint64 cpu_id = CPU_ID;
 	printf("cpuid       : %lu\n", cpu_id);
 	printf("uptime      : %lus\n", gptMsgShare.UPTIME);
+#if (ENX_RTSP_use==1)
 	printf("RTP error step: %d\n", rtp_step);
+#endif
 
 	static const char* regnames[] = {
 		"ra", "t0", "t1", "t2",
@@ -1379,25 +1442,13 @@ void trap_from_machine_mode_freertos_sync(uintptr_t mcause, uintptr_t mepc, uint
 	case CAUSE_USER_ECALL:
 	case CAUSE_SUPERVISOR_ECALL:
 	case CAUSE_MACHINE_ECALL:
-#if 0
-		if (regs[30] == ECALL_YIELD_CMD) {
-//			_Cprintf("!");
+		if (regs[14] == ECALL_YIELD_CMD) {
+//			_Rprintf("OS switchcontext\n");
 			vTaskSwitchContext();
-			regs[30] = 0;
-		} else {
-//			_Rprintf("!");
-			regs[9] = do_syscall(regs[9], regs[10], regs[11], regs[12], regs[13], regs[14], regs[15]);
-		}
-#else
-		if (regs[28] == ECALL_YIELD_CMD) {
-//			_Cprintf("!");
-			vTaskSwitchContext();
-			regs[28] = 0;
-		} else {
-//			_Rprintf("!");
+		} else{
+//			_Rprintf("do_syscall\n");
 			regs[7] = do_syscall(regs[7], regs[8], regs[9], regs[10], regs[11], regs[12], regs[14]);
 		}
-#endif
 		break;
 
 	default:
@@ -1424,7 +1475,7 @@ void trap_from_machine_mode_freertos_handle_interrupt(int32_t mcause)
 		if (source == 0 || source > IRQ_SOURCE_COUNT) {
 			continue;
 		}
-#if 0 // Test¿ë log
+#if 0 // Testìš© log
 		else if (IRQ_ETH_RX == 0 && IRQ_CDC == 0 && IRQ_I2S_TX == 0 && IRQ_I2S_RX == 0 && SDIO1_IO_IRQ == 0 && IRQ_TIMER8 == 0) {
 			printf("CPU%u-OS-IRQ%d (%d/%c)\n", cpuid, source, (cpuidx+i), (cpuidx+i)%2==0 ? 'M':'S');
 		}
@@ -1471,15 +1522,17 @@ void trap_from_machine_mode_freertos_async(uintptr_t mcause, uintptr_t mepc, uin
 		gbXsrTaskSwitchNeeded = 0;
 //		_Cprintf(".");
 		for (int i = 0; i < 2; i++) {
+#if 0
 			volatile unsigned int *pClaim = iClaimCompliet[cpuidx+i];
 			if (((UINT)(intptr_t)pClaim) <= 0xC200000 && ((UINT)(intptr_t)pClaim) > 0xC207004) {
 				printf("IRQ Error! 0x%08X\n", (UINT)(intptr_t)pClaim);
 			}
+#endif
 			volatile unsigned int source = *iClaimCompliet[cpuidx+i]; // Get Claim IRQ
 			if (source == 0 || source > IRQ_SOURCE_COUNT) {
 				continue;
 			}
-#if 0 // Test¿ë log
+#if 0 // Testìš© log
 			else if (IRQ_ETH_RX == 0 && IRQ_CDC == 0 && IRQ_I2S_TX == 0 && IRQ_I2S_RX == 0 && SDIO1_IO_IRQ == 0 && IRQ_TIMER8 == 0) {
 				printf("CPU%u-OS-IRQ%d (%d/%c)\n", cpuid, source, (cpuidx+i), (cpuidx+i)%2==0 ? 'M':'S');
 			}
@@ -1541,8 +1594,8 @@ uintptr_t trap_from_machine_mode_async(uintptr_t mcause, uintptr_t mepc, uint64 
 			if (source == 0 || source > IRQ_SOURCE_COUNT) {
 				continue;
 			}
-#if 1 // Test¿ë log
-			else if (source != 1 && source != 4 && source != 9 && source != 34) {
+#if 1 // Testìš© log
+			else if (source != 1 && source != 4 && source != 9) {
 				printf("CPU%u-FW-IRQ%d (%d/%c)\n", cpuid, source, (cpuidx+i), (cpuidx+i)%2==0 ? 'M':'S');
 			}
 #endif
@@ -1562,6 +1615,14 @@ uintptr_t trap_from_machine_mode_async(uintptr_t mcause, uintptr_t mepc, uint64 
 ////////////////////////////////////////////////////////////////////////////////
 // Interrupt Controller
 ////////////////////////////////////////////////////////////////////////////////
+UINT enx_externalirq_is_enable(UINT cpuid, eIRQ_GROUP_INDEX perlIdx, uint64 type)
+{
+	uint32 enableidx = perlIdx % 32;
+	uint32 enabletype = (type << 1) + (perlIdx / 32);
+	cpuid = cpuid * 4;
+	return (*iEnables[cpuid+enabletype] >> enableidx) & 0x1;
+}
+
 void enx_externalirq_perl(eIRQ_GROUP_INDEX perlIdx, uint64 onoff, uint64 type)
 {
 	if (type > 1) {
@@ -1649,10 +1710,17 @@ void enx_externalirq_init_cpu0(void)
 
 //	enx_externalirq_perl(eigiISP, ENX_ON, 0);							// Enable ISP Interrupts
 //	enx_externalirq_perl(eigiVCODEC, ENX_ON, 0);						// Enable VCodec Interrupts
+#if EN675_SINGLE
+	enx_externalirq_perl(eigiDMA0_3, ENX_ON, 0);						// Enable DMA0~3 Interrupts
+//	enx_externalirq_perl(eigiDMA4_7, ENX_ON, 0);						// Enable DMA4~7 Interrupts
+//	enx_externalirq_perl(eigiDMA8_11, ENX_ON, 0);						// Enable DMA8~11 Interrupts
+//	enx_externalirq_perl(eigiDMA12_15, ENX_ON, 0);						// Enable DMA12~15 Interrupts
+#else
 	enx_externalirq_perl(eigiDMA0, ENX_ON, 0);							// Enable DMA0 Interrupts
 //	enx_externalirq_perl(eigiDMA1, ENX_ON, 0);							// Enable DMA1 Interrupts
 //	enx_externalirq_perl(eigiDMA2, ENX_ON, 0);							// Enable DMA2 Interrupts
 //	enx_externalirq_perl(eigiDMA3, ENX_ON, 0);							// Enable DMA3 Interrupts
+#endif
 	enx_externalirq_perl(eigiETH, ENX_ON, 0);							// Enable ETH_TX Interrupts
 	enx_externalirq_perl(eigiSDIO0, ENX_ON, 0);							// Enable SDIO0 Interrupts
 	enx_externalirq_perl(eigiSDIO1, ENX_ON, 0);							// Enable SDIO1 Interrupts
@@ -1696,7 +1764,11 @@ void enx_externalirq_init_cpu1(void)
 //	set_csr(mie, MIP_MEIP);												// Enable External Interrupts
 	set_csr(mstatus, MSTATUS_MIE);										// Machine Interrupt Enable
 
+#if EN675_SINGLE
+	enx_externalirq_perl(eigiDMA4_7, ENX_ON, 0);						// Enable DMA4~7 Interrupts
+#else
 	enx_externalirq_perl(eigiDMA1, ENX_ON, 0);							// Enable DMA1 Interrupts
+#endif
 }
 
 void enx_externalirq_init_cpu2(void)
@@ -1707,7 +1779,11 @@ void enx_externalirq_init_cpu2(void)
 //	set_csr(mie, MIP_MEIP);												// Enable External Interrupts
 	set_csr(mstatus, MSTATUS_MIE);										// Machine Interrupt Enable
 
+#if EN675_SINGLE
+	enx_externalirq_perl(eigiDMA8_11, ENX_ON, 0);						// Enable DMA8~11 Interrupts
+#else
 	enx_externalirq_perl(eigiDMA2, ENX_ON, 0);							// Enable DMA2 Interrupts
+#endif
 }
 
 void enx_externalirq_init_cpu3(void)
@@ -1720,7 +1796,11 @@ void enx_externalirq_init_cpu3(void)
 
 	enx_externalirq_perl(eigiISP, ENX_ON, 0);							// Enable ISP Interrupts
 	enx_externalirq_perl(eigiVCODEC, ENX_ON, 0);						// Enable Codec Interrupts
+#if EN675_SINGLE
+	enx_externalirq_perl(eigiDMA12_15, ENX_ON, 0);						// Enable DMA12~15 Interrupts
+#else
 	enx_externalirq_perl(eigiDMA3, ENX_ON, 0);							// Enable DMA3 Interrupts
+#endif
 	enx_externalirq_perl(eigiGPIO60_63_I2C7_UART7, ENX_OFF, 0);			// Enable GPIO60~63, I2C7, UART7 Interrupts
 	enx_externalirq_perl(eigiATOB, ENX_ON, 0);							// Enable ATOB Interrupts
 //	enx_externalirq_perl(eigiGPIO, ENX_ON, 0);							// Enable GPIO Interrupts

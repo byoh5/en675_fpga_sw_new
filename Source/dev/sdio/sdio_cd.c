@@ -554,18 +554,29 @@ static UINT SdioCdGetCSD(void)
 	return nRes;
 }
 
-static UINT SdioCdBusWidthChange(void)
-{	// CMD7(R1b), CMD42(R1), ACMD6(R1) : Bus Width 1bit -> 4bit
+static UINT SdioCdSelectCard(void)
+{	// CMD7(R1b)
 	UINT nResp = 0, nRes, nArg;
 
 	ENX_LOG_START(DBG_SDIO_CD_CMD);
-
 	// Select a card
 	nRes = SdioCdCmd(sdinfo.nCH, SDCMD_SELECT_CARD, sdinfo.rca, &nResp, ecrtR1b);
 #if 0
 	// Unlock
 	nRes = SdioCdCmd(sdinfo.nCH, SDCMD_LOCK_UNLOCK, 0x00000000, &nResp, ecrtR1b);
 #endif
+
+	ENX_LOG_END(DBG_SDIO_CD_CMD);
+
+	return nRes;
+}
+
+static UINT SdioCdBusWidthChange(void)
+{	// CMD42(R1), ACMD6(R1) : Bus Width 1bit -> 4bit
+	UINT nResp = 0, nRes, nArg;
+
+	ENX_LOG_START(DBG_SDIO_CD_CMD);
+
 #if 1
 	// ACMD6 : 1bit -> 4bit
 	SdioCdAppCmd(sdinfo.rca);
@@ -591,8 +602,8 @@ static UINT SdioCdRegDataRead(UINT nCmd, UINT nArg, UINT *nResp, eCmdRespType cm
 #endif
 
 	nTemp = SdioGetDataBlockByte(sdinfo.nCH);
-	SdioSetDataBlockByte(sdinfo.nCH, nSize);		// Data Block Byte∏¶ º≥¡§
-	SdioSetDataCmd(sdinfo.nCH, SDIO_DIO_SINGLE_READ, nCmd);	// Data Read command∏¶ º≥¡§
+	SdioSetDataBlockByte(sdinfo.nCH, nSize);		// Data Block ByteÎ•º ÏÑ§Ï†ï
+	SdioSetDataCmd(sdinfo.nCH, SDIO_DIO_SINGLE_READ, nCmd);	// Data Read commandÎ•º ÏÑ§Ï†ï
 
 	ENX_SDIOCD_IRQ_LOCK();
 	ENX_SDIOCD_FLUSH_DCACHE((ULONG)getData, nSize);
@@ -601,8 +612,8 @@ static UINT SdioCdRegDataRead(UINT nCmd, UINT nArg, UINT *nResp, eCmdRespType cm
 	memcpy(pSdioReg, getData, nSize);
 	ENX_SDIOCD_IRQ_UNLOCK();
 
-	SdioSetDataBlockByte(sdinfo.nCH, nTemp);	// Data Block Byte∏¶ ø¯ªÛ∫π±Õ
-	SdioSetDataCmd(sdinfo.nCH, SDIO_DIO_SINGLE_READ, SDCMD_READ_SINGLE_BLOCK); // Data Read command∏¶ 17¿∏∑Œ º≥¡§(±‚∫ª Read ∏Ì∑…¿∏∑Œ º≥¡§)
+	SdioSetDataBlockByte(sdinfo.nCH, nTemp);	// Data Block ByteÎ•º ÏõêÏÉÅÎ≥µÍ∑Ä
+	SdioSetDataCmd(sdinfo.nCH, SDIO_DIO_SINGLE_READ, SDCMD_READ_SINGLE_BLOCK); // Data Read commandÎ•º 17ÏúºÎ°ú ÏÑ§Ï†ï(Í∏∞Î≥∏ Read Î™ÖÎ†πÏúºÎ°ú ÏÑ§Ï†ï)
 
 	SdioGetResp(sdinfo.nCH, nResp, cmdType);
 	ENX_DEBUGF(DBG_SDIO_CD_CMD, "[%2d] res(%c) RESP0(0x%08X)\n", nCmd, nRes == ENX_OK ? 'O' : 'X', nResp[0]);
@@ -732,7 +743,7 @@ static UINT SdioCdSetClock(void)
 //			SdioSetClockDiv(sdinfo.nCH, 0xffff);
 			SdioSetClockDiv(sdinfo.nCH, 0);
 //			SdioSetClockDiv(sdinfo.nCH, 3);
-//			SdioSetClockDiv(sdinfo.nCH, 50);
+//			SdioSetClockDiv(sdinfo.nCH, 100);
 		}
 
 		nRes = ENX_OK;
@@ -769,8 +780,8 @@ sd_tuning:
 		for (UINT i = 0; i < sizeof(SD_Tuning); i++) {
 			if (checkData[i] != sdinfo.stuning.Tuning[i]) {
 				hexDump("Tuning Block Pattern Mismatch", sdinfo.stuning.Tuning, sizeof(SD_Tuning));
-				SdioCdClockDown(); // ¡÷∆ƒºˆ ≥∑√ﬂ∞Ì ¿ÁΩ√µµ(old)
-				// ∆≤æÓ¡¯ bit∏¶ √£æ∆ «ÿ¥Á delay sel¿ª ºˆ¡§«œ¥¬ «¸≈¬∑Œ ∞°æﬂ «‘.(new/∞≥πﬂ« ø‰)
+				SdioCdClockDown(); // Ï£ºÌååÏàò ÎÇÆÏ∂îÍ≥† Ïû¨ÏãúÎèÑ(old)
+				// ÌãÄÏñ¥ÏßÑ bitÎ•º Ï∞æÏïÑ Ìï¥Îãπ delay selÏùÑ ÏàòÏ†ïÌïòÎäî ÌòïÌÉúÎ°ú Í∞ÄÏïº Ìï®.(new/Í∞úÎ∞úÌïÑÏöî)
 				if (nTry == 0) {
 					nTry++;
 					goto sd_tuning;
@@ -912,7 +923,13 @@ ENX_OKFAIL SdioCdInitProcess(void)
 		goto done_fail;
 	}
 
-	// CMD 7, 42, ACMD 6
+	// CMD 7
+	if (SdioCdSelectCard() == ENX_FAIL) {
+		sdinfo.nErrorCode = 77;
+		goto done_fail;
+	}
+
+	// ACMD 6
 	if (SdioCdBusWidthChange() == ENX_FAIL) {
 		sdinfo.nErrorCode = 8;
 		goto done_fail;
@@ -929,6 +946,7 @@ ENX_OKFAIL SdioCdInitProcess(void)
 		sdinfo.nErrorCode = 10;
 		goto done_fail;
 	}
+
 #if 0
 	if (sdio_data_address != (uint64_t)SDIO_DATA_BASE) {
 		_Rprintf("Error!!\n");
@@ -1016,7 +1034,7 @@ UINT SdioCdDet(void)
 	return GpioGetPin(SD_GPIO_IRQ);
 }
 
-// ±‚∫ª¿˚¿Œ CH, IRQ, √÷√ ¡÷∆ƒºˆ, Pull-up µÓ¿ª º≥¡§«—¥Ÿ.
+// Í∏∞Î≥∏Ï†ÅÏù∏ CH, IRQ, ÏµúÏ¥àÏ£ºÌååÏàò, Pull-up Îì±ÏùÑ ÏÑ§Ï†ïÌïúÎã§.
 void SdioCdInit(UINT nCH)
 {
 	memset(&sdinfo, 0, sizeof(sdinfo));

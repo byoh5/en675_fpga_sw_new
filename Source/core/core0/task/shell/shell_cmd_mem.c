@@ -54,13 +54,14 @@ typedef struct {
 	UINT u32Move;
 	UINT cMode;
 	UINT u32CH;
+	UINT u32Close;
 
 	DMAtestTarget target;
 } DmaTestStr;
 
 DmaTestStr dmaitem;
-#define DMA_TEST_MALLOC_SIZE 256*1024 // SRAM
-//#define DMA_TEST_MALLOC_SIZE 1024*1024 // DDR
+#define DMA_TEST_MALLOC_SIZE (256*1024) // SRAM
+//#define DMA_TEST_MALLOC_SIZE (1024*1024) // DDR
 
 static void DmaTestIrq(void *ctx)
 {
@@ -75,6 +76,8 @@ static void DmaTestIrq(void *ctx)
 
 static void DmaTestTask(void *ctx)
 {
+	dmaitem.u32Close = 0;
+
 	if (dmaitem.target == eDMAtest_DDRtoDDR || dmaitem.target == eDMAtest_DDRtoSRAM) {
 		dmaitem.arrSrc = pvPortMalloc(dmaitem.u64BufSize);
 		if (dmaitem.arrSrc == NULL) {
@@ -156,6 +159,10 @@ static void DmaTestTask(void *ctx)
 	u32RelTestSize = 0;
 	UINT pass = 0, fail = 0, flag = 0;
 	for (UINT i = 0; i < dmaitem.u32Move; i++) {
+		if (dmaitem.u32Close == 1) {
+			break;
+		}
+
 		parrDst = dmaitem.arrDst;
 		if (dmaitem.u32TestSize == -1) {
 			u32RelTestSize = rand() % 65536 + 1;
@@ -165,17 +172,31 @@ static void DmaTestTask(void *ctx)
 
 		printf("%3u%% %4u/%4u TEST Dst(0x%08X~0x%08X) Src(0x%08X) - Size(%6u) -     ", ((i+1) * 100) / dmaitem.u32Move, i+1, dmaitem.u32Move, (UINT)(intptr_t)parrDst, (UINT)(intptr_t)(parrDst+dmaitem.u32Move), (UINT)(intptr_t)parrSrc, u32RelTestSize);
 
-
 		ULONG total_time = 0;
 		ULONG total_size = 0;
 		for (UINT j = 0; j < dmaitem.u32Move; j++) {
+			if (dmaitem.u32Close == 1) {
+				break;
+			}
 			// Set array
 			//if (dmaitem.cMode == 'B') {
-			//	BDmaMemSet_rtos(dmaitem.u32CH, parrDst, 0, u32RelTestSize);
+			BDmaMemSet_rtos_async(dmaitem.u32CH, parrDst, 0, u32RelTestSize);
+			if (!ulTaskNotifyTake(pdTRUE, 300)) { // Timeout 3sec
+				flag = 1;
+				printf("\b\b\b\b");
+				_Rprintf("\nTimeout! memset 0x%08X, Len:%ubyte\n", parrDst, u32RelTestSize);
+				if (dmaitem.cMode == 'C') {
+					extern void CDmaRegshow(UINT nCH);
+					CDmaRegshow(dmaitem.u32CH);
+				}
+				i = j = -0xf;
+				fail++;
+				break;
+			}
 			//} else if (dmaitem.cMode == 'C') {
 			//	CDmaMemSet_rtos(dmaitem.u32CH, parrDst, 0, u32RelTestSize);
 			//} else {
-				memset(parrDst, 0, u32RelTestSize);
+			//memset(parrDst, 0, u32RelTestSize);
 			//}
 			//portMEMORY_BARRIER();
 			//hwflush_dcache_range_rtos((ULONG)parrDst, u32RelTestSize);
@@ -248,7 +269,7 @@ static void DmaTestTask(void *ctx)
 			} else {
 				flag = 1;
 				printf("\b\b\b\b");
-				_Rprintf("\nTimeout! 0x%08X <- 0x%08X, Len:%ubyte\n", parrDst, parrSrc, u32RelTestSize);
+				_Rprintf("\nTimeout! memcpy 0x%08X <- 0x%08X, Len:%ubyte\n", parrDst, parrSrc, u32RelTestSize);
 				if (dmaitem.cMode == 'C') {
 					extern void CDmaRegshow(UINT nCH);
 					CDmaRegshow(dmaitem.u32CH);
@@ -274,6 +295,7 @@ static void DmaTestTask(void *ctx)
 
 		parrSrc++;
 	}
+
 	printf("\nTest End. Pass(%d) Fail(%d)\n", pass, fail);
 
 	if (dmaitem.cMode == 'B') {
@@ -304,7 +326,7 @@ int cmd_test_dma(int argc, char *argv[])
 	static UINT nCH = 0;
 	static int nTestsize = -1; // random
 
-	nCH = CPU_ID;
+//	nCH = CPU_ID;
 
 	if (strcmp(argv[0], "bdma") == 0) {
 		cMode = 'B';
@@ -316,12 +338,42 @@ int cmd_test_dma(int argc, char *argv[])
 	}
 
 	if (argc == 1) {
-		for (UINT i = 0; i < BDMA_CNT; i++) {
-			BDmaRegView(i);
+		printf("== %cDMA Register view ==\n", cMode);
+		if (cMode == 'B') {
+#if EN675_SINGLE
+			printf("%-21s: %u\n", "FULL", BDMA0_FULL); // BDMA0_FULL == BDMA1_FULL == BDMA2_FULL == ... == BDMA15_FULL
+#endif
+			printf("%-21s: %u\n", "W_ENDIAN", BDMA_W_ENDIAN);
+			printf("%-21s: %u\n", "R_ENDIAN", BDMA_R_ENDIAN);
+		} else {
+#if EN675_SINGLE
+			printf("%-21s: %u\n", "FULL", CDMA0_FULL); // BDMA0_FULL == BDMA1_FULL == BDMA2_FULL == ... == BDMA15_FULL
+#endif
 		}
-		printf("== BDMA  Register view ==\n");
-		printf("%-22s: %u\n", "W_ENDIAN", BDMA_W_ENDIAN);
-		printf("%-22s: %u\n", "R_ENDIAN", BDMA_R_ENDIAN);
+		printf("   |      PROCESS_PTR     |      IRQ       |                       |\n");
+		printf("CH | DONVAL | DONE | JOB  | IRQ | EN | CLR | VALUE |  MODE  | BUSY |\n");
+		printf("---|---------------------------------------------------------------|\n");
+		if (cMode == 'B') {
+			for (UINT i = 0; i < BDMA_CNT; i++) {
+				printf("%2d |  0x%02X  | 0x%02X | 0x%02X |  %d  | %d  |  %d  | 0x%02X  | %6s |  %d   |\n",
+						i, BDmaRegGetDoneVal(i), BDmaRegGetDonePtr(i), BDmaRegGetJobPtr(i), BDmaRegGetIrq(i), BDmaRegGetIrqEn(i), BDmaRegGetIrqClr(i),
+						BDmaRegGetValue(i), BDmaRegGetMode(i) == 0 ? "memcpy" : BDmaRegGetMode(i) == 1 ? "memset" : "??????", BDmaRegGetGo(i));
+				printf("   | SRC: 0x%08X  DST: 0x%08X  LEN: 0x%08X, %9u  |\n", BDmaRegGetSrc(i), BDmaRegGetDst(i), BDmaRegGetLen(i), BDmaRegGetLen(i), " ");
+				if ((i + 1) % 4 == 0) {
+					printf("---|---------------------------------------------------------------|\n");
+				}
+			}
+		} else {
+			for (UINT i = 0; i < CDMA_CNT; i++) {
+				printf("%2d |  0x%02X  | 0x%02X | 0x%02X |  %d  | %d  |  %d  | 0x%02X  | %6s |  %d   |\n",
+						i, CDmaRegGetDoneVal(i), CDmaRegGetDonePtr(i), CDmaRegGetJobPtr(i), CDmaRegGetIrq(i), CDmaRegGetIrqEn(i), CDmaRegGetIrqClr(i),
+						CDmaRegGetValue(i), CDmaRegGetMode(i) == 0 ? "memcpy" : CDmaRegGetMode(i) == 1 ? "memset" : "??????", CDmaRegGetGo(i));
+				printf("   | SRC: 0x%08X  DST: 0x%08X  LEN: 0x%08X, %9u  |\n", CDmaRegGetSrc(i), CDmaRegGetDst(i), CDmaRegGetLen(i), CDmaRegGetLen(i), " ");
+				if ((i + 1) % 4 == 0) {
+					printf("---|---------------------------------------------------------------|\n");
+				}
+			}
+		}
 	} else {
 		if (argc == 2) {
 			if (strcmp(argv[1], "endtest") == 0) {
@@ -469,11 +521,7 @@ int cmd_test_dma(int argc, char *argv[])
 				vPortFree(arrSrc);
 				vPortFree(arrDst);
 			} else if (strcmp(argv[1], "stop") == 0) {
-				if (dmaitem.taskHandle != NULL) {
-					printf("%cDMA Test Stop\n", cMode);
-					vTaskDelete(dmaitem.taskHandle);
-					dmaitem.taskHandle = NULL;
-				}
+				dmaitem.u32Close = 1;
 			} else {
 				Shell_Unknown();
 			}

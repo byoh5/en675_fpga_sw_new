@@ -115,25 +115,25 @@ void enx_jpeg_info_print(void)
 	jpeg_brmode_t *brmode = &(jpeg_enc.brmode);
 
 	printf(" ---		JPEG Information		---\r\n");
-	printf("¦§Param Info\r\n");
-	printf("¦¢¦§Input source   : JPG_ISEL(%d)\r\n", JPG_ISELr);
-	printf("¦¢¦§Max Image Size : %d x %d\r\n", param->sen_width, param->sen_height);
-	printf("¦¢¦§Now Image Size : %d x %d\r\n", JPG_HWr, JPG_VWr);
-	printf("¦¢¦§Max JPEG Size  : %d Bytes\r\n", param->max_size == JPG_MAXr ? (int)param->max_size : -1);
-	printf("¦¢¦§QP             : %d / %d(ori:(%d/%d)/VBR:%d/CBR:%d)\r\n", param->qp_idx, param->qp, param->dynamic_qp, param->ori_qp, brmode->quantVBR, brmode->quantCBR);
-	printf("¦¢¦§Bitrate Mode   : %s\r\n", brmode->mode == e_brmQBR ? "QBR" : brmode->mode == e_brmVBR ? "VBR" : brmode->mode == e_brmCBR ? "CBR" : "?");
-	printf("¦¢¦§Bitrate        : %d bps / %d Kbps / %d Mbps\r\n", brmode->bitrate*8, (brmode->bitrate*8) >> 10, (brmode->bitrate*8) >> 20);
+	printf("â”œParam Info\r\n");
+	printf("â”‚â”œInput source   : JPG_ISEL(%d)\r\n", JPG_ISELr);
+	printf("â”‚â”œMax Image Size : %d x %d\r\n", param->sen_width, param->sen_height);
+	printf("â”‚â”œNow Image Size : %d x %d\r\n", JPG_HWr, JPG_VWr);
+	printf("â”‚â”œMax JPEG Size  : %d Bytes\r\n", param->max_size == JPG_MAXr ? (int)param->max_size : -1);
+	printf("â”‚â”œQP             : %d / %d(ori:(%d/%d)/VBR:%d/CBR:%d)\r\n", param->qp_idx, param->qp, param->dynamic_qp, param->ori_qp, brmode->quantVBR, brmode->quantCBR);
+	printf("â”‚â”œBitrate Mode   : %s\r\n", brmode->mode == e_brmQBR ? "QBR" : brmode->mode == e_brmVBR ? "VBR" : brmode->mode == e_brmCBR ? "CBR" : "?");
+	printf("â”‚â”œBitrate        : %d bps / %d Kbps / %d Mbps\r\n", brmode->bitrate*8, (brmode->bitrate*8) >> 10, (brmode->bitrate*8) >> 20);
 #if (JPEG_PREVENT_OVF==1)
-	printf("¦¢¦§DynamicBitrate : %d bps / %d Kbps / %d Mbps\r\n", brmode->dynamic_bitrate*8, (brmode->dynamic_bitrate*8) >> 10, (brmode->dynamic_bitrate*8) >> 20);
-	printf("¦¢¦§Sqrt Br Max/Min: R(%d~%d) D(%d~%d)\r\n", brmode->sqrt_rbr_max, brmode->sqrt_rbr_min, brmode->sqrt_dbr_max, brmode->sqrt_dbr_min);
+	printf("â”‚â”œDynamicBitrate : %d bps / %d Kbps / %d Mbps\r\n", brmode->dynamic_bitrate*8, (brmode->dynamic_bitrate*8) >> 10, (brmode->dynamic_bitrate*8) >> 20);
+	printf("â”‚â”œSqrt Br Max/Min: R(%d~%d) D(%d~%d)\r\n", brmode->sqrt_rbr_max, brmode->sqrt_rbr_min, brmode->sqrt_dbr_max, brmode->sqrt_dbr_min);
 #endif
-	printf("¦¢¦¦Frame rate     : %d fps\r\n", jpeg_enc.max_frame / param->period);
-	printf("¦§Buffer Info\r\n");
-	printf("¦¢¦§Buffer Count   : %d\r\n", imgbuf->index_lenth);
+	printf("â”‚â””Frame rate     : %d fps\r\n", jpeg_enc.max_frame / param->period);
+	printf("â”œBuffer Info\r\n");
+	printf("â”‚â”œBuffer Count   : %d\r\n", imgbuf->index_lenth);
 	for(i=0; i<imgbuf->index_lenth-1; i++)
-	printf("¦¢¦§imgbuf[%d].addr : 0x%08X ~ 0x%08X\r\n", i, imgbuf->buf[i].addr, imgbuf->buf[i].addr+JPEG_MAX_SIZE);
-	printf("¦¢¦¦imgbuf[%d].addr : 0x%08X ~ 0x%08X\r\n", i, imgbuf->buf[i].addr, imgbuf->buf[i].addr+JPEG_MAX_SIZE);
-	printf("¦¦Total Size       : %d Bytes\r\n", JPEG_IMG_END - JPEG_IMG_BASE);
+	printf("â”‚â”œimgbuf[%d].addr : 0x%08X ~ 0x%08X\r\n", i, imgbuf->buf[i].addr, imgbuf->buf[i].addr+JPEG_MAX_SIZE);
+	printf("â”‚â””imgbuf[%d].addr : 0x%08X ~ 0x%08X\r\n", i, imgbuf->buf[i].addr, imgbuf->buf[i].addr+JPEG_MAX_SIZE);
+	printf("â””Total Size       : %d Bytes\r\n", JPEG_IMG_END - JPEG_IMG_BASE);
 	printf(" --------------------------------------\r\n");
 }
 
@@ -158,7 +158,7 @@ UINT enx_jpeg_get_width(void)
 static inline void jpeg_default_clock(void)
 {
 	JPGCK_PDw(0);
-	JPGCK_SELw(2);		// ³»ºÎ 74.25MHz Pixel Clock
+	JPGCK_SELw(2);		// ë‚´ë¶€ 74.25MHz Pixel Clock
 	JPGCK_PDw(1);
 }
 
@@ -203,7 +203,7 @@ void jpeg_irq_handler(void *ctx)
 			UINT i;
 			if (gptMsgShare.JPEG_STILL_FLAG == JPEG_SNAP_IDE) {	// JPEG snapshot start check
 				gptMsgShare.JPEG_STILL_FLAG = JPEG_SNAP_PROC;
-				// snapshot buffer¸¦ ¼³Á¤ÇÑ´Ù.
+				// snapshot bufferë¥¼ ì„¤ì •í•œë‹¤.
 				for (i = 0; i < jpeg_enc.imgbuf.index_lenth; i++) {
 					jpeg_enc.imgbuf.buf[i].lock = 0;
 				}
@@ -213,8 +213,8 @@ void jpeg_irq_handler(void *ctx)
 				gptMsgShare.JPEG_STILL_SIZE = jpeg_size;
 				gptMsgShare.JPEG_STILL_FLAG = JPEG_SNAP_IDE;
 			} else if (gptMsgShare.JPEG_STILL_FLAG == JPEG_SNAP_JTAG && gptMsgShare.JPEG_STILL_SIZE == 0) {
-				// ECM¿¡¼­ JPEG_STILL_FLAG¸¦ 9·Î º¯°æÇÏ°í, JPEG_STILL_SIZE¸¦ 0À¸·Î ¼³Á¤ÇÏ¸é
-				// snapshot buffer¿¡ ÀúÀåÇÑ´Ù. Size¸¦ ÇÊÈ÷ ³ªÁß¿¡ ¼³Á¤ÇØ¾ß ÇÑ´Ù.
+				// ECMì—ì„œ JPEG_STILL_FLAGë¥¼ 9ë¡œ ë³€ê²½í•˜ê³ , JPEG_STILL_SIZEë¥¼ 0ìœ¼ë¡œ ì„¤ì •í•˜ë©´
+				// snapshot bufferì— ì €ìž¥í•œë‹¤. Sizeë¥¼ í•„ížˆ ë‚˜ì¤‘ì— ì„¤ì •í•´ì•¼ í•œë‹¤.
 				for (i = 0; i < jpeg_enc.imgbuf.index_lenth; i++) {
 					jpeg_enc.imgbuf.buf[i].lock = 0;
 				}
@@ -224,7 +224,9 @@ void jpeg_irq_handler(void *ctx)
 			}
 #if 1
 			if (jpeg_enc.param.period == 1 || !(gptMsgShare.VIDEO_TICK%jpeg_enc.param.period)) {
+#if defined(__NETWORK__)
 				MsgStmPut((UINT)(intptr_t)jpeg_addr, jpeg_size, enx_jpeg_get_ts(), eSTREAMMSG_JPEG);
+#endif
 				enx_wake_message_to_cpu0(eCPU0_MSG_STREAM_INFO);
 			}
 #endif
@@ -358,7 +360,7 @@ UINT enx_jpeg_enc_start(UINT mode, UINT wdr, UINT dss)
 				printf("WDR value?(%d)\r\n", jpeg_enc.isp_wdr);
 				jpeg_enc.isp_wdr = 1;
 			}
-			jpeg_enc.max_frame = jpeg_enc.isp_frame / 2;				// isp_frame 60,50,30,25°¡ ¿Â´Ù.
+			jpeg_enc.max_frame = jpeg_enc.isp_frame / 2;				// isp_frame 60,50,30,25ê°€ ì˜¨ë‹¤.
 			jpeg_enc.video_default_ts = (90000 * 2) / jpeg_enc.isp_frame;
 #if 1
 			enx_jpeg_set_frame_rate_sf();
@@ -499,11 +501,11 @@ static void jpeg_set_frame_size(UINT width, UINT height)
 {
 #define JPEG_DS_VAR	HW_DS3
 
-	if (width < 128)			width = 128;						// °¡·Î±æÀÌ ÃÖ¼Ò 128
-	else if (width % 16 != 0)	width = ((width >> 4) + 1) << 4;	// °¡·Î±æÀÌ 16ÀÇ ¹è¼ö
+	if (width < 128)			width = 128;						// ê°€ë¡œê¸¸ì´ ìµœì†Œ 128
+	else if (width % 16 != 0)	width = ((width >> 4) + 1) << 4;	// ê°€ë¡œê¸¸ì´ 16ì˜ ë°°ìˆ˜
 
-	if (height < 128)			height = 128;						// ¼¼·Î±æÀÌ ÃÖ¼Ò 128
-	else if (height % 8 != 0)	height = ((height >> 3) + 1) << 3;	// ¼¼·Î±æÀÌ 8ÀÇ ¹è¼ö
+	if (height < 128)			height = 128;						// ì„¸ë¡œê¸¸ì´ ìµœì†Œ 128
+	else if (height % 8 != 0)	height = ((height >> 3) + 1) << 3;	// ì„¸ë¡œê¸¸ì´ 8ì˜ ë°°ìˆ˜
 
 	if (HW_DS0 == JPEG_DS_VAR || HW_DS1 == JPEG_DS_VAR || HW_DS2 == JPEG_DS_VAR || HW_DS3 == JPEG_DS_VAR) {
 		JPG_HWw(width);
@@ -641,7 +643,7 @@ void enx_jpeg_set_bit_rate_mode(UINT nBrmode)
 {
 // BR_Nmode, BR_Vmode, BR_Cmode
 //	printf("JPEG: BRmode(%s)\r\n", nBrmode == BR_Nmode ? "OFF" : nBrmode == BR_Vmode ? "VBR" : nBrmode == BR_Cmode ? "CBR" : "none");
-	if (jpeg_enc.brmode.mode != e_brmQBR && nBrmode == e_brmQBR) {	// CBR, VBR¿¡¼­ BRÁ¦¾î¸¦ OFF ÇÒ °æ¿ì ±âÁ¸ÀÇ QP·Î º¯°æ
+	if (jpeg_enc.brmode.mode != e_brmQBR && nBrmode == e_brmQBR) {	// CBR, VBRì—ì„œ BRì œì–´ë¥¼ OFF í•  ê²½ìš° ê¸°ì¡´ì˜ QPë¡œ ë³€ê²½
 		enx_jpeg_set_quantize(jpeg_enc.param.ori_qp);
 	}
 	jpeg_enc.brmode.mode = nBrmode;
@@ -650,9 +652,9 @@ void enx_jpeg_set_bit_rate_mode(UINT nBrmode)
 void enx_jpeg_cbr_processing(UINT jpg_size)
 {
 #if (JPEG_PREVENT_OVF==1)
-	UINT average = (UINT)(jpeg_enc.brmode.dynamic_bitrate * jpeg_enc.param.period / jpeg_enc.max_frame); 	//(Xmegabit/bite(8)/frame ¼ö)
+	UINT average = (UINT)(jpeg_enc.brmode.dynamic_bitrate * jpeg_enc.param.period / jpeg_enc.max_frame); 	//(Xmegabit/bite(8)/frame ìˆ˜)
 #else
-	UINT average = (UINT)(jpeg_enc.brmode.bitrate * jpeg_enc.param.period / jpeg_enc.max_frame);	//(Xmegabit/bite(8)/frame ¼ö)
+	UINT average = (UINT)(jpeg_enc.brmode.bitrate * jpeg_enc.param.period / jpeg_enc.max_frame);	//(Xmegabit/bite(8)/frame ìˆ˜)
 #endif
 	if (jpeg_enc.brmode.mode == e_brmCBR) {
 		if (jpg_size > average) {
@@ -699,7 +701,7 @@ void enx_jpeg_on(void)
 	enx_jpeg_set_bit_rate_mode(e_brmQBR);				// brmode.mode
 	enx_jpeg_set_bit_rate(e_br1m);						// brmode.bitrate
 
-	enx_jpeg_info_print();								// ÀÓ½Ã
+	enx_jpeg_info_print();								// ìž„ì‹œ
 
 	enx_jpeg_start();
 }

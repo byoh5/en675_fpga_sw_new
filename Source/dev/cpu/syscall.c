@@ -162,7 +162,7 @@ int sys_renameat(int old_fd, const char *old_path, int new_fd, const char *new_p
 
 int sys_fstat(int fd, void* st)
 {
-	flprintf("\n");
+	//flprintf("\n");
 	int r = -EBADF;
 #if 0
 	file_t* f = file_get(fd);
@@ -371,7 +371,7 @@ size_t sys_brk(size_t pos)
 	if (pos == 0) {
 		asm volatile("la %0, _heap_fw_start" : "=r"(heap_fw_start));
 		asm volatile("la %0, _heap_fw_end" : "=r"(heap_fw_end));
-		printf("%s-0x%08x [0x%08x-0x%08x]\n", __func__, pos, (intptr_t)heap_fw_start, (intptr_t)heap_fw_end);
+//		printf("%s-0x%08x [0x%08x-0x%08x]\n", __func__, pos, (intptr_t)heap_fw_start, (intptr_t)heap_fw_end);
 		return (size_t)heap_fw_start;
 	} else {
 		if (pos > (size_t)heap_fw_end) {

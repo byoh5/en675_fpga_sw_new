@@ -49,7 +49,11 @@ extern void UartTxStrCh(const UINT nCH, const char* apbStr0);
 #define UartTxStrDec(STR,VAL,LEN)		UartTxStrDecCh(INVALID_UART_NUM, STR, VAL, LEN)
 #define UartTxStrDecNoIRQ(STR,VAL,LEN)	UartTxStrDecCh(DEBUG_UART_NUM, STR, VAL, LEN)
 
+#ifdef __ECM_STRING__
 #define INIT_STR			UartTxStrNoIRQ
+#else
+#define INIT_STR			printf
+#endif
 #define INIT_STR_DEC		UartTxStrDecNoIRQ
 #define INIT_STR_HEX		UartTxStrHexNoIRQ
 #define INIT_STR_SENSOR		{void printf_SensorSetting(void); printf_SensorSetting();}

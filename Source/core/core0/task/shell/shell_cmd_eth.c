@@ -728,6 +728,16 @@ int cmd_test_eth(int argc, char *argv[])
 		} else if (argc == 3 && strcmp(argv[1], "lbt") == 0) {
 			if (EthloopbackGetMode() == ePlk_ready) {
 				UINT u32Loop = atoi(argv[2]);
+				EthloopbackSetOption(0);
+				EthloopbackSetLoop(u32Loop);
+				EthloopbackSetMode(ePlk_auto);
+			} else {
+				printf("Ethernet loopback mode is not ready.\n");
+			}
+		} else if (argc == 3 && strcmp(argv[1], "lbt2") == 0) {
+			if (EthloopbackGetMode() == ePlk_ready) {
+				UINT u32Loop = atoi(argv[2]);
+				EthloopbackSetOption(1);
 				EthloopbackSetLoop(u32Loop);
 				EthloopbackSetMode(ePlk_auto);
 			} else {

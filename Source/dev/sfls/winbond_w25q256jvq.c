@@ -85,7 +85,7 @@ void SflsW25q256jvq_WriteEnable(void)
 
 static void SflsW25q256jvq_Erase(SFLS_ERASE erase_type, UINT addr)
 {
-	SFLS_USR_RDLTC		= 1;
+	SFLS_USR_RDLTC		= sfls_w25q256jvq.rdltc;
 	SFLS_USR_CMD_MODE 	= sfls_w25q256jvq.iow_cmd;
 	SFLS_USR_ADR_MODE	= sfls_w25q256jvq.iow_adr;
 	SFLS_USR_RDREG_CMD_MODE = sfls_w25q256jvq.iors_cmd;
@@ -150,7 +150,7 @@ void SflsW25q256jvq_ReadSFDP(BYTE *sfdp_bin)
 {
 	UINT *data = (UINT *)sfdp_bin;
 
-	SFLS_USR_RDLTC		= 1;
+	SFLS_USR_RDLTC		= sfls_w25q256jvq.rdltc;
 	SFLS_USR_CMD_MODE	= 0;
 	SFLS_USR_ADR_MODE	= 0;
 	SFLS_USR_DAT_MODE	= 0;
@@ -175,7 +175,7 @@ void SflsW25q256jvq_ReadSFDP(BYTE *sfdp_bin)
 
 inline static BYTE SflsW25q256jvq_ReadStatus(int cmd)
 {
-	SFLS_USR_RDLTC		= 1;
+	SFLS_USR_RDLTC		= sfls_w25q256jvq.rdltc;
 	SFLS_USR_CMD_MODE	= sfls_w25q256jvq.iors_cmd;
 	SFLS_USR_DAT_MODE	= sfls_w25q256jvq.iors_dat;
 	SFLS_USR_ADR_EN		= 0;
@@ -197,7 +197,7 @@ static void SflsW25q256jvq_WriteStatus(int cmd, BYTE dat)
 	SflsW25q256jvq_WriteEnable();
 	while (SFLS_USR_REQ);
 
-	SFLS_USR_RDLTC		= 1;
+	SFLS_USR_RDLTC		= sfls_w25q256jvq.rdltc;
 	SFLS_USR_CMD_MODE	= sfls_w25q256jvq.iors_cmd;
 	SFLS_USR_DAT_MODE	= sfls_w25q256jvq.iors_dat;
 	SFLS_USR_ADR_EN		= 0;

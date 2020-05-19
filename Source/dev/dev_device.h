@@ -16,6 +16,8 @@
 #ifndef __DEV_DEVICE_H__
 #define __DEV_DEVICE_H__
 
+#define EN675_SINGLE 0
+
 #define OSC_FREQ	27000000
 #define APB_FREQ	37125000
 #define AXI_FREQ	74250000

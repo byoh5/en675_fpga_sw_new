@@ -69,7 +69,7 @@ void enx_peri_init(void)
 	WaitXms(10);
 	GPIO_PIN2_OUT	=	1;
 	GPIO_PIN3_OUT	=	1;
-	INIT_DELAY(1);	// TODO KSH x « ø‰?
+	INIT_DELAY(1);	// TODO KSH x ÌïÑÏöî?
 #endif
 
 #if USE_I2C0
@@ -285,6 +285,17 @@ void enx_peri_init(void)
 	BtoASetIrqEn(ENX_ON);
 }
 
+#if EN675_SINGLE
+char* enx_ip_status(UINT ip_enable)
+{
+	if (ip_enable) {
+		return TTY_COLOR_GREEN"  +  "TTY_COLOR_RESET;
+	} else {
+		return TTY_COLOR_BLACK"  -  "TTY_COLOR_RESET;
+	}
+}
+#endif
+
 void enx_sys_init(void)
 {
 	UINT arrMark[5];
@@ -294,11 +305,33 @@ void enx_sys_init(void)
 	arrMark[3] = SYS_MARK3;
 	arrMark[4] = SYS_MARK4;
 	char *strName = (char *)arrMark;
+#if EN675_SINGLE
+	printf("================================================================================\n");
+	printf("%s ", TTY_COLOR_CYAN);
+	for (int i = 0; i < sizeof(arrMark); i++) {
+		printf("%c", strName[i]);
+	}
+	printf("                                      %04u-%02u-%02u %02u:%02u:%02u%s |\n", SYS_RTL_YEAR + 2000, SYS_RTL_MONTH, SYS_RTL_DAY, SYS_RTL_HOUR, SYS_RTL_MIN, SYS_RTL_SEC, TTY_COLOR_RESET);
+	printf("-------------------------------------------------------------------------------|\n");
+	printf(" %5s | %5s | %5s | %5s | %5s | %5s | %5s | %5s | %5s | %5s |\n", "Board", " Core", "Codec", " NPU ", " BDMA", " CDMA", " SDIO", " ETH ", " I2S ", "RESV0");
+	printf(" %5s |   %c   | %5s | %5s | %5s | %5s | %5s | %5s | %5s | %5s |\n", SYS_IP_0 ? "  KU " : SYS_IP_1 ? "  VU " : "?", (SYS_IP_5 && SYS_IP_6) ? '4' : SYS_IP_5 ? '1' : SYS_IP_6 ? '2' : 'E',
+			enx_ip_status(SYS_IP_3), enx_ip_status(SYS_IP_4), enx_ip_status(SYS_IP_7), enx_ip_status(SYS_IP_8), enx_ip_status(SYS_IP_9), enx_ip_status(SYS_IP_10), enx_ip_status(SYS_IP_11), enx_ip_status(SYS_IP_24));
+	printf("-------------------------------------------------------------------------------|\n");
+	printf(" %5s | %5s | %5s | %5s | %5s | %5s | %5s | %5s | %5s | %5s |\n", " AES ", " SHA ", "CKSUM", " MAPC", " ADC ", "  IR ", " USB ", " OIC ", " OMC ", "RESV1");
+	printf(" %5s | %5s | %5s | %5s | %5s | %5s | %5s | %5s | %5s | %5s |\n",
+			enx_ip_status(SYS_IP_13), enx_ip_status(SYS_IP_14), enx_ip_status(SYS_IP_15), enx_ip_status(SYS_IP_16), enx_ip_status(SYS_IP_17), enx_ip_status(SYS_IP_18), enx_ip_status(SYS_IP_12), enx_ip_status(SYS_IP_20), enx_ip_status(SYS_IP_21), enx_ip_status(SYS_IP_23));
+	printf("-------------------------------------------------------------------------------|\n");
+	printf(" %5s | %5s | %5s | %5s | %5s | %5s | %5s | %5s | %5s | %5s |\n", " ISP ", "IGMER", "LCDIS", " 148M", " 74M ", " ENC ", "JPDEC", "JPENC", " AUR ", "RESV2");
+	printf(" %5s | %5s | %5s | %5s | %5s | %5s | %5s | %5s | %5s | %5s |\n",
+			enx_ip_status(SYS_IP_2), enx_ip_status(SYS_IP_2), enx_ip_status(SYS_IP_26), enx_ip_status(SYS_IP_27), enx_ip_status(SYS_IP_28), enx_ip_status(SYS_IP_29), enx_ip_status(SYS_IP_30), enx_ip_status(SYS_IP_31), enx_ip_status(SYS_IP_19), enx_ip_status(SYS_IP_22));
+	printf("================================================================================\n");
+#else
 	printf("%s", TTY_COLOR_CYAN);
 	for (int i = 0; i < sizeof(arrMark); i++) {
 		printf("%c", strName[i]);
 	}
 	printf("%04X-%02X-%02X %02X:%02X:%02X%s\n", SYS_RTL_YEAR, SYS_RTL_MONTH, SYS_RTL_DAY, SYS_RTL_HOUR, SYS_RTL_MINUTE, SYS_RTL_SECOND, TTY_COLOR_RESET);
+#endif
 
 #ifdef __ECM_STRING__
 	UartRstQue();
@@ -370,7 +403,7 @@ void enx_device_init(void)
 #ifdef __RTC_LOAD__
 	rtc_init();
 #endif
-	set_devicetime(TimeZone_GMT, 2020, 1, 13, 12, 0, 0);
+	set_devicetime(TimeZone_GMT, 2020, 5, 19, 12, 0, 0);
 
 #ifdef __AUDIO__
 	GpioSetDir(AUDIO_GPIO_RST, GPIO_DIR_OUT);
@@ -394,7 +427,7 @@ void enx_device_init(void)
 #endif
 
 #ifdef __EEPROM__
-//	I2cInit(EEPROM_I2C_CH, EEPROM_I2C_SPEED);	// FPGA ∫∏µÂø°º≠ ªÁøÎ«œ¥¬ 24AA64 ¥¬ 1.8V∑Œ µø¿€«œ∏Á 100KHz∑Œ µø¿€«‘
+//	I2cInit(EEPROM_I2C_CH, EEPROM_I2C_SPEED);	// FPGA Î≥¥ÎìúÏóêÏÑú ÏÇ¨Ïö©ÌïòÎäî 24AA64 Îäî 1.8VÎ°ú ÎèôÏûëÌïòÎ©∞ 100KHzÎ°ú ÎèôÏûëÌï®
 	EepromInit();
 #endif
 }
@@ -474,7 +507,9 @@ extern UINT ipaddr_addr(const char *cp);
 	strcpy((char *)gtUser.strDeviceName, DEVICE_NAME);
 
 	gtUser.vcVideo[e_vcVEncoder1].nVSourceIdx = e_vsVSource1;
+#if defined(__NETWORK__)
 	snprintf((char *)gtUser.vcVideo[e_vcVEncoder1].strStmUrl, STREAM_URL_LENGTH, "%s%u", RTSP_STREAMURL, e_vcVEncoder1 + 1);
+#endif
 	gtUser.vcVideo[e_vcVEncoder1].eCodec = e_vcodecH265;
 	gtUser.vcVideo[e_vcVEncoder1].eResolution = e_res1920x1080;
 	gtUser.vcVideo[e_vcVEncoder1].eBRMode = e_brmCVBR;
@@ -485,7 +520,9 @@ extern UINT ipaddr_addr(const char *cp);
 	gtUser.vcVideo[e_vcVEncoder1].nQuality = 30;
 
 	gtUser.vcVideo[e_vcVEncoder2].nVSourceIdx = e_vsVSource1;
+#if defined(__NETWORK__)
 	snprintf((char *)gtUser.vcVideo[e_vcVEncoder2].strStmUrl, STREAM_URL_LENGTH, "%s%u", RTSP_STREAMURL, e_vcVEncoder2 + 1);
+#endif
 	gtUser.vcVideo[e_vcVEncoder2].eCodec = e_vcodecH264;
 	gtUser.vcVideo[e_vcVEncoder2].eResolution = e_res640x360;
 	gtUser.vcVideo[e_vcVEncoder2].eBRMode = e_brmCBR;
@@ -496,7 +533,9 @@ extern UINT ipaddr_addr(const char *cp);
 	gtUser.vcVideo[e_vcVEncoder2].nQuality = 30;
 
 	gtUser.vcVideo[e_vcVEncoder3].nVSourceIdx = e_vsVSource1;
+#if defined(__NETWORK__)
 	snprintf((char *)gtUser.vcVideo[e_vcVEncoder3].strStmUrl, STREAM_URL_LENGTH, "%s%u", RTSP_STREAMURL, e_vcVEncoder3 + 1);
+#endif
 	gtUser.vcVideo[e_vcVEncoder3].eCodec = e_vcodecJPEG;
 	gtUser.vcVideo[e_vcVEncoder3].eResolution = e_res1920x1080;
 	gtUser.vcVideo[e_vcVEncoder3].eBRMode = e_brmCBR;
@@ -524,13 +563,13 @@ void audrx11_irq(void *ctx)
 void audio_test(void)
 {
 //	enx_externalirq_init();
-	//tx_mode : 0: L, 1: R, 2: L+R/2, 3: Stereo -> µ•¿Ã≈Õ∏¶ ¿¸º€«“ πÊ«‚, 2¥¬ «— word¿« µ•¿Ã≈Õ∏¶ ¿–¿∫ »ƒ 2∑Œ divide, æÁπÊ«‚¿∏∑Œ ¿¸º€.
+	//tx_mode : 0: L, 1: R, 2: L+R/2, 3: Stereo -> Îç∞Ïù¥ÌÑ∞Î•º Ï†ÑÏÜ°Ìï† Î∞©Ìñ•, 2Îäî Ìïú wordÏùò Îç∞Ïù¥ÌÑ∞Î•º ÏùΩÏùÄ ÌõÑ 2Î°ú divide, ÏñëÎ∞©Ìñ•ÏúºÎ°ú Ï†ÑÏÜ°.
 	//tx_cd : 0 or 1: PCM, 2: G711-a, 3: G711-u)
-	//tx_dw : 0->8 , 1->16, 2->24, 3->32 : Tx¿« µ•¿Ã≈Õ width
-	//rd_byte : 0: 128B, 1: 256B, 2: 512B, 3: 1KB -> «—π¯ requestø°º≠ ¿–¥¬ µ•¿Ã≈Õ ∑Æ
-	//rd_dw : 0->8 , 1->16, 2->24, 3->32 : Rx¿« µ•¿Ã≈Õ width
-	//rd_len : 0: 128KB, 1: 256KB, 2: 512KB, 3: 1MB -> Loop∏¶ µµ¥¬ √÷¥Î µ•¿Ã≈Õ ∑Æ
-	//tx_lr : 0 : Mute(0), 1: Left, 2: Right, 3: Both -> TX«“ ∂ß mute ∂«¥¬ unmute º±≈√
+	//tx_dw : 0->8 , 1->16, 2->24, 3->32 : TxÏùò Îç∞Ïù¥ÌÑ∞ width
+	//rd_byte : 0: 128B, 1: 256B, 2: 512B, 3: 1KB -> ÌïúÎ≤à requestÏóêÏÑú ÏùΩÎäî Îç∞Ïù¥ÌÑ∞ Îüâ
+	//rd_dw : 0->8 , 1->16, 2->24, 3->32 : RxÏùò Îç∞Ïù¥ÌÑ∞ width
+	//rd_len : 0: 128KB, 1: 256KB, 2: 512KB, 3: 1MB -> LoopÎ•º ÎèÑÎäî ÏµúÎåÄ Îç∞Ïù¥ÌÑ∞ Îüâ
+	//tx_lr : 0 : Mute(0), 1: Left, 2: Right, 3: Both -> TXÌï† Îïå mute ÎòêÎäî unmute ÏÑ†ÌÉù
 
 	//I2sTxCfg(3, 0, 1, 2, 0, 0, 3);	// Mono 8KHz, G.711-u, 16bit, Rd:512B Buf:128KB
 	//I2sRxCfg(3, 0, 1, 2, 0, 0);		// Mono 8KHz, G.711-u, 16bit, Wr:512B Buf:128KB
@@ -605,6 +644,8 @@ void main_0(int cpu_id)
 	enx_msgshell_init(&gptMsgShell);
 
 	printf("Init Device - RTL-200108-1309\n");
+
+//	FORCE_ABT_SOFFw(1); // I2S-BCK pin muxer issus
 
 	enx_pmp_init();
 

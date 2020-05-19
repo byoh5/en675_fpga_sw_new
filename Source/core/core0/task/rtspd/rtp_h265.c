@@ -129,7 +129,7 @@ int rtspd_client_rtp_h265_main(rtsp_client *prcInfo)
 				hwflush_dcache_range((u32)rtpSession->rtp_pk.base, 64);
 #if 0
 				rtspd_client_rtp_h265_check_framenum(&rtpSession->rtp_pk.nalnum, (BYTE *)(intptr_t)rtpSession->rtp_pk.base);
-				if (rtpSession->rtp_pk.nalnum == 0xFFFFFFFF) { // nalnum(sequence number)¿¡ ¿ÀÂ÷°¡ »ý±ä´Ù¸é ´ÙÀ½ I±îÁö pass
+				if (rtpSession->rtp_pk.nalnum == 0xFFFFFFFF) { // nalnum(sequence number)ì— ì˜¤ì°¨ê°€ ìƒê¸´ë‹¤ë©´ ë‹¤ìŒ Iê¹Œì§€ pass
 					printf("%s(%d) : slow network speed? small memory allocation?\n", __func__, __LINE__);
 					printf("%s(%d) : or changed IDR(gop)?\n", __func__, __LINE__);
 					break;
@@ -142,19 +142,19 @@ int rtspd_client_rtp_h265_main(rtsp_client *prcInfo)
 			} // @suppress("No break at end of case")
 		case ENX_RTP_TXSTE_DOING:
 			{
-				// ³²Àº h265ÀÇ Å©±â
+				// ë‚¨ì€ h265ì˜ í¬ê¸°
 				h265left = rtpSession->rtp_pk.size - rtpSession->rtp_pk.offset;
 				if (((int)h265left) < 0) {
 					flprintf("h265left error(%d)\n", h265left);
 					flprintf("rtp_pk.size(%d) rtp_pk.offset(%d)\n", rtpSession->rtp_pk.size, rtpSession->rtp_pk.offset);
 				}
 
-				// base±âÁØ Àü¼ÛÀ» º¸³»¾ß ÇÒ h265 ÁÖ¼Ò
+				// baseê¸°ì¤€ ì „ì†¡ì„ ë³´ë‚´ì•¼ í•  h265 ì£¼ì†Œ
 				base_offset = (BYTE *)(intptr_t)(rtpSession->rtp_pk.base + rtpSession->rtp_pk.offset);
 
 				// NAL unit test
 				if (rtpSession->rtp_pk.offset != 0) {
-					// invalidate_dcache_range´Â offset == 0ÀÎ ´Ü°è¿¡¼­ ÇÏ¹Ç·Î ÇÒ ÇÊ¿ä ¾øÀ½(ENX_RTP_TXSTE_READY´Ü°è¿¡¼­ ÁøÇà)
+					// invalidate_dcache_rangeëŠ” offset == 0ì¸ ë‹¨ê³„ì—ì„œ í•˜ë¯€ë¡œ í•  í•„ìš” ì—†ìŒ(ENX_RTP_TXSTE_READYë‹¨ê³„ì—ì„œ ì§„í–‰)
 					hwflush_dcache_range(rtpSession->rtp_pk.base, 64);
 				}
 				if (base_offset[0] == 0x00) {
@@ -231,8 +231,8 @@ int rtspd_client_rtp_h265_main(rtsp_client *prcInfo)
 				if (prcInfo->eTransport == ENX_RTSP_TRANSPORT_TCP || prcInfo->eTransport == ENX_RTSP_TRANSPORT_HTTP) {
 					rtspHead = (rthInterleaved *)send_buffer;
 					rtspHead->un8Magic = '$';
-					rtspHead->un8Channel = rtspConnect->rtp_port[ENX_RTSP_STRTYPE_numVIDEO]; // TCP¿¡¼­´Â rtp_port´Â Channel·Î »ç¿ëµÊ
-					rtspHead->un16Length = 0; // packet°¡ ¸ðµÎ »ý¼ºµÇ°í ³ª¼­ ´Ù½Ã ¼³Á¤ ÇØÁÖ¾î¾ß ÇÑ´Ù.
+					rtspHead->un8Channel = rtspConnect->rtp_port[ENX_RTSP_STRTYPE_numVIDEO]; // TCPì—ì„œëŠ” rtp_portëŠ” Channelë¡œ ì‚¬ìš©ë¨
+					rtspHead->un16Length = 0; // packetê°€ ëª¨ë‘ ìƒì„±ë˜ê³  ë‚˜ì„œ ë‹¤ì‹œ ì„¤ì • í•´ì£¼ì–´ì•¼ í•œë‹¤.
 					rtpSession->buf_len[rtpSession->buf_idx] = sizeof(rthInterleaved);
 				}
 

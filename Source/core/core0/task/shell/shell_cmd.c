@@ -282,6 +282,17 @@ void vTimerCallback(TimerHandle_t xTimer)
 	   vTimerSetTimerID( xTimer, ( void * ) ulCount );
 	}
 }
+
+void vTimerCallback2(TimerHandle_t xTimer)
+{
+	static ULONG aaa_time = 0;
+	static ULONG bbb_time = 0;
+	ULONG a = rdcycle();
+	ULONG b = *mtime;
+	printf("rdcycle[%15lu], gap[%15lu] - mtime([%15lu], gap[%15lu]\n", a, a - aaa_time, b, b - bbb_time);
+	aaa_time = a;
+	bbb_time = b;
+}
 #endif
 
 int UsrCmd_c(int argc, char *argv[])
@@ -289,7 +300,7 @@ int UsrCmd_c(int argc, char *argv[])
 	_printf("Shell Cmd %s\n", __func__);
 #if (configUSE_TIMERS==1)
 	if (xTimersTest == NULL) {
-		xTimersTest = xTimerCreate("MyTimer", 100, pdFALSE, ( void * ) 0, vTimerCallback);
+		xTimersTest = xTimerCreate("MyTimer", 100, pdTRUE, ( void * ) 0, vTimerCallback2);
 		// pdFALSE pdTRUE
 		if (xTimersTest != NULL) {
 			_printf("Timer Create OK!(0x%08X)\n", (intptr_t)xTimersTest);
@@ -614,6 +625,20 @@ int UsrCmd_h(int argc, char *argv[])
 }
 
 //#include "networkif.h"
+static TimerHandle_t xTimersUptime;
+
+void vTimerUptimeCallback(TimerHandle_t xTimer)
+{
+	UINT temp, h, m, s;
+	temp = gptMsgShare.UPTIME;
+	s = temp % 60;
+	temp = temp / 60;
+	m = temp % 60;
+	temp = temp / 60;
+	h = temp;
+	printf("UPTIME: %uH %uM %uS\n", h, m, s);
+}
+
 int UsrCmd_i(int argc, char *argv[])
 {
 #if 0
@@ -622,7 +647,21 @@ int UsrCmd_i(int argc, char *argv[])
 	printf("netifapi_netif_set_link_up end\n");
 #endif
 
-	hwflush_dcache_all();
+	if (argc == 1) {
+		hwflush_dcache_all();
+	} else {
+		xTimersUptime = xTimerCreate("MyTimer", 6000, pdTRUE, ( void * ) 0, vTimerUptimeCallback);
+		if (xTimersUptime) {
+			BaseType_t xReturn = xTimerStart(xTimersUptime, 0);
+			if (xReturn == pdPASS) {
+				printf("Timer Start OK!(0x%08X)\n", (intptr_t)xTimersUptime);
+			} else {
+				printf("Timer Start Fail!\n");
+			}
+		} else {
+			printf("Timer Create Fail!\n");
+		}
+	}
 
 	return 0;
 	UNUSED(argc);
@@ -929,7 +968,7 @@ extern void EthphyLoopbackMode(UINT speed, UINT duplex);
 	//TimerStart(8);
 
 #if 0
-	// ¡§¥‰¡ˆ ∏∏µÈ±‚
+	// Ï†ïÎãµÏßÄ ÎßåÎì§Í∏∞
 	BYTE *arrSrc = pvPortMalloc(512*1024+1024);
 	if (arrSrc == NULL) {
 		printf("malloc error(arrSrc), size(%lu)\n", 512*1024+1024);
@@ -1019,7 +1058,11 @@ int cmd_info(int argc, char *argv[])
 			printf("%c", strName[i]);
 		}
 		printf("]\n");
+#if EN675_SINGLE
+		printf("Model date            : %04X-%02X-%02X %02X:%02X:%02X\n", SYS_RTL_YEAR, SYS_RTL_MONTH, SYS_RTL_DAY, SYS_RTL_HOUR, SYS_RTL_MIN, SYS_RTL_SEC);
+#else
 		printf("Model date            : %04X-%02X-%02X %02X:%02X:%02X\n", SYS_RTL_YEAR, SYS_RTL_MONTH, SYS_RTL_DAY, SYS_RTL_HOUR, SYS_RTL_MINUTE, SYS_RTL_SECOND);
+#endif
 
 		_Gprintf("S/W info ===================================\n");
 		printf("Firmware compile date : %s %s\n", __DATE__, __TIME__);
@@ -1059,6 +1102,50 @@ static void cmd_irq_view(ULONG count)
 
 int cmd_irq_info(int argc, char *argv[])
 {
+	char *irqname[41] = {
+			"",
+			"ISP0~30",
+			"VCODEC",
+			"DMA0~3",
+			"DMA4~7",
+			"DMA8~11",
+			"DMA12~15",
+			"CORE0",
+			"CORE1",
+			"Ethernet",
+			"SDIO0",
+			"SDIO1",
+			"NPU",
+			"I2S",
+			"USB",
+			"CHKSUM",
+			"SHA",
+			"AES",
+			"OIC",
+			"GPIO0~3, PWM0~3, SPI0",
+			"GPIO4~7, PWM4~7, I2C0, UART0",
+			"GPIO8~11, PWM8~11, SPI1",
+			"GPIO12~15, PWM12~15, I2C1, UART1",
+			"GPIO16~19, SPI2",
+			"GPIO20~23, PWM16~19, I2C2, UART2",
+			"GPIO24~27, PWM20~23, SPI3",
+			"GPIO28~31, PWM24~27, I2C3, UART3",
+			"GPIO32~35, PWM28~31, SPI4",
+			"GPIO36~39, I2C4, UART4",
+			"GPIO40~43, SPI5",
+			"GPIO44~47, I2C5, UART5",
+			"GPIO48~51, SPI6",
+			"GPIO52~55, PWM32~34, I2C6, UART6",
+			"GPIO56~59, PWM35~38, SPI7",
+			"GPIO60~63, I2C7, UART7",
+			"GPIO64~67, SPI8",
+			"GPIO68~71, I2C8, UART8",
+			"IR",
+			"OMC",
+			"Reserved",
+			"Reserved",
+	};
+
 	printf("       | %15s | %15s | %15s | %15s |\n", "Core0", "Core1", "Core2", "Core3");
 	shell_line_print('-', NULL);
 #if 1
@@ -1083,14 +1170,15 @@ int cmd_irq_info(int argc, char *argv[])
 	for (int j = 1; j <= IRQ_SOURCE_COUNT; j++) {
 		printf("  Ex%02u | ", j);
 		for (int k = 0; k < 4; k++) {
+			_Yprintf("%d", enx_externalirq_is_enable(k, j, 0));
 			if (core_irq_count[k].exirq_count[j] == 0) {
-				_Zprintf("%15u", core_irq_count[k].exirq_count[j]);
+				_Zprintf("%14u", core_irq_count[k].exirq_count[j]);
 			} else {
-				_Gprintf("%15u", core_irq_count[k].exirq_count[j]);
+				_Gprintf("%14u", core_irq_count[k].exirq_count[j]);
 			}
 			printf(" | ");
 		}
-		printf("\n");
+		printf("%s\n", irqname[j]);
 	}
 #else
 	printf("  Sync | %15u | %15u | %15u | %15u |\n",
@@ -1374,7 +1462,11 @@ int cmd_test_sysreg(int argc, char *argv[])
 		p[4] = SYS_MARK4;
 		printf("SYS_MAKR [%s]\n", strName);
 		hexDump("SYS_MARK", strName, 20);
+#if EN675_SINGLE
+		printf("SYS_RTL  %04u-%02u-%02u %02u:%02u:%02u\n", SYS_RTL_YEAR + 2000, SYS_RTL_MONTH, SYS_RTL_DAY, SYS_RTL_HOUR, SYS_RTL_MIN, SYS_RTL_SEC);
+#else
 		printf("SYS_RTL  %04X-%02X-%02X %02X:%02X:%02X\n", SYS_RTL_YEAR, SYS_RTL_MONTH, SYS_RTL_DAY, SYS_RTL_HOUR, SYS_RTL_MINUTE, SYS_RTL_SECOND);
+#endif
 		printf("=======================================\n");
 		printf("SYS_REG0(0x%08X) ", SYS_REG0);
 		printf("SYS_REG1(0x%08X) ", SYS_REG1);
@@ -1572,13 +1664,13 @@ int cmd_test_i2s(int argc, char *argv[])
 		UINT rd_dw = atoi(argv[5]);
 		UINT rd_len = atoi(argv[6]);
 		UINT tx_lr = atoi(argv[7]);
-		//tx_mode : 0: L, 1: R, 2: L+R/2, 3: Stereo -> µ•¿Ã≈Õ∏¶ ¿¸º€«“ πÊ«‚, 2¥¬ «— word¿« µ•¿Ã≈Õ∏¶ ¿–¿∫ »ƒ 2∑Œ divide, æÁπÊ«‚¿∏∑Œ ¿¸º€.
+		//tx_mode : 0: L, 1: R, 2: L+R/2, 3: Stereo -> Îç∞Ïù¥ÌÑ∞Î•º Ï†ÑÏÜ°Ìï† Î∞©Ìñ•, 2Îäî Ìïú wordÏùò Îç∞Ïù¥ÌÑ∞Î•º ÏùΩÏùÄ ÌõÑ 2Î°ú divide, ÏñëÎ∞©Ìñ•ÏúºÎ°ú Ï†ÑÏÜ°.
 		//tx_cd : 0 or 1: PCM, 2: G711-a, 3: G711-u)
-		//tx_dw : 0->8 , 1->16, 2->24, 3->32 : Tx¿« µ•¿Ã≈Õ width
-		//rd_byte : 0: 128B, 1: 256B, 2: 512B, 3: 1KB -> «—π¯ requestø°º≠ ¿–¥¬ µ•¿Ã≈Õ ∑Æ
-		//rd_dw : 0->8 , 1->16, 2->24, 3->32 : Rx¿« µ•¿Ã≈Õ width
-		//rd_len : 0: 128KB, 1: 256KB, 2: 512KB, 3: 1MB -> Loop∏¶ µµ¥¬ √÷¥Î µ•¿Ã≈Õ ∑Æ
-		//tx_lr : 0 : Mute(0), 1: Left, 2: Right, 3: Both -> TX«“ ∂ß mute ∂«¥¬ unmute º±≈√
+		//tx_dw : 0->8 , 1->16, 2->24, 3->32 : TxÏùò Îç∞Ïù¥ÌÑ∞ width
+		//rd_byte : 0: 128B, 1: 256B, 2: 512B, 3: 1KB -> ÌïúÎ≤à requestÏóêÏÑú ÏùΩÎäî Îç∞Ïù¥ÌÑ∞ Îüâ
+		//rd_dw : 0->8 , 1->16, 2->24, 3->32 : RxÏùò Îç∞Ïù¥ÌÑ∞ width
+		//rd_len : 0: 128KB, 1: 256KB, 2: 512KB, 3: 1MB -> LoopÎ•º ÎèÑÎäî ÏµúÎåÄ Îç∞Ïù¥ÌÑ∞ Îüâ
+		//tx_lr : 0 : Mute(0), 1: Left, 2: Right, 3: Both -> TXÌï† Îïå mute ÎòêÎäî unmute ÏÑ†ÌÉù
 		I2sTxCfg(tx_mode, tx_cd, tx_dw, rd_byte, rd_dw, rd_len, tx_lr);
 	} else {
 		// COMMON

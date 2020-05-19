@@ -23,6 +23,8 @@ void main_3(int cpu_id)
 {
 	Init_Vsys(); INIT_STR("Init_Vsys...");	// CPU3 System initial
 
+//	FORCE_ABT_SOFFw(1); // I2S-BCK pin muxer issus
+
 #if defined(__SENSOR__)
 
 	Init_Visp(); INIT_STR("Init_Visp...");	// ISP initial

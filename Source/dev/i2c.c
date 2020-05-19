@@ -36,7 +36,7 @@ void I2cInit(UINT nCH, UINT Speed_Hz)
 		case 8:	I2C8_PIN_INIT;	break;
 	}
 
-	ENX_DEBUGF(DBG_I2C_LOG, "I2C%u Init - %s%uHz%s\n", nCH, TTY_COLOR_GREEN, APB_FREQ / ((arrI2CCLK[nCH]->CLK_DIV + 1) * 8), TTY_COLOR_RESET);
+	ENX_DEBUGF(DBG_I2C_STATUS, "I2C%u Init - %s%uHz%s\n", nCH, TTY_COLOR_GREEN, I2cGetClk(nCH), TTY_COLOR_RESET);
 }
 
 void I2cDeInit(UINT nCH)

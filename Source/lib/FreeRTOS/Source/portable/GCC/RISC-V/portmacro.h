@@ -82,21 +82,32 @@ not need to be guarded with a critical section. */
 /*-----------------------------------------------------------*/
 /*System Calls												 */
 /*-----------------------------------------------------------*/
-//ecall macro used to store argument in a3
-#define ECALL(arg) ({			\
-	register uintptr_t reg asm ("t6") = (uintptr_t)(arg);	\
-	asm volatile ("ecall"					\
-		      : "+r" (reg)				\
-		      : 	\
-		      : "memory");				\
-	reg;							\
-})
-
 /* Scheduler utilities. */
+static inline long
+__internal_syscall(long n, long _a0, long _a1, long _a2, long _a3, long _a4, long _a5)
+{
+  register long a0 asm("a0") = _a0;
+  register long a1 asm("a1") = _a1;
+  register long a2 asm("a2") = _a2;
+  register long a3 asm("a3") = _a3;
+  register long a4 asm("a4") = _a4;
+  register long a5 asm("a5") = _a5;
+
+#ifdef __riscv_32e
+  register long syscall_id asm("t0") = n;
+#else
+  register long syscall_id asm("a7") = n;
+#endif
+
+  asm volatile ("scall"
+		: "+r"(a0) : "r"(a1), "r"(a2), "r"(a3), "r"(a4), "r"(a5), "r"(syscall_id));
+
+  return a0;
+}
+
 #define ECALL_YIELD_CMD 0x675
 extern void vTaskSwitchContext( void );
-//#define portYIELD() __asm volatile( "ecall" );
-#define portYIELD() ECALL(ECALL_YIELD_CMD);
+#define portYIELD() __internal_syscall(ECALL_YIELD_CMD, 0, 0, 0, 0, 0, 0)
 #define portEND_SWITCHING_ISR( xSwitchRequired ) if( xSwitchRequired ) vTaskSwitchContext()
 #define portYIELD_FROM_ISR( x ) portEND_SWITCHING_ISR( x )
 /*-----------------------------------------------------------*/

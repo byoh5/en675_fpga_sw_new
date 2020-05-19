@@ -13,11 +13,13 @@ void testloop1(void)
 
 void testloop2(void)
 {
+#if (USE_ETH==1)
 	if (SYS_REG6 & 0x10) {
 		test_eth_init();
 		test_eth_start();
 		SYS_REG6 = 0;
 	}
+#endif
 }
 
 void testloop3(void)

@@ -169,11 +169,13 @@ int cmd_userarea(int argc, char *argv[])
 		printf("VideoChannel :%u\n", sizeof(VideoChannel));
 		printf("tSystem      :%u\n", sizeof(tSystem));
 		printf("tUser        :%u\n", sizeof(tUser));
+#if defined(__NETWORK__)
 		printf("UserLoginData:%u\n", sizeof(UserLoginData));
 		printf("NetifAddress :%u\n", sizeof(NetifAddress));
 		printf("tWifiUAPcfg  :%u\n", sizeof(tWifiUAPcfg));
 		printf("tWifiSTAcfg  :%u\n", sizeof(tWifiSTAcfg));
 		printf("tNetwork     :%u\n", sizeof(tNetwork));
+#endif
 	}
 
 	return 0;

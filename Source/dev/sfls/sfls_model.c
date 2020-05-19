@@ -151,7 +151,7 @@ SFLScontrol* SflsModelMacronix(BYTE u8Type, BYTE u8Capa)
 		switch (u8Capa) {
 		case 0x38:	// MX25U12832F
 #ifdef __SFLS_MX25U12832F__
-			printf("MX25U12832F-RTL(200130_1405)-TEST\n");
+			printf("MX25U12832F-RTL(200118_1937)-TEST\n");
 			return SflsMx25u12832f_GetControl();
 #else
 			printf("MX25U12832F-Disabled\n");

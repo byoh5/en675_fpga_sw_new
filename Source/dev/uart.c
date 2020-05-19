@@ -38,7 +38,7 @@ void UartInit(UINT nCH, UINT Speed_Hz)
 		case 8:	UART8_PIN_INIT;	break;
 	}
 
-	//printf("UART%u Init - %uHz(%u)\n", nCH, APB_FREQ / ((arrUART[nCH]->CLK_DIV + 1) * 16), arrUART[nCH]->CLK_DIV);
+	ENX_DEBUGF(DBG_UART_STATUS, "UART%u Init - %s%uHz%s\n", nCH, TTY_COLOR_GREEN, UartGetClk(nCH), TTY_COLOR_RESET);
 }
 
 void UartDeinit(UINT nCH)

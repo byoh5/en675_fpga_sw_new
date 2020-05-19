@@ -27,6 +27,16 @@ extern int es_snprintf(char *buf, size_t size, const char *format, ...);
 #define printf	_printf
 #define sprintf	_sprintf
 
+#ifdef __ECM_STRING__
+#define _Zprintf printf
+#define _Rprintf printf
+#define _Gprintf printf
+#define _Yprintf printf
+#define _Bprintf printf
+#define _Mprintf printf
+#define _Cprintf printf
+#define _Wprintf printf
+#else
 #define _Zprintf(format, args...) color_printf(TTY_COLOR_BLACK, format, ## args)
 #define _Rprintf(format, args...) color_printf(TTY_COLOR_RED, format, ## args)
 #define _Gprintf(format, args...) color_printf(TTY_COLOR_GREEN, format, ## args)
@@ -35,5 +45,6 @@ extern int es_snprintf(char *buf, size_t size, const char *format, ...);
 #define _Mprintf(format, args...) color_printf(TTY_COLOR_MAGEN, format, ## args)
 #define _Cprintf(format, args...) color_printf(TTY_COLOR_CYAN, format, ## args)
 #define _Wprintf(format, args...) color_printf(TTY_COLOR_WHITE, format, ## args)
+#endif
 
 #endif /* __VSNPRINTF_H__ */
