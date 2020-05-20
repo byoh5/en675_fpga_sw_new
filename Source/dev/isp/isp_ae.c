@@ -44,7 +44,7 @@
   #else
 	#error if use GPIO for IR-LED Control, please set "USE_IR_LED_GPIO 1, IR_LED_GPIO_CH #" in "device.cmake"
   #endif
-#elif (model_Led==0)
+#elif (model_Led==2)
   #ifdef __USE_IR_LED_LPWM__
 	#define AE_LED_ON 				IRIS_CLPHw(1375);	//IRIS_ONw(0x1);								// 170209 KSH
 	#define AE_LED_OFF				IRIS_CLPHw(0);		//IRIS_ONw(0x0); 	// IR-LED Off 20141103 JYP	// 170209 KSH
@@ -495,7 +495,7 @@ void InitAe(void)
 
 	//AeDev();
 
-#if (model_Led == 0)							// 141120 IR-LED Logic PWM
+#if (model_Led == 2)							// 141120 IR-LED Logic PWM
 	IRIS_ONw(0x1/*0x0*/);						// 170209 KSH
 	IRIS_SWw(0x0);
 	IRIS_MODw(0x1);
@@ -1203,7 +1203,7 @@ void ISRT AeAdv(void)
 	//FreqAdjust();
 
 	// LED ON/OFF
-#if (model_Led!=2)
+#if model_Led
 	if (((UP(Tdn)==UP_TDN_NIGHT)||(UP(Tdn)==UP_TDN_EXTERN)) &&	UP(LedOn) && (gnTdnChkOut==TDN_NIT))	AE_LED_ON
 	else 																								AE_LED_OFF
 #endif

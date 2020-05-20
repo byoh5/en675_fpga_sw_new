@@ -416,8 +416,8 @@ UP_SET(1, GammaNgt, UP_GAMMA_045, , )/* GAMMA:AUTO → NIGHT : 0 = 0.45, 1 = 0.5
 UP_SET(1, Flip, UP_OFF, INIT_RUN, Flip(); )/* FLIP : 0 = OFF, 1 = ON */\
 UP_SET(1, Mirror, UP_OFF, INIT_RUN, if(UP(Mirror)<2) { SensMirror(UP(Mirror)); } )/* MIRROR : 0 = OFF, 1 = ON */\
 UP_SET(2, DZoom, 10, , DZoom(); )/* Digital Zoom : 10 ~ 640 = x1.0 ~ x64.0 */\
-UP_SET(2, DZoomPosH, (RP(PO_HW)+8)>>1, , DZoom(); )/* Horizontal Position of Digital Zoom : 30 ~ 1890 (2M) */\
-UP_SET(2, DZoomPosV, RP(PO_VW)>>1, , DZoom(); )/* Vertical Position of Digital Zoom : 17 ~ 1063 (2M) */\
+UP_SET(2, DZoomPosH, DZ_HW>>1, , DZoom(); )/* Horizontal Position of Digital Zoom : 30 ~ 1890 (2M) */\
+UP_SET(2, DZoomPosV, DZ_VW>>1, , DZoom(); )/* Vertical Position of Digital Zoom : 17 ~ 1063 (2M) */\
 UP_TITLE(MENU_PRIVACY)/*--　MENU:　PRIVACY　--*/\
 UP_SET(1, PvcOn, UP_OFF, , PrivacyBox(); )/* PRIVACY : 0 = OFF, 1 = ON */\
 UP_SET(1, PvcFormat, 1, , PrivacyBox(); )/* PRIVACY:ON → MASK MODE : 0 = FILL, 1 = FORMAT */\

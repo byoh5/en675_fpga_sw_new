@@ -278,12 +278,6 @@ void DownScalerSet(BYTE bCh, BYTE bEn, BYTE bSrc, UINT nIHRes, UINT nIVRes, UINT
 #endif
 
 //	LCD Function
-//#define LCD_DEBUG
-#define model_Lcd			1		// 0 : None
-									// 1 : TFT035
-									// 2 : TFT028
-									// 3 : TFT023
-
 void LCD_INSDAT_Write(UINT INSDAT0, UINT INSDAT1,UINT INSDAT2,UINT INSDAT3, UINT IStep)
 {
 	SetIsp(0x34c, INSDAT0);
@@ -308,6 +302,7 @@ void LCD_INSDAT_Write(UINT INSDAT0, UINT INSDAT1,UINT INSDAT2,UINT INSDAT3, UINT
 	WaitXus(2000);
 }
 
+#ifdef model_Lcd
 void LCD_DeviceInit(void)
 {
 	//	LCD Reset
@@ -529,6 +524,10 @@ void Init_LCD_Control(void)
 	D_ITU_YCCH0w(0);							//	DO31 ~ DO16 -> Output Channel 0
 }
 
+#else
+void Init_LCD_Control(void) {  }
+#endif	// model_Lcd
+
 #if		JPG_ENCODING||JPG_DECODING
 void JPG_Init(void)
 {
@@ -706,7 +705,7 @@ void Isp_Ddr_Cong(void)
 	const UINT Isp_Wdr_Adr = (((intptr_t)heap_end)/*DDR1_BASE*/>>4);
 	const UINT Isp_Frc_Adr = Isp_Wdr_Adr_config(Isp_Wdr_Adr, 1, RP(PO_HW), RP(PO_VW), DZ_HW_MR<<1, 0);	// DZOOM 시 DZ_HW_MR+a를 해야 하단 자주색 깜빡임 사라짐
 	const UINT Isp_Cvb_Adr = Isp_Frc_Adr_Config(Isp_Frc_Adr, 2, RP(PO_HW), RP(PO_VW), DZ_HW_MR<<1, 0);	//	"
-	const UINT Isp_YC_Adr1 = Isp_Cvb_Adr_Config(Isp_Cvb_Adr, 720/*960*/, 576);
+	const UINT Isp_YC_Adr1 = Isp_Cvb_Adr_Config((USE_ISP_FRC) ? Isp_Cvb_Adr : Isp_Frc_Adr, 720/*960*/, 576);
 
 	const UINT Isp_YC_Adr2 = Isp_YC_Adr_Config(Isp_YC_Adr1, 1, 3, RP(FR_HW), RP(FR_VW), DZ_HW_MR, 8);
 	const UINT Isp_YC_Adr3 = Isp_YC_Adr_Config(Isp_YC_Adr2, 2, 3, RP(FR_HW), RP(FR_VW), 0, 0);

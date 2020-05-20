@@ -1,9 +1,9 @@
 #ifndef __DEV_H__
 #define __DEV_H__
 
-#include "dev_model.h"				// EN675
 #include "dev_peri.h"				// EN675
 #include "dev_device.h"				// EN675
+#include "dev_model.h"				// EN675
 
 #include "isp_clk.h"				// EN675 - ISP define
 #include "isp_digital_interface.h"	// EN675 - ISP define

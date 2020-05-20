@@ -179,10 +179,6 @@
 #define	NO_INTERLACE					0
 #define	INTERLACE						1
 
-//	Frc
-#define	USE_FRC							1
-#define	NO_FRC							0
-
 //	Frc Page
 #define	FRC_3PAGE						0
 #define	FRC_2PAGE						1

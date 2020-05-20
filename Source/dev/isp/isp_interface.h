@@ -31,24 +31,13 @@
 #define	NO_USE_AUTOSYNC 0
 #define	USE_AUTOSYNC 	1
 
-//	LVDS & MIPI------------------------------------------------------------------------
-#define	LVDS_10BIT		10
-#define	LVDS_12BIT		12
-//#define	LVDS_16BIT		16
-
-#define	LVDS_2LANE		0
-#define	LVDS_4LANE		1
-
-
+//	MIPI------------------------------------------------------------------------
 #define	MIPI_10BIT		10
 #define	MIPI_12BIT		12
 
 #define	MIPI_1LANE		0
 #define	MIPI_2LANE		1
 #define	MIPI_4LANE		2
-
-#define	LVDS_INTERFACE	0
-#define	MIPI_INTERFACE	1
 
 #define	NO_USE_CHECK	0
 #define	USE_ECC_CHECK	1

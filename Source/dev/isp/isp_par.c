@@ -151,7 +151,7 @@ void UsrParChg(const UINT anStrIdx)
 {
 	if(gbUsrParChgOn == 0) return;
 
-#ifdef __SENSOR__
+#ifdef __USE_ISP__
 	switch(anStrIdx) {
 		//#define INIT_NO
 		#define INIT_RUN	|| gbUsrParChgOn==1
@@ -250,10 +250,6 @@ void InitUsrParChgAll(void)
 #else
 	for(UINT i=1; i<UP_END; i++) {
 		UsrParChg(i);			// SensFlip(), SensMirror() 실행을 위해 Isp_Sensor_init()이 먼저 설정되어야 함, gbUsrParChgOn = 2 상태에서 UsrParChg()사용하는 경우 PrivacyBox()함수가 중복 호출됨!!!
-
-		//if(UPi(LvdsPNSel) <= i && i <= UPi(OutVSyncOfs)) { if(gbUsrParChgOn==2) UsrParChg(i); }
-		//else if(UPi(CamTitleOn) <= i && i <= UPi(CamTitle7)) { if(gbUsrParChgOn==2) UsrParChg(i); }
-		//else { UsrParChg(i); }
 	}
 #endif
 
@@ -314,6 +310,8 @@ void UsrParReset(void)
 	UP(ICSel) = 1;
 	UP(OCSel) = 3;
 #endif
+
+	menu_val_chack();
 
 	UsrParCpy(gbUsrParTblSaved, gbUsrParTbl);
 }
@@ -454,11 +452,11 @@ void AppSavePar(void)
 
 		if (gbUsrParSaveChk) {			// Menu Parameter
 
-#if model_Save
+#if model_Save == 1
 			if(CS_ISPCMD == 0)
 #endif
 			{
-				#if model_Save
+				#if model_Save == 1
 					#if 0 // Old
 						SfWrite2(gbMnParTbl, MN_PAR_EA, FLASH_MENU_MODE);
 
@@ -470,7 +468,7 @@ void AppSavePar(void)
 						CPU_IRQ1 = 1;
 
 					#endif
-				#else
+				#elif model_Save == 2
 					TwiWrEep2(EEPROM_ADDR_USER, gbUsrParTbl, USR_PAR_EA);
 				#endif
 
@@ -482,11 +480,11 @@ void AppSavePar(void)
 		}
 		else if (gbUsrDataSaveChk) {	// User Data
 
-#if model_Save
+#if model_Save == 1
 			if(CS_ISPCMD == 0)
 #endif
 			{
-				#if model_Save
+				#if model_Save == 1
 					#if 0 // Old
 						SfWrite2(gbUsrDataTbl, USR_DATA_EA, FLASH_DATA_MODE);
 
@@ -498,7 +496,7 @@ void AppSavePar(void)
 						CPU_IRQ1 = 1;
 
 					#endif
-				#else
+				#elif model_Save == 2
 					TwiWrEep2(EEPROM_ADDR_DATA, gbUsrDataTbl, USR_DATA_EA);
 				#endif
 
@@ -508,9 +506,9 @@ void AppSavePar(void)
 		}
 	}
 
-#if model_Save
+#if model_Save == 1
 	bTwiWrEep2Rdy = 1;
-#else
+#elif model_Save == 2
 	if(TwiWrEep2(0, 0, 0)) bTwiWrEep2Rdy = 1;	// continuous EEPROM page Write
 #endif
 }
@@ -521,7 +519,7 @@ void AppLoadPar(void)
 
 	if (gbUsrParReadChk) {			// Menu Parameter
 
-		#if model_Save
+		#if model_Save == 1
 			#if 0 // Old
 				SfRead2(gbMnParTbl, MN_PAR_EA, FLASH_MENU_MODE);
 			#else //New
@@ -530,7 +528,7 @@ void AppLoadPar(void)
 				bRes = FlsRead((BYTE *)&gbMnParTbl, (SFLS_BASE+FLASH_SECT_MENU_STT*FLASH_SECT_SIZE), MN_PAR_EA);	// 1 : Success, 0 : Fail
 				CS_SFLS = 0;
 			#endif
-		#else
+		#elif model_Save == 2
 		    EepRead(EEPROM_ADDR_USER, gbUsrParTbl, USR_PAR_EA);
 		#endif
 
@@ -549,7 +547,7 @@ void AppLoadPar(void)
 
 	if (gbUsrDataReadChk) {			// User Data
 
-		#if model_Save
+		#if model_Save == 1
 			#if 0 // Old
 				SfRead2(gbUsrDataTbl, USR_DATA_EA, FLASH_DATA_MODE);
 			#else //New
@@ -558,7 +556,7 @@ void AppLoadPar(void)
 				bRes = FlsRead((BYTE *)gbUsrDataTbl, (SFLS_BASE+FLASH_SECT_DATA_STT*FLASH_SECT_SIZE), USR_DATA_EA);	// 1 : Success, 0 : Fail
 				CS_SFLS = 0;
 			#endif
-		#else
+		#elif model_Save == 2
 			EepRead(EEPROM_ADDR_DATA, gbUsrDataTbl, USR_DATA_EA);
 		#endif
 

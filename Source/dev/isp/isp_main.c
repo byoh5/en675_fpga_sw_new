@@ -1,6 +1,6 @@
 #include "dev.h"
 
-#ifdef __SENSOR__
+#ifdef __USE_ISP__
 
 #if model_TgtBd == 1
 	//_regs_ BF_3(UINT _rev0 : 30, UINT PIN0_OUT_AUR : 1 ,UINT PIN0_OEN_AUR : 1 ) _rege_ _GPIO_0_AUR;
@@ -58,7 +58,7 @@ void Isp_SensorRst(void)
 	INIT_DELAY(1);
 }
 
-#if model_Sens_Intf == 2	// MIPI 설정
+#if model_Sens_Intf == 1	// MIPI 설정
 void APB_Write(volatile unsigned long addr, unsigned int data)
 {
 	*((volatile unsigned int *)(addr)) = data;
@@ -72,7 +72,7 @@ unsigned int APB_Read(volatile unsigned long addr)
 
 void Isp_Sensor_init(void)
 {
-#if model_Sens_Intf == 2	// MIPI 설정
+#if model_Sens_Intf == 1	// MIPI 설정
 	//SYNC_UPw(1);
 	IBT_PCK_SELw((model_Sens_Intf==0) ? M_EXT : SP(MipiClk));	// MIPI 설정전에 가장 먼저 해야 함
 	IBT_PCK_PDw(1);
@@ -160,7 +160,7 @@ void Isp_PrePost_init(void)
 	SYNC_UPw(1);
 #endif
 
-#if model_Sens_Intf == 2	// MIPI 설정
+#if model_Sens_Intf == 1	// MIPI 설정
 	//	Interrupt Mask
 	APB_Write(0x46500010,0xfff5fcff);		// sync
 
@@ -254,10 +254,8 @@ void Isp_Function_init(void)
 
 	FORCE_ABT_SOFFw(1);
 
-	//	Dnr3d On
-#if defined(USE_DNR3D)
-	Isp_Dnr3d_Config(FN_ON, SP(PreClk), 0x80, 0x40, 0x20);
-#endif
+	Isp_Dnr3d_Config(USE_ISP_FRC, SP(PreClk), 0x80, 0x40, 0x20);
+
 	//Isp_Dnr2d_Config(FN_ON, DNR2D_SUM_MOD, DNR2D_CNT8, 0x38, 0x30);
 	Isp_Dnr2d_Config(FN_ON, (model_TgtBd == 1) ? 3 : SP(Dnr2dICSel), SP(Dnr2dOCSel));
 	//Isp_Defect_Config(FN_ON, DF_SUM_6, DF_SUM_4, DF_WGT_CASEB, DF_WGT_CASEB, DF_SLOPE_NOR, DF_GTHRES, DF_RBTHRES, DF_MAX, DF_MIN, 3);
@@ -270,7 +268,15 @@ void Isp_DDR_init(void)
 	//	DDR Init---------------------------------------
 	Isp_Ddr_Cong();
 
-#if defined(USE_FRC)
+#if USE_ISP_FRC == 0
+	SD_MODw(3);				// FRC OFF
+	BUS_RD_RSTw(1);
+	SYNC_UPw(1);
+	INIT_DELAY(1);
+	VLOCKI_POSw(0x23);		// for IMX415
+	HLOCKI_POSw(0x10e0);	//		"
+	OCSELw(2);
+#else
 	#if model_1M
 		#define R_LTC	0x260
 	#elif model_4M
@@ -293,13 +299,6 @@ void Isp_DDR_init(void)
 	BUS_RD_RSTw(1);
 	INIT_DELAY(1/*4*/);
 	CPU_FRC_ENw(1);		// DDR OFF,  SD_MODw(0) 이후 1 VLOCK Delay 후 설정해야 함!!!
-#else	// FRC OFF for IMX415
-	BUS_RD_RSTw(1);
-	SYNC_UPw(1);
-	INIT_DELAY(1);
-	VLOCKI_POSw(0x23);
-	HLOCKI_POSw(0x10e0);
-	OCSELw(2);
 #endif
 }
 
@@ -317,14 +316,14 @@ void Isp_Digital_input_init(void)
 	Isp_DS1_Config(DS_DIGITAL_CH2_PATH, CLK_DIG_CH2_DIV2, 0x80, 0x80, 1920, 1080, LPF_LV3, LPF_LV3, 0, 0, FN_ON);	//	Down-Scale 1 Setting
 	Isp_DS1_Edge_Enhance_Config(FN_ON, 0x40, 0x10, 0xe0, DS_APT_ROI_OFF, 0, 0, 0, 0, 0, DS_ROI_OSD_OFF);			//	Down-Scale Aperture Setting
 //	Isp_WrCh2_FrcAdr(0x82b4000, 0x82f4000, 0x8314000, 0x8354000, 0x8374000, 0x83b4000);								//	DDR Write Address Setting
-	Isp_WrCh2_Config(WR_CH_DOWN_SCALER1, 960, WR_DIG_CH2_SYNC, WR_COLOR, NO_INTERLACE, NO_VLCBIT, CLK_DIG_CH2_DIV2, USE_FRC, 0, DDR_WR_FIRST, DDR_RDCH2, IF_MODE_SET);	//	DDR Write Channel Setting -> Down-Scale Image
-//	Isp_WrCh2_Config(WR_CH_DOWN_SCALER1, 960, WR_DIG_CH2_SYNC, WR_COLOR, NO_INTERLACE, VLC_6BIT, CLK_DIG_CH2_DIV2, USE_FRC, 0, DDR_WR_FIRST, DDR_RDCH2, IF_MODE_SET);	//	DDR Write Channel Setting -> Down-Scale Image
+	Isp_WrCh2_Config(WR_CH_DOWN_SCALER1, 960, WR_DIG_CH2_SYNC, WR_COLOR, NO_INTERLACE, NO_VLCBIT, CLK_DIG_CH2_DIV2, USE_ISP_FRC, 0, DDR_WR_FIRST, DDR_RDCH2, IF_MODE_SET);	//	DDR Write Channel Setting -> Down-Scale Image
+//	Isp_WrCh2_Config(WR_CH_DOWN_SCALER1, 960, WR_DIG_CH2_SYNC, WR_COLOR, NO_INTERLACE, VLC_6BIT, CLK_DIG_CH2_DIV2, USE_ISP_FRC, 0, DDR_WR_FIRST, DDR_RDCH2, IF_MODE_SET);	//	DDR Write Channel Setting -> Down-Scale Image
 
 	Isp_WrCh2_Wr(WR_WRITE_CONTINU_MODE, FN_ON, FN_ON);																		//	Start Write...
 	Isp_Pip_Ch0_Config(FN_ON, PIP_DDR_RD_CH2, 0x42, 0x226, 960, 540, PIP_LINE_ON, LINE_GREEN, PIP_MIX_100, 0x600);
 
-	Isp_RdCh2_Config(RD_CH_PIP0, 960, WR_COLOR, CLK_74M, RD_ISP_SYNC, NO_VLCBIT, USE_FRC, DDR_WR_FIRST, DDR_WRCH2, IF_MODE_SET);		//	DDR Read Channel Settingg
-//	Isp_RdCh2_Config(RD_CH_PIP0, 960, WR_COLOR, CLK_74M, RD_ISP_SYNC, VLC_6BIT, USE_FRC, DDR_WR_FIRST, DDR_WRCH2, IF_MODE_SET);		//	DDR Read Channel Settingg
+	Isp_RdCh2_Config(RD_CH_PIP0, 960, WR_COLOR, CLK_74M, RD_ISP_SYNC, NO_VLCBIT, USE_ISP_FRC, DDR_WR_FIRST, DDR_WRCH2, IF_MODE_SET);		//	DDR Read Channel Settingg
+//	Isp_RdCh2_Config(RD_CH_PIP0, 960, WR_COLOR, CLK_74M, RD_ISP_SYNC, VLC_6BIT, USE_ISP_FRC, DDR_WR_FIRST, DDR_WRCH2, IF_MODE_SET);		//	DDR Read Channel Settingg
   #endif
 #endif
 
@@ -335,14 +334,14 @@ void Isp_Digital_input_init(void)
 	Isp_DS2_Config(DS_DIGITAL_CH3_PATH, CLK_DIG_CH3_DIV2, 0x80, 0x80, 1920, 1080, LPF_LV3, LPF_LV3, 0, 0, FN_ON);	//	Down-Scale 2 Setting
 	Isp_DS2_Edge_Enhance_Config(FN_ON, 0x40, 0x10, 0xe0, DS_APT_ROI_OFF, 0, 0, 0, 0, 0, DS_ROI_OSD_OFF);			//	Down-Scale Aperture Setting
 //	Isp_WrCh3_FrcAdr(0x8194000, 0x81d4000, 0x81f4000, 0x8234000, 0x8254000, 0x8294000);								//	DDR Write Address Setting
-	Isp_WrCh3_Config(WR_CH_DOWN_SCALER2, 960, WR_DIG_CH3_SYNC, WR_COLOR, NO_INTERLACE, NO_VLCBIT, CLK_DIG_CH3_DIV2, USE_FRC, 0, DDR_WR_FIRST, DDR_RDCH3, IF_MODE_SET);	//	DDR Write Channel Setting -> Down-Scale 2 Image
-//	Isp_WrCh3_Config(WR_CH_DOWN_SCALER2, 960, WR_DIG_CH3_SYNC, WR_COLOR, NO_INTERLACE, VLC_6BIT, CLK_DIG_CH3_DIV2, USE_FRC, 0, DDR_WR_FIRST, DDR_RDCH3, IF_MODE_SET);	//	DDR Write Channel Setting -> Down-Scale 2 Image
+	Isp_WrCh3_Config(WR_CH_DOWN_SCALER2, 960, WR_DIG_CH3_SYNC, WR_COLOR, NO_INTERLACE, NO_VLCBIT, CLK_DIG_CH3_DIV2, USE_ISP_FRC, 0, DDR_WR_FIRST, DDR_RDCH3, IF_MODE_SET);	//	DDR Write Channel Setting -> Down-Scale 2 Image
+//	Isp_WrCh3_Config(WR_CH_DOWN_SCALER2, 960, WR_DIG_CH3_SYNC, WR_COLOR, NO_INTERLACE, VLC_6BIT, CLK_DIG_CH3_DIV2, USE_ISP_FRC, 0, DDR_WR_FIRST, DDR_RDCH3, IF_MODE_SET);	//	DDR Write Channel Setting -> Down-Scale 2 Image
 
 	Isp_WrCh3_Wr(WR_WRITE_CONTINU_MODE, FN_ON, FN_ON);																		//	Start Write...
 	Isp_Pip_Ch1_Config(FN_ON, PIP_DDR_RD_CH3, 0x3fe, 0x226, 960, 540, PIP_LINE_ON, LINE_BLUE, PIP_MIX_100, 0x700);
 
-	Isp_RdCh3_Config(RD_CH_PIP1, 960, WR_COLOR, CLK_74M, RD_ISP_SYNC, NO_VLCBIT, USE_FRC, DDR_WR_FIRST, DDR_WRCH3, IF_MODE_SET);			//	DDR Read Channel Setting
-//	Isp_RdCh3_Config(RD_CH_PIP1, 960, WR_COLOR, CLK_74M, RD_ISP_SYNC, VLC_6BIT, USE_FRC, DDR_WR_FIRST, DDR_WRCH3, IF_MODE_SET);			//	DDR Read Channel Setting
+	Isp_RdCh3_Config(RD_CH_PIP1, 960, WR_COLOR, CLK_74M, RD_ISP_SYNC, NO_VLCBIT, USE_ISP_FRC, DDR_WR_FIRST, DDR_WRCH3, IF_MODE_SET);			//	DDR Read Channel Setting
+//	Isp_RdCh3_Config(RD_CH_PIP1, 960, WR_COLOR, CLK_74M, RD_ISP_SYNC, VLC_6BIT, USE_ISP_FRC, DDR_WR_FIRST, DDR_WRCH3, IF_MODE_SET);			//	DDR Read Channel Setting
   #endif
 #endif
 
@@ -593,6 +592,8 @@ UINT IspMsgFnc(UINT anMsg)
 
 	switch(anMsg) {
 		case 0x40000001 :
+			//UsrParCpy(dest, gbUsrParTbl);
+			for(i=2; i<UPtoMSG(USR_PAR_EA); i++) *(dest+i) = gbUsrParTbl[MSGtoUP(i)];
 			break;
 		case 0x40000003 : {
 #if 0
@@ -609,16 +610,18 @@ UINT IspMsgFnc(UINT anMsg)
 				for(i=UPstinv(ISP_BINARY_INFO)+1; i<USR_PAR_EA; i++) {
 					if(gbUsrParTbl[i] != *(dest+UPtoMSG(i))) {
 						gbUsrParTbl[i] = ParOri[i];
-						nErrBit |= UsrParBit(i);
+						nErrBit |= UsrParBit(i);    // 잘못된 Shared Memory 변경
 						printf("[%X] : %d is wrong. Change to %d.\n", i, *(dest+UPtoMSG(i)), ParOri[i]);
+
+						*(dest+UPtoMSG(i)) = gbUsrParTbl[i];
 					}
 
-					if(gbUsrParTbl[i] != ParOri[i]) {
-						printf("[%X] : %d to %d change completed.\n", i, ParOri[i], gbUsrParTbl[i]);
-					}
+					if(gbUsrParTbl[i] != ParOri[i]) printf("[%X] : %d to %d change completed.\n", i, ParOri[i], gbUsrParTbl[i]);
 				}
 
 				UsrParCpy(ParOri, gbUsrParTbl);
+				menu_redraw(1,0);	// OSD MENU가 출력 중이면 변경사항 업데이트
+
 				//if(nErrBit) printf("Error Bit : %.32b\n", nErrBit);
 #endif
 			}
@@ -627,13 +630,40 @@ UINT IspMsgFnc(UINT anMsg)
 			if(UPtoMSG(UPstinv(ISP_BINARY_INFO)) < wAdr && wAdr < UPtoMSG(USR_PAR_EA)) {
 				//hwflush_dcache_range(dest, (UPtoMSG(USR_PAR_EA)+63)&~3);
 				//SetByte(dest+wAdr, UsrParSiz(MSGtoUP(wAdr)), wDat);
-				SetByte(gbUsrParTbl+MSGtoUP(wAdr), UsrParSiz(MSGtoUP(wAdr)), wDat);
-				UsrParChg(MSGtoUP(wAdr));
+
+				UINT nParOri = 0;
+				const UINT nAdr = wAdr;//MSGtoUP(wAdr);
+				const UINT nSiz = UsrParSiz(nAdr);
+				SetByte((BYTE*)&nParOri, nSiz, GetByte(gbUsrParTbl+nAdr, nSiz));
+				SetByte(gbUsrParTbl+nAdr, nSiz, wDat);
+				menu_val_chack();
+#if 1
+				if(GetByte(gbUsrParTbl+nAdr, nSiz) != wDat) {
+					SetByte(gbUsrParTbl+nAdr, nSiz, nParOri);
+					nErrBit |= UsrParBit(nAdr);
+					printf("[%X] : %d is wrong. Change to %d.\n", nAdr, wDat, nParOri);
+				}
+
+				const UINT nVal = GetByte(gbUsrParTbl+nAdr, nSiz);
+				if(nVal != nParOri) printf("[%X] : %d to %d change completed.\n", nAdr, nParOri, nVal);
+
+#else
+				for(i=0; i<nSiz; i++) {
+					if(gbUsrParTbl[nAdr+i] != *(((BYTE*)&wDat)+i) ) {
+						gbUsrParTbl[nAdr+i] = ParOri[i];
+						nErrBit |= UsrParBit(nAdr+i);
+						printf("[%X] : %d is wrong. Change to %d.\n", nAdr+i, *(((BYTE*)&wDat)+i), ParOri[i]);
+
+						//*(dest+UPtoMSG(i)) = gbUsrParTbl[nAdr+i];
+					}
+
+					if(gbUsrParTbl[nAdr+i] != ParOri[i]) printf("[%X] : %d to %d change completed.\n", nAdr+i, ParOri[i], gbUsrParTbl[nAdr+i]);
+				}
+#endif
+				UsrParChg(nAdr);
+				menu_redraw(1,0);
 			}
 	}
-
-	//UsrParCpy(dest, gbUsrParTbl);
-	for(i=2; i<UPtoMSG(USR_PAR_EA); i++) *(dest+i) = gbUsrParTbl[MSGtoUP(i)];
 
 	return nErrBit;
 }

@@ -16,6 +16,8 @@
 #ifndef __DEV_DEVICE_H__
 #define __DEV_DEVICE_H__
 
+#define model_TgtBd 2
+
 #define EN675_SINGLE 0
 
 #define OSC_FREQ	27000000
@@ -88,11 +90,41 @@
 #endif // __ECM_STRING__
 
 #if 1
+#define __USE_ISP__
+#endif // __USE_ISP__
+
+#define USE_ISP_FRC		1
+
+#if 1
 #define __SENSOR__
 #define SENSOR_RESET_GPIO_CH	1
 #define SENSOR_I2C_CH	0
 #define SENSOR_SPI_CH	0
 #endif // __SENSOR__
+
+#define model_Sens		SENS_IMX415
+#define model_Sens_Ctrl	1
+#define model_Sens_Intf	1
+#define model_Sens_Fps	15
+
+#if 0
+#define model_Lcd		1
+#endif // __USE_LCD__
+
+#define model_Save		2
+#define model_Key		0
+
+#define model_Lens		0
+#define model_MAF_Lens	0
+#define model_Iris		0
+
+#define model_Tdn		2
+#define model_Tdn_Ext	0
+
+#define model_Led		0
+
+#define model_MotionOut	0
+
 
 #if 0 || 1
 #define HDMI_I2C_CH	7

@@ -266,6 +266,11 @@ void menu_val_chack(void)
 	KEY = 0;
 	pKEY = 0;
 
+#if USE_ISP_FRC == 0
+	UP(Dss) = UP_DSS_OFF;
+	UP(Adnr3D) = UP_4sOFF;
+#endif
+
 	Menu();
 }
 
@@ -684,14 +689,20 @@ void menu_dzoom(const int aiOn)
 {
 	menu_sta(aiOn);
 
+	#define DZOOM_MIN_VAL	10
 	#define DZOOM_HIGH_VAL	200
 	#define DZOOM_MAX_VAL	640
 
-	UINT nUpChgOn = 0;
+	if(giMenuChkOn) {
+		if(UP(DZoom) < DZOOM_MIN_VAL) UP(DZoom) = DZOOM_MIN_VAL;
+		if(UP(DZoom) > DZOOM_MAX_VAL) UP(DZoom) = DZOOM_MAX_VAL;
+		return;
+	}
 
-	if(aiOn || giMenuChkOn) {
+	UINT nUpChgOn = 0;
+	if(aiOn) {
 		if((UP(DZoom)<DZOOM_HIGH_VAL) || (UP(DZoom)==DZOOM_HIGH_VAL&&KEY_L)) {
-			nUpChgOn = menu_val(&UP(DZoom), sizeof(UP(DZoom)), 10, DZOOM_HIGH_VAL, 0);
+			nUpChgOn = menu_val(&UP(DZoom), sizeof(UP(DZoom)), DZOOM_MIN_VAL, DZOOM_HIGH_VAL, 0);
 		}
 		else {
 			UP(DZoom) /= 10;
@@ -699,8 +710,6 @@ void menu_dzoom(const int aiOn)
 			UP(DZoom) *= 10;
 		}
 	}
-
-	if(giMenuChkOn) return;
 
 	if((giMenuDispPos || KEY_R || KEY_L) && (aiOn || giGrayOnly)) {
 		gbStr[0] = 'X';
@@ -765,10 +774,10 @@ void InitMenu(void)
 	UINT i;
 	UINT nResetKey = 0;
 
-	#if (model_Key==0)		// AD Key
+	#if (model_Key==1)		// AD Key
 		nResetKey = (ADC_KEYr<(((UINT)UP(ADC_LEVEL_U)+(UINT)UP(ADC_LEVEL_D))>>1));           // 141031 LH
 
-	#elif (model_Key==1)	// GPIO Key
+	#elif (model_Key==2)	// GPIO Key
 		nResetKey = !GpioGetPin(GPIO_KEY_U);									// if up key is pressed
 
 	#else
@@ -1064,7 +1073,7 @@ void Menu(void)
 
 // MENU - DNR ----------------------------------------------------------------------------------------------------
 	MENU_SET( 3, DNR, UP_ON,
-			DNR_3D,			MENU_STRn(UP_ON, , UP(Adnr3D), 4, OFF, LOW, MIDDLE, HIGH),
+			DNR_3D,			MENU_STRn(USE_ISP_FRC, , UP(Adnr3D), 4, OFF, LOW, MIDDLE, HIGH),
 			DNR_2D,			MENU_BARn(UP_ON, , UP(Adnr2D), 0, 8, 1),
 			RETURN,			MENU_ONEo(UP_ON, e, UP_ON, ))
 

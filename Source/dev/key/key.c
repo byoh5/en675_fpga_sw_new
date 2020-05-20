@@ -101,7 +101,7 @@ void KeyRpt(TKey* aptKey, const BYTE abRptStart, const BYTE abRptTime)
 
 void KeyScan(void)
 {
-#if (model_Key==0)
+#if (model_Key==1)
 	const UINT nADC_KEY = ADC_KEYr;
 	DebugDisp(((gbMnDebugFnc==5)), , "ADC_Key_", 2, 24, nADC_KEY)
 

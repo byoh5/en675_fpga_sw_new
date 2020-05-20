@@ -21,7 +21,7 @@ void Isp_SDesPowerOn(BOOL OnOff, BOOL IsMipi, BYTE MipiClkPhase)
 
 void Isp_SDesDelay(BYTE Lck)
 {
-#if 0//(model_Sens_Intf==1) || (model_Sens_Intf==2)	// MIPI
+#if 0//(model_Sens_Intf==1)	// MIPI
 	LCK_DLYw(Lck);
 #endif
 }
@@ -295,7 +295,7 @@ void Isp_Dnr3d_Config(BOOL OnOff, BYTE Clk, BYTE DnrFk, BYTE DnrTh, BYTE DnrGain
 					if(Clk==ISP_CLK_PCLK_DIV2)		{	YCR_CK4_SET(7);     }
 					else if(Clk==ISP_CLK_PLL_DIV0)	{	YCR_CK4_SET(11);    }
 					else							{	YCR_CK4_SET(Clk);	}
-					DNR3D_ONw(1);
+					//DNR3D_ONw(1);
 				}
 	else		{	DNR3D_RCH_ENw(0);	DNR3D_ONw(0);	YCR_CK4_PDw(0);	}
 

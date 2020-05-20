@@ -27,7 +27,7 @@ void main_1(int cpu_id)
 #endif
 	enx_externalirq_init_cpu1();
 
-#if model_TgtBd == 2	// CPU 2core
+#if defined(__USE_ISP__) && (model_TgtBd == 2)	// CPU 2core
 	enx_externalirq_perl(eigiISP, ENX_ON, 0);							// Enable ISP Interrupts
 	//enx_externalirq_perl(eigiVCODEC, ENX_ON, 0);						// Enable Codec Interrupts
 	enx_externalirq_perl(eigiATOB, ENX_ON, 0);							// Enable ATOB Interrupts

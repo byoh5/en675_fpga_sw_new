@@ -276,19 +276,17 @@ RP_SET(FONT_OFY,	  0x36,    0xf,    0xf,   0x30,      0)	// Font Vertical Positi
 // ISP Function define
 #define IspSensorPowerOn()		Isp_SensorPowerOn(FN_ON, SP(SensorClk))
 
-#define IspSDesPowerOn()		Isp_SDesPowerOn(model_Sens_Intf>0, model_Sens_Intf==2, UP(MipiClkPhase))
+#define IspSDesPowerOn()		Isp_SDesPowerOn(model_Sens_Intf!=0, model_Sens_Intf==1, UP(MipiClkPhase))
 
 #if (model_Sens_Intf==0)	// Parallel
 	#define IspSDesConfig()		Isp_Parallel_Config(FN_ON/*, ISP_SLAVE*/, PARA_INTER_CLK, PARA_CLK_SDR, 0/*, SYNC_FALL, SYNC_RISE, DIFF_EDGE, NO_USE_AUTOSYNC*/, BIT12TOBit12)
-#elif (model_Sens_Intf==1)	// LVDS
-	#define IspSDesConfig()		//Isp_Lvds_Config(SP(LvdsBit), LVDS_4LANE, 0, UP(LvdsPNSel), SP(LvdsSofNo))
-#elif (model_Sens_Intf==2)	// MIPI
+#elif (model_Sens_Intf==1)	// MIPI
 	#define IspSDesConfig()		//Isp_Mipi_Config(SP(MipiBit), MIPI_4LANE, 0, 1, UP(MipiHSyncOfs), USE_ECC_CHECK, SP(MipiUseWcl), NO_USE_CHECK, NO_USE_CHECK, 3)
 #endif
 
 #define IspSDesDelay()			Isp_SDesDelay(UP(LckDly))
 
-#define IspPreClkConfig()		Isp_PreClk_Config(SP(PreClk), USE_FRC)
+#define IspPreClkConfig()		Isp_PreClk_Config(SP(PreClk), USE_ISP_FRC)
 #define IspPostClkConfig()		Isp_PostClk_Config(SP(PostClk))
 
 #define IspPreSyncConfig()		Isp_PreSync_Config(SP(IsSlave), gnAeHtw, gnAeVtw, UP(PreHSyncOfs), UP(PreVSyncOfs), UP(PreHsp), UP(PreVsp), RP(PO_HW), RP(PO_VW), SP(IsASync), SP(IsNSync), UP(PreHSyncPol), UP(PreVSyncPol))

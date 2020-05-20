@@ -16,6 +16,8 @@
 #ifndef __DEV_DEVICE_H__
 #define __DEV_DEVICE_H__
 
+#define model_TgtBd ${TARGET_BOARD}
+
 #define EN675_SINGLE ${USE_EN675_SINGLE}
 
 #define OSC_FREQ	${OSC_FREQ}
@@ -87,12 +89,42 @@
 #define __ECM_STRING__
 #endif // __ECM_STRING__
 
+#if ${USE_ISP}
+#define __USE_ISP__
+#endif // __USE_ISP__
+
+#define USE_ISP_FRC		${USE_ISP_FRC}
+
 #if ${USE_SENSOR}
 #define __SENSOR__
 #define SENSOR_RESET_GPIO_CH	${SENSOR_RESET_GPIO_CH}
 #define SENSOR_I2C_CH	${SENSOR_I2C_CH}
 #define SENSOR_SPI_CH	${SENSOR_SPI_CH}
 #endif // __SENSOR__
+
+#define model_Sens		${SENSOR_MODEL}
+#define model_Sens_Ctrl	${SENSOR_CONTROL}
+#define model_Sens_Intf	${SENSOR_OUTPUT}
+#define model_Sens_Fps	${SENSOR_FPS}
+
+#if ${USE_LCD}
+#define model_Lcd		${LCD_MODEL}
+#endif // __USE_LCD__
+
+#define model_Save		${USE_ISP_SAVE}
+#define model_Key		${USE_ISP_KEY}
+
+#define model_Lens		${USE_MAF_LENS}
+#define model_MAF_Lens	${MAF_LENS_MODEL}
+#define model_Iris		${USE_IRIS}
+
+#define model_Tdn		${TDN_CONTROL}
+#define model_Tdn_Ext	${USE_TDN_EXTERN}
+
+#define model_Led		${USE_IR_LED}
+
+#define model_MotionOut	${USE_MOTION_OUT}
+
 
 #if ${USE_HDMI_SILICON} || ${USE_HDMI_LONTIUM}
 #define HDMI_I2C_CH	${HDMI_I2C_CH}

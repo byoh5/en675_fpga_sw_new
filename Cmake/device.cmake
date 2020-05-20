@@ -2,6 +2,8 @@
 SET ( APB_FREQ 37125000 ) # MIG 37.125MHz
 SET ( AXI_FREQ 74250000 ) # MIG 74.25MHz
 
+SET ( TARGET_BOARD 2 ) # 0:KU  1:KU+VU  2:VU
+
 SET ( USE_EN675_SINGLE 0 )
 
 SET ( USE_SFLS_EN25QH128A 1 )
@@ -20,10 +22,36 @@ SET ( USE_FREERTOS 1 )
 
 SET ( USE_ECM_STRING 1 )
 
+SET ( USE_ISP 1 ) # 0:unused  1:used
+SET ( USE_ISP_FRC 1 ) # 0:unused  1:used
+
 SET ( USE_SENSOR 1 )
 SET ( SENSOR_RESET_GPIO_CH 1 )
 SET ( SENSOR_I2C_CH 0 )
 SET ( SENSOR_SPI_CH 0 )
+
+SET ( SENSOR_MODEL SENS_IMX415 )
+SET ( SENSOR_CONTROL 1 ) # 0:SPI  1:TWI
+SET ( SENSOR_OUTPUT 1 ) # 0:Parallel  1:MIPI
+SET ( SENSOR_FPS 15 ) # 12  15  20  30  60
+
+SET ( USE_LCD 0 ) # 0:unused  1:used
+SET ( LCD_MODEL 1 ) # 0:unused  1:TFT035  2:TFT028  3:TFT023
+
+SET ( USE_ISP_SAVE 2 ) # 0:unused  1:Flash  2:EEPROM
+SET ( USE_ISP_KEY 0 ) # 0:unused  1:ADC  2:GPIO
+
+SET ( USE_MAF_LENS 0 ) # 0:unused  1:used
+SET ( MAF_LENS_MODEL 0 ) # 0:YT2812  1:YT3013  2:YT3017  3:YT30022  4:YT3021  5~9:Cstom Lens (Needed Tuning)
+
+SET ( USE_IRIS 0 ) # 0:unused  1:KIWI driver(DC)  2:MPWM(DC)  3:Step motor(pIris)  4:AF drvIC (PID)
+
+SET ( TDN_CONTROL 2 ) # 0:TDN control by 1 port 2 state (H, L)   1:TDN control by 1 port 3 state (H, L, Hi-z)   2:TDN control by 2 ports
+
+SET ( USE_TDN_EXTERN 0 ) # 0:unused  1:ADC  2:GPIO
+SET ( USE_IR_LED 0 ) # 0:unused  1:GPIO  2:LPWM
+
+SET ( USE_MOTION_OUT 0 ) # 0:unused  1:used
 
 SET ( USE_HDMI_SILICON 0 )
 SET ( USE_HDMI_LONTIUM 1 )

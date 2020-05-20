@@ -83,7 +83,7 @@ static void EthLoopbackAuto(EthLoopbackGp *elg)
 			for(BYTE u8RXe = 1; u8RXe < 2; u8RXe++) { // RX edge
 				ok_acc = 0;
 				for(BYTE u8RXd = 0; u8RXd < 16; u8RXd++) { // RX dly
-					EthRxTxClockDly(u8TXe, u8TXd, u8RXe, u8RXd);
+					EthSetRxTxClockDly(u8TXe, u8TXd, u8RXe, u8RXd);
 					UINT TestRes = EthphyLoopbackTest(elg);
 					if (TestRes == ePlb_ok) {	// 0:none, idle
 						_Gprintf("O ");			// 1:test oK
@@ -118,7 +118,7 @@ static void EthLoopbackAuto(EthLoopbackGp *elg)
 			for(BYTE u8RXe = 0; u8RXe < 2; u8RXe++) { // RX edge
 				ok_acc = 0;
 				for(BYTE u8RXd = 0; u8RXd < 16; u8RXd++) { // RX dly
-					EthRxTxClockDly(u8TXe, u8TXd, u8RXe, u8RXd);
+					EthSetRxTxClockDly(u8TXe, u8TXd, u8RXe, u8RXd);
 					UINT TestRes = EthphyLoopbackTest(elg);
 					case_count++;
 					if (TestRes == ePlb_ok) {	// 0:none, idle
