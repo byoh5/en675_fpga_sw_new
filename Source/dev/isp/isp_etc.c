@@ -4,7 +4,7 @@
  Designer	:	Kim, Sunghoon
  Modified by:	Lee, Wanhee
  Date		:	14. 8. 4 / 15. 4. 24
- Copyright ®œ Eyenix Co., Ltd. All Rights Reserved.
+ Copyright ‚ìí Eyenix Co., Ltd. All Rights Reserved.
 *************************************************************************** */
 
 #include "dev.h"
@@ -15,11 +15,11 @@
 int ISRT udiv4x(const UINT anNumer, const UINT anDenom, const UINT anZeroDenom)	// AE 8BIT, AWB 8BIT
 {
 #if 0
-	return (int)( (anDenom) ? (anNumer>0x1FFFFFFF) ? (anDenom>>2) ? anNumer / (anDenom>>2) : (anNumer / anDenom)<<2 : (anNumer<<2) / anDenom : anZeroDenom );	// TestCur10bit()¿« ¡÷ºÆ ! ø°º≠ ø¿¬˜ πﬂª˝
+	return (int)( (anDenom) ? (anNumer>0x1FFFFFFF) ? (anDenom>>2) ? anNumer / (anDenom>>2) : (anNumer / anDenom)<<2 : (anNumer<<2) / anDenom : anZeroDenom );	// TestCur10bit()Ïùò Ï£ºÏÑù ! ÏóêÏÑú Ïò§Ï∞® Î∞úÏÉù
 #else
 	/*const*/ uint64 ulDiv = (anDenom) ? (((uint64)anNumer)<<2) / ((uint64)anDenom) : anZeroDenom;
-	//return MIN(ulDiv,0x7FFFFFFF);							// unsign«¸¿ª x4 «— »ƒø° ≥™¥©æÓº≠ sign¿∏∑Œ √‚∑¬«œπ«∑Œ √÷ªÛ¿ß bit¥¬ 0¿ÃæÓæﬂ «‘
-	if(ulDiv > (int)0x7FFFFFFF) ulDiv = (int)0x7FFFFFFF;	// MIN() ∫∏¥Ÿ ƒ⁄µÂ ∞®º“
+	//return MIN(ulDiv,0x7FFFFFFF);							// unsignÌòïÏùÑ x4 Ìïú ÌõÑÏóê ÎÇòÎàÑÏñ¥ÏÑú signÏúºÎ°ú Ï∂úÎ†•ÌïòÎØÄÎ°ú ÏµúÏÉÅÏúÑ bitÎäî 0Ïù¥Ïñ¥Ïïº Ìï®
+	if(ulDiv > (int)0x7FFFFFFF) ulDiv = (int)0x7FFFFFFF;	// MIN() Î≥¥Îã§ ÏΩîÎìú Í∞êÏÜå
 	return ulDiv;
 #endif
 }
@@ -181,7 +181,7 @@ void ISRT Adnr_2D_Gain(const UINT anGain)
 	{
 		const UINT nQHt = (Adnr2D_Q_Tbl[i]>>16)&0x1fff;
 		const UINT nQLt = Adnr2D_Q_Tbl[i]&0x1fff;
-	#if 0	// æ∆¡÷ ≈´ Gain¿ª ¿˚øÎ«“ ∞ÊøÏ « ø‰
+	#if 0	// ÏïÑÏ£º ÌÅ∞ GainÏùÑ Ï†ÅÏö©Ìï† Í≤ΩÏö∞ ÌïÑÏöî
 		const UINT nQH = (nQHt*anGain)>>7;
 		const UINT nQL = (nQLt*anGain)>>7;
 		SetIsp(DNR_Q_BASE+i, (MIN(nQH,0x1fff)<<16) | MIN(nQL,0x1fff) );
@@ -205,7 +205,7 @@ void Adnr_CmdCheck(void) // 180320 LWH
 	#define NOR_MODE	((UP(FrameMode) == UP_FRAMEMODE_NORMAL_25_30) || (UP(FrameMode) == UP_FRAMEMODE_NORMAL_50_60))
 #endif
 
-#if (model_Sens == SENS_OV2718)		// OV2718 Parallel 27MHz µø¿€ Ω√ Sensor √‚∑¬¿« HLOCK¿Ã »ÁµÈ∏≤ -> VLOCK¿Ã »ÁµÈ∏≤ -> DNR Ω√ ∞£«Ê¿˚¿∏∑Œ øµªÛ¿Ã ±˙¡ˆ¥¬ ∞ÊøÏ πﬂª˝ -> HLOCK¿Ã »ÁµÈ∏Æ¡ˆ æ ¥¬ Sensor initial setting¿Ã « ø‰
+#if (model_Sens == SENS_OV2718)		// OV2718 Parallel 27MHz ÎèôÏûë Ïãú Sensor Ï∂úÎ†•Ïùò HLOCKÏù¥ ÌùîÎì§Î¶º -> VLOCKÏù¥ ÌùîÎì§Î¶º -> DNR Ïãú Í∞ÑÌóêÏ†ÅÏúºÎ°ú ÏòÅÏÉÅÏù¥ Íπ®ÏßÄÎäî Í≤ΩÏö∞ Î∞úÏÉù -> HLOCKÏù¥ ÌùîÎì§Î¶¨ÏßÄ ÏïäÎäî Sensor initial settingÏù¥ ÌïÑÏöî
 	const BYTE bMpAdnr = UP_4sOFF;
 #else
 	const BYTE bMpAdnr = ((UP(BackLight) == UP_BL_WDR) || (gbWdrOn!=WDR_OFF) || (gbWdrOnBuf2!=WDR_OFF) || FPS_HI || NOR_MODE) ? UP_4sOFF : UP(Adnr3D) ;
@@ -233,12 +233,12 @@ void Adnr_CmdCheck(void) // 180320 LWH
 void ISRT Adnr(void)
 {	// Digital noise reduction
 
-	if(UP(Adnr2D)) {	// UP(Adnr2D) : Sharpness=5 ¿Ã∏È 2, Sharpness=10 ¿Ã∏È 3 ±«¿Â, Sharpness=10 + Ace=HIGH ¿Ã∏È 8 ±«¿Â
+	if(UP(Adnr2D)) {	// UP(Adnr2D) : Sharpness=5 Ïù¥Î©¥ 2, Sharpness=10 Ïù¥Î©¥ 3 Í∂åÏû•, Sharpness=10 + Ace=HIGH Ïù¥Î©¥ 8 Í∂åÏû•
 	#if 1
 		#define ADNR_2D_MID 0x80
 		#define ADNR_2D_MAX 0x100
 
-		const int iAdnr2D_L = (UP(Adnr2D)<<4);	// UP(Adnr2D)∞° 4 ¿Ã∏È 0x40
+		const int iAdnr2D_L = (UP(Adnr2D)<<4);	// UP(Adnr2D)Í∞Ä 4 Ïù¥Î©¥ 0x40
 		const int iAdnr2D_M = MAX(iAdnr2D_L, ADNR_2D_MID);
 		const int iAdnr2D_H = MAX(iAdnr2D_M, ADNR_2D_MAX);
 
@@ -247,7 +247,7 @@ void ISRT Adnr(void)
 		const int iGain2D   = (gbIspAgcSta < gbIspAgcEnd) ? LibUtlInterp1D(giCurAgc, ADNR_AGC_STA, ADNR_AGC_END, iGain2D_S, iGain2D_E) : iGain2D_S ;
 		Adnr_2D_Gain(iGain2D);
 	#else
-		const int iGain2D_S = (gbIspAgcSta==0) ? UP(Adnr2D) : 0xc0;	// 0xc0 √ ∞˙ ¿˚øÎ Ω√ ∆˜»≠ ∞Ê∞Ëº± ∫Œ∫–ø° øµªÛø÷∞Ó πﬂª˝, UP(Adnr2D)∞™¿∏∑Œ 0x30 ∂«¥¬ 0x60 ±«¿Â
+		const int iGain2D_S = (gbIspAgcSta==0) ? UP(Adnr2D) : 0xc0;	// 0xc0 Ï¥àÍ≥º Ï†ÅÏö© Ïãú Ìè¨Ìôî Í≤ΩÍ≥ÑÏÑ† Î∂ÄÎ∂ÑÏóê ÏòÅÏÉÅÏôúÍ≥° Î∞úÏÉù, UP(Adnr2D)Í∞íÏúºÎ°ú 0x30 ÎòêÎäî 0x60 Í∂åÏû•
 		const int iGain2D_E = (gbIspAgcEnd==0) ? UP(Adnr2D) : 0xc0;
 		const int iGain2D = (gbIspAgcSta < gbIspAgcEnd) ? LibUtlInterp1D(giCurAgc, ADNR_AGC_STA, ADNR_AGC_END, iGain2D_S, iGain2D_E) : iGain2D_S ;
 		//DNR2D_GAINw(iGain2D);
@@ -271,7 +271,7 @@ void ISRT Adnr(void)
 		else if(giCurDssStg==1) {
 			giCurDssStg = 0;
 			isp_reset();
-			bIspResetCnt = 1/*PAR00*/;	// isp_reset »ƒ √÷º“ 2frame »ƒø° DNR3D_ONw(1) «ÿæﬂ «‘
+			bIspResetCnt = 1/*PAR00*/;	// isp_reset ÌõÑ ÏµúÏÜå 2frame ÌõÑÏóê DNR3D_ONw(1) Ìï¥Ïïº Ìï®
 			return;
 		}
 #else
@@ -288,7 +288,7 @@ void ISRT Adnr(void)
 		else {
 			const BYTE bTblSel_1 = (UP(DnrIncrease) == UP_ON) ? gbIspAgcSta : 0 ;
 			iGain = Adnr3DGainTbl[bTblSel_0][bTblSel_1];
-			iTh   = 0;//Adnr3DThrsTbl[bTblSel_0][bTblSel_1];	// 0 √ ∞˙ ¿˚øÎ Ω√ ¿œπ› ¡∂µµ ªÛ»≤ø°º≠ ±•¿˚ πﬂª˝
+			iTh   = 0;//Adnr3DThrsTbl[bTblSel_0][bTblSel_1];	// 0 Ï¥àÍ≥º Ï†ÅÏö© Ïãú ÏùºÎ∞ò Ï°∞ÎèÑ ÏÉÅÌô©ÏóêÏÑú Í¥òÏ†Å Î∞úÏÉù
 			iFk   = Adnr3DFkTbl  [bTblSel_0][bTblSel_1];
 		}
 
@@ -388,7 +388,7 @@ void ISRT Sharpness(void)
 const int DefectDifGaTbl[3]  = {0x20, 0x30, 0x40};		//  AUTO Defect gain table (Low Agc, Mid Agc, Hi Agc)
 const int DefectSDifGaTbl[3] = {0x10, 0x08, 0x00};		// AUTO Defect spot gain table (Low Agc, Mid Agc, Hi Agc)
 
-void ISRT DefectAuto(void)	// TODO KSH °ﬂ DefectAuto() - DOL Ω√ Long∞˙ Short¿Ã µ˚∑Œ º≥¡§µ«µµ∑œ «ÿæﬂ «‘
+void ISRT DefectAuto(void)	// TODO KSH ‚óÜ DefectAuto() - DOL Ïãú LongÍ≥º ShortÏù¥ Îî∞Î°ú ÏÑ§Ï†ïÎêòÎèÑÎ°ù Ìï¥Ïïº Ìï®
 {	// Auto Defect correction
 	int iGain, iSGain;
 	if(gbIspAgcSta < gbIspAgcEnd) {
@@ -418,7 +418,7 @@ const int LowCSupGaTbl[3] = {0x38,		0x24,		0x10	}; // 14.2.10
 const int LowCSupGaTbl[3] = {0x20,		0x18,		0x10	}; // 14.2.10
 #endif
 
-void ISRT CSup(void)	// TODO KSH °ﬂ WDR - CSup()ø°º≠ Line WDR º≥¡§¿ª Frame WDR∑Œ «œ¥¬∞‘ ¥ı ¡¡¿∫¡ˆ »Æ¿Œ « ø‰
+void ISRT CSup(void)	// TODO KSH ‚óÜ WDR - CSup()ÏóêÏÑú Line WDR ÏÑ§Ï†ïÏùÑ Frame WDRÎ°ú ÌïòÎäîÍ≤å Îçî Ï¢ãÏùÄÏßÄ ÌôïÏù∏ ÌïÑÏöî
 {
 	// Low light color suppression ----------------------------
 	int iGain = (gbIspAgcSta < gbIspAgcEnd) ? LibUtlInterp1D(giCurAgc, ADNR_AGC_STA, ADNR_AGC_END, LowCSupGaTbl[gbIspAgcSta], LowCSupGaTbl[gbIspAgcEnd]) : LowCSupGaTbl[gbIspAgcSta];
@@ -485,7 +485,7 @@ void Flip(void)
 	ICSELw(/*(UP(Flip)==UP_ON) ? UP(ICSelFlip) :*/ UP(ICSel));
 	OCSELw(/*(UP(Flip)==UP_ON) ? UP(OCSelFlip) :*/ UP(OCSel));
 
-	//DNR_CSELw(UP(ICSel));	// TODO KSH + ICSEL ∞˙ DNR_CSEL ≈◊Ω∫∆Æ
+	//DNR_CSELw(UP(ICSel));	// TODO KSH + ICSEL Í≥º DNR_CSEL ÌÖåÏä§Ìä∏
 }
 
 void DZoom(void)
@@ -506,10 +506,10 @@ void DZoom(void)
 
 	if(UP(DZoom) <= 10)	// Off
 	{
-		//HWIw(RP(PO_HW));				// DZoomΩ√ Margin¿Ã « ø‰«‘. Sensorø°º≠µµ ¿Ã ∏∏≈≠ √‚∑¬«œ∞‘ º≥¡§.
+		//HWIw(RP(PO_HW));				// DZoomÏãú MarginÏù¥ ÌïÑÏöîÌï®. SensorÏóêÏÑúÎèÑ Ïù¥ ÎßåÌÅº Ï∂úÎ†•ÌïòÍ≤å ÏÑ§Ï†ï.
 		//HWOw(RP(PO_HW));
 
-		OSD_ISEL0w(0);				// OSD & Fonc ¿‘∑¬ Path º≥¡§ (DZOOM Module √‚∑¬)
+		OSD_ISEL0w(0);				// OSD & Fonc ÏûÖÎ†• Path ÏÑ§Ï†ï (DZOOM Module Ï∂úÎ†•)
 
 		//DZ_DZOOM_ONw(0);			// DZOOM On
 		DZPCK_PDw(0);				// Clock Enable
@@ -518,66 +518,66 @@ void DZoom(void)
 		YCR_CK1_PDw(0);				// DDR Read Channel 1 Clock Enable
 	}
 	else {
-		//HWIw(RP(PO_HW)+DZ_HW_MR);				// DZoomΩ√ Margin¿Ã « ø‰«‘. Sensorø°º≠µµ ¿Ã ∏∏≈≠ √‚∑¬«œ∞‘ º≥¡§.
+		//HWIw(RP(PO_HW)+DZ_HW_MR);				// DZoomÏãú MarginÏù¥ ÌïÑÏöîÌï®. SensorÏóêÏÑúÎèÑ Ïù¥ ÎßåÌÅº Ï∂úÎ†•ÌïòÍ≤å ÏÑ§Ï†ï.
 		//HWOw(RP(PO_HW)+DZ_HW_MR);
 
 		YCW_CK1_PDw(1);				// Clock Enable
 		YCR_CK1_PDw(1);				// DDR Read Channel 1 Clock Enable
 
 		IM_CGO1w(1);				// Write Enable
-		//INIT_DELAY(1);				// 1 VLOCKI ±‚¥Ÿ∏∞ »ƒ
+		//INIT_DELAY(1);				// 1 VLOCKI Í∏∞Îã§Î¶∞ ÌõÑ
 		IM_RON1w(1);				// Read Enable
 
 		//DZ_DZOOM_ONw(1);			// DZOOM On
 		DZPCK_PDw(1);				// Clock Enable
 
-		OSD_ISEL0w(0xb);			// OSD & Fonc ¿‘∑¬ Path º≥¡§ (DZOOM Module √‚∑¬)
+		OSD_ISEL0w(0xb);			// OSD & Fonc ÏûÖÎ†• Path ÏÑ§Ï†ï (DZOOM Module Ï∂úÎ†•)
 	}
 }
 
 void Dzoom_init(void)
 {
-	// DZOOM º≥¡§ : Margin « ø‰
-	//HWIw(RP(PO_HW)+DZ_HW_MR);		// DZoomΩ√ Margin¿Ã « ø‰«‘. Sensorø°º≠µµ ¿Ã ∏∏≈≠ √‚∑¬«œ∞‘ º≥¡§.
+	// DZOOM ÏÑ§Ï†ï : Margin ÌïÑÏöî
+	//HWIw(RP(PO_HW)+DZ_HW_MR);		// DZoomÏãú MarginÏù¥ ÌïÑÏöîÌï®. SensorÏóêÏÑúÎèÑ Ïù¥ ÎßåÌÅº Ï∂úÎ†•ÌïòÍ≤å ÏÑ§Ï†ï.
 	//HWOw(RP(PO_HW)+DZ_HW_MR);
 
-	// DZOOM º≥¡§ : Write º≥¡§
-	IM_IVSEL1w(0);					// DDR Write Channel1 ¿« sync º≥¡§ (ISP Sync)
-	IM_ISEL1w(0x11);				// DDR Write Channel1 ¿« Image ¿‘∑¬ Path º≥¡§ (ISP Image, No Font)
-	IM_HWI1w(DZ_HW/*RP(PO_HW)+DZ_HW_MR*/);	// Write«“ øµªÛ ºˆ∆Ú ≈©±‚ º≥¡§ -> HWOwøÕ µø¿œ«— ≈©±‚, Ω«¡¶ DDR ªÁøÎ ≈©±‚øÕ µø¿œ -> ¿”Ω√∑Œ DZ_HW∑Œ º≥¡§
-	IM_WFRC1_ONw(1);				// DDR R/W Channel 1ø° FRC  ªÁøÎ º≥¡§. °∞0°±¿Œ ∞ÊøÏ Disable
-	YCW_CK1_SELw(SP(PostClk));		// Write Channel Clock º≥¡§ (ISP Clock 74.25MHz)
+	// DZOOM ÏÑ§Ï†ï : Write ÏÑ§Ï†ï
+	IM_IVSEL1w(0);					// DDR Write Channel1 Ïùò sync ÏÑ§Ï†ï (ISP Sync)
+	IM_ISEL1w(0x11);				// DDR Write Channel1 Ïùò Image ÏûÖÎ†• Path ÏÑ§Ï†ï (ISP Image, No Font)
+	IM_HWI1w(DZ_HW/*RP(PO_HW)+DZ_HW_MR*/);	// WriteÌï† ÏòÅÏÉÅ ÏàòÌèâ ÌÅ¨Í∏∞ ÏÑ§Ï†ï -> HWOwÏôÄ ÎèôÏùºÌïú ÌÅ¨Í∏∞, Ïã§Ï†ú DDR ÏÇ¨Ïö© ÌÅ¨Í∏∞ÏôÄ ÎèôÏùº -> ÏûÑÏãúÎ°ú DZ_HWÎ°ú ÏÑ§Ï†ï
+	IM_WFRC1_ONw(1);				// DDR R/W Channel 1Ïóê FRC  ÏÇ¨Ïö© ÏÑ§Ï†ï. ‚Äú0‚ÄùÏù∏ Í≤ΩÏö∞ Disable
+	YCW_CK1_SELw(SP(PostClk));		// Write Channel Clock ÏÑ§Ï†ï (ISP Clock 74.25MHz)
 	//YCW_CK1_PDw(1);				// Clock Enable
 
-	// DZOOM º≥¡§ : Read º≥¡§
+	// DZOOM ÏÑ§Ï†ï : Read ÏÑ§Ï†ï
 	IM_RFRC1_ONw(1);				// DDR Read Channel 1 FRC Enable
-	IM_RHWI1w(DZ_HW/*RP(PO_HW)+DZ_HW_MR*/);	// DDR Read Channel 1¿« Read Image ºˆ∆Ú ≈©±‚ º≥¡§ -> IM_HWI1wøÕ µø¿œ«— ≈©±‚, Ω«¡¶ DDR ªÁøÎ ≈©±‚øÕ µø¿œ -> ¿”Ω√∑Œ DZ_HW∑Œ º≥¡§
-	IM_RVSEL1w(0);					// DDR Read Channel 1¿« Read Sync º≥¡§ (ISP Sync)
-	IM_RISEL1w(4);					// DDR Read Channel 1¿« Read Active Path º≥¡§ (ISP Sync µø±‚µ» Active)
-	IM_RYCB_MOD1w(1);				// Y C √‚∑¬ Enable
-	YCRCK1_SELw(SP(PostClk));		// DDR Read Channel 1 Clock º≥¡§
+	IM_RHWI1w(DZ_HW/*RP(PO_HW)+DZ_HW_MR*/);	// DDR Read Channel 1Ïùò Read Image ÏàòÌèâ ÌÅ¨Í∏∞ ÏÑ§Ï†ï -> IM_HWI1wÏôÄ ÎèôÏùºÌïú ÌÅ¨Í∏∞, Ïã§Ï†ú DDR ÏÇ¨Ïö© ÌÅ¨Í∏∞ÏôÄ ÎèôÏùº -> ÏûÑÏãúÎ°ú DZ_HWÎ°ú ÏÑ§Ï†ï
+	IM_RVSEL1w(0);					// DDR Read Channel 1Ïùò Read Sync ÏÑ§Ï†ï (ISP Sync)
+	IM_RISEL1w(4);					// DDR Read Channel 1Ïùò Read Active Path ÏÑ§Ï†ï (ISP Sync ÎèôÍ∏∞Îêú Active)
+	IM_RYCB_MOD1w(1);				// Y C Ï∂úÎ†• Enable
+	YCRCK1_SELw(SP(PostClk));		// DDR Read Channel 1 Clock ÏÑ§Ï†ï
 	//YCR_CK1_PDw(1);				// DDR Read Channel 1 Clock Enable
 
-	// DZOOM º≥¡§
+	// DZOOM ÏÑ§Ï†ï
 	DZ_DAONw(0/*1*/);				// DZOOM Position Auto On
-	DZ_DKXY_ONw(1);					// DKY ø¨µø ±‚¥… On
-	DZ_CH_SELw(1);					// DZOOM «“ Source,  DDR Read Channel1 º±≈√
-	DZ_ZHLOCK_SELw(0);				// DZOOM HLOCK º≥¡§ (ISP µø±‚ H)
-	DZ_BUF_ASELw(0);				// DZOOM Active º≥¡§ (ISP µø±‚ Active)
-	DZ_VWOw(RP(FR_VW));				// DZOOM Vertical ≈©±‚ º≥¡§
-	DZOOM_VSPw(0x9);				// DZOOM V ¿ßƒ° ¡∂¡§    -> øµªÛ ¿ßƒ°∞° æ» ∏¬¿∏∏È ¿Ã ≥—¿ª ¡∂¿˝ -> sensor∏∂¥Ÿ ¥Ÿ∏¶ ºˆ ¿÷¿Ω.
-	DZOOM_HSPw(0x65/*0x63*/);		// DZOOM H ¿ßƒ° ¡∂¡§   -> øµªÛ ¿ßƒ°∞° æ» ∏¬¿∏∏È ¿Ã ≥—¿ª ¡∂¿˝ -> sensor∏∂¥Ÿ ¥Ÿ∏¶ ºˆ ¿÷¿Ω.
-	//DZ_VSP_KYw(0x800);			// DZOOM πË¿≤ º≥¡§      -> ∞Ëº” ¡¶æÓ
+	DZ_DKXY_ONw(1);					// DKY Ïó∞Îèô Í∏∞Îä• On
+	DZ_CH_SELw(1);					// DZOOM Ìï† Source,  DDR Read Channel1 ÏÑ†ÌÉù
+	DZ_ZHLOCK_SELw(0);				// DZOOM HLOCK ÏÑ§Ï†ï (ISP ÎèôÍ∏∞ H)
+	DZ_BUF_ASELw(0);				// DZOOM Active ÏÑ§Ï†ï (ISP ÎèôÍ∏∞ Active)
+	DZ_VWOw(RP(FR_VW));				// DZOOM Vertical ÌÅ¨Í∏∞ ÏÑ§Ï†ï
+	DZOOM_VSPw(0x9);				// DZOOM V ÏúÑÏπò Ï°∞Ï†ï    -> ÏòÅÏÉÅ ÏúÑÏπòÍ∞Ä Ïïà ÎßûÏúºÎ©¥ Ïù¥ ÎÑòÏùÑ Ï°∞Ï†à -> sensorÎßàÎã§ Îã§Î•º Ïàò ÏûàÏùå.
+	DZOOM_HSPw(0x65/*0x63*/);		// DZOOM H ÏúÑÏπò Ï°∞Ï†ï   -> ÏòÅÏÉÅ ÏúÑÏπòÍ∞Ä Ïïà ÎßûÏúºÎ©¥ Ïù¥ ÎÑòÏùÑ Ï°∞Ï†à -> sensorÎßàÎã§ Îã§Î•º Ïàò ÏûàÏùå.
+	//DZ_VSP_KYw(0x800);			// DZOOM Î∞∞Ïú® ÏÑ§Ï†ï      -> Í≥ÑÏÜç Ï†úÏñ¥
 	DZ_DZOOM_ONw(1);				// DZOOM On
-	DZPCK_SELw(SP(PostClk));		// DZOOM Clock º≥¡§
+	DZPCK_SELw(SP(PostClk));		// DZOOM Clock ÏÑ§Ï†ï
 	//DZPCK_PDw(1);					// Clock Enable
 
-	// DZOOM º≥¡§ : √÷¡æ º≥¡§
-	OSD_IVSEL0w(0);					// Post¥‹ √‚∑¬ Sync º≥¡§ (ISP Sync)
-	//OSD_ISEL0w(0xb);				// OSD & Fonc ¿‘∑¬ Path º≥¡§ (DZOOM Module √‚∑¬)
+	// DZOOM ÏÑ§Ï†ï : ÏµúÏ¢Ö ÏÑ§Ï†ï
+	OSD_IVSEL0w(0);					// PostÎã® Ï∂úÎ†• Sync ÏÑ§Ï†ï (ISP Sync)
+	//OSD_ISEL0w(0xb);				// OSD & Fonc ÏûÖÎ†• Path ÏÑ§Ï†ï (DZOOM Module Ï∂úÎ†•)
 
 	//IM_CGO1w(1);					// Write Enable
-	//INIT_DELAY(1);				// 1 VLOCKI ±‚¥Ÿ∏∞ »ƒ
+	//INIT_DELAY(1);				// 1 VLOCKI Í∏∞Îã§Î¶∞ ÌõÑ
 	//IM_RON1w(1);					// Read Enable
 
 	DZoom();
@@ -726,8 +726,8 @@ void ISRT BoxLast(void)
 			SetIsp(BOXPOS_BASE+((i<<1)+1), gnBoxPosIMD[((i-iStaIMD)<<1)+1]);	// box x
 
 			extern BYTE gbMnImdDetWin;
-			//const int iItlDettone = (gbMnImdDetWin && (UP(ItlDettone)==3)) ? 2 : UP(ItlDettone);	// DET TONE¿Ã 3¿œ ∂ß DET WINDOW ∏ﬁ¥∫ ªÁøÎ Ω√ DET TONE∏¶ 2∑Œ º≥¡§
-			const int iItlDettone = (gbMnImdDetWin) ? 4 : UP(ItlDettone);							// DET WINDOW ∏ﬁ¥∫ ªÁøÎ Ω√ DET TONE∏¶ 4∑Œ º≥¡§
+			//const int iItlDettone = (gbMnImdDetWin && (UP(ItlDettone)==3)) ? 2 : UP(ItlDettone);	// DET TONEÏù¥ 3Ïùº Îïå DET WINDOW Î©îÎâ¥ ÏÇ¨Ïö© Ïãú DET TONEÎ•º 2Î°ú ÏÑ§Ï†ï
+			const int iItlDettone = (gbMnImdDetWin) ? 4 : UP(ItlDettone);							// DET WINDOW Î©îÎâ¥ ÏÇ¨Ïö© Ïãú DET TONEÎ•º 4Î°ú ÏÑ§Ï†ï
 
 			const UINT nColorIMD = (i < (ISP_BOX_EA-1-gnBoxMskNum) || iItlDettone==3) ? (0x51<<16 | 0x5a<<8 | 0xef) :	// Motion Box
 								   (i < (ISP_BOX_EA-1            ))	? (gnBoxMskSel&&(i==(ISP_BOX_EA-1-gnBoxMskNum+(gnBoxMskSel-1)))) ? 0xd21092 : 0x903522 : // Area Box

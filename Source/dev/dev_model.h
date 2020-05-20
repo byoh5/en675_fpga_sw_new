@@ -71,15 +71,15 @@
 
 //-------------------------------------------------------------------------------------------------
 //	Display
-// HDMI´Â device.cmake ¿¡¼­ ¼³Á¤ÇÔ
-// HDMI Á¦¾î ½Ã I2C ¼³Á¤Àº peripheral.cmake ¿¡¼­ USE_I2C7 3, I2C7_SPEED 400000 ·Î ¼³Á¤
+// HDMIëŠ” device.cmake ì—ì„œ ì„¤ì •í•¨
+// HDMI ì œì–´ ì‹œ I2C ì„¤ì •ì€ peripheral.cmake ì—ì„œ USE_I2C7 3, I2C7_SPEED 400000 ë¡œ ì„¤ì •
 
 //	DDR
 #define			USE_FRC				1
 
 //	Sensor Control Setting------------------------------------------------------
-// Sensor Á¦¾î ½Ã I2C ¼³Á¤Àº peripheral.cmake ¿¡¼­ USE_I2C0 3, I2C0_SPEED 400000 ·Î ¼³Á¤
-// Sensor Á¦¾î ½Ã SPI ¼³Á¤Àº peripheral.cmake ¿¡¼­ USE_SPI0 2, SPI0_SPEED 1500000, SPI0_BIT 24, SPI0_LSB 1 ·Î ¼³Á¤
+// Sensor ì œì–´ ì‹œ I2C ì„¤ì •ì€ peripheral.cmake ì—ì„œ USE_I2C0 3, I2C0_SPEED 400000 ë¡œ ì„¤ì •
+// Sensor ì œì–´ ì‹œ SPI ì„¤ì •ì€ peripheral.cmake ì—ì„œ USE_SPI0 2, SPI0_SPEED 1500000, SPI0_BIT 24, SPI0_LSB 1 ë¡œ ì„¤ì •
 
 
 //	External Digital Input------------------------------------------------------
@@ -89,7 +89,7 @@
 //	#define			USE_WRCH3_DS2_RDCH3_PIP1		1
 
 //	ISP Function----------------------------------------------------------------
-#define			USE_DNR3D			1		// TODO KSH ¡ß 4K ½Ã USE_DNR3D ¾ÆÁ÷ »ç¿ë ¾ÈµÊ
+#define			USE_DNR3D			1		// TODO KSH â—† 4K ì‹œ USE_DNR3D ì•„ì§ ì‚¬ìš© ì•ˆë¨
 
 //	Jpeg Test-------------------------------------------------------------------
 //#define			JPG_ENCODING			1

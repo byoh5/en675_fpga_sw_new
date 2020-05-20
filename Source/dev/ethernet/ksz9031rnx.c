@@ -441,6 +441,7 @@ void EthphyLoopbackMode(UINT speed, UINT duplex)
 	printf("  Type(%d), Speed(%d), Duplex(%d)\n", ethphy_info.type, ethphy_info.speed, ethphy_info.duplex);
 
 	EthRxTxInit(ethphy_info.type, ethphy_info.speed, ethphy_info.duplex);
+//	EthSetTxColen(ENX_OFF); // Since collision detection is handled by the MAC, the MAC must be sure to disable its collision detection during loopback.
 
 	// Disable filter
 	EthSetRxFilterEn(ENX_OFF);

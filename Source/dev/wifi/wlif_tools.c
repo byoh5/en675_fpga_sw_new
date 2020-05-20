@@ -47,7 +47,7 @@ void cpu2cop_wlif_scan(void *arg)
  	}
 
 #ifdef DEF_CPU1
-	// STA mode¿¡¼­ ÁÖº¯ AP°Ë»ö ½Ã, EN673 AP¸¦ OFF½ÃÄ×À¸¹Ç·Î ´Ù½Ã ON
+	// STA modeì—ì„œ ì£¼ë³€ APê²€ìƒ‰ ì‹œ, EN673 APë¥¼ OFFì‹œì¼°ìœ¼ë¯€ë¡œ ë‹¤ì‹œ ON
 	if(gtNetwork.APcfg.un1Switch == DEF_ON)
 	{
 		if(gtNetwork.STAcfg.un1Connect == DEF_OFF)

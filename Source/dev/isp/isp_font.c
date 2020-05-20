@@ -3,14 +3,14 @@
  Description:	EN675 - Font Control driver
  Designer	:
  Date		:
- Copyright ¨Ï Eyenix Co., Ltd. All Rights Reserved.
+ Copyright â“’ Eyenix Co., Ltd. All Rights Reserved.
 ****************************************************************************/
 #include "dev.h"
 
 
 //UINT gnFontdummy=0;
-UINT gnFontXw = 60;		// Font »ç¿ë °¡´É Ä­ À§Ä¡ : 0 ~ (gnFontXw-1)
-UINT gnFontYw = 23;		// Font »ç¿ë °¡´É ÁÙ À§Ä¡ : 0 ~ (gnFontYw-1)
+UINT gnFontXw = 60;		// Font ì‚¬ìš© ê°€ëŠ¥ ì¹¸ ìœ„ì¹˜ : 0 ~ (gnFontXw-1)
+UINT gnFontYw = 23;		// Font ì‚¬ìš© ê°€ëŠ¥ ì¤„ ìœ„ì¹˜ : 0 ~ (gnFontYw-1)
 UINT gnFontXwMax[3] = { 60,60,60 };
 UINT gnFontYwMax[3] = { 23,23,23 };
 
@@ -66,7 +66,7 @@ void FontInit(UINT HOfs, UINT VOfs, BOOL IsBord, UINT FontHw)
 
 	// Small Font for Debug and Left-Down Title
 	gnFontYwMax[2] = FONT_SMALL_VW;
-	if(gnFontYwMax[2] > 66) gnFontYwMax[2] = 66;	// 66 = ISP_FONT_ID_EA/(ÃÖ¼ÒHW+1), ÃÖ¼ÒHW = 24~35(DEBUG) + 36~37 + 38~60(MENU) + 1 = 61		TODO KSH> Font VW°¡ ³Ê¹« Å©¸é DEBUG¿Í MENU°¡ °ãÄ§
+	if(gnFontYwMax[2] > 66) gnFontYwMax[2] = 66;	// 66 = ISP_FONT_ID_EA/(ìµœì†ŒHW+1), ìµœì†ŒHW = 24~35(DEBUG) + 36~37 + 38~60(MENU) + 1 = 61		TODO KSH> Font VWê°€ ë„ˆë¬´ í¬ë©´ DEBUGì™€ MENUê°€ ê²¹ì¹¨
 	gnFontXwMax[2] = (ISP_FONT_ID_EA / gnFontYwMax[2]) - 1;	// do -1 because of Line returnID
 	if(gnFontXwMax[2] > FONT_SMALL_HW) gnFontXwMax[2] = FONT_SMALL_HW;
 }

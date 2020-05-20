@@ -3,28 +3,28 @@
  Description:	EN675 - Motion detector
  Designer	:	Kim, Sunghoon
  Date		:	19. 7. 24
- Copyright ¨Ï Eyenix Co., Ltd. All Rights Reserved.
+ Copyright â“’ Eyenix Co., Ltd. All Rights Reserved.
 *************************************************************************** */
 #ifndef _ISP_IMD_H_
 #define	_ISP_IMD_H_
 
 #ifndef __ISP_LIB__
-	#define IMD_64B_ON		0//model_8M		// IMD MAPÀÇ 1 line ´ç 32*3 bit ÀÌ¹Ç·Î, ÃÖ´ë 32*3*32=3072pixel ±îÁö °¡´É, 8MÀÇ °æ¿ì 3840pixelÀÌ¹Ç·Î IMD_64B¸¦ 1·Î ¼³Á¤ÇØ¾ß ÇÏ¸ç, IMD_TH°ªÀ» 2¹è·Î Àû¿ëÇØ¾ß ÇÔ		TODO KSH ¡ß IMD_64B°¡ 1ÀÏ¶§ ¿òÁ÷ÀÓ¾ø´Â °÷¿¡¼­ ¿òÁ÷ÀÓ¹ß»ý ¹®Á¦
+	#define IMD_64B_ON		0//model_8M		// IMD MAPì˜ 1 line ë‹¹ 32*3 bit ì´ë¯€ë¡œ, ìµœëŒ€ 32*3*32=3072pixel ê¹Œì§€ ê°€ëŠ¥, 8Mì˜ ê²½ìš° 3840pixelì´ë¯€ë¡œ IMD_64Bë¥¼ 1ë¡œ ì„¤ì •í•´ì•¼ í•˜ë©°, IMD_THê°’ì„ 2ë°°ë¡œ ì ìš©í•´ì•¼ í•¨		TODO KSH â—† IMD_64Bê°€ 1ì¼ë•Œ ì›€ì§ìž„ì—†ëŠ” ê³³ì—ì„œ ì›€ì§ìž„ë°œìƒ ë¬¸ì œ
 
 	#define IMD_HW_B		(5+IMD_64B_ON)
-	#define IMD_VW_B		(5)				// 8MÀÇ °æ¿ì 2160/32=67.5 ÀÌ¹Ç·Î 0x600¹øÁöºÎÅÍ 0x600+(67-1)*3=0x6C6¹øÁö±îÁö IMD MAPÀÌ Ãâ·ÂµÇ¾î¾ß ÇÔ(LOGIC ÄÚµå·Î´Â 0x6DF±îÁö °¡´É)		TODO KSH ¡ß IMD MAPÀÌ 8M¿¡¼­ 0x6C6±îÁö Ãâ·ÂµÇ´ÂÁö È®ÀÎÇÊ¿ä
+	#define IMD_VW_B		(5)				// 8Mì˜ ê²½ìš° 2160/32=67.5 ì´ë¯€ë¡œ 0x600ë²ˆì§€ë¶€í„° 0x600+(67-1)*3=0x6C6ë²ˆì§€ê¹Œì§€ IMD MAPì´ ì¶œë ¥ë˜ì–´ì•¼ í•¨(LOGIC ì½”ë“œë¡œëŠ” 0x6DFê¹Œì§€ ê°€ëŠ¥)		TODO KSH â—† IMD MAPì´ 8Mì—ì„œ 0x6C6ê¹Œì§€ ì¶œë ¥ë˜ëŠ”ì§€ í™•ì¸í•„ìš”
 
 	#define IMD_HW			(RP(FR_HW)>>IMD_HW_B)
 	#define IMD_VW			(RP(FR_VW)>>IMD_VW_B)
 
-	#define IMD_DET_EA		50				// 2M ÇØ»óµµ¿¡¼­ Å×½ºÆ® ½Ã ÃÖ´ë 35°³ Á¤µµ±îÁö °ËÃâµÊ, IMD_BOX_EA*2 ÀÌ»óÀÌ¾î¾ß ÇÔ, 1MÇØ»óµµÀÇ IMD_IMGÅ©±â´Â 880 byte ÀÌ¹Ç·Î Masking & Combine Ã³¸®¸¦ À§ÇØ (880/4) >= IMD_DET_EA Áï 220 ÀÌÇÏ¿©¾ß ÇÔ
+	#define IMD_DET_EA		50				// 2M í•´ìƒë„ì—ì„œ í…ŒìŠ¤íŠ¸ ì‹œ ìµœëŒ€ 35ê°œ ì •ë„ê¹Œì§€ ê²€ì¶œë¨, IMD_BOX_EA*2 ì´ìƒì´ì–´ì•¼ í•¨, 1Mí•´ìƒë„ì˜ IMD_IMGí¬ê¸°ëŠ” 880 byte ì´ë¯€ë¡œ Masking & Combine ì²˜ë¦¬ë¥¼ ìœ„í•´ (880/4) >= IMD_DET_EA ì¦‰ 220 ì´í•˜ì—¬ì•¼ í•¨
 
-	#define IMD_BOX_EA		16				// 16 ÃÊ°ú ¼³Á¤ ½Ã gnBoxToneIMD Ãß°¡ÇØ¾ß ÇÔ
-	#define IMD_OUT_EA		(IMD_BOX_EA-2)	// number of motion box, IMD_BOX_EA¿¡¼­ mask ÃÖ¼Ò°³¼ö 1°³¿Í background 1°³¸¦ Á¦¿ÜÇÑ °³¼ö
+	#define IMD_BOX_EA		16				// 16 ì´ˆê³¼ ì„¤ì • ì‹œ gnBoxToneIMD ì¶”ê°€í•´ì•¼ í•¨
+	#define IMD_OUT_EA		(IMD_BOX_EA-2)	// number of motion box, IMD_BOX_EAì—ì„œ mask ìµœì†Œê°œìˆ˜ 1ê°œì™€ background 1ê°œë¥¼ ì œì™¸í•œ ê°œìˆ˜
 
 	#define IMD_SENS_MAX	10
 
-	#define IMD2BOX_X		(4)				// IMD ODM°ú BOX OSD°¡ Ãâ·Â È­¸é¿¡¼­ ÀÏÄ¡ÇÏ´Â °ª¿¡¼­ -16À» ÇÑ´Ù.
+	#define IMD2BOX_X		(4)				// IMD ODMê³¼ BOX OSDê°€ ì¶œë ¥ í™”ë©´ì—ì„œ ì¼ì¹˜í•˜ëŠ” ê°’ì—ì„œ -16ì„ í•œë‹¤.
 	#define IMD2BOX_Y		(10)
 
 	#define IMD_TEXT_X		(MN_MXSP+1)

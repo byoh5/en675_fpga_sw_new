@@ -2695,7 +2695,7 @@ UINT Isp_Img_HMerge(BOOL OnOff, BYTE Clk, BYTE ChCnt, BYTE RdSync, UINT HtwSync,
 
 void Isp_Cvbs_Config(BOOL OnOff, BOOL IsNtsc, BYTE CvbsFreq, BYTE SourceFrq, BYTE SourcePath, BYTE VlcMode, UINT Hsp, UINT Vsp)
 {
-#if model_TgtBd == 2	// CVBS ∆˜«‘ æ»µ 
+#if model_TgtBd == 2	// CVBS Ìè¨Ìï® ÏïàÎê®
 	OnOff = UP_OFF;
 #endif
 

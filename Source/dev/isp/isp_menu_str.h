@@ -8,7 +8,7 @@
 // (\xa6 == ENTER)
 //
 //
-//							ENGLISH 				CHANESS(Áß±¹¾î¹øÃ¼) 			CHANESS(SIMPLE)(Áß±¹¾î°£Ã¼)		Japanese												Korean
+//							ENGLISH 				CHANESS(ì¤‘êµ­ì–´ë²ˆì²´) 			CHANESS(SIMPLE)(ì¤‘êµ­ì–´ê°„ì²´)		Japanese												Korean
 /* !! - DON'T ERASE - !!*/
 STRING1(,					_B,"");
 STRING1(e,					_B,"\xa6");

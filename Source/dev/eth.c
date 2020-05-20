@@ -72,6 +72,11 @@ void EthInit(void)
 {
 	ETH_PIN_INIT;
 
+#if EN675_SINGLE // init
+	EthSetTxClockPowerEn(ENX_ON);
+	EthSetRxClockPowerEn(ENX_ON);
+#endif
+
 	EthRxTxInit(ETHPHY_TYPE_VAL, ETHPHY_SPD_VAL, ETHPHY_DUPLEX_VAL);
 
 	ETH_RX_INT_SEL = 2;
@@ -186,7 +191,12 @@ void EthTxPacket(BYTE *addr, UINT Len)
 	ETH_TX_VAL = 1;
 }
 
-void EthRxTxClockDly(BYTE u8TXe, BYTE u8TXd, BYTE u8RXe, BYTE u8RXd)
+void EthSetTxColen(ENX_SWITCH onoff)
+{
+	ETH_TX_COLEN = onoff;
+}
+
+void EthSetRxTxClockDly(BYTE u8TXe, BYTE u8TXd, BYTE u8RXe, BYTE u8RXd)
 {
 	ETH_TX_CLKEDGE = u8TXe;
 	ETH_TX_TCKDLY = u8TXd;
@@ -194,7 +204,7 @@ void EthRxTxClockDly(BYTE u8TXe, BYTE u8TXd, BYTE u8RXe, BYTE u8RXd)
 	ETH_RX_RCKDLY = u8RXd;
 }
 
-void EthTxDly(BYTE u8TXEN, BYTE u8TXD)
+void EthSetTxDly(BYTE u8TXEN, BYTE u8TXD)
 {
 	ETH_TX_TXENDLY		= u8TXEN;
 	ETH_TX_TXD0DLY		= u8TXD;
@@ -243,12 +253,12 @@ void EthRxTxInit(UINT type, UINT speed, UINT duplex)
 		// eth lbm 1000 2
 		// eth lbt 1000
 #if 1 // 200303(JHJ)/VU/bit
-		EthRxTxClockDly(0, 0x3, 0, 0x1);
+		EthSetRxTxClockDly(0, 0x3, 0, 0x1);
 #elif 1 // 200217(MJS)/mcs
 		if (speed == ETHPHY_SPD_1000) {
-			EthRxTxClockDly(1, 0xB, 0, 0x2);
+			EthSetRxTxClockDly(1, 0xB, 0, 0x2);
 		} else {
-			EthRxTxClockDly(1, 0x1, 1, 0xC);
+			EthSetRxTxClockDly(1, 0x1, 1, 0xC);
 		}
 #elif 1 // 200130(S)/mcs
 		if (speed == ETHPHY_SPD_1000) {
@@ -286,7 +296,7 @@ void EthRxTxInit(UINT type, UINT speed, UINT duplex)
 		}
 #endif
 
-		EthTxDly(0, 0);
+		EthSetTxDly(0, 0);
 
 #if 0
 		Ethernet Speed (25?, 125? , 5?, ETC MHz) -> AXI Speed (FPGA : 74.25 MHz, ASIC : 400 MHz)
@@ -348,7 +358,7 @@ void EthRxTxInit(UINT type, UINT speed, UINT duplex)
 		ETH_RX_RCKEDGE		= 1;
 		ETH_RX_RCKDLY		= 0x0;
 
-		EthTxDly(0, 0);
+		EthSetTxDly(0, 0);
 
 		if (speed == ETHPHY_SPD_100) {
 			ETH_TX_LTC = (AXI_FREQ / (25*1000*1000)) + 4;	// 25MHz SDR
@@ -436,7 +446,7 @@ void EthRxTxInit(UINT type, UINT speed, UINT duplex)
 		ETH_RX_RCKEDGE		= 0;
 		ETH_RX_RCKDLY		= 0x0;
 
-		EthTxDly(0x0, 0x0);
+		EthSetTxDly(0x0, 0x0);
 
 		if (speed == ETHPHY_SPD_100) {
 			// ETH_TX_LTC = (AXI_FREQ / (50*1000*1000)) + 4;	// 50MHz SDR

@@ -3,7 +3,7 @@
  Description:   EN675 - Sensor Parameter
  Designer   :   Kim, Sunghoon
  Date       :   19. 7. 3
- Copyright ¨Ï Eyenix Co., Ltd. All Rights Reserved.
+ Copyright â“’ Eyenix Co., Ltd. All Rights Reserved.
 *************************************************************************** */
 #ifndef __ISP_SENSOR_PARAMETER_H__
 #define __ISP_SENSOR_PARAMETER_H__
@@ -59,29 +59,29 @@
 \
 					OV2718, IMX291,OS08A10, IMX225, IMX335, IMX274, OV4689, IMX415, IMX323, none10, none11, none12, none13, none14, none15, none16, none17, none18, none19, none20)
 SP_SET(LckDly,		     7,      4,      1,      2,      2,      6,      4,      4,      7,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 0 ~ 7,  Lvds/Mipi input clock delay adjust
-SP_SET(MipiClkPhase,     0,      0,      0,      2,      2,      0,      2,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// Select Mipi 1/4 Clock Phase 0, 1, 2, 3, image align¿¡ ¿µÇâÀ» ÁÖ¾î ¿µ»óÀ» º¸¸é¼­ ÀÌ °ªÀ» Á¶ÀýÇØ¾ß ÇÔ
+SP_SET(MipiClkPhase,     0,      0,      0,      2,      2,      0,      2,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// Select Mipi 1/4 Clock Phase 0, 1, 2, 3, image alignì— ì˜í–¥ì„ ì£¼ì–´ ì˜ìƒì„ ë³´ë©´ì„œ ì´ ê°’ì„ ì¡°ì ˆí•´ì•¼ í•¨
 SP_SET(MipiBit,		     0,      0,      0,     10,     12,     12,     10,     12,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)
 
-SP_SET(IsSlave,		     1,      0,      1,      1,      1,      1,      1,      1,      1,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 0 : Master Mode, 1 : Slave Mode,  Isp master/slave mode¸¦ ¼³Á¤
-SP_SET(IsASync,		     1,      0,      1,      0,      1,      0,      1,      1,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// Auto sync generation, omni sensor¿Í °°ÀÌ Active ÀÌ¿ÜÀÇ ±¸°£¿¡¼­ sync°¡ ³ª¿ÀÁö ¾Ê´Â sensor¿¡¼­ 1·Î ¼³Á¤
-SP_SET(IsNSync,		     1,      0,      0,      1,      1,      0,      1,      0,      1,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// ÀÔ·Â syncÀÇ H/V À§»óÀÌ ÀÏÄ¡ÇÏÁö ¾Ê´Â »óÈ²¿¡¼­ 1·Î ¼³Á¤
-SP_SET(PreHSyncOfs,	  0x16,   0x12,   0xa8,   0xb8,   0xb8,   0x12,   0xb8, 0x1120,   0x8e,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// Pre module Horizontal Sync Offset, Hsp ÀÎÀÚ·Î Image À§Ä¡°¡ ¸ÂÁö ¾ÊÀ»¶§ SyncÀÇ À§Ä¡¸¦ ÀÌµ¿ÇÏ¿© image À§Ä¡¸¦ ¸ÂÃß´Âµ¥ »ç¿ë
-SP_SET(PreVSyncOfs,	   0xa,    0xa,    0xa,    0xa,    0xa,    0xa,    0xa,   0x2f,    0xf,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// Pre module Vertical Sync Offset, Vsp ÀÎÀÚ·Î Image À§Ä¡°¡ ¸ÂÁö ¾ÊÀ»¶§ SyncÀÇ À§Ä¡¸¦ ÀÌµ¿ÇÏ¿© image À§Ä¡¸¦ ¸ÂÃß´Âµ¥ »ç¿ë
-SP_SET(PreHsp,		  0x13,   0x15,   0x15,    0x8,    0x8,   0x15,    0x8,   0x15,    0x7,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// Pre module Horizontal image start position, ¼³Á¤ ¼ø¼­ : PreHSyncOfs -> PreHsp -> ICSel -> OCSel
-SP_SET(PreVsp,		   0x9,    0x7,    0x3,    0x5,    0x5,    0x7,    0x5,    0x2,    0x7,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// Pre module Vertical image start position, ¼³Á¤ ¼ø¼­ : PreVSyncOfs -> PreVsp -> ICSel -> OCSel
+SP_SET(IsSlave,		     1,      0,      1,      1,      1,      1,      1,      1,      1,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 0 : Master Mode, 1 : Slave Mode,  Isp master/slave modeë¥¼ ì„¤ì •
+SP_SET(IsASync,		     1,      0,      1,      0,      1,      0,      1,      1,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// Auto sync generation, omni sensorì™€ ê°™ì´ Active ì´ì™¸ì˜ êµ¬ê°„ì—ì„œ syncê°€ ë‚˜ì˜¤ì§€ ì•ŠëŠ” sensorì—ì„œ 1ë¡œ ì„¤ì •
+SP_SET(IsNSync,		     1,      0,      0,      1,      1,      0,      1,      0,      1,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// ìž…ë ¥ syncì˜ H/V ìœ„ìƒì´ ì¼ì¹˜í•˜ì§€ ì•ŠëŠ” ìƒí™©ì—ì„œ 1ë¡œ ì„¤ì •
+SP_SET(PreHSyncOfs,	  0x16,   0x12,   0xa8,   0xb8,   0xb8,   0x12,   0xb8, 0x1120,   0x8e,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// Pre module Horizontal Sync Offset, Hsp ì¸ìžë¡œ Image ìœ„ì¹˜ê°€ ë§žì§€ ì•Šì„ë•Œ Syncì˜ ìœ„ì¹˜ë¥¼ ì´ë™í•˜ì—¬ image ìœ„ì¹˜ë¥¼ ë§žì¶”ëŠ”ë° ì‚¬ìš©
+SP_SET(PreVSyncOfs,	   0xa,    0xa,    0xa,    0xa,    0xa,    0xa,    0xa,   0x2f,    0xf,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// Pre module Vertical Sync Offset, Vsp ì¸ìžë¡œ Image ìœ„ì¹˜ê°€ ë§žì§€ ì•Šì„ë•Œ Syncì˜ ìœ„ì¹˜ë¥¼ ì´ë™í•˜ì—¬ image ìœ„ì¹˜ë¥¼ ë§žì¶”ëŠ”ë° ì‚¬ìš©
+SP_SET(PreHsp,		  0x13,   0x15,   0x15,    0x8,    0x8,   0x15,    0x8,   0x15,    0x7,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// Pre module Horizontal image start position, ì„¤ì • ìˆœì„œ : PreHSyncOfs -> PreHsp -> ICSel -> OCSel
+SP_SET(PreVsp,		   0x9,    0x7,    0x3,    0x5,    0x5,    0x7,    0x5,    0x2,    0x7,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// Pre module Vertical image start position, ì„¤ì • ìˆœì„œ : PreVSyncOfs -> PreVsp -> ICSel -> OCSel
 SP_SET(PreHSyncPol,	     0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 0 : Falling position, 1 : Rising position, Pre module Horizontal sync input polarity
 SP_SET(PreVSyncPol,	     0,      0,      1,      1,      1,      1,      1,      1,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 0 : Falling position, 1 : Rising position, Pre module Vertical sync input polarity
-SP_SET(ICSel,		     0,      0,      3,      0,      0,      0,      0,      3,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 0 ~ 3,  Pre module color phase selection, RGB interpolatorÀÇ À§»óÀ» Á¶Àý, AWB ODM °ªÀ¸·Î ¿Ã¹Ù¸¥Áö È®ÀÎ(AWBLNOR_SEL:1, Ã»»öÇÊÅÍ:CRDR- CBDB+, È²»öÇÊÅÍ:CRDR+ CBDB-)		TODO KSH ¡ß ICSEL ¼³Á¤ ÇÊ¿ä
-SP_SET(OCSel,		     0,      2,      1,      3,      3,      2,      2,      3,      2,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 0 ~ 3,  Post module color phase selection, RGB interpolatorÀÇ À§»óÀ» Á¶Àý, Ãâ·Â´Ü VLOCKO_IT_POS0w(OutVSyncOfs) & HLOCKO_IT_POS0w(OutHSyncOfs) ¼³Á¤¿¡ µû¶ó OCSel°ªÀ» Àß¸ø ¼³Á¤ÇÒ ¼ö ÀÖÀ¸´Ï ÁÖÀÇ!!!	TODO KSH ¡ß OCSEL ¼³Á¤ ÇÊ¿ä, IMX291 °ËÁõ ¿Ï·á
+SP_SET(ICSel,		     0,      0,      3,      0,      0,      0,      0,      3,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 0 ~ 3,  Pre module color phase selection, RGB interpolatorì˜ ìœ„ìƒì„ ì¡°ì ˆ, AWB ODM ê°’ìœ¼ë¡œ ì˜¬ë°”ë¥¸ì§€ í™•ì¸(AWBLNOR_SEL:1, ì²­ìƒ‰í•„í„°:CRDR- CBDB+, í™©ìƒ‰í•„í„°:CRDR+ CBDB-)		TODO KSH â—† ICSEL ì„¤ì • í•„ìš”
+SP_SET(OCSel,		     0,      2,      1,      3,      3,      2,      2,      3,      2,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 0 ~ 3,  Post module color phase selection, RGB interpolatorì˜ ìœ„ìƒì„ ì¡°ì ˆ, ì¶œë ¥ë‹¨ VLOCKO_IT_POS0w(OutVSyncOfs) & HLOCKO_IT_POS0w(OutHSyncOfs) ì„¤ì •ì— ë”°ë¼ OCSelê°’ì„ ìž˜ëª» ì„¤ì •í•  ìˆ˜ ìžˆìœ¼ë‹ˆ ì£¼ì˜!!!	TODO KSH â—† OCSEL ì„¤ì • í•„ìš”, IMX291 ê²€ì¦ ì™„ë£Œ
 
-SP_SET(Dnr2dICSel,	     0,      0,      3,      0,      0,      0,      0,      3,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 0 ~ 3,  DNR_CSELw  : 2D-DNR ICSEL, DNR2D_ON ON/OFF ½Ã Color º¯È­ ¾ø¾î¾ß ÇÔ		TODO KSH ¡ß 2D-DNR ICSEL ¼³Á¤ ÇÊ¿ä, IMX291 °ËÁõ ¿Ï·á
-SP_SET(Dnr2dOCSel,	     0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 0 ~ 3,  DNR_RCSELw : 2D-DNR OCSEL, À°¾ÈÀ¸·Î È®ÀÎ °¡´É, Ç×»ó 0À¸·Î ¼³Á¤
+SP_SET(Dnr2dICSel,	     0,      0,      3,      0,      0,      0,      0,      3,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 0 ~ 3,  DNR_CSELw  : 2D-DNR ICSEL, DNR2D_ON ON/OFF ì‹œ Color ë³€í™” ì—†ì–´ì•¼ í•¨		TODO KSH â—† 2D-DNR ICSEL ì„¤ì • í•„ìš”, IMX291 ê²€ì¦ ì™„ë£Œ
+SP_SET(Dnr2dOCSel,	     0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 0 ~ 3,  DNR_RCSELw : 2D-DNR OCSEL, ìœ¡ì•ˆìœ¼ë¡œ í™•ì¸ ê°€ëŠ¥, í•­ìƒ 0ìœ¼ë¡œ ì„¤ì •
 
 //SP_SET(HSUP_TH,	  0x74,   0x70,   0x72,   0x78,   0x72,   0x72,   0x72,   0x72,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// High Light color suppression threshold (Y domain control) (0 ~ 0xFF)
 SP_SET(HSUP_TH,		  0xb4,   0xb8,   0xc0,   0xb8,   0xb2,   0xb2,   0xb2,   0xa2,   0xb8,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// High Light color suppression threshold (Y domain control) (0 ~ 0xFF)
 //SP_SET(HSUP_TH,	  0xa4,   0xa0,   0xa2,   0xa8,   0xa2,   0xa2,   0xa2,   0xa2,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// High Light color suppression threshold (Y domain control) (0 ~ 0xFF)
 
-SP_SET(AWB_DB_MAX,	    32,     69,    -78,    -78,   -177,   -154,   0x00,   -271,    -19,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// TODO KSH ¡ß OV4689 ¿Í IMX415 ÀÇ AWB_DB_MAX °ª È®ÀÎ ÇÊ¿ä
+SP_SET(AWB_DB_MAX,	    32,     69,    -78,    -78,   -177,   -154,   0x00,   -271,    -19,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// TODO KSH â—† OV4689 ì™€ IMX415 ì˜ AWB_DB_MAX ê°’ í™•ì¸ í•„ìš”
 SP_SET(AWB_DB_MIN,	  -787,   -808,   -720,   -768,   -744,   -745,   0x00,   -751,   -756,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 		"
 SP_SET(AWB_DR_MAX,	   544,    610,    392,    452,    478,    482,   0x00,    370,    592,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 		"
 SP_SET(AWB_DR_MIN,	  -346,   -405,   -346,   -299,   -145,   -178,   0x00,   -168,   -269,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// 		"
@@ -105,12 +105,12 @@ SP_SET(Blu_Gain,      0x60,   0x60,   0x60,   0x60,   0x60,   0x60,   0x60,   0x
 SP_SET(Grn_BluToYel,  0x90,   0x90,   0x90,   0x90,   0x90,   0x90,   0x90,   0x80,   0x80,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// Adjust Green Hue from Blue to Yellow (0x1:Blue, 0x80:Default, 0xFF:Yellow)
 SP_SET(Grn_Gain,      0xa0,   0xa0,   0xa0,   0xa0,   0xa0,   0xa0,   0xa0,   0xa0,   0x80,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// Adjust Green Gain (0 ~ 0xFF, Default:0x60)
 
-SP_SET(ShtBrtSpeed,	   300,    350,    350,    350,    350,    350,    350,    350,    350,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// AE SPEED ¡æ SHT. SPEED ¡æ BRIGHTEN : 1 ~ 999 (3E7h), SensorÀÇ ½ÇÁ¦ ¹à±â°¡ Å¬¼ö·Ï(¶Ç´Â FPS°¡ ³·¾ÆÁú ¼ö·Ï) Shutter Á¦¾î Speed ¼³Á¤°ªÀº ³·¾ÆÁü
-SP_SET(ShtDrkSpeed,	   160,    350,    300,    350,    350,    350,    350,    350,    350,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// AE SPEED ¡æ SHT. SPEED ¡æ DARKEN : 1 ~ 999 (3E7h), SensorÀÇ ½ÇÁ¦ ¹à±â°¡ Å¬¼ö·Ï(¶Ç´Â FPS°¡ ³·¾ÆÁú ¼ö·Ï) Shutter Á¦¾î Speed ¼³Á¤°ªÀº ³·¾ÆÁü
-SP_SET(AgcBrtSpeed,	   384,     42,    150,     42,     42,     42,     42,     42,     42,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// AE SPEED ¡æ AGC SPEED ¡æ BRIGHTEN : 1 ~ 999 (3E7h), AGCÀÇ ½ÇÁ¦ ÃÖ´ë ¹à±â°¡ Å©°í AGC_MAX°ªÀÌ ÀÛÀ»¼ö·Ï AGC Á¦¾î Speed´Â ³·¾ÆÁü, EN675¼³Á¤°ª = EN673¼³Á¤°ª*0.2
-SP_SET(AgcDrkSpeed,	   384,     26,    150,     26,     26,     26,     26,     26,     26,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// AE SPEED ¡æ AGC SPEED ¡æ DARKEN : 1 ~ 999 (3E7h), AGCÀÇ ½ÇÁ¦ ÃÖ´ë ¹à±â°¡ Å©°í AGC_MAX°ªÀÌ ÀÛÀ»¼ö·Ï AGC Á¦¾î Speed´Â ³·¾ÆÁü, EN675¼³Á¤°ª = EN673¼³Á¤°ª*0.2
+SP_SET(ShtBrtSpeed,	   300,    350,    350,    350,    350,    350,    350,    350,    350,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// AE SPEED â†’ SHT. SPEED â†’ BRIGHTEN : 1 ~ 999 (3E7h), Sensorì˜ ì‹¤ì œ ë°ê¸°ê°€ í´ìˆ˜ë¡(ë˜ëŠ” FPSê°€ ë‚®ì•„ì§ˆ ìˆ˜ë¡) Shutter ì œì–´ Speed ì„¤ì •ê°’ì€ ë‚®ì•„ì§
+SP_SET(ShtDrkSpeed,	   160,    350,    300,    350,    350,    350,    350,    350,    350,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// AE SPEED â†’ SHT. SPEED â†’ DARKEN : 1 ~ 999 (3E7h), Sensorì˜ ì‹¤ì œ ë°ê¸°ê°€ í´ìˆ˜ë¡(ë˜ëŠ” FPSê°€ ë‚®ì•„ì§ˆ ìˆ˜ë¡) Shutter ì œì–´ Speed ì„¤ì •ê°’ì€ ë‚®ì•„ì§
+SP_SET(AgcBrtSpeed,	   384,     42,    150,     42,     42,     42,     42,     42,     42,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// AE SPEED â†’ AGC SPEED â†’ BRIGHTEN : 1 ~ 999 (3E7h), AGCì˜ ì‹¤ì œ ìµœëŒ€ ë°ê¸°ê°€ í¬ê³  AGC_MAXê°’ì´ ìž‘ì„ìˆ˜ë¡ AGC ì œì–´ SpeedëŠ” ë‚®ì•„ì§, EN675ì„¤ì •ê°’ = EN673ì„¤ì •ê°’*0.2
+SP_SET(AgcDrkSpeed,	   384,     26,    150,     26,     26,     26,     26,     26,     26,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// AE SPEED â†’ AGC SPEED â†’ DARKEN : 1 ~ 999 (3E7h), AGCì˜ ì‹¤ì œ ìµœëŒ€ ë°ê¸°ê°€ í¬ê³  AGC_MAXê°’ì´ ìž‘ì„ìˆ˜ë¡ AGC ì œì–´ SpeedëŠ” ë‚®ì•„ì§, EN675ì„¤ì •ê°’ = EN673ì„¤ì •ê°’*0.2
 
-SP_SET(LWDR_2P_SGAIN_ALP,0,      0,      0,      0,   0x80,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// EN781ÀÇ AE_LWDR_SGAIN_ALP : IMX290 & IMX327 & IMX307 = 0x700 / IMX335 5M = 0x100		TODO KSH ¡ß WDR - LWDR_2P_SGAIN_ALP °ª Sensor º°·Î Æ©´× ÇÊ¿ä
+SP_SET(LWDR_2P_SGAIN_ALP,0,      0,      0,      0,   0x80,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0)	// EN781ì˜ AE_LWDR_SGAIN_ALP : IMX290 & IMX327 & IMX307 = 0x700 / IMX335 5M = 0x100		TODO KSH â—† WDR - LWDR_2P_SGAIN_ALP ê°’ Sensor ë³„ë¡œ íŠœë‹ í•„ìš”
 
 
 #if	(model_Sens_Fps==60)
@@ -152,8 +152,8 @@ RP_SET(FR_VTW60,	   750,   1125,   1500,   2250,      0)	// Total vertical   wid
 RP_SET(FR_HTW50,	  1980,   2640,   3960,   5280,      0)	// Total horizontal width for 25P/50P
 RP_SET(FR_VTW50,	   750,   1125,   1500,   2250,      0)	// Total vertical   width for 25P/60P
 
-RP_SET(OutHSyncOfs,	  0x82,   0x80,   0x82,   0x7e,      0)	// 0 ~ 0x1fff,  Digital Output formatter Horizontal sync offset, OCSel¿¡ ¿µÇâÀ» ÁÖ¹Ç·Î °¡´ÉÇÑ º¯°æÇÏÁö ¾Ê´Â °ÍÀ» ±ÇÀå, ÀÌ °ªÀ» Á¶ÀýÇØµµ ¿µ»óÀÌ È­¸é¿¡ Ã¤¿öÁöÁö ¾ÊÀ¸¸é pre/post´ÜÀÇ Hsync offseÀÌ³ª Hsp¸¦ Á¶ÀýÇØ¾ß ÇÔ	TODO KSH - OutHSyncOfs : 2M¸¸ °ËÁõ ¿Ï·á
-RP_SET(OutVSyncOfs,	   0x3,  0x449,  0x5bd,  0x8b1,      0)	// 0 ~ 0xfff,   Digital Output formatter Vertical   sync offset, OCSel¿¡ ¿µÇâÀ» ÁÖ¹Ç·Î °¡´ÉÇÑ º¯°æÇÏÁö ¾Ê´Â °ÍÀ» ±ÇÀå, ÀÌ °ªÀ» Á¶ÀýÇØµµ ¿µ»óÀÌ È­¸é¿¡ Ã¤¿öÁöÁö ¾ÊÀ¸¸é pre/post´ÜÀÇ Vsync offseÀÌ³ª Vsp¸¦ Á¶ÀýÇØ¾ß ÇÔ	TODO KSH - OutVSyncOfs : 2M¸¸ °ËÁõ ¿Ï·á
+RP_SET(OutHSyncOfs,	  0x82,   0x80,   0x82,   0x7e,      0)	// 0 ~ 0x1fff,  Digital Output formatter Horizontal sync offset, OCSelì— ì˜í–¥ì„ ì£¼ë¯€ë¡œ ê°€ëŠ¥í•œ ë³€ê²½í•˜ì§€ ì•ŠëŠ” ê²ƒì„ ê¶Œìž¥, ì´ ê°’ì„ ì¡°ì ˆí•´ë„ ì˜ìƒì´ í™”ë©´ì— ì±„ì›Œì§€ì§€ ì•Šìœ¼ë©´ pre/postë‹¨ì˜ Hsync offseì´ë‚˜ Hspë¥¼ ì¡°ì ˆí•´ì•¼ í•¨	TODO KSH - OutHSyncOfs : 2Më§Œ ê²€ì¦ ì™„ë£Œ
+RP_SET(OutVSyncOfs,	   0x3,  0x449,  0x5bd,  0x8b1,      0)	// 0 ~ 0xfff,   Digital Output formatter Vertical   sync offset, OCSelì— ì˜í–¥ì„ ì£¼ë¯€ë¡œ ê°€ëŠ¥í•œ ë³€ê²½í•˜ì§€ ì•ŠëŠ” ê²ƒì„ ê¶Œìž¥, ì´ ê°’ì„ ì¡°ì ˆí•´ë„ ì˜ìƒì´ í™”ë©´ì— ì±„ì›Œì§€ì§€ ì•Šìœ¼ë©´ pre/postë‹¨ì˜ Vsync offseì´ë‚˜ Vspë¥¼ ì¡°ì ˆí•´ì•¼ í•¨	TODO KSH - OutVSyncOfs : 2Më§Œ ê²€ì¦ ì™„ë£Œ
 
 RP_SET(AE_HSP,		   0x8,    0x8,   0x10,   0x10,      0)
 RP_SET(AE_HEP,		 0x274,  0x3ba,  0x4f8,  0x77a,      0)
@@ -163,13 +163,13 @@ RP_SET(AE_VEP,		 0x2c4,  0x434,  0x598,  0x865,      0)
 //RP_SET(DF_HSP,		     1,      1,      1,      1,      0)
 //RP_SET(DF_VSP,		     5,      5,      5,      5,      0)
 
-RP_SET(AWB_HSP,		   0x3,    0x0,    0xd,    0xf,      0)	// 2M°ªÀ» 0x8¿¡¼­ 0x0À¸·Î º¯°æ
+RP_SET(AWB_HSP,		   0x3,    0x0,    0xd,    0xf,      0)	// 2Mê°’ì„ 0x8ì—ì„œ 0x0ìœ¼ë¡œ ë³€ê²½
 RP_SET(AWB_HW,		 0x279,  0x3b0,  0x4ea,  0x770,      0)
 RP_SET(AWB_VSP,		   0x9,   0x10,   0x14,   0x14,      0)
 RP_SET(AWB_VW,		 0x2c0,  0x420,  0x583,  0x850,      0)
 
-RP_SET(BOX_HSP,		  0x7e,   0x7e,   0x7e,   0x7e,      0)	// TODO KSH - BOX_HSP : 2M¸¸ °ËÁõ ¿Ï·á,	IMD BG BOX·Î °ËÁõ, OutHSyncOfs Áõ°¨ ½Ã µ¿ÀÏÇÏ°Ô Áõ°¨ÇØ¾ß ÇÔ
-RP_SET(BOX_VSP,		   0xd,    0xd,    0xd,    0xd,      0)	// TODO KSH - BOX_VSP : 2M¸¸ °ËÁõ ¿Ï·á,	IMD BG BOX·Î °ËÁõ
+RP_SET(BOX_HSP,		  0x7e,   0x7e,   0x7e,   0x7e,      0)	// TODO KSH - BOX_HSP : 2Më§Œ ê²€ì¦ ì™„ë£Œ,	IMD BG BOXë¡œ ê²€ì¦, OutHSyncOfs ì¦ê° ì‹œ ë™ì¼í•˜ê²Œ ì¦ê°í•´ì•¼ í•¨
+RP_SET(BOX_VSP,		   0xd,    0xd,    0xd,    0xd,      0)	// TODO KSH - BOX_VSP : 2Më§Œ ê²€ì¦ ì™„ë£Œ,	IMD BG BOXë¡œ ê²€ì¦
 
 RP_SET(ACE_HB,		   0xA,    0xF,    0xA,    0xF,      0)	// number of ACE horizontal block
 RP_SET(ACE_VB,		   0x5,    0x8,    0x6,    0x8,      0)	// number of ACE vertical   block
@@ -250,7 +250,7 @@ RP_SET(FONT_OFY,	  0x36,    0xf,    0xf,   0x30,      0)	// Font Vertical Positi
 	#define FPS_VDOr			((UP(SysFreq) == UP_SYSFREQ_50) ? 12 : 15)
 #endif
 
-#define FPS_VDIr	FPS_VDOr	// TODO KSH ¡ß FPS_VDI ¿Í FPS_VDO°¡ ´Ù¸¥ °æ¿ì ¼öÁ¤ ÇÊ¿ä
+#define FPS_VDIr	FPS_VDOr	// TODO KSH â—† FPS_VDI ì™€ FPS_VDOê°€ ë‹¤ë¥¸ ê²½ìš° ìˆ˜ì • í•„ìš”
 
 
 #if model_1M || model_2M

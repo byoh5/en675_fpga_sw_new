@@ -15,8 +15,10 @@ void Init_Vsys(void) // System
 
 	enx_externalirq_init_cpu3();
 
+#if defined(__SENSOR__)
 	AtoBIrqCallback(CPUtoISPcallback, NULL);
 	AtoBSetIrqEn(ENX_ON);
+#endif
 }
 
 void main_3(int cpu_id)

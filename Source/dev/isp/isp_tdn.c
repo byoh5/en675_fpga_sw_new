@@ -4,7 +4,7 @@
  Designer	:	Lee, Hoon
  Modified by:	Kim, Sunghoon
  Date		:	14. 8. 4
- Copyright ¨Ï Eyenix Co., Ltd. All Rights Reserved.
+ Copyright â“’ Eyenix Co., Ltd. All Rights Reserved.
 *************************************************************************** */
 
 #include "dev.h"

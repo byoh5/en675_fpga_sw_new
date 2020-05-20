@@ -3,7 +3,7 @@
  Description:	EN675 - Auto Exposure function
  Designer	:	Kim, Sunghoon
  Date		:	19. 7. 2
- Copyright ®œ Eyenix Co., Ltd. All Rights Reserved.
+ Copyright ‚ìí Eyenix Co., Ltd. All Rights Reserved.
 *************************************************************************** */
 #ifndef _ISP_AE_H_
 #define	_ISP_AE_H_
@@ -79,7 +79,7 @@ extern int giCurDssStg;
 
 extern int giErr1d;
 
-extern BYTE gbWdrOn/*,gbWdrOnBuf,gbWdrOnBuf2*/;	// WDR on/off status,  Ae() ø°º≠∏∏ gbWdrOn!=gbWdrOnBuf ¿∏∑Œ ∫Ø∞Ê ø©∫Œ √º≈© ∞°¥…
+extern BYTE gbWdrOn/*,gbWdrOnBuf,gbWdrOnBuf2*/;	// WDR on/off status,  Ae() ÏóêÏÑúÎßå gbWdrOn!=gbWdrOnBuf ÏúºÎ°ú Î≥ÄÍ≤Ω Ïó¨Î∂Ä Ï≤¥ÌÅ¨ Í∞ÄÎä•
 extern WORD gwWdrGmk;						// WDR Gamma weight
 
 #define gbWdrOnBuf2		gbWdrOn
@@ -178,7 +178,7 @@ extern void ShutterMenuSet(void);
   #endif
 
 
-#define GrpAe(ID)	gnTxGrp[ID].m_UINT		// GRP ªÁøÎ
+#define GrpAe(ID)	gnTxGrp[ID].m_UINT		// GRP ÏÇ¨Ïö©
 #define GrpAeF(ID)	gnTxGrp[ID].m_float
 
 #if 1
@@ -241,7 +241,7 @@ enum{// GA = Graph of AE
 	//GA_ERR_DAY,				// iErrOfs		YGMY_01r
 	//GA_ERR_NIGHT_ORI,		// iErrNightRaw
 	//GA_CUR_NIGHT,
-	GA_ERR_NIGHT,			// GA_ERR_DAYøÕ ∞∞¿∫ ¿ßƒ°	GA_CUR_NIGHTøÕ ∞∞¿∫ ¿ßƒ°	iErrNightRaw	gbAgcDly*10 + gbShtDly
+	GA_ERR_NIGHT,			// GA_ERR_DAYÏôÄ Í∞ôÏùÄ ÏúÑÏπò	GA_CUR_NIGHTÏôÄ Í∞ôÏùÄ ÏúÑÏπò	iErrNightRaw	gbAgcDly*10 + gbShtDly
 
 
 	//GA_IRS_VAL,
@@ -255,7 +255,7 @@ enum{// GA = Graph of AE
 	//GA_AGC_VAL,
 
 	//GA_ERR_DAY_OFS,
-	GA_ERR_CHT_PRE,			// iCurSpotEst GA_ERR øÕ ∞∞¿∫ ¿ßƒ°	iErrSpot
+	GA_ERR_CHT_PRE,			// iCurSpotEst GA_ERR ÏôÄ Í∞ôÏùÄ ÏúÑÏπò	iErrSpot
 
 	GA_AGC_VAL_PRE,			// giAgcVal + giShtVal - 125		iCurSpotChg>>IIG
 	GA_ERR,					// iErrBg
@@ -311,7 +311,7 @@ enum{// PA = Parameter of AE
 };
 #else
 	#define ParAe(V)			V
-	#define PA_STA				0					// Default is 0, ClipCntø° µ˚∂Û Err∫∏¡§ ±‚¥…
+	#define PA_STA				0					// Default is 0, ClipCntÏóê Îî∞Îùº ErrÎ≥¥Ï†ï Í∏∞Îä•
 	#define PA_H264_SKIP_CNT	6					// Init
 	#define PA_WDR_SHORT_MIN1	8					// Init
 	#define	PA_ERR_CHT_TH		60					// Init
@@ -322,7 +322,7 @@ enum{// PA = Parameter of AE
 	#define	PA_TGT_NIGHT		0					// Test for Realtime Change, Clip Lv
 	#define	PA_SAT_OFF			0					// Default is 0
 	#define	PA_ERR_UP_MAX		0					// Test for Realtime Change
-	#define	PA_AGC_OFF_CNT		0					// IRS_DLY_CTRL ø°º≠ ªÁøÎ(Ω«¡¶ ªÁøÎ æ»«‘)
+	#define	PA_AGC_OFF_CNT		0					// IRS_DLY_CTRL ÏóêÏÑú ÏÇ¨Ïö©(Ïã§Ï†ú ÏÇ¨Ïö© ÏïàÌï®)
 	#define	PA_IRS_POS_SPEED	UP(AE_SPEED_DC_VP)	// Init
 	#define	PA_IRS_OPEN_SPEED	iIrsUpSpd			// Always, Init?
 	#define	PA_IRS_CLOSE_SPEED	iIrsDnSpd			// Always, Init?
@@ -330,7 +330,7 @@ enum{// PA = Parameter of AE
 	#define	PA_IRS_GAIN_MIN_BIT	2					// Init
 	#define	PA_IRS_GAIN_MIN_ERR	100					// Init
 	#define	PA_IRS_GAIN_MAX_ERR	300					// Init
-	#define	PA_AGC_GAIN_MIN_BIT	UP(SmallSpeed)	// OSD MENU∑Œ ¥Î√º
+	#define	PA_AGC_GAIN_MIN_BIT	UP(SmallSpeed)	// OSD MENUÎ°ú ÎåÄÏ≤¥
 	#define	PA_AGC_GAIN_MIN_ERR	20					// Init
 	#define	PA_AGC_GAIN_MAX_ERR	100					// Init
 	#define	PA_CTRL_ORIGINAL	0//UP(AE_ORIGINAL_CTRL)	// Default is 0

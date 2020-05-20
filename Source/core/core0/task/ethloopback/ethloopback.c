@@ -211,6 +211,8 @@ void EthloopbackTask(void *ctx)
 	ENX_SWITCH txpd, rxpd;
 	txpd = EthGetTxClockPowerEn();
 	rxpd = EthGetRxClockPowerEn();
+	EthSetTxClockPowerEn(ENX_ON);
+	EthSetRxClockPowerEn(ENX_ON);
 #endif
 	ethlp.eRunMode = ePlk_init;
 	ethlp.u32Loop = 0;
@@ -242,31 +244,15 @@ void EthloopbackTask(void *ctx)
 
 			switch (ethlp.eRunMode) {
 			case ePlk_single:
-#if EN675_SINGLE
-				EthSetTxClockPowerEn(ENX_ON);
-				EthSetRxClockPowerEn(ENX_ON);
-#endif
 				EthSetRxEn(ENX_ON);
 				lpRes = EthphyLoopbackTest(&ethlp);
-#if EN675_SINGLE
 				EthSetRxEn(ENX_OFF);
-				EthSetTxClockPowerEn(txpd);
-				EthSetRxClockPowerEn(rxpd);
-#endif
 				printf("The test is complete(%d).\n", lpRes);
 				break;
 			case ePlk_auto:
-#if EN675_SINGLE
-				EthSetTxClockPowerEn(ENX_ON);
-				EthSetRxClockPowerEn(ENX_ON);
-#endif
 				EthSetRxEn(ENX_ON);
 				EthLoopbackAuto(&ethlp);
 				EthSetRxEn(ENX_OFF);
-#if EN675_SINGLE
-				EthSetTxClockPowerEn(txpd);
-				EthSetRxClockPowerEn(rxpd);
-#endif
 				printf("The test is complete.\n");
 				break;
 			case ePlk_stop:
@@ -287,6 +273,11 @@ void EthloopbackTask(void *ctx)
 	}
 
 	EthloopbackFree(&ethlp);
+
+#if EN675_SINGLE
+	EthSetTxClockPowerEn(txpd);
+	EthSetRxClockPowerEn(rxpd);
+#endif
 
 	ethlp.eRunMode = ePlk_off;
 	vTaskDelete(NULL);

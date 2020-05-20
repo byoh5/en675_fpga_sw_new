@@ -49,9 +49,9 @@
 #if (model_Lens==1)
 		// System
 	#define TMC_TABLEREAD			0x01
-	#define TMC_TABLEWRITE			0x02 // Data ºÎºĞÀÌ 4Byte * 11 = ÃÑ 44ByteÀÔ´Ï´Ù.
-	#define TMC_LENSINITIALIZATION	0x03 // Write Command·Î º¸³»¸ç, Data´Â 4Byte·Î TRUE(1)¸¦ º¸³À´Ï´Ù.
-	#define TMC_CALIBRATIONSTART	0x04 // Write Command·Î º¸³»¸ç, Data´Â 4Byte·Î TRUE(1)¸¦ º¸³À´Ï´Ù.
+	#define TMC_TABLEWRITE			0x02 // Data ë¶€ë¶„ì´ 4Byte * 11 = ì´ 44Byteì…ë‹ˆë‹¤.
+	#define TMC_LENSINITIALIZATION	0x03 // Write Commandë¡œ ë³´ë‚´ë©°, DataëŠ” 4Byteë¡œ TRUE(1)ë¥¼ ë³´ëƒ…ë‹ˆë‹¤.
+	#define TMC_CALIBRATIONSTART	0x04 // Write Commandë¡œ ë³´ë‚´ë©°, DataëŠ” 4Byteë¡œ TRUE(1)ë¥¼ ë³´ëƒ…ë‹ˆë‹¤.
 
 		// Zoom
 	#define TMC_ZOOM_TOTALSTEP		0x10
@@ -127,7 +127,7 @@
 
 #define UNUSED_ARG(x)			((void)(x))
 
-#define UART_TX_ECM_DLY			WaitXus(1000)	// TODO KSH> ECM¿¡¼­ Read¸¦ À§ ¶Ç´Â ¾Æ·¡·Î ¿¬¼Ó ½ÇÇàÇÏ´Â °æ¿ì Uart ¿Àµ¿ÀÛ ¹ß»ı ¹æÁö, 1000us°¡ °¡Àå ¿Àµ¿ÀÛ ¹ß»ı·ü ÀûÀ½
+#define UART_TX_ECM_DLY			WaitXus(1000)	// TODO KSH> ECMì—ì„œ Readë¥¼ ìœ„ ë˜ëŠ” ì•„ë˜ë¡œ ì—°ì† ì‹¤í–‰í•˜ëŠ” ê²½ìš° Uart ì˜¤ë™ì‘ ë°œìƒ ë°©ì§€, 1000usê°€ ê°€ì¥ ì˜¤ë™ì‘ ë°œìƒë¥  ì ìŒ
 
 #if 0
 #define IRQ_DISABLE				{ clear_csr(mstatus, MSTATUS_MIE); }
@@ -264,7 +264,7 @@ void UartDebugTxIrq(void *ctx)
 	if(giTxOn) { UartTxSetIrqEn(DEBUG_UART_NUM, ENX_OFF); UIO(goto TxIrqEnd, return); }
 	else {
 
-		//if(UartTxIsEmpty(DEBUG_UART_NUM) == 0) UIO(goto TxIrqEnd, return);	// UART Polling TX ´ë±â
+		//if(UartTxIsEmpty(DEBUG_UART_NUM) == 0) UIO(goto TxIrqEnd, return);	// UART Polling TX ëŒ€ê¸°
 
 #if 1
 		while(gtUartQue.wTxLen)

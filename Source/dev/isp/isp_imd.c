@@ -3,7 +3,7 @@
  Description:	EN675 - Motion detector
  Designer	:	Kim, Sunghoon
  Date		:	19. 7. 24
- Copyright ¨Ï Eyenix Co., Ltd. All Rights Reserved.
+ Copyright â“’ Eyenix Co., Ltd. All Rights Reserved.
 *************************************************************************** */
 
 #include "dev.h"
@@ -23,7 +23,7 @@ UINT	gnBoxMskPosNum = 0;
 BYTE	gbBoxMskLUT[MASK_EA];
 BYTE	gbBoxMskDet[MASK_EA];
 
-int		gbMaskOnNum = 0;	// BYTE ½Ã Ã³¸®½Ã°£ 10~20us Á¤µµ Áõ°¡
+int		gbMaskOnNum = 0;	// BYTE ì‹œ ì²˜ë¦¬ì‹œê°„ 10~20us ì •ë„ ì¦ê°€
 int		gbIMD_Bright = 0;
 int		gbIMD_Moving = 0;
 int		gbIMD_Update = 0;
@@ -32,17 +32,17 @@ int		gnIMD_TextOn = 0;
 
 void InitIMD(void)
 {
-	IMD_CK_SELw(2);			// 74.25MHz ¼³Á¤ (FPGA¿¡¼­´Â ¼³Á¤ °ª°ú °ü°è¾øÀÌ 74.25MHz·Î °íÁ¤)
-	IMD_CK_PDw(UP(Itl));	// TODO KSH> MD Clock Enable - »ç¿ëÇÏÁö ¾ÊÀ» ½Ã´Â Ç×»ó Clock Power Down ¿ä¸Á!!!
+	IMD_CK_SELw(2);			// 74.25MHz ì„¤ì • (FPGAì—ì„œëŠ” ì„¤ì • ê°’ê³¼ ê´€ê³„ì—†ì´ 74.25MHzë¡œ ê³ ì •)
+	IMD_CK_PDw(UP(Itl));	// TODO KSH> MD Clock Enable - ì‚¬ìš©í•˜ì§€ ì•Šì„ ì‹œëŠ” í•­ìƒ Clock Power Down ìš”ë§!!!
 
-	IMD_HSELw(1);			// MD HLOCK ¼³Á¤.  ¡®1¡¯·Î ¼³Á¤ÇÒ °æ¿ì ISP HLOCKÀ» »ç¿ë
-	IMD_HONw(1);			// MD Clock »ý¼º ½Ã ¼±ÅÃµÈ HLOCKÀ» ±âÁØÀ¸·Î ClockÀ» »ý¼ºÇÑ´Ù. (´Ù¸¥ Source »ç¿ë½Ãµµ Ç×»ó ¡®1¡¯)
+	IMD_HSELw(1);			// MD HLOCK ì„¤ì •.  â€˜1â€™ë¡œ ì„¤ì •í•  ê²½ìš° ISP HLOCKì„ ì‚¬ìš©
+	IMD_HONw(1);			// MD Clock ìƒì„± ì‹œ ì„ íƒëœ HLOCKì„ ê¸°ì¤€ìœ¼ë¡œ Clockì„ ìƒì„±í•œë‹¤. (ë‹¤ë¥¸ Source ì‚¬ìš©ì‹œë„ í•­ìƒ â€˜1â€™)
 
-//	IMD_ISELw(0);			// ISP Image SourceÁß ACE Ãâ·ÂÀ» MD ÀÔ·ÂÀ¸·Î »ç¿ë
+//	IMD_ISELw(0);			// ISP Image Sourceì¤‘ ACE ì¶œë ¥ì„ MD ìž…ë ¥ìœ¼ë¡œ ì‚¬ìš©
 							// 0 : ISP ACE
 							// 1 : ISP RGB Interpolator Y
-							// 2 ~ 13 : ÃßÈÄ Ãß°¡ (Digital ÀÔ·Â Source µîµî..)
-//	IMD_IVSELw(0);			// ISP Sync ¼±ÅÃ
+							// 2 ~ 13 : ì¶”í›„ ì¶”ê°€ (Digital ìž…ë ¥ Source ë“±ë“±..)
+//	IMD_IVSELw(0);			// ISP Sync ì„ íƒ
 //	IMD_VMODw(0);			// Only 0
 
 	IMD_ONw(1);
@@ -100,7 +100,7 @@ void InitIMD(void)
 
 void ISRT SensIMD(void)
 {
-	const int iThresIMD = LibUtlInterp1D(giCurAgc, ADNR_AGC_MIN, ADNR_AGC_MAX, 0, 5<<IMD_64B_ON); 	// Control threshold by AGC level,  giCurAgc¸¦ CLAMP(MINMAX) ÇÏÁö ¾Ê´Â °æ¿ì giCurAgc°¡ 800, ADNR_AGC_MAX°¡ 512ÀÌ¸é 8ÀÌ Ãâ·Â !!!
+	const int iThresIMD = LibUtlInterp1D(giCurAgc, ADNR_AGC_MIN, ADNR_AGC_MAX, 0, 5<<IMD_64B_ON); 	// Control threshold by AGC level,  giCurAgcë¥¼ CLAMP(MINMAX) í•˜ì§€ ì•ŠëŠ” ê²½ìš° giCurAgcê°€ 800, ADNR_AGC_MAXê°€ 512ì´ë©´ 8ì´ ì¶œë ¥ !!!
 	IMD_THw( ((((IMD_SENS_MAX - UP(ItlSens))<<1) + 3)<<IMD_64B_ON) + iThresIMD ); 											// 3 : Offset
 }
 
@@ -149,7 +149,7 @@ void MaskIMD(void)
 			}
 		}
 		else {
-			bBoxMskLUT[i] = MASK_EA;	// bBoxMskLUT[i]°¡ MASK_EAÀÌ¸é invalid
+			bBoxMskLUT[i] = MASK_EA;	// bBoxMskLUT[i]ê°€ MASK_EAì´ë©´ invalid
 		}
 	}
 
@@ -190,16 +190,16 @@ void ISRT BoxIMD(void)
 
 			for(j=MASK_EA,i=0; i<gnBoxMskPosNum; i++) {
 				if(gbBoxMskDet[i]) {
-					if(j == MASK_EA) j = gbBoxMskLUT[i];	// ´ÜÀÏ window¿¡¼­ ¿òÁ÷ÀÓÀÌ °ËÃâµÈ °æ¿ì
-					else break;								// º¹¼ö window¿¡¼­ ¿òÁ÷ÀÓÀÌ °ËÃâµÈ °æ¿ì
+					if(j == MASK_EA) j = gbBoxMskLUT[i];	// ë‹¨ì¼ windowì—ì„œ ì›€ì§ìž„ì´ ê²€ì¶œëœ ê²½ìš°
+					else break;								// ë³µìˆ˜ windowì—ì„œ ì›€ì§ìž„ì´ ê²€ì¶œëœ ê²½ìš°
 				}
 			}
 
-			if(i==gnBoxMskPosNum) {							// ´ÜÀÏ window¿¡¼­ ¿òÁ÷ÀÓÀÌ °ËÃâµÈ °æ¿ì
+			if(i==gnBoxMskPosNum) {							// ë‹¨ì¼ windowì—ì„œ ì›€ì§ìž„ì´ ê²€ì¶œëœ ê²½ìš°
 				DispStr("WINDOW  MOTION !!!", IMD_TEXT_Y, IMD_TEXT_X, 18);
 				SETFONTID(IMD_TEXT_Y, IMD_TEXT_X+6, '0'+j)
 			}
-			else {											// º¹¼ö window¿¡¼­ ¿òÁ÷ÀÓÀÌ °ËÃâµÈ °æ¿ì
+			else {											// ë³µìˆ˜ windowì—ì„œ ì›€ì§ìž„ì´ ê²€ì¶œëœ ê²½ìš°
 				DispStr("WINDOWS MOTION !!!", IMD_TEXT_Y, IMD_TEXT_X, 18);
 			}
 		}
@@ -213,16 +213,16 @@ void ISRT BoxIMD(void)
 	//---------------------------------------------------------------------------------------------
 	extern BYTE gbMnImdDetWin;
 	extern BYTE gbMnImdZone;
-	//const int iItlDettone = (gbMnImdDetWin && (UP(ItlDettone)==3)) ? 2 : UP(ItlDettone);	// DET TONEÀÌ 3ÀÏ ¶§ DET WINDOW ¸Þ´º »ç¿ë ½Ã DET TONE¸¦ 2·Î ¼³Á¤
-	const int iItlDettone = (gbMnImdDetWin) ? 4 : UP(ItlDettone);							// DET WINDOW ¸Þ´º »ç¿ë ½Ã DET TONE¸¦ 4·Î ¼³Á¤
+	//const int iItlDettone = (gbMnImdDetWin && (UP(ItlDettone)==3)) ? 2 : UP(ItlDettone);	// DET TONEì´ 3ì¼ ë•Œ DET WINDOW ë©”ë‰´ ì‚¬ìš© ì‹œ DET TONEë¥¼ 2ë¡œ ì„¤ì •
+	const int iItlDettone = (gbMnImdDetWin) ? 4 : UP(ItlDettone);							// DET WINDOW ë©”ë‰´ ì‚¬ìš© ì‹œ DET TONEë¥¼ 4ë¡œ ì„¤ì •
 
 	const int iDetNum = (gbIMD_Update) ? 0 : (iItlDettone==3) ? (gnBoxNumIMD > IMD_BOX_EA) ? IMD_BOX_EA : gnBoxNumIMD :
 											 (((int)gnBoxNumIMD+gbMaskOnNum) > (IMD_OUT_EA+1)) ? (IMD_OUT_EA+1) - gbMaskOnNum : (int)gnBoxNumIMD;
-	GrpIMD(7,iDetNum)		// OSD Ãâ·Â °³¼ö
+	GrpIMD(7,iDetNum)		// OSD ì¶œë ¥ ê°œìˆ˜
 
 	// Set IMD Box OSD
 	gnBoxOnIMD = 0;
-	gnBoxNumIMD = 0;	// iDetNum ¸ÕÀú ¼³Á¤ ÈÄ ÃÊ±âÈ­
+	gnBoxNumIMD = 0;	// iDetNum ë¨¼ì € ì„¤ì • í›„ ì´ˆê¸°í™”
 	gnBoxMskNum = 0;
 	gnBoxMskSel = 0;
 	gnBoxFillIMD = 0;
@@ -231,7 +231,7 @@ void ISRT BoxIMD(void)
 	if(UP(ItlMaskOsd) == UP_ON)
 	{
 		// Set Motion Box
-		for(i=iDetNum-1; i>=0; i--) {	// Áß¿ä!!! : bRectIMD¸¦ wRectIMD·Î º¯°æ ½Ã µÚ¿¡¼­(iDetNum) ºÎÅÍ bRECT ±¸Á¶Ã¼ÀÇ ¹Ý´ë ¼ø¼­ sx,ex,sy,ey·Î ÇÒ´ç
+		for(i=iDetNum-1; i>=0; i--) {	// ì¤‘ìš”!!! : bRectIMDë¥¼ wRectIMDë¡œ ë³€ê²½ ì‹œ ë’¤ì—ì„œ(iDetNum) ë¶€í„° bRECT êµ¬ì¡°ì²´ì˜ ë°˜ëŒ€ ìˆœì„œ sx,ex,sy,eyë¡œ í• ë‹¹
 			wRectIMD(i)->sx = (((WORD)bRectIMD(i)->sx)<<IMD_HW_B) + IMD2BOX_X;
 			wRectIMD(i)->ex = (((WORD)bRectIMD(i)->ex)<<IMD_HW_B) + IMD2BOX_X;
 			wRectIMD(i)->sy = (((WORD)bRectIMD(i)->sy)<<IMD_VW_B) + IMD2BOX_Y;
@@ -267,10 +267,10 @@ void ISRT BoxIMD(void)
 					gnBoxOnIMD |= (1<<i);
 
 					//----------------------------------------------------------------------------------------------------
-					gnBoxMskNum++;							// gnBoxMskNum : OSD BOX·Î Ãâ·ÂÇÒ MaskÀÇ ÃÑ °³¼ö, BoxLast()¿¡¼­ »ç¿ë
+					gnBoxMskNum++;							// gnBoxMskNum : OSD BOXë¡œ ì¶œë ¥í•  Maskì˜ ì´ ê°œìˆ˜, BoxLast()ì—ì„œ ì‚¬ìš©
 
 					if(gbMnImdDetWin && gbMnImdZone==j) {
-						gnBoxMskSel = gnBoxMskNum;			// gnBoxMskSel : 1 ÀÌ»óÀÌ¸é DET WINDOW ¸Þ´º¿¡¼­ window ¼±ÅÃ Áß, ¸¸¾à gnBoxMskSel=4 ÀÌ¸é window zone 3À» ¼±ÅÃ, BoxLast()¿¡¼­ »ç¿ë
+						gnBoxMskSel = gnBoxMskNum;			// gnBoxMskSel : 1 ì´ìƒì´ë©´ DET WINDOW ë©”ë‰´ì—ì„œ window ì„ íƒ ì¤‘, ë§Œì•½ gnBoxMskSel=4 ì´ë©´ window zone 3ì„ ì„ íƒ, BoxLast()ì—ì„œ ì‚¬ìš©
 						gnBoxFillIMD |= (1<<i);
 						gnBoxToneIMD |= (((UP(ItlDettone)>=3) ? 2 : UP(ItlDettone))<<(i<<1));
 					}

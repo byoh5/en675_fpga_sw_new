@@ -3,7 +3,7 @@
  Description:	EN675 - Auto Focus function
  Designer	:	Lee, Wanhee
  Date		:	19. 7. 23
- Copyright ¨Ï Eyenix Co., Ltd. All Rights Reserved.
+ Copyright â“’ Eyenix Co., Ltd. All Rights Reserved.
 *************************************************************************** */
 #ifndef _ISP_AF_H_
 #define	_ISP_AF_H_

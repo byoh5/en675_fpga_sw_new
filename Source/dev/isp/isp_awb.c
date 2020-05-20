@@ -3,7 +3,7 @@
  Description:	EN675 - Auto White Balance module
  Designer	:	Lee, Hoon (14.12.05)
  Modified by:	Kim, Sunghoon (19.08.20)
- Copyright ¨Ï Eyenix Co., Ltd. All Rights Reserved.
+ Copyright â“’ Eyenix Co., Ltd. All Rights Reserved.
 *************************************************************************** */
 
 #include "dev.h"
@@ -43,8 +43,8 @@ int ISRT div4x(const int aiNumer, const int aiDenom, const int aiZeroDenom)	// A
 {
 	/*const*/ long lDiv = (aiDenom) ? (((long)aiNumer)<<2) / ((long)aiDenom) : aiZeroDenom;
 	//return CLAMP(lDiv, (int)0x80000000, (int)0x7FFFFFFF);
-	if(lDiv > (int)0x7FFFFFFF) lDiv = (int)0x7FFFFFFF;			// CLAMP() º¸´Ù ÄÚµå °¨¼Ò
-	if(lDiv < (int)0x80000000) lDiv = (int)0x80000000;			// "                     , else if(...) ¿Í ÄÚµå µ¿ÀÏ
+	if(lDiv > (int)0x7FFFFFFF) lDiv = (int)0x7FFFFFFF;			// CLAMP() ë³´ë‹¤ ì½”ë“œ ê°ì†Œ
+	if(lDiv < (int)0x80000000) lDiv = (int)0x80000000;			// "                     , else if(...) ì™€ ì½”ë“œ ë™ì¼
 	return lDiv;
 }
 #endif
@@ -116,7 +116,7 @@ void InitAwb(void)
 	//ParSet(UpLSUP_ON, MP(MpLSUP_ON));
 	//ParSet(UpAWB_YSLICE, MP(MpAwbYSliceMax));
 
-	// ¹èÆ÷ X
+	// ë°°í¬ X
 	// ODM YC matrix	Y  = 0.33R + 0.33G + 0.33B,	Cb = B - Y,	 Cr = R - Y
 	ODM_M1w(0x55);
 	ODM_M2w(0x55);
@@ -129,7 +129,7 @@ void InitAwb(void)
 	ODM_M9w(0x255);
 
 	AWBLCBCRO_SELw(0x0);	// 0: DbDr, 1: CbCr  OutPut
-	AWBL_HTAB_SELw(0x2);	// Size of detection block, LPF Å©±â(0:8size, 1:4size, 2:2size, 3:1size:No LPF), LPF ÈÄ AWBL_CBDB_SUM_LOCK ¿Í °°Àº AWB ´©Àû Ãâ·Â°ª °è»ê
+	AWBL_HTAB_SELw(0x2);	// Size of detection block, LPF í¬ê¸°(0:8size, 1:4size, 2:2size, 3:1size:No LPF), LPF í›„ AWBL_CBDB_SUM_LOCK ì™€ ê°™ì€ AWB ëˆ„ì  ì¶œë ¥ê°’ ê³„ì‚°
 	AWB_LOCK_SELw(0x1);		// Awb data lock at VLOCK
 	AWBLYEDGE_THw(0x3ff);	// Y edge pseudo color remove
 
@@ -185,7 +185,7 @@ void InitAwb(void)
 
 			INIT_STR("AWB : Set to preset values.");
 	}
-	else {	// Press ¸ğµå Data°¡ ¾ø´Â °æ¿ì ÃÊ±â°ª ¼³Á¤
+	else {	// Press ëª¨ë“œ Dataê°€ ì—†ëŠ” ê²½ìš° ì´ˆê¸°ê°’ ì„¤ì •
 		giAwbPrstTbl[0] = giAwbDbIIR;
 		giAwbPrstTbl[1] = giAwbDrIIR;
 		giAwbPrstTbl[2] = (int)gnAwbRGainIIR;
@@ -275,8 +275,8 @@ void ISRT Awb(void)
 //--------------------------------------------------------------------------------------------------
 // Color Matrix control
 
-	const UINT nTcnt = AWBL_CCT_SUM_LOCKr;											// Total block cnt, ½ÇÁ¦ ÃÖ´ë Å©±â : AWB_WIN1_HW * AWB_WIN1_VW / 2
-//	iDrSum		= AWBL_CRDR_SUM_LOCKr	;     										// CR/DR(32b sign), ½ÇÁ¦ ÃÖ´ë Å©±â : AWB_WIN1_HW * AWB_WIN1_VW / 2 * [-1024 ~ +1023] = 0x770 * 0x850 / 2 * [-1024 ~ +1023] = -2074476544 ~ 2072450688 (32bit)
+	const UINT nTcnt = AWBL_CCT_SUM_LOCKr;											// Total block cnt, ì‹¤ì œ ìµœëŒ€ í¬ê¸° : AWB_WIN1_HW * AWB_WIN1_VW / 2
+//	iDrSum		= AWBL_CRDR_SUM_LOCKr	;     										// CR/DR(32b sign), ì‹¤ì œ ìµœëŒ€ í¬ê¸° : AWB_WIN1_HW * AWB_WIN1_VW / 2 * [-1024 ~ +1023] = 0x770 * 0x850 / 2 * [-1024 ~ +1023] = -2074476544 ~ 2072450688 (32bit)
 //	iDgSum		= AWBL_CY_SUM_LOCKr		;											// CY	(31b)
 //	iDbSum		= AWBL_CBDB_SUM_LOCKr	;	     									// CB/DB(32b sign)
 
@@ -324,7 +324,7 @@ void ISRT Awb(void)
 		iDbSum	= div4x(AWBL_CBDB_SUM_LOCKr, (int)nTcnt, 0);							// Pixel mean, CB/DB(32b sign), AWB 8BIT,
 		iDrSum	= div4x(AWBL_CRDR_SUM_LOCKr, (int)nTcnt, 0);							// "         , CR/DR(32b sign), "       ,
 #else
-		iDbSum	= (int)AWBL_CBDB_SUM_LOCKr / (int)nTcnt;								// Pixel mean, CB/DB(32b sign), 3840 / 2(AWB ODM CLKÀÌ 1/2 ÀÌ¹Ç·Î) / 2(Fixed) x 2160 x 1023 = 960 x 2160 x 1023 = 0x7E705C00
+		iDbSum	= (int)AWBL_CBDB_SUM_LOCKr / (int)nTcnt;								// Pixel mean, CB/DB(32b sign), 3840 / 2(AWB ODM CLKì´ 1/2 ì´ë¯€ë¡œ) / 2(Fixed) x 2160 x 1023 = 960 x 2160 x 1023 = 0x7E705C00
 		iDrSum	= (int)AWBL_CRDR_SUM_LOCKr / (int)nTcnt;								// "         , CR/DR(32b sign), "
 #endif
 //		iDgSum	= div4x(AWBL_CY_SUM_LOCKr,   (int)nTcnt, 0);							// Pixel mean, CY	(31b)     , AWB 8BIT, 3840 x 2160 x 255 = 0x7E117000
@@ -379,7 +379,7 @@ void ISRT Awb(void)
 
 	// Pre mat (temp)
 	PRR_GAINw(iRcm0);
-	PRG_GAINw(nRcm1);	// º¯¼ö nRcm1À» »ç¿ëÇÏÁö ¾Ê°í ¹Ù·Î PRG_GAINw(SIGN_ABS(11,iRcm1)); ÇÏ¸é ÄÚµå Áõ°¡ÇÔ
+	PRG_GAINw(nRcm1);	// ë³€ìˆ˜ nRcm1ì„ ì‚¬ìš©í•˜ì§€ ì•Šê³  ë°”ë¡œ PRG_GAINw(SIGN_ABS(11,iRcm1)); í•˜ë©´ ì½”ë“œ ì¦ê°€í•¨
 	PRB_GAINw(nRcm2);
 	PGR_GAINw(nGcm0);
 	PGG_GAINw(iGcm1);
@@ -495,8 +495,8 @@ void ISRT Awb(void)
 		nAwbGgain 	= ((WORD)((float)AWB_GAIN_DFLT   	* (0.5f+((float)bMpSaturationG*0.025f))) * iWgt) >> 8;
 		nAwbBgain 	= ((WORD)((float)(gnAwbBGainIIR>>4) * (0.5f+((float)bMpSaturationB*0.025f))) * iWgt) >> 8;
 	#else
-		// Color Gamma¸¦ ³·Ãß°í Color GainÀ» ¿Ã¸®´Â °ÍÀÌ Color Noise°¡ ´úÇÏ°í ´õ ÀÚ¿¬½º·¯¿ò
-		const BYTE bMpSaturationR = (gbWdrOn!=WDR_OFF) ? ((64-16)>UP(SaturationR)) ? (UP(SaturationR)+16) : 64 : UP(SaturationR) ;	// TODO KSH ¡ß WDR - Awb()¿¡¼­ "R-GAIN"ÀÇ Line WDR ¼³Á¤À» Frame WDR·Î ÇÏ´Â°Ô ´õ ÁÁÀºÁö È®ÀÎ ÇÊ¿ä
+		// Color Gammaë¥¼ ë‚®ì¶”ê³  Color Gainì„ ì˜¬ë¦¬ëŠ” ê²ƒì´ Color Noiseê°€ ëœí•˜ê³  ë” ìì—°ìŠ¤ëŸ¬ì›€
+		const BYTE bMpSaturationR = (gbWdrOn!=WDR_OFF) ? ((64-16)>UP(SaturationR)) ? (UP(SaturationR)+16) : 64 : UP(SaturationR) ;	// TODO KSH â—† WDR - Awb()ì—ì„œ "R-GAIN"ì˜ Line WDR ì„¤ì •ì„ Frame WDRë¡œ í•˜ëŠ”ê²Œ ë” ì¢‹ì€ì§€ í™•ì¸ í•„ìš”
 		const BYTE bMpSaturationG = (gbWdrOn!=WDR_OFF) ? ((64-16)>UP(SaturationG)) ? (UP(SaturationG)+16) : 64 : UP(SaturationG) ;	//	"
 		const BYTE bMpSaturationB = (gbWdrOn!=WDR_OFF) ? ((64-16)>UP(SaturationB)) ? (UP(SaturationB)+16) : 64 : UP(SaturationB) ;	//	"
 
@@ -532,7 +532,7 @@ void ISRT Awb(void)
 	nBcm1 = SIGN_ABS(12,iBcm1);
 
 	WPRR_GAINw(iRcm0);
-	WPRG_GAINw(nRcm1);	// º¯¼ö nRcm1À» »ç¿ëÇÏÁö ¾Ê°í ¹Ù·Î WPRG_GAINw(SIGN_ABS(12,iRcm1)); ÇÏ¸é ÄÚµå Áõ°¡ÇÔ
+	WPRG_GAINw(nRcm1);	// ë³€ìˆ˜ nRcm1ì„ ì‚¬ìš©í•˜ì§€ ì•Šê³  ë°”ë¡œ WPRG_GAINw(SIGN_ABS(12,iRcm1)); í•˜ë©´ ì½”ë“œ ì¦ê°€í•¨
 	WPRB_GAINw(nRcm2);
 	WPGR_GAINw(nGcm0);
 	WPGG_GAINw(iGcm1);

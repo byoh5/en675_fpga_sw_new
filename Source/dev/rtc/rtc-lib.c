@@ -33,7 +33,7 @@ int rtc_month_days(unsigned int month, unsigned int year)
 */
 ENX_OKFAIL rtc_valid_tm(struct tm *_tm)
 {
-	_tm->tm_isdst = 1;	// ÀÔ·Â°ªÀÌ GMT+0½Ã°£ÀÌ¹Ç·Î 1À» Àû¿ë
+	_tm->tm_isdst = 1;	// ì…ë ¥ê°’ì´ GMT+0ì‹œê°„ì´ë¯€ë¡œ 1ì„ ì ìš©
 	if (_tm->tm_year < 70
 		|| ((unsigned)_tm->tm_mon) >= 12
 		|| _tm->tm_mday < 1

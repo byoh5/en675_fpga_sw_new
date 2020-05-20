@@ -3,7 +3,7 @@
  Description:	EN675 - Menu function
  Designer	:	Kim, Sunghoon
  Date		:	19. 6. 7
- Copyright ¨Ï Eyenix Co., Ltd. All Rights Reserved.
+ Copyright â“’ Eyenix Co., Ltd. All Rights Reserved.
 *************************************************************************** */
 
 #include "dev.h"
@@ -30,7 +30,7 @@
 
 	BYTE gbMpAwbPrst = UP_OFF;
 
-	BYTE gbMnDebugFnc = /*0*/1/*3*//*6*//*4*/;		// TODO KSH ¡ß AE Debug OSD
+	BYTE gbMnDebugFnc = /*0*/1/*3*//*6*//*4*/;		// TODO KSH â—† AE Debug OSD
 
 	BYTE gbMnSetupOn = UP_ON/*UP_OFF*/;
 	#define DEV_ON		(gbMnSetupOn==UP_ON)
@@ -78,11 +78,11 @@
 //-------------------------------------------------------------------------------------------------
 #define MENU_STAGE_LV	6
 
-int		giStgPos[MENU_STAGE_LV] = {-1,-1,-1,-1,-1,-1};		// Menu Position, bin Å©±â°¡ intÇüÀÏ ÀÛÀ½
-int		giLV            = -1;								// Menu Stage Level, bin Å©±â°¡ intÇüÀÏ ÀÛÀ½
+int		giStgPos[MENU_STAGE_LV] = {-1,-1,-1,-1,-1,-1};		// Menu Position, bin í¬ê¸°ê°€ intí˜•ì¼ ìž‘ìŒ
+int		giLV            = -1;								// Menu Stage Level, bin í¬ê¸°ê°€ intí˜•ì¼ ìž‘ìŒ
 
 const PEXCH** gMenuNames = 0;
-int		giStgPosLine[16];				// 16 : MENU_SET_NUM(...)¿¡¼­ NUM ÃÖ´ë°ª
+int		giStgPosLine[16];				// 16 : MENU_SET_NUM(...)ì—ì„œ NUM ìµœëŒ€ê°’
 int		giStgLine = 0;
 
 BYTE	gbPushCnt = 0;
@@ -288,10 +288,10 @@ void menu_in(const PEXCH* Title)
 
 	gbMenuTitle = (PEXCH*)Title;
 
-	if(giLV >= 0) {		// ÀÌÀü ¸Þ´º°¡ ÀÖ´Â °æ¿ì (ÀÌÀü ¸Þ´º°¡ MENU_EXT Çü½ÄÀÌ¸é ¾ÈµÊ!!!)
+	if(giLV >= 0) {		// ì´ì „ ë©”ë‰´ê°€ ìžˆëŠ” ê²½ìš° (ì´ì „ ë©”ë‰´ê°€ MENU_EXT í˜•ì‹ì´ë©´ ì•ˆë¨!!!)
 		OsdMenuPos(0);
 	}
-	else {				// ÀÌÀü ¸Þ´º°¡ ¾ø´Â °æ¿ì
+	else {				// ì´ì „ ë©”ë‰´ê°€ ì—†ëŠ” ê²½ìš°
 		OSD_ON();
 		ChangeMenuSize();
 	}
@@ -307,7 +307,7 @@ void menu_in(const PEXCH* Title)
 }
 
 void menu_close(void)
-{ //¸Þ´º ´Ý±â
+{ //ë©”ë‰´ ë‹«ê¸°
 	giLV = -1;
 	gbMenuTitle = (PEXCH*)_S(OFF);
 
@@ -319,7 +319,7 @@ void menu_close(void)
 
 	int i;
 
-	if(giMenuNum == 0) giMenuNum = 16;	// 16 = ¸Þ´º Ç×¸ñ ÃÖ´ë °¡´É ¼ö
+	if(giMenuNum == 0) giMenuNum = 16;	// 16 = ë©”ë‰´ í•­ëª© ìµœëŒ€ ê°€ëŠ¥ ìˆ˜
 
 	// UartTxStrHex("giMenuNum ", giMenuNum, 2);
 
@@ -339,7 +339,7 @@ void menu_close(void)
 }
 
 void menu_out(const int aiClearFinger/*const PEXCH* Title*/)
-{ //ÀÌÀü´Ü°è ¸Þ´º
+{ //ì´ì „ë‹¨ê³„ ë©”ë‰´
 	//gbMenuTitle = (PEXCH*)Title;
 
 	if(aiClearFinger) { OsdMenuPos(0); }
@@ -349,7 +349,7 @@ void menu_out(const int aiClearFinger/*const PEXCH* Title*/)
 	//if(MENU_TITLE_IS(OFF)) giLV = -1;
 	//if(((const PEXCH*)Title) == _S(OFF)) { giLV = -1; gbMenuTitle = (PEXCH*)_S(OFF); }
 
-	if(giLV >= 0) {		// ÇöÀç ¸Þ´º°¡ ÀÖ´Â °æ¿ì
+	if(giLV >= 0) {		// í˜„ìž¬ ë©”ë‰´ê°€ ìžˆëŠ” ê²½ìš°
 		gbMenuTitle = gbStgTitle[giLV];
 
 		//OsdMenuPos(1);
@@ -359,7 +359,7 @@ void menu_out(const int aiClearFinger/*const PEXCH* Title*/)
 		giStgPos[giLV] = 0;
 	}
 	else
-	{				// ÇöÀç ¸Þ´º°¡ ¾ø´Â °æ¿ì
+	{				// í˜„ìž¬ ë©”ë‰´ê°€ ì—†ëŠ” ê²½ìš°
 		menu_close();
 	}
 }
@@ -470,9 +470,9 @@ void menu_pos(const PEXCH* Title, int MenuNum, const PEXCH** Str)
 		if(UP(Itl)==UP_ON && UP(ItlAlarm)==UP_ON && (gbMenuY+giMenuNum)<=gbIMDFontY) DispClr(gbIMDFontY, gbIMDFontX, 18);	// 170725 KSH
 #endif
 	}
-	else if(!giMenuDispPos){		// 13.11.8 LJH µ¿½Ã Å° ¿À·ù  ¹æÁö
+	else if(!giMenuDispPos){		// 13.11.8 LJH ë™ì‹œ í‚¤ ì˜¤ë¥˜  ë°©ì§€
 		if((KEY_U || KEY_D) && MenuNum) {
-			if((const PEXCH*)gbMenuVal != _S(NOT_USED)) OsdMenuPos(0);	// !! if¹®Àº MN_WHITE¿¡¸¸ ¿µÇâ, finger clear´Â Ç×»ó Àû¿ë
+			if((const PEXCH*)gbMenuVal != _S(NOT_USED)) OsdMenuPos(0);	// !! ifë¬¸ì€ MN_WHITEì—ë§Œ ì˜í–¥, finger clearëŠ” í•­ìƒ ì ìš©
 
 			if(KEY_U)	giStgPos[giLV] = (giStgPos[giLV] == 0) ? MenuNum - 1 : giStgPos[giLV] - 1;
 			if(KEY_D)	giStgPos[giLV] = (giStgPos[giLV] == MenuNum - 1) ? 0 : giStgPos[giLV] + 1;
@@ -786,8 +786,8 @@ void InitMenu(void)
 #endif
 
 	if (nResetKey) {	// Parameter reset condition
-		UsrParReset();			// gbUsrParTbl[] ÃÊ±âÈ­ & UsrParCpy(gbUsrParTblSaved, gbUsrParTbl) ½ÇÇà
-		gbUsrParSaveChk = 1;	// ROM ÀúÀå ½ÇÇà
+		UsrParReset();			// gbUsrParTbl[] ì´ˆê¸°í™” & UsrParCpy(gbUsrParTblSaved, gbUsrParTbl) ì‹¤í–‰
+		gbUsrParSaveChk = 1;	// ROM ì €ìž¥ ì‹¤í–‰
 
 		INIT_STR("MENU PAR reset");
     }
@@ -960,7 +960,7 @@ void Menu(void)
 				/*SETFONTID(DRAW_Y, MN_SXSP  , '1');  SETFONTID(DRAW_Y, MN_SXSP+1, '/');*/\
 				/*DispClrDec(FPS_VDI * ((V)?2<<((V)-1):1), DRAW_Y, MN_SXSP+2, 5);*/\
 				gbStr[0] = '1';  gbStr[1] = '/';\
-				FontClrStr(DRAW_Y, MN_SXSP, gbStr, uint2str(gbStr+2, (UP(SysFreq)==UP_SYSFREQ_60) ? gwShtMnLut[(V)+FPS_HI] : FPS_VDI * ((V)?2<<((V)-1):1), 5)+2, 5+2);/* TODO KSH ¡ß FPS°¡ 30 or 25°¡ ¾Æ´Ñ °æ¿ì Ãß°¡ ÇÊ¿ä */\
+				FontClrStr(DRAW_Y, MN_SXSP, gbStr, uint2str(gbStr+2, (UP(SysFreq)==UP_SYSFREQ_60) ? gwShtMnLut[(V)+FPS_HI] : FPS_VDI * ((V)?2<<((V)-1):1), 5)+2, 5+2);/* TODO KSH â—† FPSê°€ 30 or 25ê°€ ì•„ë‹Œ ê²½ìš° ì¶”ê°€ í•„ìš” */\
 				MENU_CODE(CODE)
 
 	// MENU - EXPOSURE - SHUTTER:AUTO
@@ -1186,7 +1186,7 @@ void Menu(void)
 			RETURN,			MENU_ONEo(UP_ON, e, UP_ON, ))
 
 	// MENU - SYSTEM - CAM_TITLE
-	MENU_EXT( CAM_TITLE, UP_ON, giMenuNum = 8;/*³ª°¡±â Àü¿¡ SubMenu 7¹øÂ° ¶óÀÎ±îÁö Áö¿ò*/,
+	MENU_EXT( CAM_TITLE, UP_ON, giMenuNum = 8;/*ë‚˜ê°€ê¸° ì „ì— SubMenu 7ë²ˆì§¸ ë¼ì¸ê¹Œì§€ ì§€ì›€*/,
 
 			OsdAttrsStgPosAr(1, MN_WHITE);
 			OsdAttrsStgPosAr(2, MN_WHITE);
@@ -1348,7 +1348,7 @@ void Menu(void)
 							if(KEY_D) gbCamTitle(giStgPos[giLV])--;		break;
 			}
 		#else
-			if(KEY_U) gbCamTitle(giStgPos[giLV]) = (gbCamTitle(giStgPos[giLV]) >= 'Z') ? ' ' : gbCamTitle(giStgPos[giLV]) + 1;	// TODO KSH> Cam Title ¿Ü±¹¾î ´Ù¸¥ ID·Î º¯°æ ÇÊ¿ä
+			if(KEY_U) gbCamTitle(giStgPos[giLV]) = (gbCamTitle(giStgPos[giLV]) >= 'Z') ? ' ' : gbCamTitle(giStgPos[giLV]) + 1;	// TODO KSH> Cam Title ì™¸êµ­ì–´ ë‹¤ë¥¸ IDë¡œ ë³€ê²½ í•„ìš”
 			if(KEY_D) gbCamTitle(giStgPos[giLV]) = (gbCamTitle(giStgPos[giLV]) <= ' ') ? 'Z' : gbCamTitle(giStgPos[giLV]) - 1;
 		#endif
 			DispStr((const char*)&gbCamTitle(0), gbMenuY+2, MN_XTITL, 0x8);

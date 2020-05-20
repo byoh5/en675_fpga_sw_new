@@ -3,7 +3,7 @@
  Description:	New Menu
  Designer	:	Kim Sung-hoon (shkim@eyenix.com)
  Date		:	12.03.30
- Copyright ®œ Eyenix Co., Ltd. All Rights Reserved.
+ Copyright ‚ìí Eyenix Co., Ltd. All Rights Reserved.
 *************************************************************************** */
 
 //*************************************************************************************************
@@ -164,7 +164,7 @@ extern BYTE gbBlcOsdOn;
 #define OSD_OFF()
 
 
-#define DispStr(S,Y,X,L)			FontStr(Y,X,S,L)	// TODO KSH> Font Fnc ≥™¡ﬂø° ¡¶∞≈
+#define DispStr(S,Y,X,L)			FontStr(Y,X,S,L)	// TODO KSH> Font Fnc ÎÇòÏ§ëÏóê Ï†úÍ±∞
 #define DispClr(Y,X,L)				FontClr(Y,X,L)
 #define DispClrStr(S,Y,X,SL,CL)		FontClrStr(Y,X,S,SL,CL)
 #define DispClrDec(V,Y,X,L)			FontDec(Y,X,V,L,1)
@@ -239,7 +239,7 @@ extern BYTE gbBlcOsdOn;
 	#define SIZE_LISTC(C1,...)		sizeof(C1),SIZE_LISTB(__VA_ARGS__)
 	#define SIZE_LIST(NUM,NAME,...)	const BYTE	_S(0##NAME)[] = { NUM, SIZE_LIST##NUM(__VA_ARGS__) };
 
-	// STR1,STR2,...¿« º±æ¿∫ _P(...)ªÁøÎ¿∏∑Œ ¿Œ«ÿ MACRO∫“∞°¥…
+	// STR1,STR2,...Ïùò ÏÑ†Ïñ∏ÏùÄ _P(...)ÏÇ¨Ïö©ÏúºÎ°ú Ïù∏Ìï¥ MACROÎ∂àÍ∞ÄÎä•
 	#define STRING1(NAME,C1,STR1)\
 			SIZE_LIST(1,NAME,C1)\
 			const C1	_S(1##NAME)[] = STR1;\
@@ -373,7 +373,7 @@ extern BYTE gbBlcOsdOn;
 	#define DISPCLRSTR(STR,...)	DispClrStr((EXCH*)STR[LNG_INDEX(STR)],__VA_ARGS__)
 	#define STR_LIST(NUM,NAME)	const PEXCH	_S(NAME)[] = { NUM, STR_LIST##NUM(NAME) }
 
-	// STR1,STR2,...¿« º±æ¿∫ _P(...)ªÁøÎ¿∏∑Œ ¿Œ«ÿ MACRO∫“∞°¥…
+	// STR1,STR2,...Ïùò ÏÑ†Ïñ∏ÏùÄ _P(...)ÏÇ¨Ïö©ÏúºÎ°ú Ïù∏Ìï¥ MACROÎ∂àÍ∞ÄÎä•
 	#define STRING1(NAME,C1,STR1)\
 			const C1	_S(1##NAME)[] = STR1;\
 			STR_LIST(1, NAME)
@@ -589,7 +589,7 @@ menu_start:\
 	}\
 menu_display_end:\
 	if(giMenuChkOn) {\
-		if(giStgPos[giLV] < 15) {/* 15 : «ˆ¿ÁM_CODE16±Ó¡ˆ¡ˆø¯ */\
+		if(giStgPos[giLV] < 15) {/* 15 : ÌòÑÏû¨M_CODE16ÍπåÏßÄÏßÄÏõê */\
 			giStgPos[giLV]++;\
 			goto menu_start;\
 		} else {\
@@ -707,14 +707,14 @@ menu_display_end:\
 		END\
 		gbMenuVal = 0;	menu_dir(MENU_ON);	MENU_DISABLE(MENU_ON) })
 
-#define MENU_CHANGE()			{ menu_redraw(1,0); goto menu_start; } // NAME, VAL ∫Ø∞Ê
-#define MENU_REDRAW()			{ menu_redraw(0,0); goto menu_start; } // ¥ŸΩ√ ±◊∏Æ¥¬µ•, GRAY¥¬ NOT_USED
-#define MENU_REDRAW_GRAY_ONLY()	{ menu_redraw(0,1); goto menu_start; } // ¥ŸΩ√ ±◊∏Æ¥¬µ•, GRAYø° NOT_USED æ»«‘
-#define MENU_OFF_GRAY_ONLY()	  giGrayOnly = 1;	// MENU µÈæÓ∞°±‚ ¿¸ IN_CODEø°º≠ »£√‚, 'NOT USED' √‚∑¬¿ª ªÁøÎ«œ¡ˆ æ ¿Ω.
-#define MENU_VAL_REDRAW(VAL)	{ /*gbMenuVal = (PEXCH*)_S(VAL);*/ DISPCLRSTR(_S(VAL), DRAW_Y/*gbMenuY+giStgPos[giLV]*/, MN_SXSP, MN_SUBSIZE, MN_SUBSIZE); } // VAR øµø™ø° ±€¿⁄ «•±‚
+#define MENU_CHANGE()			{ menu_redraw(1,0); goto menu_start; } // NAME, VAL Î≥ÄÍ≤Ω
+#define MENU_REDRAW()			{ menu_redraw(0,0); goto menu_start; } // Îã§Ïãú Í∑∏Î¶¨ÎäîÎç∞, GRAYÎäî NOT_USED
+#define MENU_REDRAW_GRAY_ONLY()	{ menu_redraw(0,1); goto menu_start; } // Îã§Ïãú Í∑∏Î¶¨ÎäîÎç∞, GRAYÏóê NOT_USED ÏïàÌï®
+#define MENU_OFF_GRAY_ONLY()	  giGrayOnly = 1;	// MENU Îì§Ïñ¥Í∞ÄÍ∏∞ Ï†Ñ IN_CODEÏóêÏÑú Ìò∏Ï∂ú, 'NOT USED' Ï∂úÎ†•ÏùÑ ÏÇ¨Ïö©ÌïòÏßÄ ÏïäÏùå.
+#define MENU_VAL_REDRAW(VAL)	{ /*gbMenuVal = (PEXCH*)_S(VAL);*/ DISPCLRSTR(_S(VAL), DRAW_Y/*gbMenuY+giStgPos[giLV]*/, MN_SXSP, MN_SUBSIZE, MN_SUBSIZE); } // VAR ÏòÅÏó≠Ïóê Í∏ÄÏûê ÌëúÍ∏∞
 #define MENU_NAME_REDRAW(NAME)	{ /*gbMenuList = (PEXCH*)_S(NAME);*/ DISPCLRSTR(_S(NAME), DRAW_Y/*gbMenuY+giStgPos[giLV]*/, MN_MXSP, (MN_SXSP-MN_MXSP)/*MN_LINESIZE*/, (MN_SXSP-MN_MXSP)/*MN_LINESIZE*/); }
 #define MENU_OPEN(MENU)			menu_in(_S(MENU))
-#define MENU_CLOSE()			{ OsdMenuPos(0); menu_close(); } // MENU øµø™ æÓµº≠µÁ ¿Ã «‘ºˆ∏¶ ∫Œ∏£∏È ∏ﬁ¥∫∞° ¥›»˚
+#define MENU_CLOSE()			{ OsdMenuPos(0); menu_close(); } // MENU ÏòÅÏó≠ Ïñ¥ÎîîÏÑúÎì† Ïù¥ Ìï®ÏàòÎ•º Î∂ÄÎ•¥Î©¥ Î©îÎâ¥Í∞Ä Îã´Ìûò
 #define if_KEY_LR(CODE)			if(KEY_L || KEY_R) { CODE; }
 
 #define MENU_VAL_PUSH(STR_NOR,STR_PUSH,PUSH_DELAY,/*PUSH_ON,*/CODE_NOR,CODE_PUSH) {\

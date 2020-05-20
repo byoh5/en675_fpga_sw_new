@@ -3,7 +3,7 @@
  Description:	EN675 - Auto Exposure function
  Designer	:	Kim, Sunghoon
  Date		:	19. 7. 2
- Copyright ¨Ï Eyenix Co., Ltd. All Rights Reserved.
+ Copyright â“’ Eyenix Co., Ltd. All Rights Reserved.
 *************************************************************************** */
 
 #include "dev.h"
@@ -23,7 +23,7 @@
 
 #define WDR_OLD				0
 
-#define AE_LONG_FPS			((gbWdrOn==WDR_FRAME) ? FPS_VDI>>1 : FPS_VDI)	// !!! Long proc ¾È¿¡¼­¸¸ »ç¿ëÇØ¾ß ÇÔ !!!
+#define AE_LONG_FPS			((gbWdrOn==WDR_FRAME) ? FPS_VDI>>1 : FPS_VDI)	// !!! Long proc ì•ˆì—ì„œë§Œ ì‚¬ìš©í•´ì•¼ í•¨ !!!
 
 //*******************************************************************************
 // Reserved define & tables
@@ -167,7 +167,7 @@ BYTE 	gbDssRatioLmt = 1;
 
 int 	giIrsCent = /*0x1E5*/(AE_IRS_CLS_Max+AE_IRS_OPN_Max)<<(6-1);	// mean		Enx EV38 AR0230 = 0x1E5
 int 	giIrsPos = AE_IRS_STAT_Max/*/2*/;
-int		giIrsValOut;		// IrisOpenAdj() Àû¿ëÀ» À§ÇØ giIrsVal¸¦ ¹Ù·Î »ç¿ëÇÏÁö ¾Ê°í giIrsValOut¸¦ »ç¿ë
+int		giIrsValOut;		// IrisOpenAdj() ì ìš©ì„ ìœ„í•´ giIrsValë¥¼ ë°”ë¡œ ì‚¬ìš©í•˜ì§€ ì•Šê³  giIrsValOutë¥¼ ì‚¬ìš©
 
 int iTgtMax = 0;
 int iTgtMin = 0;
@@ -339,7 +339,7 @@ UINT gnMnLensChg = 0;
 
 void ISRT MnLensChg(const int aiChgOn)
 {
-	if(aiChgOn) gnMnLensChg = (AE_LONG_FPS<<2);		// IRIS ¼³Á¤ ¸Ş´º º¯°æ ½Ã 4ÃÊ µ¿¾È IRIS Center ¾÷µ¥ÀÌÆ® ÇÏÁö ¾ÊÀ½
+	if(aiChgOn) gnMnLensChg = (AE_LONG_FPS<<2);		// IRIS ì„¤ì • ë©”ë‰´ ë³€ê²½ ì‹œ 4ì´ˆ ë™ì•ˆ IRIS Center ì—…ë°ì´íŠ¸ í•˜ì§€ ì•ŠìŒ
 	else if(gnMnLensChg) gnMnLensChg--;
 }
 
@@ -370,12 +370,12 @@ int ISRT IrisOpenAdj(const BYTE abShtOn, const BYTE abDeblurOn, const int aiAgcM
 		static BYTE iIncreseOpenCnt = 0;
 		const int iIncreseOpen = ( ((iTgtMax-iTgtValDly)>>1) + ((abShtOn || abDeblurOn) ? (iShtValDly - SHT_MIN) : 0) + ((gbAeStg==AE_STG_AGC) ? ((giAgcVal - aiAgcMin_Agc)<<2) : 0) ) ;
 		iIrsVal = (UP(Iris)==UP_LENS_MNL) || (gbAeStg==AE_STG_DSS) ? 0 :
-				  giIrsValOut - iIncreseOpen;	// gbAeStg==AE_STG_IRS ÀÏ ¶§ IRIS¸¦ Á¦¾îÇÏ°í, ´Ù¸¥ StageÀÏ ¶§ IRIS¸¦ 0(Open)À¸·Î Á¦¾îÇÏ¸é IRIS ´Ù½Ã Á¦¾î ½Ã IRIS°¡ Æ¢´Â(?) Çö»ó ¹ß»ıÇÏ¹Ç·Î increse open step ÇÊ¿ä
+				  giIrsValOut - iIncreseOpen;	// gbAeStg==AE_STG_IRS ì¼ ë•Œ IRISë¥¼ ì œì–´í•˜ê³ , ë‹¤ë¥¸ Stageì¼ ë•Œ IRISë¥¼ 0(Open)ìœ¼ë¡œ ì œì–´í•˜ë©´ IRIS ë‹¤ì‹œ ì œì–´ ì‹œ IRISê°€ íŠ€ëŠ”(?) í˜„ìƒ ë°œìƒí•˜ë¯€ë¡œ increse open step í•„ìš”
 
 		if(giIrsValOut && (gbAeStg!=AE_STG_IRS))
 		{
 			if(iIncreseOpen) iIncreseOpenCnt++;
-			if(iIncreseOpenCnt==(AE_LONG_FPS>>2)) {	// ÃÊ´ç 4¾¿ giIrsValOut °¨¼Ò - ³Ê¹« ºü¸£°Ô °¨¼ÒÇÏ¸é ´Ù¸¥ StageÀÏ ¶§ IRIS¸¦ 0(Open)À¸·Î Á¦¾îÇÏ´Â °Í°ú µ¿ÀÏÇÏ°Ô IRIS°¡ Æ¢´Â Çö»ó ¹ß»ıÇÏ¹Ç·Î ÃµÃµÈ÷ °¨¼ÒÇØ¾ß ÇÔ
+			if(iIncreseOpenCnt==(AE_LONG_FPS>>2)) {	// ì´ˆë‹¹ 4ì”© giIrsValOut ê°ì†Œ - ë„ˆë¬´ ë¹ ë¥´ê²Œ ê°ì†Œí•˜ë©´ ë‹¤ë¥¸ Stageì¼ ë•Œ IRISë¥¼ 0(Open)ìœ¼ë¡œ ì œì–´í•˜ëŠ” ê²ƒê³¼ ë™ì¼í•˜ê²Œ IRISê°€ íŠ€ëŠ” í˜„ìƒ ë°œìƒí•˜ë¯€ë¡œ ì²œì²œíˆ ê°ì†Œí•´ì•¼ í•¨
 				iIncreseOpenCnt = 0;
 				giIrsValOut--;
 			}
@@ -519,7 +519,7 @@ void InitAe(void)
 	ParAe(PA_AGC_GAIN_MIN_ERR)	= 20/*10*//*20*//*80*/;
 	ParAe(PA_AGC_GAIN_MAX_ERR)	= 100/*30*//*200*/;
 
-	ParAe(PA_ERR_MGN)			= 8/*4*/;	// BRIGHTNESS 20 ¿¡¼­ 8 ÀÌ»óÀÌ¾î¾ß AGCÇåÆÃ ¾øÀ½
+	ParAe(PA_ERR_MGN)			= 8/*4*/;	// BRIGHTNESS 20 ì—ì„œ 8 ì´ìƒì´ì–´ì•¼ AGCí—ŒíŒ… ì—†ìŒ
 	//ParAe(PA_ERR_UP_GAIN)		= 2;
 	//ParAe(PA_ERR_DOWN_GAIN)		= 1;
 
@@ -575,7 +575,7 @@ void InitAe(void)
 	if(0 <= iIrsVal && iIrsVal <= 0x3fe) giIrsValOut = iIrsVal;
 
 
-	if(SHT_MIN==0) SHT_MIN = 1;				// TODO KSH> ÃÊ±â°ª ¼³Á¤ ¾îµğ¼­?
+	if(SHT_MIN==0) SHT_MIN = 1;				// TODO KSH> ì´ˆê¸°ê°’ ì„¤ì • ì–´ë””ì„œ?
 	if(SHT_MAX==0) SHT_MAX = (gnAeVtw<<6);	// <<6 = x64
 
 	const int iShtVal = cat2(gUdAeStat->bShtVal);
@@ -647,14 +647,14 @@ void ISRT AeODM(void)
 		//AE_WIN_SELw((UP(BackLight) == UP_BL_BLC) ? 6 : 2);
 	}
 
-	if(UP(Defog) == UP_OFF || UP(DefogMode) == UP_DEFOG_MANUAL) {	// Defog-AutoÀÏ °æ¿ì AceDefog()ÇÔ¼ö¿¡¼­ AE1 ODM ¼³Á¤ÇÔ
+	if(UP(Defog) == UP_OFF || UP(DefogMode) == UP_DEFOG_MANUAL) {	// Defog-Autoì¼ ê²½ìš° AceDefog()í•¨ìˆ˜ì—ì„œ AE1 ODM ì„¤ì •í•¨
 		AE_AREA_INIT(1)
 	}
 
 	if((UP(BackLight)==UP_BL_BLC) /*|| UP(WdrBlc)*/) {
 
-	 	const UINT nBlcHw = /*((UP(OutFps)==UP_2M_720p_25_30)||(UP(OutFps)==UP_2M_720p_50_60)) ? FR_HW_720 :*/ RP(FR_HW);	// 1M Sensor´Â FR_HW_720 ¿Í FR_HW °¡ µ¿ÀÏ
-		const UINT nBlcVw = /*((UP(OutFps)==UP_2M_720p_25_30)||(UP(OutFps)==UP_2M_720p_50_60)) ? FR_VW_720 :*/ RP(FR_VW);	// 1M Sensor´Â FR_VW_720 ¿Í FR_VW °¡ µ¿ÀÏ
+	 	const UINT nBlcHw = /*((UP(OutFps)==UP_2M_720p_25_30)||(UP(OutFps)==UP_2M_720p_50_60)) ? FR_HW_720 :*/ RP(FR_HW);	// 1M SensorëŠ” FR_HW_720 ì™€ FR_HW ê°€ ë™ì¼
+		const UINT nBlcVw = /*((UP(OutFps)==UP_2M_720p_25_30)||(UP(OutFps)==UP_2M_720p_50_60)) ? FR_VW_720 :*/ RP(FR_VW);	// 1M SensorëŠ” FR_VW_720 ì™€ FR_VW ê°€ ë™ì¼
 
 		const BYTE bBlcPosX = (UP(BlcMode)==UP_BLC_MODE_CENTER) ?  6 : (UP(BlcMode)==UP_BLC_MODE_SPOT) ? 8 : UP(BlcPosX) ;
 		const BYTE bBlcPosY = (UP(BlcMode)==UP_BLC_MODE_CENTER) ?  5 : (UP(BlcMode)==UP_BLC_MODE_SPOT) ? 8 : UP(BlcPosY) ;
@@ -761,7 +761,7 @@ void ISRT CurWDR(int *apiCur, int *apiTgt, int *apiErr,	const UINT anSum1, const
 	}
 
 	// Long proc ----------------------------------------------------------------------------------
-	iCur = udiv4x((anSlicCntLong*anSlicLvLong) + anSum1 + (anClipCntLong*anClipLvLong), anPxCntLong, 0);	// EN781 WDR Slice Ãß°¡
+	iCur = udiv4x((anSlicCntLong*anSlicLvLong) + anSum1 + (anClipCntLong*anClipLvLong), anPxCntLong, 0);	// EN781 WDR Slice ì¶”ê°€
 	iCur += AceCurGet(iCur);
 
 	iTgt = TgtMaxGet(UP_ON, AeSHORT);
@@ -771,7 +771,7 @@ void ISRT CurWDR(int *apiCur, int *apiTgt, int *apiErr,	const UINT anSum1, const
 
 	//if(AE_CTRL_ORIGINAL&&(UP(Shutter)==UP_SHUT_MNL)&&(iErr<0)&&(gnAeState==0)) iErr = 0;	// 170331 KSH
 
-	AE2_SLICE0w(MIN(0xC,iTgt>>1));		// 150802		// EN781 WDR 3 -> 2		200130 KSH 0xC·Î ¼³Á¤
+	AE2_SLICE0w(MIN(0xC,iTgt>>1));		// 150802		// EN781 WDR 3 -> 2		200130 KSH 0xCë¡œ ì„¤ì •
 	AE2_CLIP0w(iTgt + AE_WDR_LCLIP_OFST);							// next long
 
 	//GrpAe(GA_WDR_LONG_CLIP) = iTgt + AE_WDR_LCLIP_OFST;
@@ -817,10 +817,10 @@ void InMode(void)
 
 	if(bBackLight!=UP(BackLight) || bWdrMode!=UP(WdrMode)) {
 #endif
-		//extern UINT gnVDI_CHG;	// OutMode() ½ÇÇà ½Ã
+		//extern UINT gnVDI_CHG;	// OutMode() ì‹¤í–‰ ì‹œ
 		//gnVDI_CHG = 2;
 
-		// Ae()¿¡¼­ Frame Wdr ½Ã (gnLSflag==AeLONG) ÀÏ ¶§ 'Long Set' ½ÇÇàÇÏ°í gbWdrOn ¼³Á¤µÇµµ·Ï ÇØ¾ß ÇÔ -> UP º¯°æ ÀÌº¥Æ® ½Ã¿¡¸¸ InMode() È£ÃâµÇ¹Ç·Î »ç¿ë ºÒ°¡
+		// Ae()ì—ì„œ Frame Wdr ì‹œ (gnLSflag==AeLONG) ì¼ ë•Œ 'Long Set' ì‹¤í–‰í•˜ê³  gbWdrOn ì„¤ì •ë˜ë„ë¡ í•´ì•¼ í•¨ -> UP ë³€ê²½ ì´ë²¤íŠ¸ ì‹œì—ë§Œ InMode() í˜¸ì¶œë˜ë¯€ë¡œ ì‚¬ìš© ë¶ˆê°€
 		//extern UINT gnLSflag;
 
 		#define AE_WDR_ON_COND	(/*(gnLSflag==AeLONG)&&*/(UP(BackLight)==UP_BL_WDR)/*&&(UP(Shutter)==UP_SHUT_AUTO)*/)
@@ -828,13 +828,13 @@ void InMode(void)
 
 		if(AE_WDR_ON_COND) {
 			if(UP(WdrMode) == UP_WDR_FRAME)	gbWdrOn = WDR_FRAME;
-			else							gbWdrOn = WDR_LINE_2P;		// TODO KSH ¡ß WDR - Line WDR ON »óÅÂ Ãß°¡ ÇÊ¿ä
+			else							gbWdrOn = WDR_LINE_2P;		// TODO KSH â—† WDR - Line WDR ON ìƒíƒœ ì¶”ê°€ í•„ìš”
 		}
 		else if(AE_WDR_OFF_COND)			gbWdrOn = WDR_OFF;
 
 		gnAeFsc = FrameSetCount(1);
 
-		AeODM();	// ÀÌ¹ø Frame¿¡¼­ AE3_WIN_CHw() ¼³Á¤À» À§ÇØ ½ÇÇà, UP(BackLight) ¿Í UP(WdrMode) º¯°æ ½Ã¿¡¸¸ ½ÇÇàµÇ¾î¾ß ÇÔ!!!
+		AeODM();	// ì´ë²ˆ Frameì—ì„œ AE3_WIN_CHw() ì„¤ì •ì„ ìœ„í•´ ì‹¤í–‰, UP(BackLight) ì™€ UP(WdrMode) ë³€ê²½ ì‹œì—ë§Œ ì‹¤í–‰ë˜ì–´ì•¼ í•¨!!!
 
 		// Sensor Rst. & Sensor Setting
 
@@ -904,7 +904,7 @@ int ISRT WdrCtrl(void)
 		WDR_ONw(1);
 
 #if WDR_OLD == 1
-//		DDR_RD_MODw(0); // WDR DDR Priority  EN675¿¡¼­´Â ÇÊ¿ä¾øÀ½
+//		DDR_RD_MODw(0); // WDR DDR Priority  EN675ì—ì„œëŠ” í•„ìš”ì—†ìŒ
 
 		//gwWdrCnt = (gwWdrCnt>=32) ? 32 : gwWdrCnt+1;
 
@@ -949,7 +949,7 @@ int ISRT WdrCtrl(void)
 #else
 		TMG_ONw(/*aiModeROI?0:*/1);			// TMG OFF at ROI
 
-		#define gnAeWdrLSWgt	0x100		// ½ÇÁ¦ »ç¿ëÇÏÁö ¾ÊÀ½
+		#define gnAeWdrLSWgt	0x100		// ì‹¤ì œ ì‚¬ìš©í•˜ì§€ ì•ŠìŒ
 
 		if((gbWdrOn!=WDR_FRAME)||(gnLSflag==AeSHORT))
 		{
@@ -981,7 +981,7 @@ int ISRT WdrCtrl(void)
 			WDR_3MODEw(gbWdrOn==WDR_LINE_3P);
 
 //			WDR_LGAINw(0x1000);												// WDR_LGAIN  : 12b float offset
-			//WDR_LGAINw(0x100); 												// 180321 LGH : Need to check LH  (WDR_LGAIN  : 12b float offset)	// TODO KSH ¡ß WDR - WDR_LGAINw()
+			//WDR_LGAINw(0x100); 												// 180321 LGH : Need to check LH  (WDR_LGAIN  : 12b float offset)	// TODO KSH â—† WDR - WDR_LGAINw()
 
 //			WDR_SGAINw(iWdrGainS1);         								// WDR_SGAIN  :  8b "
 //			WDR_SGAIN2w(iWdrGainS2);										// WDR_SGAIN2 :  4b "
@@ -989,7 +989,7 @@ int ISRT WdrCtrl(void)
 			WDR_SGAIN2w(MIN(iWdrGainS2,0xffff));	// 190214 LH			// WDR_SGAIN2 :  4b "
 
 			WDR_GAINw(iWdrGain>>4);         								// WDR_GAIN	  :  8b "	TMP
-			//WDR_STEPw(4);					// TMP	// TODO KSH ¡ß WDR - WDR_STEPw()
+			//WDR_STEPw(4);					// TMP	// TODO KSH â—† WDR - WDR_STEPw()
 
 			WDR_SATVLw(0x3c6);
 			WDR_SATVWw(0x1);
@@ -1188,9 +1188,9 @@ void ISRT AeAdv(void)
 	const UINT	nAe3SlicLvl	= AE3_SLICEr;			// "
 
 	int		/*iTgt=0,*/ iCur=0, iErr=0;
-	int		iTgtS1=0, iCurS1=0, iErrS1=0;			// iTgtS1 & iCurS1´Â AE Monitoring OSD & Graph ¿¡¼­ »ç¿ë
+	int		iTgtS1=0, iCurS1=0, iErrS1=0;			// iTgtS1 & iCurS1ëŠ” AE Monitoring OSD & Graph ì—ì„œ ì‚¬ìš©
 
-	TgtChg();	// ErrMgn() & TgtGet() È£ÃâÀü¿¡ ¸ÕÀú ½ÇÇàµÇ¾ß ÇÔ
+	TgtChg();	// ErrMgn() & TgtGet() í˜¸ì¶œì „ì— ë¨¼ì € ì‹¤í–‰ë˜ì•¼ í•¨
 
 	//GrpAe(GA_ERR_NIGHT_CNT) = giCurAgc;
 
@@ -1211,18 +1211,18 @@ void ISRT AeAdv(void)
 	//HLMASK_ONw(!ParAe(PA_SAT_OFF));
 	//HLMASK_THw(AE2_CLIPr>>2);
 
-	const BYTE bWdrOn = ((gbWdrOn!=WDR_OFF) || (gbWdrOnBuf2!=WDR_OFF));		// TODO KSH ¡ß WDR - WDR Delay
+	const BYTE bWdrOn = ((gbWdrOn!=WDR_OFF) || (gbWdrOnBuf2!=WDR_OFF));		// TODO KSH â—† WDR - WDR Delay
 
 	//static BYTE bWdrOffCnt = 0;
 	//if((gbWdrOnBuf==WDR_OFF) && (gbWdrOnBuf2!=WDR_OFF)) bWdrOffCnt = AE_LONG_FPS>>1;
-	//else if(bWdrOffCnt) bWdrOffCnt--;		// !!! bWdrOffCnt°¨¼Ò ½Ã AE_LONG_FPS¿Í µ¿±â¸¦ ¸ÂÃç¾ß ÇÔ
+	//else if(bWdrOffCnt) bWdrOffCnt--;		// !!! bWdrOffCntê°ì†Œ ì‹œ AE_LONG_FPSì™€ ë™ê¸°ë¥¼ ë§ì¶°ì•¼ í•¨
 
 	static BYTE bWdrOnCnt = 0;
-	if((bWdrOn!=WDR_OFF) && (gbWdrOnBuf==WDR_OFF)) bWdrOnCnt = MAX(gbSensShtDly, gbSensAgcDly)+1;	// TODO KSH ¡ß WDR - WDR Delay
+	if((bWdrOn!=WDR_OFF) && (gbWdrOnBuf==WDR_OFF)) bWdrOnCnt = MAX(gbSensShtDly, gbSensAgcDly)+1;	// TODO KSH â—† WDR - WDR Delay
 	else if(bWdrOnCnt) bWdrOnCnt--;
 
 	//extern BYTE gbAdnr_WaitCnt;
-	#define gbAdnr_WaitCnt	3		// EN673¿¡¼­ DNR ON ½Ã 3 frame ÈÄ¿¡ ½ÇÇà
+	#define gbAdnr_WaitCnt	3		// EN673ì—ì„œ DNR ON ì‹œ 3 frame í›„ì— ì‹¤í–‰
 	if(/*UP(BackLight) == UP_BL_WDR || (gbWdrOn!=WDR_OFF) || (gbWdrOnBuf2!=WDR_OFF) ||*/ (gbAdnr_WaitCnt<3)/*gbAdnr_Excute*//*DNR3D_ONr*/) {
 		gbDssRatioLmt = 1;
 	}
@@ -1242,7 +1242,7 @@ void ISRT AeAdv(void)
 
 	/*const int*/ iTgtMin = (bWdrOn) ? iTgtMax : TgtMinGet(iTgtMax, UP(BrightnessMin)) ;
 
-	iTgt = TgtGet(iTgtMax, iTgtMin, gbAeStg);	// WDR ÀÏ ¶§´Â ½ÇÁ¦ »ç¿ëµÇÁö ¾ÊÀ¸³ª, iTgtVal ÃÊ±â ¼³Á¤À» À§ÇØ ½ÇÇà
+	iTgt = TgtGet(iTgtMax, iTgtMin, gbAeStg);	// WDR ì¼ ë•ŒëŠ” ì‹¤ì œ ì‚¬ìš©ë˜ì§€ ì•Šìœ¼ë‚˜, iTgtVal ì´ˆê¸° ì„¤ì •ì„ ìœ„í•´ ì‹¤í–‰
 
 
 	const int iErrMgn = ErrMgn(AE_ERR_MGN, AE_ERR_MGN>>1, AE_ERR_MIN, 16);
@@ -1257,7 +1257,7 @@ void ISRT AeAdv(void)
 	/*clear_csr(mstatus, MSTATUS_MIE);
 	const ULONG sta_time = rdcycle();*/
 
-#if 1	// 0ÀÎ °æ¿ì ½ÇÁ¦ Code Size 20 byte Áõ°¡, ½ÇÇà ½Ã°£ 50 tick(cucle) Áõ°¡, add+shift ¿¬»êº¸´Ù Á¤¼ö °ö ¿¬»êÀÌ ´õ ºü¸§
+#if 1	// 0ì¸ ê²½ìš° ì‹¤ì œ Code Size 20 byte ì¦ê°€, ì‹¤í–‰ ì‹œê°„ 50 tick(cucle) ì¦ê°€, add+shift ì—°ì‚°ë³´ë‹¤ ì •ìˆ˜ ê³± ì—°ì‚°ì´ ë” ë¹ ë¦„
 	const int ShtBrtSpdMin = UP(ShtBrtSpeed) * 10;
 	const int ShtDrkSpdMin = UP(ShtDrkSpeed) * 100;
 	const int AgcBrtSpdMin = UP(AgcBrtSpeed) * 5;
@@ -1283,7 +1283,7 @@ void ISRT AeAdv(void)
 
 	#define IIG					13
 	#define IKG					7
-	#define IIRI(Y,X)			Y = (X)<<(IIG+IKG)	// ÃÖ´ë°ª = 2047 = 2^11 (11 = 32 - IIG - IKG - 1(sign)), UINTÇüÀº 4095
+	#define IIRI(Y,X)			Y = (X)<<(IIG+IKG)	// ìµœëŒ€ê°’ = 2047 = 2^11 (11 = 32 - IIG - IKG - 1(sign)), UINTí˜•ì€ 4095
 	#define IIRR(Y,K,X,YP)		Y = (K)*((X)<<IIG) + ((1<<IKG)-(K))*(YP>>IKG)
 	#define IIROu(Y)			(((Y)>>(IIG+IKG)) + (((Y)>>(IIG+IKG-1))&1))
 	GRP0 = MIN(4095, prc_time);
@@ -1301,7 +1301,7 @@ void ISRT AeAdv(void)
 
 	if(gbWdrOn!=WDR_OFF){	// WDR mode --------------------------------------------------
 
-		// CurWDR() ½ÇÇàÀü¿¡ gnLSflag ¼³Á¤µÇ¾î¾ß ÇÔ
+		// CurWDR() ì‹¤í–‰ì „ì— gnLSflag ì„¤ì •ë˜ì–´ì•¼ í•¨
 		CurWDR(	&iCur, &iTgt, &iErr, nAe2Sum1, nAe2SlicLvl, nAe2SlicCnt, nAe2ClipLvl, nAe2ClipCnt, nAe2PxCnt,
 				&iCurS1, &iTgtS1, &iErrS1, nAe3Sum2, nAe3ClipLvl, nAe3ClipCnt, nAe3PxCnt);
 
@@ -1378,7 +1378,7 @@ void ISRT AeAdv(void)
 			SHT_DBL_MAX = SHT_MAX;
 		}
 		else if(UP(Shutter)==UP_SHUT_MNL) {
-			SHT_MAX = (int)(gnAeFsc>>UP(ShutSpd));	// !!! gnAeFsc´Â UP º¯°æ ÀÌº¥Æ® ½Ã¿¡¸¸ ¾÷µ¥ÀÌÆ®, DSS Àû¿ë X
+			SHT_MAX = (int)(gnAeFsc>>UP(ShutSpd));	// !!! gnAeFscëŠ” UP ë³€ê²½ ì´ë²¤íŠ¸ ì‹œì—ë§Œ ì—…ë°ì´íŠ¸, DSS ì ìš© X
 			SHT_MIN = SHT_MAX;
 			SHT_DBL_MAX = SHT_MAX;
 		}
@@ -1412,7 +1412,7 @@ void ISRT AeAdv(void)
 												 (int)((((AGC_POS_MAX-AE_GAIN_TGT_OFST)*UP(Agc))/255)+AE_GAIN_TGT_OFST);
 			giPreAgcMax = POS2AGC(iPreAgc);
 
-			// 180:AGC Á¦¾î ¼Óµµ¿¡ ¿µÇâ  IMX291¿¡¼­ UP(IspGainAeCur) = 128(x4)ÀÏ ¶§, UP(IspGain)=255 -> Sensor AGC 60 -> AGC position 180
+			// 180:AGC ì œì–´ ì†ë„ì— ì˜í–¥  IMX291ì—ì„œ UP(IspGainAeCur) = 128(x4)ì¼ ë•Œ, UP(IspGain)=255 -> Sensor AGC 60 -> AGC position 180
 			giIspAgcMax = POS2AGC((180*UP(IspGain))/255);
 
 			const int iAgcLmt = ((UP(Agc)+UP(ExtraGain))>=255) ? (int)AGC_POS_MAX :
@@ -1505,8 +1505,8 @@ void ISRT AeAdv(void)
 		//	iAgcSpd >>= NO_EST_SPD_DOWN_BIT;
 		//}
 
-		const BYTE BRIGHT_ON = iErr > iErrMgn;		// Tgt > Cur ÀÎ °æ¿ì, Cur Áõ°¡ÇØ¾ß ÇÔ
-		const BYTE DARKEN_ON = iErr < -iErrMgn;		// Tgt < Cur ÀÎ °æ¿ì, Cur °¨¼ÒÇØ¾ß ÇÔ
+		const BYTE BRIGHT_ON = iErr > iErrMgn;		// Tgt > Cur ì¸ ê²½ìš°, Cur ì¦ê°€í•´ì•¼ í•¨
+		const BYTE DARKEN_ON = iErr < -iErrMgn;		// Tgt < Cur ì¸ ê²½ìš°, Cur ê°ì†Œí•´ì•¼ í•¨
 
 		if(gbWdrOn!=WDR_FRAME) GrpAe(GA_ERR_DAY_ORI) = 0;
 
@@ -1523,7 +1523,7 @@ void ISRT AeAdv(void)
 				break;
 			case AE_STG_SHT :	// SHT
 				ShtCtrl(0, iErr, iErrMgn, iShtSpd, SHT_MIN, SHT_MAX, bEstOn, bDlyOn, 1, 0/*iShtManual*/);
-				//AGC_SET(AGC_MIN);		// ShtCtrl()ÀÇ abAgcOn=1·Î½á AGC±îÁö Á¦¾îÇÏ¹Ç·Î ÁÖ¼®Ã³¸®
+				//AGC_SET(AGC_MIN);		// ShtCtrl()ì˜ abAgcOn=1ë¡œì¨ AGCê¹Œì§€ ì œì–´í•˜ë¯€ë¡œ ì£¼ì„ì²˜ë¦¬
 				AeTxGrpFnc();
 
 				if(DARKEN_ON && giShtVal<=SHT_MIN && gbShtDly==0) {
@@ -1619,7 +1619,7 @@ void ISRT AeAdv(void)
 AeCtrl:
 		giCurAgc = AGC2POS(MIN(giSenAgcVal + (((giAgcVal - giSenAgcVal) * UP(IspGainAePos))>>7), POS2AGC(AGC_POS_MAX) )/*giSenAgcVal*/);
 
-		AeIRS(/*UP(DefDet) ? AE_IRS_CLS_Max :*/ IrisOpenAdj(bShtOn, bDeblurOn, iAgcMin_Agc));	// !!! IrisOpenAdj() ½Ã bInitAe Àû¿ë ÇÊ¿ä?
+		AeIRS(/*UP(DefDet) ? AE_IRS_CLS_Max :*/ IrisOpenAdj(bShtOn, bDeblurOn, iAgcMin_Agc));	// !!! IrisOpenAdj() ì‹œ bInitAe ì ìš© í•„ìš”?
 
 		AeMon(AE_SAT_OFF, AeSHORT, iErrMgn, iCur, iTgt, bIrsOn, bShtOn, bTgtOn, bDeblurOn, bAgcOn, bDssOn, AE_IRS_STAT_Max, iShtMax_Agc, iAgcMin_Agc, POS2AGC(AGC_POS_MAX+(AGC_POS_MAX>>1)), iShtMax_Dss, UP(Dss));
 
@@ -1673,7 +1673,7 @@ AeCtrl:
 				const int iShtSDif = (iShtSVal <= 20) ? 1 : (iShtSVal>>4);		// >>4 => 1/16 => 6.25%
 				if(ABSDIFF(iShtSVal, giShtSVal) >= iShtSDif) gbUsrDataSaveChk = 1;
 
-				// AWB º¯È­¿¡ ´ëÇÑ SAVE CHKÇÊ¿ä !!
+				// AWB ë³€í™”ì— ëŒ€í•œ SAVE CHKí•„ìš” !!
 
 				if(gbUsrDataSaveChk) {
 					gUdAeStat->bIrsCentL = giIrsCent&0xff;
@@ -1721,8 +1721,8 @@ AeCtrl:
 		//if(iErrS1 < (-iErrMgn-1)) iErrS1 = -iErrMgn-1 - LibUtlInterp1D_CLAMP( giCurAgc, UP(AE_WDR_ON_AGC), AE_WDR_OFF_AGC, (iErrS1+iErrMgn+1)>>0, (iErrS1+iErrMgn+1)>>10);	// Sensor AGC
 		GrpAe(GA_ERR_DAY_ORI) = iErrS1;
 
-	#if (model_Sens==SENS_IMX327) || (model_Sens==SENS_OV2718) || (model_Sens==SENS_IMX415)	// Shutter line ¿¡ µû¸¥ ¹à±â°¡ Å« °æ¿ì WDR Short¿¡¼­ 20 ÀÌÇÏÀÇ Á¦¾î°¡ ÇÊ¿ä
-		#define FWDR_SHORT_MIN1	/*8*/ParAe(PA_WDR_SHORT_MIN1)	// ³Ê¹« ºü¸¥ Shutter¿¡¼­´Â AGC¸¦ ½áµµ SUM2°¡ Å©°Ô º¯È­ÇÏ¿© ÇåÆÃÀÌ ¹ß»ı -> 1¿¡¼­ 8·Î º¯°æ
+	#if (model_Sens==SENS_IMX327) || (model_Sens==SENS_OV2718) || (model_Sens==SENS_IMX415)	// Shutter line ì— ë”°ë¥¸ ë°ê¸°ê°€ í° ê²½ìš° WDR Shortì—ì„œ 20 ì´í•˜ì˜ ì œì–´ê°€ í•„ìš”
+		#define FWDR_SHORT_MIN1	/*8*/ParAe(PA_WDR_SHORT_MIN1)	// ë„ˆë¬´ ë¹ ë¥¸ Shutterì—ì„œëŠ” AGCë¥¼ ì¨ë„ SUM2ê°€ í¬ê²Œ ë³€í™”í•˜ì—¬ í—ŒíŒ…ì´ ë°œìƒ -> 1ì—ì„œ 8ë¡œ ë³€ê²½
 		#define WDR_SHORT_MIN1	FWDR_SHORT_MIN1
 		const int iShtSValMax0 = (giShtVal)>>1;																// WDR Short limit 50% of Long
 	#else
@@ -1734,7 +1734,7 @@ AeCtrl:
 		#define FWDR_SHORT_MIN2	40
 		#define WDR_SHORT_MIN2	((gbWdrOn==WDR_FRAME) ? FWDR_SHORT_MIN2 : (FWDR_SHORT_MIN2>>1))				// EN781 WDR
 
-		// Short°ú LongÀÌ ³Ê¹« ¹ú¾îÁöÁö ¾Êµµ·Ï °³¼±, Short VHSS º¸Á¤ AGC ¿Í Long AGC µ¿½Ã Àû¿ë ¹æÁö
+		// Shortê³¼ Longì´ ë„ˆë¬´ ë²Œì–´ì§€ì§€ ì•Šë„ë¡ ê°œì„ , Short VHSS ë³´ì • AGC ì™€ Long AGC ë™ì‹œ ì ìš© ë°©ì§€
 		const int iWdrSLmt = LibUtlInterp1D_CLAMP(giShtVal, WdrLShtMax(1)>>1, WdrLShtMax(1)-1, WDR_SHORT_MIN1, WDR_SHORT_MIN2);	// Sht limit
 
 		const int iShtSMax = CLAMP(iShtSValMax0, WdrSShtMin(1), WdrSShtMax(gbDssRatioLmt));
@@ -1742,12 +1742,12 @@ AeCtrl:
 
 		//if(iShtSMax<iWdrSLmt && iErrS1 < (-iErrMgn-1)) iErrS1 = (-iErrMgn-1) - ((iErrS1+iErrMgn+1)>>3);
 
-		// ShtCtrl(1, ...)¿¡¼­ abAgcOn¸¦ 1·Î »ç¿ëÇÏ±â À§ÇØ¼­´Â AgcCtrl()ÀÇ giAgcValµµ 2°³°¡ ÀÖ¾î¾ß ÇÔ -> ÇöÀç´Â gbVHssSAgc + giAgcVal(Long Shutter) ·Î µ¿ÀÛ -> WDR »ç¿ë ½Ã AGC_MIN Àû¿ëÇÏÁö ¾ÊÀ½
-		// ³Ê¹« ºü¸¥ Shutter¿¡¼­´Â AGC¸¦ ½áµµ SUM2°¡ Å©°Ô º¯È­ÇÏ¿© ÇåÆÃÀÌ ¹ß»ı -> iErrMgn¿¡ +4 Àû¿ë
+		// ShtCtrl(1, ...)ì—ì„œ abAgcOnë¥¼ 1ë¡œ ì‚¬ìš©í•˜ê¸° ìœ„í•´ì„œëŠ” AgcCtrl()ì˜ giAgcValë„ 2ê°œê°€ ìˆì–´ì•¼ í•¨ -> í˜„ì¬ëŠ” gbVHssSAgc + giAgcVal(Long Shutter) ë¡œ ë™ì‘ -> WDR ì‚¬ìš© ì‹œ AGC_MIN ì ìš©í•˜ì§€ ì•ŠìŒ
+		// ë„ˆë¬´ ë¹ ë¥¸ Shutterì—ì„œëŠ” AGCë¥¼ ì¨ë„ SUM2ê°€ í¬ê²Œ ë³€í™”í•˜ì—¬ í—ŒíŒ…ì´ ë°œìƒ -> iErrMgnì— +4 ì ìš©
 		if(bInitAe==0) ShtCtrl(1, iErrS1, iErrMgn+4, (iShtSpd/*>>NO_EST_SPD_DOWN_BIT*/), iShtSMin, iShtSMax/*giShtVal-1*/, 0, 0, 0, 0);	// over than short limit, under than long
 
 		const int iWdrAgcWgt = LibUtlInterp1D_CLAMP( giCurAgc, UP(AE_WDR_ON_AGC), AE_WDR_OFF_AGC, AE_WDR_MAX_WGT, UP(AE_WDR_MIN_WGT));	// Sensor AGC
-		const int iShtSVal = WdrAgcWgt(bInitAe, UP(AE_WDR_ON_AGC) < giCurAgc, iWdrAgcWgt, iShtSMax/*giShtVal-1*/, 30, 18);	// CAUTION ! -> iShtSVal ¿Í gbVHssSAgc ´Â ºñµ¿±â
+		const int iShtSVal = WdrAgcWgt(bInitAe, UP(AE_WDR_ON_AGC) < giCurAgc, iWdrAgcWgt, iShtSMax/*giShtVal-1*/, 30, 18);	// CAUTION ! -> iShtSVal ì™€ gbVHssSAgc ëŠ” ë¹„ë™ê¸°
 
 		//if(iShtSVal > iShtSMax) iShtSVal = iShtSMax;//SHT_SET1(iShtSMax);
 
@@ -1867,7 +1867,7 @@ AeCtrl:
 	GRP2 = iCurBg;
 	UartTxGrp();*/
 
-#if 0	// TODO KSH + AE ANTI-SAT.Á¤º¸ OSD Ãâ·Â
+#if 0	// TODO KSH + AE ANTI-SAT.ì •ë³´ OSD ì¶œë ¥
 	if(!AE_SAT_OFF) {
 		const UINT OSD_AE_Y = (gbMnDebugFnc) ? 20 : 4;
 		DispClr(OSD_AE_Y, 0, 10);

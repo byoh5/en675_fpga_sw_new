@@ -58,9 +58,9 @@ ENX_OKFAIL set_devicetime(int nTimezone, UINT nYear, UINT nMonth, UINT nDay, UIN
 	tmget.tm_sec = nSec;
 	tmget.tm_isdst = 0;
 //	if (nTimezone == TimeZone_GMT) {
-//		tmget.tm_isdst = 1;	// ÀÔ·Â°ªÀÌ GMT+0½Ã°£ÀÌ¹Ç·Î 1À» Àû¿ë (¿ø·¡ ÀÌ ¿ëµµ°¡ ¾Æ´Ï´Ù. ÀÌ°ÍÀº summer timeÀ» À§ÇÑ °Í.)
+//		tmget.tm_isdst = 1;	// ì…ë ¥ê°’ì´ GMT+0ì‹œê°„ì´ë¯€ë¡œ 1ì„ ì ìš© (ì›ë˜ ì´ ìš©ë„ê°€ ì•„ë‹ˆë‹¤. ì´ê²ƒì€ summer timeì„ ìœ„í•œ ê²ƒ.)
 //	} else if(nTimezone == TimeZone_LOC) {
-//		tmget.tm_isdst = 0;	// ÀÔ·Â°ªÀÌ GMT+9½Ã°£ÀÌ¹Ç·Î 0À» Àû¿ë (¿ø·¡ ÀÌ ¿ëµµ°¡ ¾Æ´Ï´Ù. ÀÌ°ÍÀº summer timeÀ» À§ÇÑ °Í.)
+//		tmget.tm_isdst = 0;	// ì…ë ¥ê°’ì´ GMT+9ì‹œê°„ì´ë¯€ë¡œ 0ì„ ì ìš© (ì›ë˜ ì´ ìš©ë„ê°€ ì•„ë‹ˆë‹¤. ì´ê²ƒì€ summer timeì„ ìœ„í•œ ê²ƒ.)
 //	}
 
 	gptMsgShare.TIME = mktime(&tmget);

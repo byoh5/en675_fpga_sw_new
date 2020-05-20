@@ -10,13 +10,13 @@ void audio_init(void)
 	WaitXms(100);
 	GpioSetOut(AUDIO_GPIO_RST, GPIO_OUT_HI);
 
-	//tx_mode : 0: L, 1: R, 2: L+R/2, 3: Stereo -> µ¥ÀÌÅÍ¸¦ Àü¼ÛÇÒ ¹æÇâ, 2´Â ÇÑ wordÀÇ µ¥ÀÌÅÍ¸¦ ÀĞÀº ÈÄ 2·Î divide, ¾ç¹æÇâÀ¸·Î Àü¼Û.
+	//tx_mode : 0: L, 1: R, 2: L+R/2, 3: Stereo -> ë°ì´í„°ë¥¼ ì „ì†¡í•  ë°©í–¥, 2ëŠ” í•œ wordì˜ ë°ì´í„°ë¥¼ ì½ì€ í›„ 2ë¡œ divide, ì–‘ë°©í–¥ìœ¼ë¡œ ì „ì†¡.
 	//tx_cd : 0 or 1: PCM, 2: G711-a, 3: G711-u)
-	//tx_dw : 0->8 , 1->16, 2->24, 3->32 : ÇÏ´Â µ¥ÀÌÅÍ width
-	//rd_byte : 0: 128B, 1: 256B, 2: 512B, 3: 1KB -> ÇÑ¹ø request¿¡¼­ ÀĞ´Â µ¥ÀÌÅÍ ·®
-	//rd_dw : 0->8 , 1->16, 2->24, 3->32 : RxÀÇ µ¥ÀÌÅÍ width
-	//rd_len : 0: 128KB, 1: 256KB, 2: 512KB, 3: 1MB -> Loop¸¦ µµ´Â ÃÖ´ë µ¥ÀÌÅÍ ·®
-	//tx_lr : 0 : Mute(0), 1: Left, 2: Right, 3: Both -> TXÇÒ ¶§ mute ¶Ç´Â unmute ¼±ÅÃ
+	//tx_dw : 0->8 , 1->16, 2->24, 3->32 : í•˜ëŠ” ë°ì´í„° width
+	//rd_byte : 0: 128B, 1: 256B, 2: 512B, 3: 1KB -> í•œë²ˆ requestì—ì„œ ì½ëŠ” ë°ì´í„° ëŸ‰
+	//rd_dw : 0->8 , 1->16, 2->24, 3->32 : Rxì˜ ë°ì´í„° width
+	//rd_len : 0: 128KB, 1: 256KB, 2: 512KB, 3: 1MB -> Loopë¥¼ ë„ëŠ” ìµœëŒ€ ë°ì´í„° ëŸ‰
+	//tx_lr : 0 : Mute(0), 1: Left, 2: Right, 3: Both -> TXí•  ë•Œ mute ë˜ëŠ” unmute ì„ íƒ
 
 	// (UINT tx_mode, UINT tx_cd, UINT tx_dw, UINT rd_byte, UINT rd_dw, UINT rd_len, UINT tx_lr)
 	//I2sTxCfg(3, 0, 0, 3, 1, 0, 3); // Stereo 44.1KHz PCM 8bit,

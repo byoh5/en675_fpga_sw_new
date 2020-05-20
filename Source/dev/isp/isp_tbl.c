@@ -23,7 +23,7 @@ void ISRT0 SetSensBurst(WORD awAddr, BYTE* apbData, BYTE abLength) { }
 void Isp_VLOCKO_init(void)
 {
 	VIRQO_EN_Tw(1);
-	//CLI_VLOCKO_Tw(1);		// TODO KSH> ÄÄÆÄÀÏ ¹®Á¦?
+	//CLI_VLOCKO_Tw(1);		// TODO KSH> ì»´íŒŒì¼ ë¬¸ì œ?
 }
 
 void Wait_VLOCKO(void)
@@ -704,7 +704,7 @@ void Isp_Ddr_Cong(void)
 	asm volatile("la %0, _heap_end" : "=r"(heap_end));
 
 	const UINT Isp_Wdr_Adr = (((intptr_t)heap_end)/*DDR1_BASE*/>>4);
-	const UINT Isp_Frc_Adr = Isp_Wdr_Adr_config(Isp_Wdr_Adr, 1, RP(PO_HW), RP(PO_VW), DZ_HW_MR<<1, 0);	// DZOOM ½Ã DZ_HW_MR+a¸¦ ÇØ¾ß ÇÏ´Ü ÀÚÁÖ»ö ±ôºýÀÓ »ç¶óÁü
+	const UINT Isp_Frc_Adr = Isp_Wdr_Adr_config(Isp_Wdr_Adr, 1, RP(PO_HW), RP(PO_VW), DZ_HW_MR<<1, 0);	// DZOOM ì‹œ DZ_HW_MR+aë¥¼ í•´ì•¼ í•˜ë‹¨ ìžì£¼ìƒ‰ ê¹œë¹¡ìž„ ì‚¬ë¼ì§
 	const UINT Isp_Cvb_Adr = Isp_Frc_Adr_Config(Isp_Frc_Adr, 2, RP(PO_HW), RP(PO_VW), DZ_HW_MR<<1, 0);	//	"
 	const UINT Isp_YC_Adr1 = Isp_Cvb_Adr_Config(Isp_Cvb_Adr, 720/*960*/, 576);
 

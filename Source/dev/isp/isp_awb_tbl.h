@@ -3,7 +3,7 @@
  Description:	EN675 - Auto White Balance module
  Designer	:	Lee, Hoon (14.12.05)
  Modified by:	Kim, Sunghoon (19.08.20)
- Copyright ¨Ï Eyenix Co., Ltd. All Rights Reserved.
+ Copyright â“’ Eyenix Co., Ltd. All Rights Reserved.
 *************************************************************************** */
 
 #if (model_Sens==SENS_IMX291)

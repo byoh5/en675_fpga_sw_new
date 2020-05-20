@@ -3,7 +3,7 @@
  Description:	EN675 - key scan module
  Designer	:	Kim, Sunghoon
  Date		:	19. 6. 7
- Copyright ¨Ï Eyenix Co., Ltd. All Rights Reserved.
+ Copyright â“’ Eyenix Co., Ltd. All Rights Reserved.
 *************************************************************************** */
 
 #include "dev.h"

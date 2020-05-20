@@ -3,7 +3,7 @@
  Description:   EN675 - User Parameter Control
  Designer   :   Kim, Sunghoon
  Date       :   19. 6. 3
- Copyright ¨Ï Eyenix Co., Ltd. All Rights Reserved.
+ Copyright â“’ Eyenix Co., Ltd. All Rights Reserved.
 *************************************************************************** */
 
 #include "dev.h"
@@ -23,7 +23,7 @@
 //-------------------------------------------------------------------------------------------------
 const char *gsBuildDate = "FW Date : "__DATE__" "__TIME__;
 WORD gDataID = 0;
-BYTE gbUsrParChgOn = 0;	// 0:½ÇÇà¾ÈÇÔ, 1:ºÎÆÃ&º¯°æ, 2:º¯°æ
+BYTE gbUsrParChgOn = 0;	// 0:ì‹¤í–‰ì•ˆí•¨, 1:ë¶€íŒ…&ë³€ê²½, 2:ë³€ê²½
 BYTE gbStylePreviousOn = 0;
 
 // User Parameter --------------------------------------------------
@@ -169,7 +169,7 @@ void UsrParChg(const UINT anStrIdx)
 			MaskIMD();
 		}
 		else if(anStrIdx < UP_END) {
-			UsrParStyle(0, 0, anStrIdx);	// Style °ªµé º¯°æ¿©ºÎ Ã¼Å© -> °ªÀÌ º¯°æµÇ¾úÀ¸¸é /*CUSTOMIZE*/PREVIOUS ·Î
+			UsrParStyle(0, 0, anStrIdx);	// Style ê°’ë“¤ ë³€ê²½ì—¬ë¶€ ì²´í¬ -> ê°’ì´ ë³€ê²½ë˜ì—ˆìœ¼ë©´ /*CUSTOMIZE*/PREVIOUS ë¡œ
 		}
 
 #if 0
@@ -241,7 +241,7 @@ BYTE UsrParSiz(const UINT anIdx)
 
 void InitUsrParChgAll(void)
 {
-	gbUsrParChgOn = 1;			// INIT_RUN ¼³Á¤µÈ User Parameter ÄÚµå ½ÇÇà
+	gbUsrParChgOn = 1;			// INIT_RUN ì„¤ì •ëœ User Parameter ì½”ë“œ ì‹¤í–‰
 
 #if 0
 	#undef UP_SET
@@ -249,7 +249,7 @@ void InitUsrParChgAll(void)
 	USR_PAR_LIST
 #else
 	for(UINT i=1; i<UP_END; i++) {
-		UsrParChg(i);			// SensFlip(), SensMirror() ½ÇÇàÀ» À§ÇØ Isp_Sensor_init()ÀÌ ¸ÕÀú ¼³Á¤µÇ¾î¾ß ÇÔ, gbUsrParChgOn = 2 »óÅÂ¿¡¼­ UsrParChg()»ç¿ëÇÏ´Â °æ¿ì PrivacyBox()ÇÔ¼ö°¡ Áßº¹ È£ÃâµÊ!!!
+		UsrParChg(i);			// SensFlip(), SensMirror() ì‹¤í–‰ì„ ìœ„í•´ Isp_Sensor_init()ì´ ë¨¼ì € ì„¤ì •ë˜ì–´ì•¼ í•¨, gbUsrParChgOn = 2 ìƒíƒœì—ì„œ UsrParChg()ì‚¬ìš©í•˜ëŠ” ê²½ìš° PrivacyBox()í•¨ìˆ˜ê°€ ì¤‘ë³µ í˜¸ì¶œë¨!!!
 
 		//if(UPi(LvdsPNSel) <= i && i <= UPi(OutVSyncOfs)) { if(gbUsrParChgOn==2) UsrParChg(i); }
 		//else if(UPi(CamTitleOn) <= i && i <= UPi(CamTitle7)) { if(gbUsrParChgOn==2) UsrParChg(i); }
@@ -257,7 +257,7 @@ void InitUsrParChgAll(void)
 	}
 #endif
 
-	gbUsrParChgOn = 2;			// User Parameter º¯°æ ½Ã ½ÇÇà
+	gbUsrParChgOn = 2;			// User Parameter ë³€ê²½ ì‹œ ì‹¤í–‰
 }
 
 void UsrParReset(void)
@@ -265,7 +265,7 @@ void UsrParReset(void)
 	int i;
 
 	if(gbUsrParChgOn == 2) {
-		for(i=0; i<USR_PAR_EA; i++) gbUsrParTblSaved[i] = gbUsrParTbl[i];	// Reset ½ÇÇàÀü »óÅÂ ¹é¾÷
+		for(i=0; i<USR_PAR_EA; i++) gbUsrParTblSaved[i] = gbUsrParTbl[i];	// Reset ì‹¤í–‰ì „ ìƒíƒœ ë°±ì—…
 	}
 
 	//----------------------------------------------------------------------
@@ -296,7 +296,7 @@ void UsrParReset(void)
 		gbMnImdCfg(i)->bSizX   = (IMD_HW-3)/3;
 		gbMnImdCfg(i)->bSizY   = (IMD_VW-3)/3;
 	}
-//	gbMnImdCfg(2)->bPosX -= 2;		// TODO KSH ¡ß IMD Test Init
+//	gbMnImdCfg(2)->bPosX -= 2;		// TODO KSH â—† IMD Test Init
 //	gbMnImdCfg(2)->bPosY -= 2;
 //	gbMnImdCfg(2)->bSizX += 4;
 //	gbMnImdCfg(2)->bSizY += 4;
@@ -308,7 +308,7 @@ void UsrParReset(void)
 //	gbMnImdCfg(3)->bSizY += (IMD_VW>>1);
 
 
-	UsrParStyle(INIT_STYLE, 1, 1);	// INIT_STYLE ·Î Style°ªµé º¯°æ
+	UsrParStyle(INIT_STYLE, 1, 1);	// INIT_STYLE ë¡œ Styleê°’ë“¤ ë³€ê²½
 	//----------------------------------------------------------------------
 #if model_TgtBd == 1
 	UP(ICSel) = 1;
@@ -359,7 +359,7 @@ void UsrParStyle(const int abStyle, const int abInit, const int abValChg)
 	#define UP_STYLE(N, ...)	static UPt(N) bStylePrv##N = -16;
 	USR_PAR_STYLE
 
-	if(bStyleBuf == 0) {	// abStyle°ªÀÌ 0¿¡¼­ ´Ù¸¥°ªÀ¸·Î º¯°æµÇ´Â °æ¿ì PREVIOUS°ªµé ¾÷µ¥ÀÌÆ®
+	if(bStyleBuf == 0) {	// abStyleê°’ì´ 0ì—ì„œ ë‹¤ë¥¸ê°’ìœ¼ë¡œ ë³€ê²½ë˜ëŠ” ê²½ìš° PREVIOUSê°’ë“¤ ì—…ë°ì´íŠ¸
 		#undef UP_STYLE
 		#define UP_STYLE(N, ...)	bStylePrv##N = UP(N);
 		USR_PAR_STYLE
@@ -440,10 +440,10 @@ void UsrParSave(UINT anSaveOn)
 		}
  	}
 	else {																	// No Save & Exit
-		UsrParCpy(gbUsrParTbl, gbUsrParTblSaved);	// º¹±Í
+		UsrParCpy(gbUsrParTbl, gbUsrParTblSaved);	// ë³µê·€
 	}
 
- 	UsrParStyle(UP(Style), 1, 0);	// StyleÀÇ buffer°ª º¯°æ & gbStylePreviousOn ¼³Á¤
+ 	UsrParStyle(UP(Style), 1, 0);	// Styleì˜ bufferê°’ ë³€ê²½ & gbStylePreviousOn ì„¤ì •
 }
 
 void AppSavePar(void)
@@ -535,13 +535,13 @@ void AppLoadPar(void)
 		#endif
 
 		if ((WORD)((gbUsrParTbl[UP_START]<<8)|gbUsrParTbl[UP_END])!=(WORD)UP_DATA_ID) {	// Parameter reset condition
-			UsrParReset();			// gbUsrParTbl[] ÃÊ±âÈ­ & UsrParCpy(gbUsrParTblSaved, gbUsrParTbl) ½ÇÇà
-			gbUsrParSaveChk = 1;	// ROM ÀúÀå ½ÇÇà
+			UsrParReset();			// gbUsrParTbl[] ì´ˆê¸°í™” & UsrParCpy(gbUsrParTblSaved, gbUsrParTbl) ì‹¤í–‰
+			gbUsrParSaveChk = 1;	// ROM ì €ì¥ ì‹¤í–‰
 			INIT_STR("MENU PAR reset");
 		}
 		else {
 			UsrParCpy(gbUsrParTblSaved, gbUsrParTbl);
-			UsrParStyle(UP(Style), 1, 0);	// StyleÀÇ buffer°ª º¯°æ & gbStylePreviousOn ¼³Á¤
+			UsrParStyle(UP(Style), 1, 0);	// Styleì˜ bufferê°’ ë³€ê²½ & gbStylePreviousOn ì„¤ì •
 		}
 
 		gbUsrParReadChk = 0;
@@ -575,7 +575,7 @@ void AppLoadPar(void)
 	}
 }
 
-#if 0		// TODO KSH ¡ß ParFncTest()
+#if 0		// TODO KSH â—† ParFncTest()
 typedef struct {
 	BYTE bA;
 	WORD wB;

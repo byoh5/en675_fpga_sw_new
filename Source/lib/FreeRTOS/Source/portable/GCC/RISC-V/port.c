@@ -219,7 +219,7 @@ void vMemoryHeapInit(void)
 		uiTotalHeapMemorySize += xHeapRegions[i].xSizeInBytes;
 	}
 
-//	юс╫ц Test code
+//	Test code
 	printf("xISRStack: 0x%08X, %uByte.\n", xISRStack, sizeof(xISRStack));
 	SYS_REG7 = (UINT)(intptr_t)xISRStack;
 //////////////////////////

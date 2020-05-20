@@ -361,7 +361,7 @@ extern void Flip(void);
 
 //------------------------------------------------------------------------------
 // Digital Zoom
-#define DZ_HW_MR	0//((model_8M) ? 16 : 8)	// DZOOM HW Margin, 8MÀÇ °æ¿ì RP(PO_HW)+8 ÀÌ 16ÀÇ ¹è¼ö°¡ ¾ÈµÊ
+#define DZ_HW_MR	0//((model_8M) ? 16 : 8)	// DZOOM HW Margin, 8Mì˜ ê²½ìš° RP(PO_HW)+8 ì´ 16ì˜ ë°°ìˆ˜ê°€ ì•ˆë¨
 
 #define DZ_HW	RP(FR_HW)//(RP(PO_HW)+DZ_HW_MR)
 #define DZ_VW	RP(FR_VW)//RP(PO_VW)

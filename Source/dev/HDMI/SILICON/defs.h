@@ -8,7 +8,7 @@
 #ifndef _DEFS_H_
 #define _DEFS_H_
 
-#define DelayMS(MS)		__asm("C.NOP")//WaitXms(MS)		// TODO KSH> HDMI¿¡¼­ Delay¾ø¾îµµ µ¿ÀÛÇÔ
+#define DelayMS(MS)		__asm("C.NOP")//WaitXms(MS)		// TODO KSH> HDMIì—ì„œ Delayì—†ì–´ë„ ë™ì‘í•¨
 
 void TXHAL_InitMicroGpios (void);
 void TXHAL_InitPreReset (void);

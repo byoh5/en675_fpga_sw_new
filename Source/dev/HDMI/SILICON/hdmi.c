@@ -3,7 +3,7 @@
  Description	:	PC interface through uart
  Designer		: 	Park, Jun-Young.
  Date		:	14.11.5
- Copyright ¨Ï Eyenix Co., Ltd. All Rights Reserved.
+ Copyright â“’ Eyenix Co., Ltd. All Rights Reserved.
 *************************************************************************** */
 
 //#include "../cpu_main.h"

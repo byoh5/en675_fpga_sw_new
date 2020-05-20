@@ -784,6 +784,11 @@ init:
 
 	EthphyAutoNeg(gtNetwork.u3EthAutoNegotiation);
 
+#if EN675_SINGLE
+	EthSetTxClockPowerEn(ENX_OFF);
+	EthSetRxClockPowerEn(ENX_OFF);
+#endif
+
 	while (1) {
 		if (ulTaskNotifyTake(pdTRUE, portMAX_DELAY)) {
 			if (network_ethif_phy_restart_flag == 1) {
@@ -840,8 +845,8 @@ void network_ethif_start(void)
 		qEthernetTX.index = 0;
 	}
 
-	//EthTxIrqCallback(NULL, NULL);
-	//EthTxIrqOn();
+//	EthTxIrqCallback(NULL, NULL);
+//	EthSetTxIrqEn(ENX_ON);
 
 	memset(netif_state[enlETHERNET]._netif, 0, sizeof(struct netif));
 	netif_add(netif_state[enlETHERNET]._netif, NULL, NULL, NULL, &netif_state[enlETHERNET], network_ethif_init, tcpip_input);

@@ -225,7 +225,7 @@ done_fail:
 	return ENX_FAIL;
 }
 
-// ฑโบปภ๛ภฮ CH, IRQ, รึรสมึฦฤผ๖, Pull-up ต๎ภป ผณมควัดู.
+// ๊ธฐ๋ณธ์ ์ธ CH, IRQ, ์ต์ด์ฃผํ์, Pull-up ๋“ฑ์ ์ค์ •ํ•๋ค.
 void SdioWfInit(UINT nCH)
 {
 	memset(&wfinfo, 0, sizeof(wfinfo));

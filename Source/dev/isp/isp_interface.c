@@ -153,7 +153,7 @@ void Isp_PreClk_Config(BYTE Clk, BOOL Usefrc)
 		if(Clk==ISP_CLK_PCLK_DIV2)		{ YCW_DCK2_SELw(7); }
 		else if(Clk==ISP_CLK_PLL_DIV0)	{ YCW_DCK2_SELw(12); }
 		else							{ YCW_DCK2_SELw(Clk); }
-		YCW_DCK2_PDw(1);	// WDR »ç¿ë ½Ã ÇÊ¿ä, DS_WCH2_ENw °¡ 0ÀÌ¸é ISP_FRC, 1ÀÌ¸é DDR YC writeÀü¿ë Ã¤³Î
+		YCW_DCK2_PDw(1);	// WDR ì‚¬ìš© ì‹œ í•„ìš”, DS_WCH2_ENw ê°€ 0ì´ë©´ ISP_FRC, 1ì´ë©´ DDR YC writeì „ìš© ì±„ë„
 	}
 	else YCW_DCK2_PDw(0);
 }
@@ -162,14 +162,14 @@ void Isp_PreClk_Config(BYTE Clk, BOOL Usefrc)
 //	IsSlave+	->	0 : Master Mode, 1 : Slave Mode
 //	Htw			->	Horizontal Total Counter : Real Number
 //	Vtw			->	Vertical Total Counter : Real Number
-//	HsyncOfs*	->	Horizontal Sync Offset, Hsp ÀÎÀÚ·Î Image À§Ä¡°¡ ¸ÂÁö ¾ÊÀ»¶§ SyncÀÇ À§Ä¡¸¦ ÀÌµ¿ÇÏ¿© image À§Ä¡¸¦ ¸ÂÃß´Âµ¥ »ç¿ëÇÑ´Ù.
-//	VsyncOfs*	->	Vertical Sync Offset, Vsp ÀÎÀÚ·Î Image À§Ä¡°¡ ¸ÂÁö ¾ÊÀ»¶§ SyncÀÇ À§Ä¡¸¦ ÀÌµ¿ÇÏ¿© image À§Ä¡¸¦ ¸ÂÃß´Âµ¥ »ç¿ëÇÑ´Ù.
+//	HsyncOfs*	->	Horizontal Sync Offset, Hsp ì¸ìžë¡œ Image ìœ„ì¹˜ê°€ ë§žì§€ ì•Šì„ë•Œ Syncì˜ ìœ„ì¹˜ë¥¼ ì´ë™í•˜ì—¬ image ìœ„ì¹˜ë¥¼ ë§žì¶”ëŠ”ë° ì‚¬ìš©í•œë‹¤.
+//	VsyncOfs*	->	Vertical Sync Offset, Vsp ì¸ìžë¡œ Image ìœ„ì¹˜ê°€ ë§žì§€ ì•Šì„ë•Œ Syncì˜ ìœ„ì¹˜ë¥¼ ì´ë™í•˜ì—¬ image ìœ„ì¹˜ë¥¼ ë§žì¶”ëŠ”ë° ì‚¬ìš©í•œë‹¤.
 //	Hsp*		->	Post module horizontal image start position
 //	Vsp*		->	Post module vertical image start position
 //	Hw			->	Horizontal Active Width
 //	Vw			->	Vertical Active Width
-//	IsASync+	->	omni sensor¿Í °°ÀÌ Active ÀÌ¿ÜÀÇ ±¸°£¿¡¼­ sync°¡ ³ª¿ÀÁö ¾Ê´Â sensor¿¡¼­ 1·Î ¼³Á¤
-//	IsNSync+	->	ÀÔ·Â syncÀÇ H/V À§»óÀÌ ÀÏÄ¡ÇÏÁö ¾Ê´Â »óÈ²¿¡¼­ 1·Î ¼³Á¤
+//	IsASync+	->	omni sensorì™€ ê°™ì´ Active ì´ì™¸ì˜ êµ¬ê°„ì—ì„œ syncê°€ ë‚˜ì˜¤ì§€ ì•ŠëŠ” sensorì—ì„œ 1ë¡œ ì„¤ì •
+//	IsNSync+	->	ìž…ë ¥ syncì˜ H/V ìœ„ìƒì´ ì¼ì¹˜í•˜ì§€ ì•ŠëŠ” ìƒí™©ì—ì„œ 1ë¡œ ì„¤ì •
 //	HSyncPol	->	SYNC_FALL (0), SYNC_RISE (1)
 //	VSyncPol	->	SYNC_FALL (0), SYNC_RISE (1)
 void Isp_PreSync_Config(BOOL IsSlave, UINT Htw, UINT Vtw, UINT HsyncOfs, UINT VsyncOfs, UINT Hsp, UINT Vsp, UINT Hw, UINT Vw, BOOL IsASync, BOOL IsNSync, BOOL HSyncPol, BOOL VSyncPol)
@@ -202,8 +202,8 @@ void Isp_AutoSync_Config()
 //	ExSyncSel	->	Select External Sync,  0 : Pre Module Sync,  1: External Input Sync (EN675 Pin VSO, HSO Input)
 //	Htw			->	Horizontal Total Counter : Real Number
 //	Vtw			->	Vertical Total Counter : Real Number
-//	HsyncOfs	->	Horizontal Sync Offset, Hsp ÀÎÀÚ·Î image À§Ä¡°¡ ¸ÂÁö ¾ÊÀ»¶§ syncÀÇ À§Ä¡¸¦ ÀÌµ¿ÇÏ¿© image À§Ä¡¸¦ ¸ÂÃß´Âµ¥ »ç¿ë
-//	VsyncOfs	->	Vertical Sync Offset, Vsp ÀÎÀÚ·Î image À§Ä¡°¡ ¸ÂÁö ¾ÊÀ»¶§ syncÀÇ À§Ä¡¸¦ ÀÌµ¿ÇÏ¿© image À§Ä¡¸¦ ¸ÂÃß´Âµ¥ »ç¿ë
+//	HsyncOfs	->	Horizontal Sync Offset, Hsp ì¸ìžë¡œ image ìœ„ì¹˜ê°€ ë§žì§€ ì•Šì„ë•Œ syncì˜ ìœ„ì¹˜ë¥¼ ì´ë™í•˜ì—¬ image ìœ„ì¹˜ë¥¼ ë§žì¶”ëŠ”ë° ì‚¬ìš©
+//	VsyncOfs	->	Vertical Sync Offset, Vsp ì¸ìžë¡œ image ìœ„ì¹˜ê°€ ë§žì§€ ì•Šì„ë•Œ syncì˜ ìœ„ì¹˜ë¥¼ ì´ë™í•˜ì—¬ image ìœ„ì¹˜ë¥¼ ë§žì¶”ëŠ”ë° ì‚¬ìš©
 //	Hsp			->	Post module horizontal image start position
 //	Vsp			->	Post module vertical image start position
 //	Hw			->	Horizontal Active Width
@@ -223,7 +223,7 @@ void Isp_PostSync_Config(BOOL OSyncMode, BOOL ExSyncSel, UINT Htw, UINT Vtw, UIN
 	EXVSYNC_SELw(ExSyncSel);
 	EXHSYNC_SELw(ExSyncSel);
 
-	//OCSELw(OCSel);	// Flip() ÇÔ¼ö¿¡¼­ ½ÇÇàµÊ
+	//OCSELw(OCSel);	// Flip() í•¨ìˆ˜ì—ì„œ ì‹¤í–‰ë¨
 
 	POS_HZw(0);
 }
@@ -282,9 +282,9 @@ void Isp_Edge_Config(BOOL OnOff)
 }
 
 //	OnOff	->	FN_ON, FN_OFF
-//	DnrFk	->	3D dnr µ¿ÀÛ ½Ã feedbackµÇ´Â imageÀÇ °­µµ¸¦ Á¶ÀýÇÑ´Ù.
-//	DnrTh	->	ÇöÀç ÀÌ¹ÌÁö¿Í Àü ÀÌ¹ÌÁöÀÇ difference°¡ ÀÌ threshold °ªº¸´Ù ÀÛÀº ¿µ¿ª¿¡¼­ 3d dnrÀÌ µ¿ÀÛÇÏ°Ô µÈ´Ù.
-//	DnrGain	->	Gainº¸´Ù DnrthÀÇ °ªÀÌ 3D dnr µ¿ÀÛ¿¡ ´õ Å« ¿µÇâÀ» ÁØ´Ù. º¸Åë 0x20À¸·Î »ç¿ëÇÑ´Ù.
+//	DnrFk	->	3D dnr ë™ìž‘ ì‹œ feedbackë˜ëŠ” imageì˜ ê°•ë„ë¥¼ ì¡°ì ˆí•œë‹¤.
+//	DnrTh	->	í˜„ìž¬ ì´ë¯¸ì§€ì™€ ì „ ì´ë¯¸ì§€ì˜ differenceê°€ ì´ threshold ê°’ë³´ë‹¤ ìž‘ì€ ì˜ì—­ì—ì„œ 3d dnrì´ ë™ìž‘í•˜ê²Œ ëœë‹¤.
+//	DnrGain	->	Gainë³´ë‹¤ Dnrthì˜ ê°’ì´ 3D dnr ë™ìž‘ì— ë” í° ì˜í–¥ì„ ì¤€ë‹¤. ë³´í†µ 0x20ìœ¼ë¡œ ì‚¬ìš©í•œë‹¤.
 void Isp_Dnr3d_Config(BOOL OnOff, BYTE Clk, BYTE DnrFk, BYTE DnrTh, BYTE DnrGain)
 {
 	DNR3D_FKw(DnrFk);
@@ -338,8 +338,8 @@ void Isp_Dnr2d_Config(BOOL OnOff, BYTE Icsel, BYTE Ocsel)
 }
 #else
 //	OnOff		->	FN_ON, FN_OFF
-//	Dnr2dMode	->	DNR2D_DTH_MOD (0) : Dnr2dDth ¿¡ ¼³Á¤µÈ °ªº¸´Ù ÁÖº¯ difference°¡ ÀÛÀº pixel¿¡ ´ëÇÏ¿© reference·Î »ç¿ëÇÏ¿© 2d¸¦ Àû¿ëÇÑ´Ù.
-//					DNR2D_SUM_MOD (1) : Dnr2dCnt ¿¡ ¼³Á¤µÈ pixel °³¼ö ¸¸Å­ reference·Î »ç¿ëÇÏ¿© 2d dnrÀ» Àû¿ëÇÑ´Ù.
+//	Dnr2dMode	->	DNR2D_DTH_MOD (0) : Dnr2dDth ì— ì„¤ì •ëœ ê°’ë³´ë‹¤ ì£¼ë³€ differenceê°€ ìž‘ì€ pixelì— ëŒ€í•˜ì—¬ referenceë¡œ ì‚¬ìš©í•˜ì—¬ 2dë¥¼ ì ìš©í•œë‹¤.
+//					DNR2D_SUM_MOD (1) : Dnr2dCnt ì— ì„¤ì •ëœ pixel ê°œìˆ˜ ë§Œí¼ referenceë¡œ ì‚¬ìš©í•˜ì—¬ 2d dnrì„ ì ìš©í•œë‹¤.
 //	Dnr2dCnt	->	Dnr reference pixel count
 //					DNR2D_CNT8 : Default 8 pixel
 //	Dnr2dDth	->	'center pixel - near pixel' difference threshold

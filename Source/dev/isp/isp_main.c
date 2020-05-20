@@ -58,7 +58,7 @@ void Isp_SensorRst(void)
 	INIT_DELAY(1);
 }
 
-#if model_Sens_Intf == 2	// MIPI ¼³Á¤
+#if model_Sens_Intf == 2	// MIPI ì„¤ì •
 void APB_Write(volatile unsigned long addr, unsigned int data)
 {
 	*((volatile unsigned int *)(addr)) = data;
@@ -72,14 +72,14 @@ unsigned int APB_Read(volatile unsigned long addr)
 
 void Isp_Sensor_init(void)
 {
-#if model_Sens_Intf == 2	// MIPI ¼³Á¤
+#if model_Sens_Intf == 2	// MIPI ì„¤ì •
 	//SYNC_UPw(1);
-	IBT_PCK_SELw((model_Sens_Intf==0) ? M_EXT : SP(MipiClk));	// MIPI ¼³Á¤Àü¿¡ °¡Àå ¸ÕÀú ÇØ¾ß ÇÔ
+	IBT_PCK_SELw((model_Sens_Intf==0) ? M_EXT : SP(MipiClk));	// MIPI ì„¤ì •ì „ì— ê°€ì¥ ë¨¼ì € í•´ì•¼ í•¨
 	IBT_PCK_PDw(1);
 
 	APCLK_SELw(0);				//	For FPGA 148.5 MHz
 	APCLK_PDw(1);
-	INIT_DELAY(1);	// TODO KSH x ÇÊ¿ä?
+	INIT_DELAY(1);	// TODO KSH x í•„ìš”?
 
 	APB_Write(0x46500024,0x1f);				// Enable data, Enable clock
 	// ISP CH0
@@ -107,7 +107,7 @@ void Isp_Sensor_init(void)
 	#endif
 #endif
 	//----------------------------------------------------------------------------------------
-	Isp_SensorRst();	// TODO KSH x enx_device_init()¿¡¼­ high·Î ¼³Á¤ÇÏ¹Ç·Î ÇÊ¿ä ¾øÀ½?
+	Isp_SensorRst();	// TODO KSH x enx_device_init()ì—ì„œ highë¡œ ì„¤ì •í•˜ë¯€ë¡œ í•„ìš” ì—†ìŒ?
 
 	IspSDesPowerOn();
 	IspSensorPowerOn();
@@ -119,16 +119,16 @@ void Isp_Sensor_init(void)
 	InitSensRun();
 
 #if (model_Sens==SENS_IMX291)
-	#define SENSOR_BLACK_LEVEL	0xf0	// Æ÷È­¿µ¿ª °æ°èºÎºĞ ³ëÀÌÁî °¨¼Ò
+	#define SENSOR_BLACK_LEVEL	0xf0	// í¬í™”ì˜ì—­ ê²½ê³„ë¶€ë¶„ ë…¸ì´ì¦ˆ ê°ì†Œ
 #elif (model_Sens==SENS_IMX323)
-	#define SENSOR_BLACK_LEVEL	0x3c	// ¾ÏºÎ¿µ¿ª ÄÃ·¯³ëÀÌÁî(ÀÚÁÖ»ö) °¨¼Ò, ¹ÌÀû¿ë ½Ã WDR Short Ã¤³Î¿¡ ÀÚÁÖ»ö ¹ß»ı
+	#define SENSOR_BLACK_LEVEL	0x3c	// ì•”ë¶€ì˜ì—­ ì»¬ëŸ¬ë…¸ì´ì¦ˆ(ìì£¼ìƒ‰) ê°ì†Œ, ë¯¸ì ìš© ì‹œ WDR Short ì±„ë„ì— ìì£¼ìƒ‰ ë°œìƒ
 #elif (model_Sens==SENS_IMX415)
-	#define SENSOR_BLACK_LEVEL	0x0//(0x32<<2)	// IMX415 12bitÃâ·ÂÀÌ¸é x4
+	#define SENSOR_BLACK_LEVEL	0x0//(0x32<<2)	// IMX415 12bitì¶œë ¥ì´ë©´ x4
 #else
 	#define SENSOR_BLACK_LEVEL	0x0
 #endif
 
-	#define ISP_OFFSET	(1024-((SENSOR_BLACK_LEVEL)>>2))	// ¡ØEN673Àº >>2 ÇÏÁö ¾ÊÀ½
+	#define ISP_OFFSET	(1024-((SENSOR_BLACK_LEVEL)>>2))	// â€»EN673ì€ >>2 í•˜ì§€ ì•ŠìŒ
 
 	PRE_GROFSw(ISP_OFFSET);
 	PRE_GBOFSw(ISP_OFFSET);
@@ -145,10 +145,10 @@ void Isp_PrePost_init(void)
 	IspPreSyncConfig();
 	IspPostSyncConfig();
 
-	// Polling ¹æ½Ä VLOCKO »ç¿ë
-	// - Post Clk & Sync ¼³Á¤ ÈÄ ½ÇÇàµÇ¾î¾ß ÇÔ (¶Ç´Â Isp_irq_init() »ç¿ë)
-	// - IBT_PCK_SELw() ¼³Á¤ Å¸ÀÌ¹Ö Á¶Àı ½Ã ÇÊ¿ä(Å×½ºÆ® ¿ë)
-	// - IF_Funcs() ¿¡¼­ VLOCKO ¿¡ µ¿±âÈ­ÇÏ¿© ÄÚµå ½ÇÇà ½Ã ÇÊ¿ä(Å×½ºÆ® ¿ë)
+	// Polling ë°©ì‹ VLOCKO ì‚¬ìš©
+	// - Post Clk & Sync ì„¤ì • í›„ ì‹¤í–‰ë˜ì–´ì•¼ í•¨ (ë˜ëŠ” Isp_irq_init() ì‚¬ìš©)
+	// - IBT_PCK_SELw() ì„¤ì • íƒ€ì´ë° ì¡°ì ˆ ì‹œ í•„ìš”(í…ŒìŠ¤íŠ¸ ìš©)
+	// - IF_Funcs() ì—ì„œ VLOCKO ì— ë™ê¸°í™”í•˜ì—¬ ì½”ë“œ ì‹¤í–‰ ì‹œ í•„ìš”(í…ŒìŠ¤íŠ¸ ìš©)
 	Isp_VLOCKO_init();
 
 #if (model_Sens==SENS_OV2718)
@@ -160,7 +160,7 @@ void Isp_PrePost_init(void)
 	SYNC_UPw(1);
 #endif
 
-#if model_Sens_Intf == 2	// MIPI ¼³Á¤
+#if model_Sens_Intf == 2	// MIPI ì„¤ì •
 	//	Interrupt Mask
 	APB_Write(0x46500010,0xfff5fcff);		// sync
 
@@ -281,7 +281,7 @@ void Isp_DDR_init(void)
 		#define R_LTC	0x500
 	#endif
 
-	// R_LTC°ªÀº ASIC ¿¡¼­ ¹Ù²ğ ¼ö ÀÖÀ½
+	// R_LTCê°’ì€ ASIC ì—ì„œ ë°”ë€” ìˆ˜ ìˆìŒ
 	DDR_RDNR_LTCw(R_LTC);
 	DDR_RWDR_LTCw(R_LTC);
 	DDR_RFRC_LTCw(R_LTC);
@@ -292,7 +292,7 @@ void Isp_DDR_init(void)
 
 	BUS_RD_RSTw(1);
 	INIT_DELAY(1/*4*/);
-	CPU_FRC_ENw(1);		// DDR OFF,  SD_MODw(0) ÀÌÈÄ 1 VLOCK Delay ÈÄ ¼³Á¤ÇØ¾ß ÇÔ!!!
+	CPU_FRC_ENw(1);		// DDR OFF,  SD_MODw(0) ì´í›„ 1 VLOCK Delay í›„ ì„¤ì •í•´ì•¼ í•¨!!!
 #else	// FRC OFF for IMX415
 	BUS_RD_RSTw(1);
 	SYNC_UPw(1);
@@ -360,9 +360,9 @@ void OutMode(void)
 		extern UINT gnVDI_CHG;
 		gnVDI_CHG = 2;
 
-		FreqAdjust();				// FPS_VDO & FPS_VDI ¹× gnAeVtw & gnAeHtw ¼³Á¤
+		FreqAdjust();				// FPS_VDO & FPS_VDI ë° gnAeVtw & gnAeHtw ì„¤ì •
 
-		Isp_PrePost_init();			// ISP Pre & PostÀÇ Clk°ú Res ¼³Á¤
+		Isp_PrePost_init();			// ISP Pre & Postì˜ Clkê³¼ Res ì„¤ì •
 
 		IspDout0SyncConfig();
 
@@ -373,7 +373,7 @@ void OutMode(void)
 #else
 		IspDout1SyncConfig();
 #endif
-		//Isp_Output_init();			// Output ¼³Á¤
+		//Isp_Output_init();			// Output ì„¤ì •
 
 #if 0
 		bOutFps = UP(OutFps);
@@ -401,12 +401,12 @@ void Digital_OutputSet(void)
 
 
 #if 1 // For image write dump
-    YCW_CK1_SELw(SP(PostClk));	// Write Channel Clock ¼³Á¤ (ISP Clock 74.25MHz)
+    YCW_CK1_SELw(SP(PostClk));	// Write Channel Clock ì„¤ì • (ISP Clock 74.25MHz)
 	YCW_CK1_PDw(1);				// Clock Enable
-	IM_HWI1w(RP(FR_HW));		// WriteÇÒ ¿µ»ó ¼öÆò Å©±â ¼³Á¤ -> HWOw¿Í µ¿ÀÏÇÑ Å©±â, ½ÇÁ¦ DDR »ç¿ë Å©±â¿Í µ¿ÀÏ
-	IM_IVSEL1w(0);				// DDR Write Channel1 ÀÇ sync ¼³Á¤ (ISP Sync)
-	IM_ISEL1w(0xC);				// DDR Write Channel1 ÀÇ Image ÀÔ·Â Path ¼³Á¤ (ISP Image, No Font)
-	IM_WFRC1_ONw(1);			// DDR R/W Channel 1¿¡ FRC  »ç¿ë ¼³Á¤. ¡°0¡±ÀÎ °æ¿ì Disable
+	IM_HWI1w(RP(FR_HW));		// Writeí•  ì˜ìƒ ìˆ˜í‰ í¬ê¸° ì„¤ì • -> HWOwì™€ ë™ì¼í•œ í¬ê¸°, ì‹¤ì œ DDR ì‚¬ìš© í¬ê¸°ì™€ ë™ì¼
+	IM_IVSEL1w(0);				// DDR Write Channel1 ì˜ sync ì„¤ì • (ISP Sync)
+	IM_ISEL1w(0xC);				// DDR Write Channel1 ì˜ Image ì…ë ¥ Path ì„¤ì • (ISP Image, No Font)
+	IM_WFRC1_ONw(1);			// DDR R/W Channel 1ì— FRC  ì‚¬ìš© ì„¤ì •. â€œ0â€ì¸ ê²½ìš° Disable
 	IM_CADR1_P0w(IM_YADR1_P0r + ((RP(FR_HW)*RP(FR_VW))>>4));
 	//INIT_DELAY(1);			// Delay need ?
 	IM_CGO1w(1);				// Write Enable
@@ -441,15 +441,15 @@ void Isp_init(void)
 
 	InMode();
 
-	Isp_Sensor_init();			// ISP Sync ¼³Á¤ ¹× Sensor Initial
+	Isp_Sensor_init();			// ISP Sync ì„¤ì • ë° Sensor Initial
 
-	FONT_INIT();				// SetFontChg() º¸´Ù ¸ÕÀú ½ÇÇàµÇ¾î¾ß ÇÔ
-	InitUsrParChgAll();			// SensFlip(), SensMirror() ½ÇÇàÀ» À§ÇØ Isp_Sensor_init()ÀÌ ¸ÕÀú ¼³Á¤µÇ¾î¾ß ÇÔ
+	FONT_INIT();				// SetFontChg() ë³´ë‹¤ ë¨¼ì € ì‹¤í–‰ë˜ì–´ì•¼ í•¨
+	InitUsrParChgAll();			// SensFlip(), SensMirror() ì‹¤í–‰ì„ ìœ„í•´ Isp_Sensor_init()ì´ ë¨¼ì € ì„¤ì •ë˜ì–´ì•¼ í•¨
 	ChangeMenuSize();
 
 	OutMode();
 
-	Isp_Function_init();		// OSD Font ¹× ISP ±â´É ¼³Á¤
+	Isp_Function_init();		// OSD Font ë° ISP ê¸°ëŠ¥ ì„¤ì •
 }
 
 void Digital_InputSet(void)
@@ -464,7 +464,7 @@ void DownScaleSet(void)
 
 void Vcap_ChannelSet(void)
 {
-	Isp_DDR_init();				// ISP ¿¡¼­ »ç¿ëÇÏ´Â DDR ¼³Á¤
+	Isp_DDR_init();				// ISP ì—ì„œ ì‚¬ìš©í•˜ëŠ” DDR ì„¤ì •
 }
 
 void Init_Visp(void)
@@ -490,17 +490,17 @@ void Init_Vout(void)
 
 void Init_Virq(void)
 {
-	//extern void ParFncTest(void); ParFncTest();		// TODO KSH ¡ß ParFncTest()
+	//extern void ParFncTest(void); ParFncTest();		// TODO KSH â—† ParFncTest()
 
-	VIRQO_ENw(1);				// VLOCKO IRQ Routine Test, enx_exirq_source1() ÇÔ¼ö¿¡¼­ CLI_VLOCKOw(1) ½ÇÇàµÊ
-	VIRQI_ENw(1);				// Sensor FPS Ãâ·Â¿ë
+	VIRQO_ENw(1);				// VLOCKO IRQ Routine Test, enx_exirq_source1() í•¨ìˆ˜ì—ì„œ CLI_VLOCKOw(1) ì‹¤í–‰ë¨
+	VIRQI_ENw(1);				// Sensor FPS ì¶œë ¥ìš©
 
 	VIRQI_EN_Tw(1);
-	//CLI_VLOCKI_Tw(1);		// TODO KSH> ÄÄÆÄÀÏ ¹®Á¦?
+	//CLI_VLOCKI_Tw(1);		// TODO KSH> ì»´íŒŒì¼ ë¬¸ì œ?
 
 #if 0
 	//YC_OSELw(0x11);
-	PCKO_PDw(0);	// Sensor°¡ Master·Î µ¿ÀÛÇÏ°í ÀÖ´Â °æ¿ì SLVw(0)ÇÏ±â Àü¿¡ Sensor Clock Off ÇØ¾ß ÇÔ
+	PCKO_PDw(0);	// Sensorê°€ Masterë¡œ ë™ì‘í•˜ê³  ìˆëŠ” ê²½ìš° SLVw(0)í•˜ê¸° ì „ì— Sensor Clock Off í•´ì•¼ í•¨
 	SLVw(0);
 	SYNC_BYSw(1);
 	INSELw(0x6);
@@ -576,7 +576,7 @@ void isp_LedCtrl(void)
 	static UINT LED_FLG = 0;
 
 	//	LED Display when it operated
-	if(LED_FLG<10) { GPIO_PIN55_OUT = 1; /*FontStrEx(0,gnFontXw-5,NO_ALPHA,MN_GREEN,"EN675",5);*/ } // 10 Frames On		// TODO KSH> GPIO_IR_LED ¿¡¼­ GPIO 55 »ç¿ë
+	if(LED_FLG<10) { GPIO_PIN55_OUT = 1; /*FontStrEx(0,gnFontXw-5,NO_ALPHA,MN_GREEN,"EN675",5);*/ } // 10 Frames On		// TODO KSH> GPIO_IR_LED ì—ì„œ GPIO 55 ì‚¬ìš©
 	else		   { GPIO_PIN55_OUT = 0; /*FontClr(0,gnFontXw-5,5);*/                         } // 10 Frames Off		// "
 
 	LED_FLG = (LED_FLG<20) ? (LED_FLG+1) : 0;
@@ -642,7 +642,7 @@ void CPUtoISPcallback(void *ctx)
 {
 	//while (CPU_TO_ISP_MSG_MUTEX);
 
-	SHREG_RSP = IspMsgFnc(SHREG_CMD);	// SHREG_RSP ÀÓ½Ã »ç¿ë
+	SHREG_RSP = IspMsgFnc(SHREG_CMD);	// SHREG_RSP ì„ì‹œ ì‚¬ìš©
 
 	printf("CPU to ISP!(%X)\n", SHREG_CMD);
 
@@ -657,7 +657,7 @@ void IF_Funcs(void)
 	const ULONG IspIfTimeSta = rdcycle();
 	static ULONG IF_Funcs_Time = 0;
 
-	if(ISP_RIRQ_VOr) {			// VLOCKO ¿¡ µ¿±âÈ­ÇÏ¿© ½ÇÇà
+	if(ISP_RIRQ_VOr) {			// VLOCKO ì— ë™ê¸°í™”í•˜ì—¬ ì‹¤í–‰
 		CLI_VLOCKO_Tw(1);
 
 		isp_DispTime();
@@ -761,7 +761,7 @@ void IF_Funcs(void)
 //		BoxLast();							// Last Box control
 	}
 
-	Hdmi_Check();	// VLOCKO ¿¡ µ¿±âÈ­µÉ ÇÊ¿ä ¾øÀÌ °¡²û ÇÑ¹ø¾¿ ½ÇÇàÇÏ¸é µÊ
+	Hdmi_Check();	// VLOCKO ì— ë™ê¸°í™”ë  í•„ìš” ì—†ì´ ê°€ë” í•œë²ˆì”© ì‹¤í–‰í•˜ë©´ ë¨
 
 	IF_Funcs_Time = rdcycle();
 

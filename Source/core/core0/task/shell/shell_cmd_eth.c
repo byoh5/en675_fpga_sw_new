@@ -751,7 +751,7 @@ int cmd_test_eth(int argc, char *argv[])
 				BYTE u8RXe = atoi(argv[5]);
 				BYTE u8RXd = atoi(argv[6]);
 				EthloopbackSetLoop(u32Loop);
-				EthRxTxClockDly(u8TXe, u8TXd, u8RXe, u8RXd);
+				EthSetRxTxClockDly(u8TXe, u8TXd, u8RXe, u8RXd);
 				EthloopbackSetMode(ePlk_single);
 			} else {
 				printf("Ethernet loopback mode is not ready.\n");

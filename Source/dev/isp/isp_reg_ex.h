@@ -3,7 +3,7 @@
  Description:   EN675 - ISP Register Macro
  Designer   :   Kim, Sunghoon
  Date       :   19. 7. 3
- Copyright ¨Ï Eyenix Co., Ltd. All Rights Reserved.
+ Copyright â“’ Eyenix Co., Ltd. All Rights Reserved.
 *************************************************************************** */
 #ifndef __ISP_REG_EX_H__
 #define __ISP_REG_EX_H__
@@ -85,7 +85,7 @@
 #include "isp_reg.h"
 
 
-// TODO KSH ¡ß ISP BASE Setting
+// TODO KSH â—† ISP BASE Setting
 enum { YGAMMA_BASE	= YGMY_00r		};
 enum { CGAMMA_BASE	= CGMY_00r		};
 

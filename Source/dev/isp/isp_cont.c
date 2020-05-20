@@ -4,7 +4,7 @@
  Designer	:	Kim, Sunghoon
  Modified by:	Lee, Wanhee
  Date		:	14. 8. 4 / 15. 4. 24
- Copyright ¨Ï Eyenix Co., Ltd. All Rights Reserved.
+ Copyright â“’ Eyenix Co., Ltd. All Rights Reserved.
 *************************************************************************** */
 
 #include "dev.h"
@@ -110,7 +110,7 @@ void InitContrast(void)
 	HEQ_ONw(1);
 	HEQ_IIRKw(0xd0);	// IIR Speed
 
-	ACE_VSPw(0x1c);		// TODO KSH - ACE_VSP : EN673¹öÀü¸¸ 0x1c, EN781¹öÀüÀº È®ÀÎ ÇÊ¿ä, Æ©´× ½Ã ACE_OSD ·Î È®ÀÎ
+	ACE_VSPw(0x1c);		// TODO KSH - ACE_VSP : EN673ë²„ì „ë§Œ 0x1c, EN781ë²„ì „ì€ í™•ì¸ í•„ìš”, íŠœë‹ ì‹œ ACE_OSD ë¡œ í™•ì¸
 	ACE_HBw(RP(ACE_HB));
 	ACE_VBw(RP(ACE_VB));
 	ACE_HBSw(((model_4M)||(model_8M))?(0x3):(0x2));				// ACE block size
@@ -181,7 +181,7 @@ void ISRT Gamma(void) // 180320 LWH
 	static WORD wWdrGmkBuf = 0xFFFF;
 	//static BYTE bUpAE_WDR_STYLE_SEL = 0xAA;
 
-	const BYTE bMpGamma = (gbWdrOn!=WDR_OFF) ? UP(GammaWdr) : UP(Gamma);	// TODO KSH ¡ß WDR - Gamma()¿¡¼­ Line WDR ¼³Á¤À» Frame WDR·Î ÇÏ´Â°Ô ´õ ÁÁÀºÁö È®ÀÎ ÇÊ¿ä
+	const BYTE bMpGamma = (gbWdrOn!=WDR_OFF) ? UP(GammaWdr) : UP(Gamma);	// TODO KSH â—† WDR - Gamma()ì—ì„œ Line WDR ì„¤ì •ì„ Frame WDRë¡œ í•˜ëŠ”ê²Œ ë” ì¢‹ì€ì§€ í™•ì¸ í•„ìš”
 
 	const BYTE bAutoGammaOff = (UP(GammaDay) <= UP(GammaNgt)) || (UP(GammaDay) == 0) || (bMpGamma != UP_GAMMA_AUTO);
 
@@ -210,10 +210,10 @@ void ISRT Gamma(void) // 180320 LWH
 		else { // Normal Gamma
 	#if 1
 			if(bAutoGammaOff) {
-				const BYTE bMpGammaO = (bMpGamma < UP_GAMMA_AUTO) ? bMpGamma : UP(GammaDay) ;	// GAMMA°¡ AUTO·Î ¼³Á¤µÇ¾î ÀÖÁö¸¸ bAutoGammaOff Á¶°ÇÀÎ °æ¿ì UP(GammaDay) »ç¿ë
+				const BYTE bMpGammaO = (bMpGamma < UP_GAMMA_AUTO) ? bMpGamma : UP(GammaDay) ;	// GAMMAê°€ AUTOë¡œ ì„¤ì •ë˜ì–´ ìˆì§€ë§Œ bAutoGammaOff ì¡°ê±´ì¸ ê²½ìš° UP(GammaDay) ì‚¬ìš©
 
 				const UINT *pnTblGmaY = gpTblGamma[bMpGammaO+3];
-				const UINT *pnTblGmaC = (gbWdrOn!=WDR_OFF) ? pnTblGmaY : gpTblGamma[bMpGammaO+0];		// Color Gamma¸¦ ³·Ãß°í Color GainÀ» ¿Ã¸®´Â °ÍÀÌ Color Noise°¡ ´úÇÏ°í ´õ ÀÚ¿¬½º·¯¿ò
+				const UINT *pnTblGmaC = (gbWdrOn!=WDR_OFF) ? pnTblGmaY : gpTblGamma[bMpGammaO+0];		// Color Gammaë¥¼ ë‚®ì¶”ê³  Color Gainì„ ì˜¬ë¦¬ëŠ” ê²ƒì´ Color Noiseê°€ ëœí•˜ê³  ë” ìì—°ìŠ¤ëŸ¬ì›€
 
 				for (i=0; i<9; i++) SetIsp(YGAMMA_BASE+i, *(pnTblGmaY+i));	// y gamma exchange
 				for (i=0; i<9; i++) SetIsp(CGAMMA_BASE+i, *(pnTblGmaC+i));	// c gamma exchange
@@ -232,7 +232,7 @@ void ISRT Gamma(void) // 180320 LWH
 				UINT nAutoGmK = AutoGamma(iTgtSpotBgOri, iTgtOriMin, UP(GammaDay), UP(GammaNgt), &bGammaIdx);
 				const UINT *pnTblGmaY0 = gpTblGamma[bGammaIdx+4];
 				const UINT *pnTblGmaY1 = gpTblGamma[bGammaIdx+3];
-				const UINT *pnTblGmaC0 = (gbWdrOn!=WDR_OFF) ? pnTblGmaY0 : gpTblGamma[bGammaIdx+1];		// Color Gamma¸¦ ³·Ãß°í Color GainÀ» ¿Ã¸®´Â °ÍÀÌ Color Noise°¡ ´úÇÏ°í ´õ ÀÚ¿¬½º·¯¿ò
+				const UINT *pnTblGmaC0 = (gbWdrOn!=WDR_OFF) ? pnTblGmaY0 : gpTblGamma[bGammaIdx+1];		// Color Gammaë¥¼ ë‚®ì¶”ê³  Color Gainì„ ì˜¬ë¦¬ëŠ” ê²ƒì´ Color Noiseê°€ ëœí•˜ê³  ë” ìì—°ìŠ¤ëŸ¬ì›€
 				const UINT *pnTblGmaC1 = (gbWdrOn!=WDR_OFF) ? pnTblGmaY1 : gpTblGamma[bGammaIdx+0];		// "
 
 				for (i=0; i<9; i++) {
@@ -251,13 +251,13 @@ void ISRT Gamma(void) // 180320 LWH
 				extern int iTgtMax;
 				//extern int TgtMinGet(const int aiTgt, const BYTE abV);
 				const int iTgtOri = iTgtMax;//TgtMaxGet(0,0);
-				const int iTgtOriMin = TgtMinGet(iTgtOri, 0/*UP(BrightnessMin)*/);					// 0:ÃÖ¼Ò°¡´É¹à±â(BRIGHTNESS NIGHT)
+				const int iTgtOriMin = TgtMinGet(iTgtOri, 0/*UP(BrightnessMin)*/);					// 0:ìµœì†Œê°€ëŠ¥ë°ê¸°(BRIGHTNESS NIGHT)
 
 			#if 1
 				extern int TgtSpotBg(const int aiTgt, const BYTE abV, const int aiTgtMin);
-				const int iTgtSpotBgOri = TgtSpotBg(iTgtOriMin, 20/*UP(SatBrt)*/, UP(AE_TGT_OFST));	// 20:ÃÖ¼Ò°¡´É¹à±â(ANTI-SAT. WEIGHT)
+				const int iTgtSpotBgOri = TgtSpotBg(iTgtOriMin, 20/*UP(SatBrt)*/, UP(AE_TGT_OFST));	// 20:ìµœì†Œê°€ëŠ¥ë°ê¸°(ANTI-SAT. WEIGHT)
 			#else
-				int iTgtSpotBgOri = 20/*UP(SatBrt)*/ * (iTgtOriMin - UP(AE_TGT_OFST));	// 20:ÃÖ¼Ò°¡´É¹à±â(ANTI-SAT. WEIGHT)
+				int iTgtSpotBgOri = 20/*UP(SatBrt)*/ * (iTgtOriMin - UP(AE_TGT_OFST));	// 20:ìµœì†Œê°€ëŠ¥ë°ê¸°(ANTI-SAT. WEIGHT)
 				iTgtSpotBgOri = (iTgtOriMin - UP(AE_TGT_OFST)) - (((iTgtSpotBgOri<<2)-iTgtSpotBgOri+32)>>6);
 				if(iTgtSpotBgOri < 0) iTgtSpotBgOri = 0;
 			#endif
@@ -333,7 +333,7 @@ void ISRT AceDefog(void)
 #endif
 
 
-	if (gbWdrOn!=WDR_OFF) {									// WDR on	// TODO KSH ¡ß WDR - AceDefog()¿¡¼­ Line WDR ¼³Á¤À» Frame WDR·Î ÇÏ´Â°Ô ´õ ÁÁÀºÁö È®ÀÎ ÇÊ¿ä
+	if (gbWdrOn!=WDR_OFF) {									// WDR on	// TODO KSH â—† WDR - AceDefog()ì—ì„œ Line WDR ì„¤ì •ì„ Frame WDRë¡œ í•˜ëŠ”ê²Œ ë” ì¢‹ì€ì§€ í™•ì¸ í•„ìš”
 
 		ACE_BPw(0);			// Block bypass OFF
 
