@@ -88,3 +88,25 @@ void IrqChksum(void)
 	ENX_ASSERT(0);
 }
 #endif
+
+void ChksumRegShow(ENX_YN isDetail)
+{
+	_Cprintf("CHKSUM Register View\n");
+	printf("========================================\n");
+	if (isDetail == ENX_YES) {
+		_Yprintf(" 0:0x%08X\n", _cm(REG_BASE_CHKSUM, 0));
+		printf("   %-20s: %u\n", "IRQ", CHKSUM_IRQ);
+		printf("   %-20s: %u\n", "IRQ_EN", CHKSUM_IRQ_EN);
+		printf("   %-20s: %u\n", "IRQ_CLR", CHKSUM_IRQ_CLR);
+		printf("   %-20s: %u\n", "GO", CHKSUM_GO);
+		_Yprintf(" 1:0x%08X\n", _cm(REG_BASE_CHKSUM, 1));
+		printf("   %-20s: 0x%08X\n", "ADR", CHKSUM_ADR);
+		_Yprintf(" 2:0x%08X\n", _cm(REG_BASE_CHKSUM, 2));
+		printf("   %-20s: 0x%08X, %u\n", "LEN", CHKSUM_LEN, CHKSUM_LEN);
+		_Yprintf(" 3:0x%08X\n", _cm(REG_BASE_CHKSUM, 3));
+		printf("   %-20s: 0x%04X, %u\n", "DAT", CHKSUM_DAT, CHKSUM_DAT);
+	} else {
+		printf("CHKSUM  0:0x%08X  1:0x%08X  2:0x%08X  3:0x%08X\n", _cm(REG_BASE_CHKSUM, 0), _cm(REG_BASE_CHKSUM, 1), _cm(REG_BASE_CHKSUM, 2), _cm(REG_BASE_CHKSUM, 3));
+	}
+	printf("========================================\n");
+}

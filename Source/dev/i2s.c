@@ -31,6 +31,36 @@ void I2sSlvInit(void)
 	I2S_MODE = 0;
 }
 
+void I2sSetCtrlByte(UINT byte)
+{
+	I2S_BYTE = byte;
+}
+
+UINT I2sGetCtrlByte(void)
+{
+	return I2S_BYTE;
+}
+
+void I2sSetCtrlSckcnt(UINT sckcnt)
+{
+	I2S_SCKCNT = sckcnt;
+}
+
+UINT I2sGetCtrlSckcnt(void)
+{
+	return I2S_SCKCNT;
+}
+
+void I2sSetCtrlMode(UINT mode)
+{
+	I2S_MODE = mode;
+}
+
+UINT I2sGetCtrlMode(void)
+{
+	return I2S_MODE;
+}
+
 void I2sSetTxEdn(UINT txedn)
 {
 	I2S_TXEDN = txedn;
@@ -137,6 +167,11 @@ void I2sTxBaseAddr(BYTE *addr)
 	I2S_ADRR = (intptr_t)addr;
 }
 
+UINT I2sGetTxBaseAddr(void)
+{
+	return I2S_ADRR;
+}
+
 UINT I2sTxPos(void)
 {
 	return I2S_TX_ADDR;
@@ -226,6 +261,11 @@ void I2sRxBaseAddr(BYTE *addr)
 	I2S_ADRW = (intptr_t)addr;
 }
 
+UINT I2sGetRxBaseAddr(void)
+{
+	return I2S_ADRW;
+}
+
 UINT I2sRxPos(void)
 {
 	return I2S_RX_ADDR;
@@ -240,6 +280,38 @@ ENX_SWITCH I2sGetRxEn(void)
 {
 	return I2S_RXEN;
 }
+
+#if EN675_SINGLE
+void I2sSetPlatTxEn(ENX_SWITCH sw)
+{
+	I2S_PLAT_TXEN = sw;
+}
+
+ENX_SWITCH I2sGetPlatTxEn(void)
+{
+	return I2S_PLAT_TXEN;
+}
+
+void I2sSetPlatMode(I2S_TX_MODE mode)
+{
+	I2S_PLAT_MODE = mode;
+}
+
+I2S_TX_MODE I2sGetPlatMode(void)
+{
+	return I2S_PLAT_MODE;
+}
+
+void I2sSetPlatLength(UINT length)
+{
+	I2S_PLAT_LENGTH = length;
+}
+
+UINT I2sGetPlatLength(void)
+{
+	return I2S_PLAT_LENGTH;
+}
+#endif
 
 void I2sTxIrqCallback(irq_fn irqfn, void *arg)
 {

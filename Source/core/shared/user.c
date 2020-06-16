@@ -271,35 +271,35 @@ void VideoSourceChangeEncoderCheck(eVideoSource vsIndex)
 	// Encoder Check
 	for (int i = 0; i < VIDEO_CHANNEL_CNT; i++) {
 		if (gtUser.vcVideo[i].nVSourceIdx == vsIndex) {
-			// ¸¸¾à source°¡ disable µÉ °æ¿ì
+			// ë§Œì•½ sourceê°€ disable ë  ê²½ìš°
 			if (gvsVideo[vsIndex].bSwitch == ENX_OFF) {
 				gtUser.vcVideo[i].nVSourceIdx = -1;
 
-				// ÇØ´ç Encoder´Â ´õ ÀÌ»ó ÀÏÇÏÁö ¾Ê´Â´Ù.
+				// í•´ë‹¹ EncoderëŠ” ë” ì´ìƒ ì¼í•˜ì§€ ì•ŠëŠ”ë‹¤.
 				// ...
 			}
 
-			// ¸¸¾à, resolutionÀÌ ÀÌÀü¿¡ ºñÇØ ÀÛ¾ÆÁú °æ¿ì
+			// ë§Œì•½, resolutionì´ ì´ì „ì— ë¹„í•´ ìž‘ì•„ì§ˆ ê²½ìš°
 			if (gvsVideo[vsIndex].eResolution > gtUser.vcVideo[i].eResolution) {
 				gtUser.vcVideo[i].eResolution = gvsVideo[vsIndex].eResolution;
 
-				// ÇØ´ç Encoder´Â ÇØ»óµµ¸¦ º¯°æÇÑ´Ù.
+				// í•´ë‹¹ EncoderëŠ” í•´ìƒë„ë¥¼ ë³€ê²½í•œë‹¤.
 				// ...
 			}
 
-			// ¸¸¾à, FPS°¡ ÀÌÀü¿¡ ºñÇØ ´À·ÁÁö°Å³ª ´Ù¸¦ °æ¿ì
+			// ë§Œì•½, FPSê°€ ì´ì „ì— ë¹„í•´ ëŠë ¤ì§€ê±°ë‚˜ ë‹¤ë¥¼ ê²½ìš°
 			if (gvsVideo[vsIndex].nFps < gtUser.vcVideo[i].nFps) {
 				gtUser.vcVideo[i].nFps = gvsVideo[vsIndex].nFps;
 
-				// ÇØ´ç Encoder´Â FPS¸¦ º¯°æÇÑ´Ù.
+				// í•´ë‹¹ EncoderëŠ” FPSë¥¼ ë³€ê²½í•œë‹¤.
 				// ...
 			} else if (gvsVideo[vsIndex].nFps != gtUser.vcVideo[i].nFps) {
-				// ¸ÂÁö ¾ÊÀ» °æ¿ì? ex) 25fps -> 30fps °¡´Â case
-				// ±âÁ¸¿¡ 30fps¸ðµå¿¡¼­ 10fps·Î ¼³Á¤ÇØµÐ »óÅÂÀÏ ¶§,
-				// °»½ÅÀÌ 25fps¸ðµå¶ó¸é, 10fps´Â 25fps°¡ µÇ¾ßÇÒ±î 5fps°¡ µÇ¾ßÇÒ±î?
-				gtUser.vcVideo[i].nFps = gvsVideo[vsIndex].nFps; // ÀÏ´ÜÀº ±×³É ÇöÀç ¸ðµåÀÇ fps·Î Àç¼³Á¤
+				// ë§žì§€ ì•Šì„ ê²½ìš°? ex) 25fps -> 30fps ê°€ëŠ” case
+				// ê¸°ì¡´ì— 30fpsëª¨ë“œì—ì„œ 10fpsë¡œ ì„¤ì •í•´ë‘” ìƒíƒœì¼ ë•Œ,
+				// ê°±ì‹ ì´ 25fpsëª¨ë“œë¼ë©´, 10fpsëŠ” 25fpsê°€ ë˜ì•¼í• ê¹Œ 5fpsê°€ ë˜ì•¼í• ê¹Œ?
+				gtUser.vcVideo[i].nFps = gvsVideo[vsIndex].nFps; // ì¼ë‹¨ì€ ê·¸ëƒ¥ í˜„ìž¬ ëª¨ë“œì˜ fpsë¡œ ìž¬ì„¤ì •
 
-				// ÇØ´ç Encoder´Â FPS¸¦ º¯°æÇÑ´Ù.
+				// í•´ë‹¹ EncoderëŠ” FPSë¥¼ ë³€ê²½í•œë‹¤.
 				// ...
 			}
 		}

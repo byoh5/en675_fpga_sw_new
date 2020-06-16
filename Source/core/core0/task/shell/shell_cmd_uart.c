@@ -315,6 +315,31 @@ done:
 	vTaskDelete(NULL);
 }
 
+static void uart_status_print(char *title, UINT type, UINT (*func)(UINT ch), char *text_type[4])
+{
+	if (type == 1) {
+		_Gprintf("%-8s|", title);
+	} else {
+		printf("%-8s|", title);
+	}
+	for (uint32 i = 0; i < UART_CNT; i++) {
+		if (type == 162) {
+			printf("    0x%02X |", func(i));
+		} else if (type == 165) {
+			printf(" 0x%05X |", func(i));
+		} else if (type == 10) {
+			printf("%8u |", func(i));
+		} else if (type == 0xff) {
+			printf("%8s |", text_type[func(i)]);
+		} else if (type == 1) {
+			_Gprintf("---------|");
+		} else if (type == 0) {
+			printf("     CH%u |", i);
+		}
+	}
+	printf("\n");
+}
+
 int cmd_perl_uart(int argc, char *argv[])
 {
 	// uart0: gpio	4,5		0,1
@@ -328,20 +353,32 @@ int cmd_perl_uart(int argc, char *argv[])
 	// uart8: gpio	68,69	64,65
 
 	if (argc == 1) {
-		printf("UART Status ===============================================================================================\n");
-		printf("     |                |         |        |                     TX            |              RX            |\n");
-		printf("     | BaudRate( div) | Stopbit | Parity | Type | Empty | Full | IRQEN | IRQ | Empty | Full | IRQEN | IRQ |\n");
-		printf("-----|----------------|---------|--------|------|-------|------|-------|-----|-------|------|-------|-----|\n");
-		for (uint32 i = 0; i < UART_CNT; i++) {
-			printf("UART%u| %8u(%4u) |    %ubit |  %4s  | %4s |   %u   |   %u  |   %u   |  %u  |   %u   |   %u  |   %u   |  %u  |\n", i,
-					UartGetClk(i), UartGetClkdiv(i),
-					UartGetStopbit(i) == 0 ? 1 : 2,
-					UartGetParityMode(i) == UART_PARITY_NONE ? "None" : UartGetParityMode(i) == UART_PARITY_EVEN ? "Even" : UartGetParityMode(i) == UART_PARITY_ODD ? " Odd" : "Err",
-					UartGetTxType(i) == 0 ? "Open" : "Push", UartTxIsEmpty(i), UartTxIsFull(i), UartTxGetIrqEn(i), UartTxIsIrq(i),
-					UartRxIsEmpty(i), UartRxIsFull(i), UartRxGetIrqEn(i), UartRxIsIrq(i)
-			);
-		}
-		printf("===========================================================================================================\n");
+		uart_status_print("UART", 1, NULL, NULL);
+		uart_status_print("", 0, NULL, NULL);
+		uart_status_print("Control", 1, NULL, NULL);
+#if EN675_SINGLE
+		uart_status_print("SYNC", 10, UartGetSync, NULL);
+#endif
+		uart_status_print("STOP_BIT", 0xff, UartGetStopbit, ((char*[4]){"1bit", "2bit", "err", "err"}));
+		uart_status_print("PARITY", 0xff, UartGetParityMode, ((char*[4]){"None", "None", "Even", "Odd"}));
+		uart_status_print("CLK_DIV", 10, UartGetClkdiv, NULL);
+		uart_status_print("Clock", 10, UartGetClk, NULL);
+		uart_status_print("Data", 1, NULL, NULL);
+		uart_status_print("TX_DAT", 162, UartTxGetByte, NULL);
+		uart_status_print("RX_DAT", 162, UartRxGetByte, NULL);
+		uart_status_print("TX", 1, NULL, NULL);
+		uart_status_print("TX_TYPE", 0xff, UartGetTxType, ((char*[4]){"Open", "Pushpull", "err", "err"}));
+		uart_status_print("EMPTY", 10, UartTxIsEmpty, NULL);
+		uart_status_print("FULL", 10, UartTxIsFull, NULL);
+		uart_status_print("IRQ_EN", 10, UartTxGetIrqEn, NULL);
+		uart_status_print("IRQ", 10, UartTxIsIrq, NULL);
+		uart_status_print("RX", 1, NULL, NULL);
+		uart_status_print("RX_LMT", 165, UartRxGetLmt, NULL);
+		uart_status_print("EMPTY", 10, UartRxIsEmpty, NULL);
+		uart_status_print("FULL", 10, UartRxIsFull, NULL);
+		uart_status_print("IRQ_EN", 10, UartRxGetIrqEn, NULL);
+		uart_status_print("IRQ", 10, UartRxIsIrq, NULL);
+		uart_status_print("--------", 1, NULL, NULL);
 	} else if (argc >= 2) {
 		if (strcmp(argv[1], "idx") == 0) {
 			if (argc == 3) {
@@ -428,6 +465,17 @@ int cmd_perl_uart(int argc, char *argv[])
 				UINT rx = UartRxGetByte(uarttest.nCH);
 				printf("UART%u, recv '%c'\n", uarttest.nCH, (char)rx);
 			}
+#if EN675_SINGLE
+		} else if (strcmp("sync", argv[1]) == 0) {
+			if (argc == 2) {
+				UINT getdValue = UartGetSync(uarttest.nCH);
+				printf("UartGetSync(%d)\n", getdValue);
+			} else {
+				UINT getdValue = atoi(argv[2]);
+				UartSetSync(uarttest.nCH, getdValue);
+				printf("input(%d) => set (%d)\n", getdValue, UartGetSync(uarttest.nCH));
+			}
+#endif
 		} else if (strcmp("irq", argv[1]) == 0) {
 			if (strcmp("rx", argv[2]) == 0) {
 				uart_getset(UartRxGetIrqEn, UartRxSetIrqEn, uarttest.nCH);

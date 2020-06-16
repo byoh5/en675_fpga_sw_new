@@ -127,7 +127,21 @@ void EthphyPrintPHYName(void)
 	UINT outData = EthphyGetPHYID();
 	if ((outData & ETHPHY_PHY_ID_MASK) == 0x00221560) {
 #if defined(__ETHPHY_KSZ8081MNX__) || defined(__ETHPHY_KSZ8081RNB__)
-		_Gprintf("  >>KSZ8081 Connected...\n");
+		WORD getData;
+		MdioRead(ethphy_info.addr, 0x17, &getData);
+		if (getData & 0x1) {
+#if defined(__ETHPHY_KSZ8081MNX__)
+			_Gprintf("  >>KSZ8081MNX Connected...\n");
+#else
+			_Rprintf("  >>KSZ8081MNX Connected... Error setting & compile\n");
+#endif
+		} else if (getData & 0x2) {
+#if defined(__ETHPHY_KSZ8081RNB__)
+			_Gprintf("  >>KSZ8081RNB Connected...\n");
+#else
+			_Rprintf("  >>KSZ8081RNB Connected... Error setting & compile\n");
+#endif
+		}
 #else
 		_Rprintf("  >>KSZ8081 Connected... Error setting & compile\n");
 #endif

@@ -199,6 +199,54 @@ void IrqShaOneshot(void)
 		ShaShotIrqClear();
 	}
 }
+
+void ShaRegShow(ENX_YN isDetail)
+{
+	_Cprintf("SHA Register View\n");
+	printf("========================================\n");
+	if (isDetail == ENX_YES) {
+		_Yprintf(" 0:0x%08X\n", _cm(REG_BASE_SHA, 0));
+		printf("   %-20s: 0x%08X\n", "SRC", SHA_SRC);
+		_Yprintf(" 1:0x%08X\n", _cm(REG_BASE_SHA, 1));
+		printf("   %-20s: 0x%08X, %u\n", "LEN_TOT", SHA_LEN_TOT, SHA_LEN_TOT);
+		_Yprintf(" 2:0x%08X\n", _cm(REG_BASE_SHA, 2));
+		printf("   %-20s: 0x%08X, %u\n", "LEN_CUR", SHA_LEN_CUR, SHA_LEN_CUR);
+		_Yprintf(" 3:0x%08X\n", _cm(REG_BASE_SHA, 3));
+		printf("   %-20s: %u\n", "CHOP_BUSY", SHA_CHOP_BUSY);
+		printf("   %-20s: %u\n", "SHOT_BUSY", SHA_SHOT_BUSY);
+		printf("   %-20s: %u\n", "CHOP_IRQ", SHA_CHOP_IRQ);
+		printf("   %-20s: %u\n", "CHOP_IRQ_EN", SHA_CHOP_IRQ_EN);
+		printf("   %-20s: %u\n", "CHOP_IRQ_CLR", SHA_CHOP_IRQ_CLR);
+		printf("   %-20s: %u\n", "SHOT_IRQ", SHA_SHOT_IRQ);
+		printf("   %-20s: %u\n", "SHOT_IRQ_EN", SHA_SHOT_IRQ_EN);
+		printf("   %-20s: %u\n", "SHOT_IRQ_CLR", SHA_SHOT_IRQ_CLR);
+		printf("   %-20s: %u, %s\n", "CMD", SHA_CMD, SHA_CMD == 0 ? "Initial" : SHA_CMD == 1 ? "Intermediate" : SHA_CMD == 2 ? "Final" : "error");
+		printf("   %-20s: %u, %s\n", "OP", SHA_OP, SHA_OP == 0 ? "One-Shot" : SHA_OP == 1 ? "Chop" : "error");
+		printf("   %-20s: %u, %s\n", "MODE", SHA_MODE, SHA_MODE == 0 ? "SHA224" : SHA_MODE == 1 ? "SHA256" : "error");
+		printf("   %-20s: %u\n", "REQ", SHA_REQ);
+		_Yprintf(" 4:0x%08X\n", _cm(REG_BASE_SHA, 4));
+		printf("   %-20s: 0x%08X\n", "DIGEST_255_224", SHA_DIGEST_255_224);
+		_Yprintf(" 5:0x%08X\n", _cm(REG_BASE_SHA, 5));
+		printf("   %-20s: 0x%08X\n", "DIGEST_223_192", SHA_DIGEST_223_192);
+		_Yprintf(" 6:0x%08X\n", _cm(REG_BASE_SHA, 6));
+		printf("   %-20s: 0x%08X\n", "DIGEST_191_160", SHA_DIGEST_191_160);
+		_Yprintf(" 7:0x%08X\n", _cm(REG_BASE_SHA, 7));
+		printf("   %-20s: 0x%08X\n", "DIGEST_159_128", SHA_DIGEST_159_128);
+		_Yprintf(" 8:0x%08X\n", _cm(REG_BASE_SHA, 8));
+		printf("   %-20s: 0x%08X\n", "DIGEST_127_96", SHA_DIGEST_127_96);
+		_Yprintf(" 9:0x%08X\n", _cm(REG_BASE_SHA, 9));
+		printf("   %-20s: 0x%08X\n", "DIGEST_95_64", SHA_DIGEST_95_64);
+		_Yprintf("10:0x%08X\n", _cm(REG_BASE_SHA, 10));
+		printf("   %-20s: 0x%08X\n", "DIGEST_63_32", SHA_DIGEST_63_32);
+		_Yprintf("11:0x%08X\n", _cm(REG_BASE_SHA, 11));
+		printf("   %-20s: 0x%08X\n", "DIGEST_31_0", SHA_DIGEST_31_0);
+	} else {
+		printf("SHA  0:0x%08X  1:0x%08X  2:0x%08X  3:0x%08X  4:0x%08X\n", _cm(REG_BASE_SFLS, 0), _cm(REG_BASE_SFLS, 1), _cm(REG_BASE_SFLS, 2), _cm(REG_BASE_SFLS, 3), _cm(REG_BASE_SFLS, 4));
+		printf("     5:0x%08X  6:0x%08X  7:0x%08X  8:0x%08X  9:0x%08X\n", _cm(REG_BASE_SFLS, 5), _cm(REG_BASE_SFLS, 6), _cm(REG_BASE_SFLS, 7), _cm(REG_BASE_SFLS, 8), _cm(REG_BASE_SFLS, 9));
+		printf("    10:0x%08X 11:0x%08X\n", _cm(REG_BASE_SFLS, 10), _cm(REG_BASE_SFLS, 11));
+	}
+	printf("========================================\n");
+}
 #else
 void ShaGetDigest(BYTE *data, SHAmode mode)
 {
@@ -305,6 +353,45 @@ void IrqSha(void)
 		}
 		ShaShotIrqClear();
 	}
+}
+
+void ShaRegShow(ENX_YN isDetail)
+{
+	_Cprintf("SHA Register View\n");
+	printf("========================================\n");
+	if (isDetail == ENX_YES) {
+		_Yprintf(" 0:0x%08X\n", _cm(REG_BASE_SHA, 0));
+		printf("   %-20s: 0x%08X\n", "SRC", SHA_SRC);
+		_Yprintf(" 2:0x%08X\n", _cm(REG_BASE_SHA, 2));
+		printf("   %-20s: 0x%08X, %u\n", "LEN_CUR", SHA_LEN, SHA_LEN);
+		_Yprintf(" 3:0x%08X\n", _cm(REG_BASE_SHA, 3));
+		printf("   %-20s: %u\n", "IRQ", SHA_IRQ);
+		printf("   %-20s: %u\n", "IRQ_EN", SHA_IRQ_EN);
+		printf("   %-20s: %u\n", "IRQ_CLR", SHA_IRQ_CLR);
+		printf("   %-20s: %u, %s\n", "MODE", SHA_MODE, SHA_MODE == 0 ? "SHA224" : SHA_MODE == 1 ? "SHA256" : "error");
+		printf("   %-20s: %u\n", "REQ", SHA_REQ);
+		_Yprintf(" 4:0x%08X\n", _cm(REG_BASE_SHA, 4));
+		printf("   %-20s: 0x%08X\n", "DIGEST_255_224", SHA_DIGEST_255_224);
+		_Yprintf(" 5:0x%08X\n", _cm(REG_BASE_SHA, 5));
+		printf("   %-20s: 0x%08X\n", "DIGEST_223_192", SHA_DIGEST_223_192);
+		_Yprintf(" 6:0x%08X\n", _cm(REG_BASE_SHA, 6));
+		printf("   %-20s: 0x%08X\n", "DIGEST_191_160", SHA_DIGEST_191_160);
+		_Yprintf(" 7:0x%08X\n", _cm(REG_BASE_SHA, 7));
+		printf("   %-20s: 0x%08X\n", "DIGEST_159_128", SHA_DIGEST_159_128);
+		_Yprintf(" 8:0x%08X\n", _cm(REG_BASE_SHA, 8));
+		printf("   %-20s: 0x%08X\n", "DIGEST_127_96", SHA_DIGEST_127_96);
+		_Yprintf(" 9:0x%08X\n", _cm(REG_BASE_SHA, 9));
+		printf("   %-20s: 0x%08X\n", "DIGEST_95_64", SHA_DIGEST_95_64);
+		_Yprintf("10:0x%08X\n", _cm(REG_BASE_SHA, 10));
+		printf("   %-20s: 0x%08X\n", "DIGEST_63_32", SHA_DIGEST_63_32);
+		_Yprintf("11:0x%08X\n", _cm(REG_BASE_SHA, 11));
+		printf("   %-20s: 0x%08X\n", "DIGEST_31_0", SHA_DIGEST_31_0);
+	} else {
+		printf("SHA  0:0x%08X  1:0x%08X  2:0x%08X  3:0x%08X  4:0x%08X\n", _cm(REG_BASE_SHA, 0), 0, _cm(REG_BASE_SHA, 2), _cm(REG_BASE_SHA, 3), _cm(REG_BASE_SHA, 4));
+		printf("     5:0x%08X  6:0x%08X  7:0x%08X  8:0x%08X  9:0x%08X\n", _cm(REG_BASE_SHA, 5), _cm(REG_BASE_SHA, 6), _cm(REG_BASE_SHA, 7), _cm(REG_BASE_SHA, 8), _cm(REG_BASE_SHA, 9));
+		printf("    10:0x%08X 11:0x%08X\n", _cm(REG_BASE_SHA, 10), _cm(REG_BASE_SHA, 11));
+	}
+	printf("========================================\n");
 }
 #endif
 #else

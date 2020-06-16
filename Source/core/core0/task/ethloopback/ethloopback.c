@@ -72,6 +72,7 @@ static void EthLoopbackAuto(EthLoopbackGp *elg)
 	int case_count = 0, pass_count = 0;
 	int old_ok_acc = 0, ok_acc = 0, ok_txe = 0, ok_rxe = 0, ok_txd = 0, ok_rxd = 0;
 	printf("Ethernet Loopback Test(step loop %d)\n", elg->u32Loop);
+	printf("ETH_RX_ERR_EN(%d) ETH_RX_CRC_EN(%d)\n", ETH_RX_ERR_EN, ETH_RX_CRC_EN);
 	printf("O:pass, 2:compare fail, 3:zero data, 4:data length underflow or overflow, X:timeout\n");
 #if 0
 	printf("          |            RX-Edge(1)           |\n");

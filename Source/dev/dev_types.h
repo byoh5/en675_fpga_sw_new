@@ -43,6 +43,7 @@
 
 // uart printf out /////////////////////////////////////////////////////////////
 #define DEBUG_UART_NUM 			7
+#define DEBUG_UART_SPEED		UART7_SPEED
 #define INVALID_UART_NUM		0xFF
 
 
@@ -450,6 +451,12 @@ typedef enum {
 } SPI_CSMODE;
 
 typedef enum {
+	SPI_RW_Write = 1,		// Write
+	SPI_RW_Read = 2,		// Read
+	SPI_RW_RW = 3,			// Write/Read
+} SPI_RWMODE;
+
+typedef enum {
 	SPI_MSBfirst = 0,		// MSB first
 	SPI_LSBfirst = 1,		// LSB first
 } SPI_BITMODE;
@@ -669,6 +676,11 @@ typedef enum {
 	eI2sTXDW24bit,
 	eI2sTXDW32bit
 } I2S_TX_BIT; // TXDW
+
+typedef enum {
+	eI2sPlatLoop,
+	eI2sPlatOneshot
+} I2S_TX_MODE;
 
 //******************************************************************************
 // Checksum/SHA/AES define

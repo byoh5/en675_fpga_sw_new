@@ -162,3 +162,55 @@ void Aes256Dec(BYTE *apbDst, BYTE *apbSrc, UINT len)
 	while(AES_REQ);
 }
 #endif
+
+void AesRegShow(ENX_YN isDetail)
+{
+	_Cprintf("AES Register View\n");
+	printf("========================================\n");
+	if (isDetail == ENX_YES) {
+		_Yprintf(" 0:0x%08X\n", _cm(REG_BASE_AES, 0));
+		printf("   %-20s: 0x%08X\n", "SRC", AES_SRC);
+		_Yprintf(" 1:0x%08X\n", _cm(REG_BASE_AES, 1));
+		printf("   %-20s: 0x%08X\n", "DST", AES_DST);
+		_Yprintf(" 2:0x%08X\n", _cm(REG_BASE_AES, 2));
+		printf("   %-20s: 0x%08X, %u\n", "LEN", AES_LEN, AES_LEN);
+		_Yprintf(" 3:0x%08X\n", _cm(REG_BASE_AES, 3));
+		printf("   %-20s: %u\n", "IRQ", AES_IRQ);
+		printf("   %-20s: %u\n", "IRQ_EN", AES_IRQ_EN);
+		printf("   %-20s: %u\n", "IRQ_CLR", AES_IRQ_CLR);
+		printf("   %-20s: %u, %s\n", "KEY_LEN", AES_KEY_LEN, AES_KEY_LEN == 0 ? "128bit" : AES_KEY_LEN == 1 ? "256bit" : "error");
+		printf("   %-20s: %u, %s\n", "CBC_EN", AES_CBC_EN, AES_CBC_EN == 0 ? "ECB" : AES_CBC_EN == 1 ? "CBC" : "error");
+		printf("   %-20s: %u, %s\n", "MODE", AES_MODE, AES_MODE == 0 ? "Decrypt" : AES_MODE == 1 ? "Encrypt" : "error");
+		printf("   %-20s: %u\n", "REQ", AES_REQ);
+		_Yprintf(" 4:0x%08X\n", _cm(REG_BASE_AES, 4));
+		printf("   %-20s: 0x%08X\n", "KEY_255_224", AES_KEY_255_224);
+		_Yprintf(" 5:0x%08X\n", _cm(REG_BASE_AES, 5));
+		printf("   %-20s: 0x%08X\n", "KEY_223_192", AES_KEY_223_192);
+		_Yprintf(" 6:0x%08X\n", _cm(REG_BASE_AES, 6));
+		printf("   %-20s: 0x%08X\n", "KEY_191_160", AES_KEY_191_160);
+		_Yprintf(" 7:0x%08X\n", _cm(REG_BASE_AES, 7));
+		printf("   %-20s: 0x%08X\n", "KEY_159_128", AES_KEY_159_128);
+		_Yprintf(" 8:0x%08X\n", _cm(REG_BASE_AES, 8));
+		printf("   %-20s: 0x%08X\n", "KEY_127_96", AES_KEY_127_96);
+		_Yprintf(" 9:0x%08X\n", _cm(REG_BASE_AES, 9));
+		printf("   %-20s: 0x%08X\n", "KEY_95_64", AES_KEY_95_64);
+		_Yprintf("10:0x%08X\n", _cm(REG_BASE_AES, 10));
+		printf("   %-20s: 0x%08X\n", "KEY_63_32", AES_KEY_63_32);
+		_Yprintf("11:0x%08X\n", _cm(REG_BASE_AES, 11));
+		printf("   %-20s: 0x%08X\n", "KEY_31_0", AES_KEY_31_0);
+		_Yprintf("12:0x%08X\n", _cm(REG_BASE_AES, 12));
+		printf("   %-20s: 0x%08X\n", "IV_127_96", AES_IV_127_96);
+		_Yprintf("13:0x%08X\n", _cm(REG_BASE_AES, 13));
+		printf("   %-20s: 0x%08X\n", "IV_95_64", AES_IV_95_64);
+		_Yprintf("14:0x%08X\n", _cm(REG_BASE_AES, 14));
+		printf("   %-20s: 0x%08X\n", "IV_63_32", AES_IV_63_32);
+		_Yprintf("15:0x%08X\n", _cm(REG_BASE_AES, 15));
+		printf("   %-20s: 0x%08X\n", "IV_31_0", AES_IV_31_0);
+	} else {
+		printf("AES  0:0x%08X  1:0x%08X  2:0x%08X  3:0x%08X  4:0x%08X\n", _cm(REG_BASE_AES, 0), _cm(REG_BASE_AES, 1), _cm(REG_BASE_AES, 2), _cm(REG_BASE_AES, 3), _cm(REG_BASE_AES, 4));
+		printf("     5:0x%08X  6:0x%08X  7:0x%08X  8:0x%08X  9:0x%08X\n", _cm(REG_BASE_AES, 5), _cm(REG_BASE_AES, 6), _cm(REG_BASE_AES, 7), _cm(REG_BASE_AES, 8), _cm(REG_BASE_AES, 9));
+		printf("    10:0x%08X 11:0x%08X 12:0x%08X 13:0x%08X 14:0x%08X\n", _cm(REG_BASE_AES, 10), _cm(REG_BASE_AES, 11), _cm(REG_BASE_AES, 12), _cm(REG_BASE_AES, 13), _cm(REG_BASE_AES, 14));
+		printf("    15:0x%08X\n", _cm(REG_BASE_AES, 15));
+	}
+	printf("========================================\n");
+}

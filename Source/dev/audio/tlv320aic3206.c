@@ -271,13 +271,31 @@ static ENX_OKFAIL tlv320aic3206_read_reg(BYTE reg, BYTE *data)
 	return ENX_OK;
 } 
 
+void tlv320aic3206_print_name(void)
+{
+	_Gprintf("  >>TLV320AIC3206 Connected...\n");
+#if (PCM_FREQUENCY==PCM_16BIT_8000HZ)
+	_Gprintf("  >>TLV320AIC3206 is set to 16bit 8000Hz.\n");
+#elif (PCM_FREQUENCY==PCM_16BIT_16000HZ)
+	_Gprintf("  >>TLV320AIC3206 is set to 16bit 16000Hz.\n");
+#elif (PCM_FREQUENCY==PCM_16BIT_32000HZ)
+	_Gprintf("  >>TLV320AIC3206 is set to 16bit 32000Hz.\n");
+#elif (PCM_FREQUENCY==PCM_16BIT_11025HZ)
+	_Gprintf("  >>TLV320AIC3206 is set to 16bit 11025Hz.\n");
+#elif (PCM_FREQUENCY==PCM_16BIT_22050HZ)
+	_Gprintf("  >>TLV320AIC3206 is set to 16bit 22050Hz.\n");
+#elif (PCM_FREQUENCY==PCM_16BIT_44100HZ)
+	_Gprintf("  >>TLV320AIC3206 is set to 16bit 44100Hz.\n");
+#endif
+}
+
 void tlv320aic3206_init(void)
 {
 	if (tlv320aic3206_check() == ENX_FAIL) {
 		_Rprintf("  >>TLV320AIC3206 Not Connected...\n");
 	} else {
 		tlv320aic3206_info.status = ENX_ON;
-		_Gprintf("  >>TLV320AIC3206 Connected...\n");
+		tlv320aic3206_print_name();
 
 		int size = sizeof(TLV320AIC3206_SetupA) / sizeof(TLV320AIC3206_SetupA[0]);
 		for (int i = 0; i < size; i++) {
@@ -308,19 +326,6 @@ void tlv320aic3206_init(void)
 //				printf("Read Adr = %08x  Reg = %08x\n", TLV320AIC3206_SetupA[i][0], u8Read);
 			}
 		}
-#if (PCM_FREQUENCY==PCM_16BIT_8000HZ)
-		_Gprintf("  >>TLV320AIC3206 is set to 16bit 8000Hz.\n");
-#elif (PCM_FREQUENCY==PCM_16BIT_16000HZ)
-		_Gprintf("  >>TLV320AIC3206 is set to 16bit 16000Hz.\n");
-#elif (PCM_FREQUENCY==PCM_16BIT_32000HZ)
-		_Gprintf("  >>TLV320AIC3206 is set to 16bit 32000Hz.\n");
-#elif (PCM_FREQUENCY==PCM_16BIT_11025HZ)
-		_Gprintf("  >>TLV320AIC3206 is set to 16bit 11025Hz.\n");
-#elif (PCM_FREQUENCY==PCM_16BIT_22050HZ)
-		_Gprintf("  >>TLV320AIC3206 is set to 16bit 22050Hz.\n");
-#elif (PCM_FREQUENCY==PCM_16BIT_44100HZ)
-		_Gprintf("  >>TLV320AIC3206 is set to 16bit 44100Hz.\n");
-#endif
 	}
 }
 #endif

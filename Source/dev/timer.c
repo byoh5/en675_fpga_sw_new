@@ -229,6 +229,11 @@ UINT TimerGetCount(UINT nCH)
 	return arrTMR1[nCH]->CNT;
 }
 
+void TimerCountClear(UINT nCH)
+{
+	arrTMR0[nCH]->CNT_CLR = 1;
+}
+
 void TimerIrqCallback(UINT nCH, irq_fn irqfn, void *arg)
 {
 	arrTIMERIrq[nCH].irqfn = irqfn;

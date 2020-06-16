@@ -26,17 +26,17 @@ void enx_peri_init(void)
 #endif
 #if USE_UART7
 	UartInit(7, UART7_SPEED);
-	//UartInit(7, 230400);
-	//UartInit(7, 460800);
-	//UartInit(7, 921600);
-	//UartInit(7, 625000);
 #endif
 #if USE_UART8
 	UartInit(8, UART8_SPEED);
 #endif
 
-	BDmaInit();
-	CDmaInit();
+	if (SYS_IP_7) {
+		BDmaInit();
+	}
+	if (SYS_IP_8) {
+		CDmaInit();
+	}
 
 #if 0
 	DdrInit(0, 2);
@@ -52,8 +52,11 @@ void enx_peri_init(void)
 	asm volatile("la %0, __bss_s" : "=r"(hs));
 	asm volatile("la %0, __bss_e" : "=r"(he));
 	hwflush_dcache_range(hs, 16*1024);
-	//memset((void *)hs, 0, he - hs);
-	BDmaMemSet_isr(0, (BYTE *)hs, 0x00, he - hs);
+	if (SYS_IP_7) {
+		BDmaMemSet_isr(0, (BYTE *)hs, 0x00, he - hs);
+	} else {
+		memset((void *)hs, 0, he - hs);
+	}
 	hwflush_dcache_range(hs, 16*1024);
 #endif
 
@@ -138,14 +141,14 @@ void enx_peri_init(void)
 	SpiInit(8, SPI8_SPEED, SPI8_BIT, SPI8_LSB);
 #endif
 
-
+	if (SYS_IP_9) {
 #if USE_SDIO0 && (model_TgtBd != 1)
 	SdioInit(0, SDIO0_SPEED);
 #endif
 #if USE_SDIO1 && (model_TgtBd != 1)
 	SdioInit(1, SDIO1_SPEED);
 #endif
-
+	}
 
 #if USE_TIMER0
 	TimerInit(0);
@@ -271,13 +274,17 @@ void enx_peri_init(void)
 //	AdcOn();
 
 #if USE_I2S
-	I2sInit();
-	I2sSlvInit();
+	if (SYS_IP_11) {
+		I2sInit();
+		I2sSlvInit();
+	}
 #endif
 
 #if USE_ETH && (model_TgtBd != 1)
-	EthInit();
-	MdioInit(MDIO_SPEED);
+	if (SYS_IP_10) {
+		EthInit();
+		MdioInit(MDIO_SPEED);
+	}
 #endif
 
 	extern void ISPtoCPUcallback(void *ctx);
@@ -296,8 +303,18 @@ char* enx_ip_status(UINT ip_enable)
 }
 #endif
 
-void enx_sys_init(void)
+void enx_pre_init(void)
 {
+#ifdef DEBUG_UART_NUM
+	UartInit(DEBUG_UART_NUM, DEBUG_UART_SPEED);
+#ifdef __ECM_STRING__
+	UartRstQue();
+	UartRxIrqCallback(DEBUG_UART_NUM, UartDebugRxIrq, NULL);
+	UartRxSetIrqEn(DEBUG_UART_NUM,1);
+	UartTxIrqCallback(DEBUG_UART_NUM, UartDebugTxIrq, NULL);
+#endif
+#endif
+
 	UINT arrMark[5];
 	arrMark[0] = SYS_MARK0;
 	arrMark[1] = SYS_MARK1;
@@ -332,13 +349,11 @@ void enx_sys_init(void)
 	}
 	printf("%04X-%02X-%02X %02X:%02X:%02X%s\n", SYS_RTL_YEAR, SYS_RTL_MONTH, SYS_RTL_DAY, SYS_RTL_HOUR, SYS_RTL_MINUTE, SYS_RTL_SECOND, TTY_COLOR_RESET);
 #endif
+}
 
-#ifdef __ECM_STRING__
-	UartRstQue();
-	UartRxIrqCallback(DEBUG_UART_NUM, UartDebugRxIrq, NULL);
-	UartRxSetIrqEn(DEBUG_UART_NUM,1);
-	UartTxIrqCallback(DEBUG_UART_NUM, UartDebugTxIrq, NULL);
-#endif
+void enx_post_init(void)
+{
+	; //
 }
 
 void enx_device_init(void)
@@ -406,11 +421,14 @@ void enx_device_init(void)
 	set_devicetime(TimeZone_GMT, 2020, 5, 19, 12, 0, 0);
 
 #ifdef __AUDIO__
-	GpioSetDir(AUDIO_GPIO_RST, GPIO_DIR_OUT);
-	GpioSetDir(AUDIO_GPIO_IRQ, GPIO_DIR_IN);
-	audio_init();
+	if (SYS_IP_11) {
+		GpioSetDir(AUDIO_GPIO_RST, GPIO_DIR_OUT);
+		GpioSetDir(AUDIO_GPIO_IRQ, GPIO_DIR_IN);
+		audio_init();
+	}
 #endif
 
+	if (SYS_IP_9) {
 #if defined(__USE_SDIOCD__) && (model_TgtBd != 1)
 #if 0
 	GpioSetDir(SD_GPIO_RST, GPIO_DIR_OUT);	// New Peri B/d
@@ -425,6 +443,7 @@ void enx_device_init(void)
 	GpioSetDir(WF_GPIO_RST, GPIO_DIR_OUT);
 	SdioWfInit(WF_SDIO_CH);
 #endif
+	}
 
 #ifdef __EEPROM__
 //	I2cInit(EEPROM_I2C_CH, EEPROM_I2C_SPEED);	// FPGA 보드에서 사용하는 24AA64 는 1.8V로 동작하며 100KHz로 동작함
@@ -635,8 +654,9 @@ void main_0(int cpu_id)
 	_init_text_section();
 	_init_data_section();
 
+	enx_pre_init();
 	enx_peri_init();
-	enx_sys_init();
+	enx_post_init();
 
 	enx_device_init();
 	enx_default_userinfo();

@@ -167,6 +167,7 @@ SET ( DEV_SRCS
 	timer.c
 	uart.c
 	sys.c
+	wdt.c
 	audio/audio.c
 	audio/tlv320aic3206.c
 	cpu/syscall.c

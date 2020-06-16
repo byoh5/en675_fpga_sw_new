@@ -37,6 +37,9 @@
 													// 5 : Ethernet PHY manual (100Mbps Full-duplex)
 													// 6 : Ethernet PHY manual (1000Mbps Full-duplex)
 
+#define ETH_MAC_PAUSE					1			// 0 : No use
+													//*1 : Ethernet Mac Pause Enable(802.1D flow control)
+
 // Debug flag
 #define ETHPHY_MDIO_TEST				0			//*0 : No use
 													// 1 : PHY chip address(MDIO) check mode

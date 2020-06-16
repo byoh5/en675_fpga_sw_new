@@ -182,6 +182,8 @@
 #define REG_BASE_USB			0x45800000
 #define REG_BASE_MAP_CON		0x45900000
 #define REG_BASE_IR				0x45A00000
+#define REG_BASE_EFUSE			0x45B00000
+#define REG_BASE_WDT			0x45D00000
 #define REG_BASE_OIC			0x46000000
 
 #if model_TgtBd == 1

@@ -340,7 +340,7 @@ init_start:
 //		goto timeout;
 	}
 
-	// mode ¼³Á¤ time~
+	// mode ï¿½ï¿½ï¿½ï¿½ time~
 	vTaskDelay(100);
 
 	//SpiSetWs(test->nCH, SPI_WS_8BIT);
@@ -354,7 +354,7 @@ init_start:
 		// Test message (data tx/rx)
 		UINT test_size = rand() % test->nBufSize;
 		if (test_size <= SpiGetWs(test->nCH)) {
-			test_size = SpiGetWs(test->nCH) + 1; // ÃÖ¼ÒÇÑÀÇ SPI word size¸¸Å­Àº Àü¼Û
+			test_size = SpiGetWs(test->nCH) + 1; // ï¿½Ö¼ï¿½ï¿½ï¿½ï¿½ï¿½ SPI word sizeï¿½ï¿½Å­ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		}
 
 		printf("%3u%% %5u/%5u %4ubyte - ", ((nLoop + 1) * 100) / test->nLoop, nLoop + 1, test->nLoop, test_size);
@@ -452,25 +452,51 @@ done:
 	vTaskDelete(NULL);
 }
 
+static void spi_status_print(char *title, UINT type, UINT (*func)(UINT ch), char *text_type[4])
+{
+	if (type == 1) {
+		_Gprintf("%-8s|", title);
+	} else {
+		printf("%-8s|", title);
+	}
+	for (uint32 i = 0; i < SPI_CNT; i++) {
+		if (type == 16) {
+			printf("%08Xh|", func(i));
+		} else if (type == 10) {
+			printf("%8u |", func(i));
+		} else if (type == 0xff) {
+			printf("%8s |", text_type[func(i)]);
+		} else if (type == 1) {
+			_Gprintf("---------|");
+		} else if (type == 0) {
+			printf("     CH%u |", i);
+		}
+	}
+	printf("\n");
+}
+
 int cmd_perl_spi(int argc, char *argv[])
 {
 	if (argc == 1) {
-		printf("SPI Status ==========================================================================\n");
-		printf("    |  EN | BaudRate(div) | Fisrt |  BIT |  CLKMODE | WORD |  CSMODE  | IRQEN | IRQ |\n");
-		printf("----|-----|---------------|-------|------|----------|------|----------|-------|-----|\n");
-		for (uint32 i = 0; i < SPI_CNT; i++) {
-			printf("SPI%u| %3s | %8u(%3u) |  %3s  | %4s | %8s | %4s | %8s |  %3s  |  %u  |\n", i,
-					SpiGetEn(i) == ENX_ON ? " ON" : "OFF",
-					SpiGetClk(i), SpiGetClkdiv(i),
-					SpiGetBitmode(i) == SPI_MSBfirst ? "MSB" : "LSB",
-					SpiGetOneBitmode(i) == SPI_BYTE_MODE ? "BYTE" : "BIT",
-					SpiGetClkmode(i) == SPI_CLKDIR_LOW_POSI ? " Low+Pos" : SpiGetClkmode(i) == SPI_CLKDIR_LOW_POSI ? " Low+neg" : SpiGetClkmode(i) == SPI_CLKDIR_LOW_POSI ? "High+Pos" : "High+Neg",
-					SpiGetWs(i) == SPI_WS_8BIT ? "  8b" : SpiGetWs(i) == SPI_WS_16BIT ? " 16b" : SpiGetWs(i) == SPI_WS_24BIT ? " 24b" : " 32b",
-					SpiGetCs(i) == SPI_CS_OUT_LOW ? "Out-Low" : SpiGetCs(i) == SPI_CS_OUT_HIGH ? "Out-High" : "High-z",
-					SpiGetIrqEn(i) == ENX_ON ? " ON" : "OFF",
-					SpiIsIrq(i));
-		}
-		printf("=====================================================================================\n");
+		spi_status_print("SPI", 1, NULL, NULL);
+		spi_status_print("", 0, NULL, NULL);
+		spi_status_print("Control", 1, NULL, NULL);
+		spi_status_print("EN", 0xff, SpiGetEn, ((char*[4]){"OFF", "ON", "err", "err"}));
+		spi_status_print("BIT_MODE", 0xff, SpiGetBitmode, ((char*[4]){"MSB", "LSB", "err", "err"}));
+		spi_status_print("CS", 0xff, SpiGetCs, ((char*[4]){"Out-Low", "Out-High", "High-z", "err"}));
+		spi_status_print("ONEBIT", 0xff, SpiGetOneBitmode, ((char*[4]){"BYTE", "BIT", "err", "err"}));
+		spi_status_print("CLK_MODE", 0xff, SpiGetClkmode, ((char*[4]){"Low+Pos", "Low+Neg", "High+Pos", "High+Neg"}));
+		spi_status_print("WS", 0xff, SpiGetWs, ((char*[4]){"8b", "16b", "24b", "32b"}));
+		spi_status_print("RW", 0xff, SpiGetRW, ((char*[4]){"err", "Write", "Read", "R/W"}));
+		spi_status_print("GO", 10, SpiGetGo, NULL);
+		spi_status_print("IRQ_EN", 10, SpiGetIrqEn, NULL);
+		spi_status_print("IRQ", 10, SpiIsIrq, NULL);
+		spi_status_print("CLK_DIV", 10, SpiGetClkdiv, NULL);
+		spi_status_print("Clock", 10, SpiGetClk, NULL);
+		spi_status_print("Data", 1, NULL, NULL);
+		spi_status_print("TX_DAT", 16, SpiGetTxdata, NULL);
+		spi_status_print("RX_DAT", 16, SpiGetRxdata, NULL);
+		spi_status_print("--------", 1, NULL, NULL);
 	} else if (argc >= 2) {
 		if (strcmp(argv[1], "idx") == 0) {
 			if (argc == 3) {

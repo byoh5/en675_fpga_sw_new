@@ -8,6 +8,38 @@
 #include "dev_reg_s.h"
 #else
 #include "dev_reg_m.h"
+#define SYS_IP_31 1
+#define SYS_IP_30 1
+#define SYS_IP_29 1
+#define SYS_IP_28 1
+#define SYS_IP_27 1
+#define SYS_IP_26 1
+#define SYS_IP_25 1
+#define SYS_IP_24 1
+#define SYS_IP_23 1
+#define SYS_IP_22 1
+#define SYS_IP_21 1
+#define SYS_IP_20 1
+#define SYS_IP_19 1
+#define SYS_IP_18 1
+#define SYS_IP_17 1
+#define SYS_IP_16 1
+#define SYS_IP_15 1
+#define SYS_IP_14 1
+#define SYS_IP_13 1
+#define SYS_IP_12 1
+#define SYS_IP_11 1
+#define SYS_IP_10 1
+#define SYS_IP_9  1
+#define SYS_IP_8  1
+#define SYS_IP_7  1
+#define SYS_IP_6  1
+#define SYS_IP_5  1
+#define SYS_IP_4  1
+#define SYS_IP_3  1
+#define SYS_IP_2  1
+#define SYS_IP_1  1
+#define SYS_IP_0  1
 #endif
 
 _regs_ BF_8(UINT GPIO_IN : 1 ,UINT GPIO_OUT : 1 ,UINT GPIO_OEN : 1 ,UINT GPIO_IRQ_DIR : 2 ,UINT GPIO_IRQ_EN : 1 ,UINT GPIO_IRQ_CLR : 1 ,UINT GPIO_IRQ : 1 , UINT _rev0 : 24 ) _rege_ _GPIO_PIN;
@@ -34,15 +66,33 @@ _regs_ BF_3(UINT DAT_TOUT : 8 ,UINT _rev0 : 8, UINT DAT_BLKCNT : 16 ) _rege_ _SD
 _regs_ BF_4(UINT _rev0 : 18, UINT DAT_STOP_CMD : 6 ,UINT _rev1 : 2, UINT DAT_IORW_CMD : 6 ) _rege_ _SDIO_REG15;
 _regs_ BF_8(UINT _rev0 : 2, UINT DAT_WRCMD_S : 6 ,UINT _rev1 : 2, UINT DAT_WRCMD_M : 6 ,UINT _rev2 : 2, UINT DAT_RDCMD_S : 6 ,UINT _rev3 : 2, UINT DAT_RDCMD_M : 6 ) _rege_ _SDIO_REG16;
 
+#if EN675_SINGLE
+_regs_ BF_16(UINT CLK_DIV : 12 ,UINT SYNC : 3 ,UINT _rev0 : 3, UINT TX_TYPE : 1 ,UINT STOP_BIT : 1 ,UINT PARITY_MODE : 2 ,UINT TX_IRQ : 1 ,UINT TX_IRQ_EN : 1 ,UINT TX_IRQ_CLR : 1 ,UINT TX_EMPTY : 1 ,UINT TX_FULL : 1 ,UINT RX_IRQ : 1 ,UINT RX_IRQ_EN : 1 ,UINT RX_IRQ_CLR : 1 ,UINT RX_EMPTY : 1 ,UINT RX_FULL : 1 ) _rege_ _UART_REG0;
+#else
 _regs_ BF_15(UINT CLK_DIV : 12 ,UINT _rev0 : 6, UINT TX_TYPE : 1 ,UINT STOP_BIT : 1 ,UINT PARITY_MODE : 2 ,UINT TX_IRQ : 1 ,UINT TX_IRQ_EN : 1 ,UINT TX_IRQ_CLR : 1 ,UINT TX_EMPTY : 1 ,UINT TX_FULL : 1 ,UINT RX_IRQ : 1 ,UINT RX_IRQ_EN : 1 ,UINT RX_IRQ_CLR : 1 ,UINT RX_EMPTY : 1 ,UINT RX_FULL : 1 ) _rege_ _UART_REG0;
+#endif
 _regs_ BF_2(UINT _rev0 : 24, UINT RX_DAT : 8 ) _rege_ _UART_REG1;
 _regs_ BF_2(UINT _rev0 : 24, UINT TX_DAT : 8 ) _rege_ _UART_REG2;
 _regs_ BF_2(UINT _rev0 : 12, UINT RX_LMT : 20 ) _rege_ _UART_REG3;
 
+#if EN675_SINGLE
+#if EN675_SINGLE_I2C_NEW
+_regs_ BF_8(UINT CLK_DIV : 16 ,UINT _rev0 : 8, UINT SYNC : 3 ,UINT MODE : 1 ,UINT BIT_MODE : 1 ,UINT IRQ : 1 ,UINT IRQ_EN : 1 ,UINT IRQ_CLR : 1 ) _rege_ _I2C_REG0;
+_regs_ BF_3(UINT RX_DAT : 8 ,UINT TX_DAT : 8 , UINT _rev0 : 16 ) _rege_ _I2C_REG1;
+_regs_ BF_8(UINT _rev0 : 25, UINT ACT : 1 ,UINT MST_COL : 1 ,UINT MST_ACK : 1 ,UINT MST_REPEAT : 1 ,UINT MST_LAST : 1 ,UINT MST_RW : 1 ,UINT MST_GO : 1 ) _rege_ _I2C_REG2;
+_regs_ BF_10(UINT _rev0 : 17, UINT SLV_STOP : 1 ,UINT SLV_START : 1 ,UINT I2C_SDA : 1 ,UINT I2C_SCL : 1 ,UINT SLV_ACK_IN : 1 ,UINT SLV_GO : 1 ,UINT SLV_RW : 1 ,UINT SLV_ACK_OUT : 1 ,UINT SLV_ADR : 7 ) _rege_ _I2C_REG3;
+#else
+_regs_ BF_11(UINT RX_DAT : 8 ,UINT TX_DAT : 8 ,UINT _rev0 : 8, UINT LAST_FLAG : 1 ,UINT START_FLAG : 1 ,UINT ACT : 1 ,UINT MODE : 1 ,UINT BIT_MODE : 1 ,UINT IRQ : 1 ,UINT IRQ_EN : 1 ,UINT IRQ_CLR : 1 ) _rege_ _I2C_REG0;
+_regs_ BF_2(UINT CLK_DIV : 16 , UINT _rev0 : 16 ) _rege_ _I2C_REG1;
+_regs_ BF_7(UINT _rev0 : 26, UINT MST_COL : 1 ,UINT MST_ACK : 1 ,UINT MST_REPEAT : 1 ,UINT MST_LAST : 1 ,UINT MST_RW : 1 ,UINT MST_GO : 1 ) _rege_ _I2C_REG2;
+_regs_ BF_8(UINT _rev0 : 19, UINT I2C_SDA : 1 ,UINT I2C_SCL : 1 ,UINT SLV_ACK_IN : 1 ,UINT SLV_GO : 1 ,UINT SLV_RW : 1 ,UINT SLV_ACK_OUT : 1 ,UINT SLV_ADR : 7 ) _rege_ _I2C_REG3;
+#endif
+#else
 _regs_ BF_9(UINT RX_DAT : 8 ,UINT TX_DAT : 8 ,UINT _rev0 : 10, UINT ACT : 1 ,UINT MODE : 1 ,UINT BIT_MODE : 1 ,UINT IRQ : 1 ,UINT IRQ_EN : 1 ,UINT IRQ_CLR : 1 ) _rege_ _I2C_REG0;
 _regs_ BF_2(UINT CLK_DIV : 16 , UINT _rev0 : 16 ) _rege_ _I2C_REG1;
 _regs_ BF_7(UINT _rev0 : 26, UINT MST_COL : 1 ,UINT MST_ACK : 1 ,UINT MST_REPEAT : 1 ,UINT MST_LAST : 1 ,UINT MST_RW : 1 ,UINT MST_GO : 1 ) _rege_ _I2C_REG2;
 _regs_ BF_8(UINT _rev0 : 19, UINT I2C_SDA : 1 ,UINT I2C_SCL : 1 ,UINT SLV_ACK_IN : 1 ,UINT SLV_GO : 1 ,UINT SLV_RW : 1 ,UINT SLV_ACK_OUT : 1 ,UINT SLV_ADR : 7 ) _rege_ _I2C_REG3;
+#endif
 
 #if EN675_SINGLE
 _regs_ BF_12(UINT FULL : 1 ,UINT DONE_VAL : 1 ,UINT _rev0 : 4, UINT DONE_PTR : 4 ,UINT _rev1 : 4, UINT JOB_PTR : 4 ,UINT IRQ : 1 ,UINT IRQ_EN : 1 ,UINT IRQ_CLR : 1 ,UINT VALUE : 8 ,UINT MODE : 2 ,UINT GO : 1 ) _rege_ _DMA_REG0;
@@ -776,5 +826,19 @@ _regs_ BF_5(UINT EN : 1 ,UINT MAG : 1 ,UINT MUL : 3 ,UINT _rev0 : 11, UINT DAT :
 #define IRQ_38_T _am(_IRQ_37,REG_BASE_IRQ, (37<<3))
 #define IRQ_39_T _am(_IRQ_38,REG_BASE_IRQ, (38<<3))
 #define IRQ_40_T _am(_IRQ_39,REG_BASE_IRQ, (39<<3))
+#if EN675_SINGLE
+_regs_ BF_4(UINT _rev0 : 28, UINT MCK_OFF : 1 ,UINT DCK_OFF : 1, UINT _rev1 : 2 ) _rege_ _WDT_REG3;
+#define WDT_KILL_T _am(_WDT_REG3,REG_BASE_WDT, (3<<3))
+
+_regs_ BF_2(UINT PLAT_UP : 16, UINT DOWN : 16 ) _rege_ _I2S_7a;
+#define I2S_PLAT_IRQ_UP _bm(_I2S_7a,REG_BASE_I2S, (7<<3),PLAT_UP) // 1 Bit, 1'h0, RW
+#define I2S_PLAT_IRQ_DOWN _bm(_I2S_7a,REG_BASE_I2S, (7<<3),DOWN) // 1 Bit, 1'h0, RW
+
+_regs_ BF_3(UINT PLAT_UP : 16, UINT DOWN1 : 8, UINT DOWN2 : 8 ) _rege_ _I2S_7b;
+#define I2S_PLAT_IRQ_DOWN1 _bm(_I2S_7b,REG_BASE_I2S, (7<<3),DOWN1) // 1 Bit, 1'h0, RW
+#define I2S_PLAT_IRQ_DOWN2 _bm(_I2S_7b,REG_BASE_I2S, (7<<3),DOWN2) // 1 Bit, 1'h0, RW
+
+#define I2S_PLAT_IRQ_T _am(_I2S_7,REG_BASE_I2S, (7<<3))
+#endif
 
 #endif

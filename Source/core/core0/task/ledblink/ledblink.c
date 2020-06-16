@@ -213,7 +213,7 @@ void LedblinkTask(void *pvParameters)
 #endif
 #if 1
 	char buf[64] = {0};
-	snprintf(buf, 64, "PI:%.6f / test float printf\n", M_PI); // 내부에서 %f를 처리하기 위해 malloc를 호출한다.
+	snprintf(buf, 64, "PI:%.6f / test float printf\n", M_PI);
 	flprintf("%s", buf);
 #endif
 	//int res = setTimeZone();

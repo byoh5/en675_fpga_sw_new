@@ -22,17 +22,17 @@ void audio_init(void)
 	//I2sTxCfg(3, 0, 0, 3, 1, 0, 3); // Stereo 44.1KHz PCM 8bit,
 
 #if (AUDIO_CODEC==AUDIO_CODEC_G711U) // Mono 8KHz 16bit G.711-u
-	I2sTxCfg(2, eI2sCodecG711u, eI2sWidth16b, eI2sReq1024B, eI2sWidth8b, eI2sLoop1024KB, 3);	// Mono 8KHz, G.711-u, 16bit, Rd:512B Buf:128KB
+	I2sTxCfg(2, eI2sCodecG711u, eI2sWidth16b, eI2sReq128B, eI2sWidth8b, eI2sLoop1024KB, 3);	// Mono 8KHz, G.711-u, 16bit, Rd:512B Buf:128KB
 	//I2sTxCfg(3, eI2sCodecG711u, 1, eI2sReq256B, 0, eI2sLoop128KB, 3);	// Mono 8KHz, G.711-u, 16bit, Rd:512B Buf:128KB
-	I2sRxCfg(2, eI2sCodecG711u, eI2sWidth16b, eI2sReq1024B, eI2sWidth8b, eI2sLoop1024KB);		// Mono 8KHz, G.711-u, 16bit, Wr:512B Buf:128KB
+	I2sRxCfg(2, eI2sCodecG711u, eI2sWidth16b, eI2sReq128B, eI2sWidth8b, eI2sLoop1024KB);		// Mono 8KHz, G.711-u, 16bit, Wr:512B Buf:128KB
 #endif
 #if (AUDIO_CODEC==AUDIO_CODEC_RAW) // 16bit PCM
 #if 0
 	I2sTxCfg(1, eI2sCodecPCM, eI2sWidth16b, eI2sReq1024B, eI2sWidth16b, eI2sLoop1024KB, 3);	// Mono 16bit, Rd:1024B Buf:128KB
 	I2sRxCfg(1, eI2sCodecPCM, eI2sWidth16b, eI2sReq1024B, eI2sWidth16b, eI2sLoop1024KB);	// Mono 16bit, Wr:1024B Buf:128KB
 #else
-	I2sTxCfg(3, eI2sCodecPCM, eI2sWidth16b, eI2sReq1024B, eI2sWidth16b, eI2sLoop128KB, 3);	// Stereo 16bit, Rd:1024B Buf:128KB
-	I2sRxCfg(3, eI2sCodecPCM, eI2sWidth16b, eI2sReq1024B, eI2sWidth16b, eI2sLoop128KB);	// Stereo 16bit, Wr:1024B Buf:128KB
+	I2sTxCfg(3, eI2sCodecPCM, eI2sWidth16b, eI2sReq128B, eI2sWidth16b, eI2sLoop128KB, 3);	// Stereo 16bit, Rd:1024B Buf:128KB
+	I2sRxCfg(3, eI2sCodecPCM, eI2sWidth16b, eI2sReq128B, eI2sWidth16b, eI2sLoop128KB);	// Stereo 16bit, Wr:1024B Buf:128KB
 #endif
 #endif
 

@@ -76,6 +76,18 @@ UINT IrGetRepeatMargin(void)
 	return IR_RPT_MG;
 }
 
+#if EN675_SINGLE
+void IrSetSync(UINT sync)
+{
+	IR_SYNC = sync;
+}
+
+UINT IrGetSync(void)
+{
+	return IR_SYNC;
+}
+#endif
+
 UINT IrIsRepeat(void)
 {
 	return IR_RPT;

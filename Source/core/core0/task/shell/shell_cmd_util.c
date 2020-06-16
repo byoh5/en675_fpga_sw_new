@@ -15,7 +15,7 @@
 #include "sha.h" // minilib
 
 const char *sAesTest[]      = {"Test AES128/256",                                (char*)0};
-const char *sShaTest[]      = {"Test SHA244/245",                                (char*)0};
+const char *sShaTest[]      = {"Test SHA244/256",                                (char*)0};
 const char *sChecksumTest[] = {"Test Checksum",                                  (char*)0};
 
 //*************************************************************************************************
@@ -225,7 +225,12 @@ int cmd_test_checksum(int argc, char *argv[])
 {
 #if 1
 	if (argc == 1) {
-
+		printf("CHECKSUM test command\n");
+		printf("- %s reg   : view register\n", argv[0]);
+		printf("- %s start : auto test start\n", argv[0]);
+		printf("- %s stop  : auto test stop\n", argv[0]);
+	} else if (strcmp(argv[1], "reg") == 0) {
+		ChksumRegShow(ENX_YES);
 	} else if (strcmp(argv[1], "start") == 0) {
 		if (chksumitem.taskHandle != NULL) {
 			printf("CHKSUM Auto Test already!\n");
@@ -241,7 +246,7 @@ int cmd_test_checksum(int argc, char *argv[])
 		if (argc == 3) {
 			u32TestLoop = atoi(argv[2]);
 		}
-		chksumitem.u32BufSize = 4096;
+		chksumitem.u32BufSize = 2048;
 		chksumitem.u32Move = u32Move;
 		chksumitem.u32TestLoop = u32TestLoop;
 		chksumitem.taskHandle = vTaskCreate("ChksumT", ChksumTestTask, NULL, LV3_STACK_SIZE, LV5_TASK_PRIO);
@@ -620,7 +625,7 @@ void ShaChopTestTask(void *ctx)
 #if SHA_TEST_IRQ
 					ShaChopCalc_rtos_async(&item, iS);
 					if (!ulTaskNotifyTake(pdTRUE, 300)) { // Timeout 3sec
-						flag = 2;
+						flag = 3;
 						break;
 					}
 #else
@@ -642,7 +647,7 @@ void ShaChopTestTask(void *ctx)
 #if SHA_TEST_IRQ
 							ShaChopCalc_rtos_async(&item, u32ReqBlock * 64);
 							if (!ulTaskNotifyTake(pdTRUE, 300)) { // Timeout 3sec
-								flag = 2;
+								flag = 4;
 								break;
 							}
 #else
@@ -662,7 +667,7 @@ void ShaChopTestTask(void *ctx)
 #if SHA_TEST_IRQ
 					ShaChopCalc_rtos_async(&item, fS);
 					if (!ulTaskNotifyTake(pdTRUE, 300)) { // Timeout 3sec
-						flag = 2;
+						flag = 5;
 						break;
 					}
 #else
@@ -691,7 +696,13 @@ void ShaChopTestTask(void *ctx)
 				_Rprintf("Fail\n");
 #if SHA_TEST_IRQ
 			} else if (flag == 2) {
-				_Rprintf("Timeout\n");
+				_Rprintf("One-Shot Timeout\n");
+			} else if (flag == 3) {
+				_Rprintf("Chop(init) Timeout\n");
+			} else if (flag == 4) {
+				_Rprintf("Chop(update) Timeout\n");
+			} else if (flag == 5) {
+				_Rprintf("Chop(final) Timeout\n");
 #endif
 			}
 		}
@@ -733,6 +744,14 @@ int cmd_test_sha(int argc, char *argv[])
 	}
 
 	if (argc == 1) {
+		printf("SHA test command\n");
+		printf("- %s reg   : view register\n", argv[0]);
+		printf("- %s start : auto test start (one-shot)\n", argv[0]);
+#if EN675_SINGLE
+		printf("- %s start2: auto test start (chop)\n", argv[0]);
+#endif
+		printf("- %s stop  : auto test stop\n", argv[0]);
+#if 0
 #if 1
 		BYTE arrDst[32] = {0};
 		BYTE arrHWDst[32] = {0};
@@ -822,6 +841,9 @@ int cmd_test_sha(int argc, char *argv[])
 
 		hexCmpDump("Dst", arrDst, arrHWDst, output_size);
 #endif
+#endif
+	} else if (strcmp(argv[1], "reg") == 0) {
+		ShaRegShow(ENX_YES);
 	} else if (strcmp(argv[1], "start") == 0) {
 			if (shaitem.taskHandle != NULL) {
 				printf("SHA%u Auto Test already!\n", mode == eSHA256 ? 256 : 224);
@@ -1378,7 +1400,15 @@ int cmd_test_aes(int argc, char *argv[])
 		return 0;
 	}
 
-	if (argc >= 2 && strcmp(argv[1], "type") == 0) {
+	if (argc == 1) {
+		printf("AES test command\n");
+		printf("- %s reg   : view register\n", argv[0]);
+		printf("- %s type  : auto test type(ecb, cbc)\n", argv[0]);
+		printf("- %s start : auto test start\n", argv[0]);
+		printf("- %s stop  : auto test stop\n", argv[0]);
+	} else if ((argc >= 2 && strcmp(argv[1], "reg") == 0)) {
+		AesRegShow(ENX_YES);
+	} else if (argc >= 2 && strcmp(argv[1], "type") == 0) {
 		if (argc > 2) {
 			if (strcmp(argv[2], "ecb") == 0) {
 				type_flag = 0x0;

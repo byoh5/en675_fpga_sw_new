@@ -186,9 +186,6 @@ void network_ethif_pkt_input_irq(void *ctx)
 	BYTE gRxPktHead = ((pRX_LEN_INFO[gRxPktTail]&0xff000000)>>24);
 	while (gRxPktTail != gRxPktHead) {
 		UINT u32PktSize = (pRX_LEN_INFO[gRxPktTail] & 0x7ff) - 4; // Delete FCS(4byte)
-		if (gptMsgDebug.ETH_RX_CHECK == 1) {
-			printf("EthRX Idx[%s%3u%s/%s%3u%s] - %u\n", TTY_COLOR_YELLOW, gRxPktHead, TTY_COLOR_RESET, TTY_COLOR_GREEN, gRxPktTail, TTY_COLOR_RESET, u32PktSize);
-		}
 		pkt_info *pkinfo;
 		if (u32PktSize <= 1514) {
 			pkinfo = &(qEthernetRX.info[qEthernetRX.tail]);
@@ -200,9 +197,19 @@ void network_ethif_pkt_input_irq(void *ctx)
 
 			if (gptMsgDebug.ETH_RX_CHECK == 1) {
 				hwflush_dcache_range((ULONG)pkinfo->data, (UINT)u32PktSize + 4);
+				if ((pkinfo->data[0] == 0xff) && (pkinfo->data[1] == 0xff) && (pkinfo->data[2] == 0xff) && (pkinfo->data[3] == 0xff) && (pkinfo->data[4] == 0xff) && (pkinfo->data[5] == 0xff)) {
+					printf("EthRX-BC Idx[%s%3u%s/%s%3u%s] - %u\n", TTY_COLOR_YELLOW, gRxPktHead, TTY_COLOR_RESET, TTY_COLOR_GREEN, gRxPktTail, TTY_COLOR_RESET, u32PktSize);
+				} else if (pkinfo->data[0] & 0x1) {
+					printf("EthRX-MC Idx[%s%3u%s/%s%3u%s] - %u\n", TTY_COLOR_YELLOW, gRxPktHead, TTY_COLOR_RESET, TTY_COLOR_GREEN, gRxPktTail, TTY_COLOR_RESET, u32PktSize);
+				} else {
+					printf("EthRX-UC Idx[%s%3u%s/%s%3u%s] - %u\n", TTY_COLOR_YELLOW, gRxPktHead, TTY_COLOR_RESET, TTY_COLOR_GREEN, gRxPktTail, TTY_COLOR_RESET, u32PktSize);
+				}
+			} else if (gptMsgDebug.ETH_RX_CHECK == 2) {
+				hwflush_dcache_range((ULONG)pkinfo->data, (UINT)u32PktSize + 4);
 				hexDump("Eth input(+CRC32)", pkinfo->data, u32PktSize + 4);
 			}
 		} else {
+			printf("EthRX Idx[%s%3u%s/%s%3u%s] - %u\n", TTY_COLOR_YELLOW, gRxPktHead, TTY_COLOR_RESET, TTY_COLOR_GREEN, gRxPktTail, TTY_COLOR_RESET, u32PktSize);
 			_Rprintf("EthRX Err(%u/%u)(Size:%u)\n", gRxPktHead, gRxPktTail, u32PktSize);
 		}
 
@@ -490,6 +497,11 @@ static void network_ethif_pkt_input(void *ctx)
 
 	EthRxSetAddrOffset(NETRX_BUF_GAP);
 
+#if (ETH_MAC_PAUSE)
+	BYTE pause_mac_address[6] = {0x01, 0x80, 0xc2, 0x00, 0x00, 0x01};
+	EthRxFilterInsert(pause_mac_address);
+#endif
+
 	//BYTE *pBase = 0xa0040000;
 	BYTE *pBase = pvPortMalloc(ENX_MEM_ALIGN_BUFFER(NETRX_BUF_COUNT*NETRX_BUF_GAP)+NETRX_BUF_GAP);
 	//BYTE *pBase = pvPortMalloc(ENX_MEM_ALIGN_BUFFER(NETRX_BUF_COUNT*NETRX_BUF_GAP)+NETRX_BUF_GAP+524288);
@@ -509,7 +521,7 @@ static void network_ethif_pkt_input(void *ctx)
 	}
 
 	hwflush_dcache_range_rtos((ULONG)pBase, 16*1024);
-	memset(pBase, 0xAA, ENX_MEM_ALIGN_BUFFER(NETRX_BUF_COUNT*NETRX_BUF_GAP));
+	BDmaMemSet_rtos(0, pBase, 0xAA, ENX_MEM_ALIGN_BUFFER(NETRX_BUF_COUNT*NETRX_BUF_GAP));
 	hwflush_dcache_range_rtos((ULONG)pBase, 16*1024);
 
 //	pmp_entry_set(4, PMP_R|PMP_L, (ULONG)qEthernetRX.base, 524288); 			// DDR enabled area
@@ -600,6 +612,7 @@ static void network_ethif_pkt_input(void *ctx)
 					case 0x9000: // Ethernet Configuration Testing Protocol[13]
 					case ETHTYPE_QINQ: // VLAN-tagged (IEEE 802.1Q) frame with double tagging
 					case 0x887e: // iptime packet?
+					case 0x893a: // iptime topology packet
 					case 0x0006: // ...
 						LWIP_DEBUGF(NETIF_DEBUG, ("if_input: inval type\n"));
 						pbuf_free(p);
@@ -784,11 +797,6 @@ init:
 
 	EthphyAutoNeg(gtNetwork.u3EthAutoNegotiation);
 
-#if EN675_SINGLE
-	EthSetTxClockPowerEn(ENX_OFF);
-	EthSetRxClockPowerEn(ENX_OFF);
-#endif
-
 	while (1) {
 		if (ulTaskNotifyTake(pdTRUE, portMAX_DELAY)) {
 			if (network_ethif_phy_restart_flag == 1) {
@@ -799,22 +807,14 @@ init:
 			UINT u32LinkStatus = EthphyLinkCheck();
 			switch (u32LinkStatus) {
 			case ETHPHY_LINKSTATUS_UP:
-#if EN675_SINGLE
-				EthSetTxClockPowerEn(ENX_ON);
-				EthSetRxClockPowerEn(ENX_ON);
-#endif
 				network_interface_link(enlETHERNET, ENX_ON);
 				break;
 			case ETHPHY_LINKSTATUS_DOWN:
 				network_interface_link(enlETHERNET, ENX_OFF);
-#if EN675_SINGLE
-				EthSetTxClockPowerEn(ENX_OFF);
-				EthSetRxClockPowerEn(ENX_OFF);
-#endif
 				break;
 			case ETHPHY_LINKSTATUS_ERROR:
-				printf("Ethernet PHY restart!");
-				EthphyInit(ETHPHY_MDIO_ADR, network_ethif_ethphy_irq);
+				_Rprintf("Ethernet PHY restart!\n");
+				goto init; // reset
 				break;
 			default:
 				break;

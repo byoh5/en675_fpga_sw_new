@@ -13,8 +13,12 @@ void SflsInit(void)
 	}
 
 #if 1 // bootloader only
-	UINT sfls_clk = 20000000;
+#if 1
+	UINT sfls_clk = 50000000;
 	SflsSetClk(sfls_clk);
+#else
+	SflsSetClkdiv(0xf);
+#endif
 
 	if (sfls_master->func_init_1) {
 		sfls_master->func_init_1();

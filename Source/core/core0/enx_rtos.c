@@ -70,21 +70,31 @@ void main_os(void)
 	vTaskCreate("shell", ShellTask, NULL, LV2_STACK_SIZE, LV6_TASK_PRIO);
 
 #ifdef __USE_SDIOCD__
-	vTaskCreate("sdcard", SdcardTask, NULL, LV1_STACK_SIZE, LV3_TASK_PRIO);
-	vTaskCreate("videnc", muxer_videnc_task, NULL, LV5_STACK_SIZE, LV5_TASK_PRIO);
+	if (SYS_IP_9) {
+		vTaskCreate("sdcard", SdcardTask, NULL, LV1_STACK_SIZE, LV3_TASK_PRIO);
+		vTaskCreate("videnc", muxer_videnc_task, NULL, LV5_STACK_SIZE, LV5_TASK_PRIO);
+	}
 #endif
 #if defined(__NETWORK__) && (model_TgtBd != 1)
-	vTaskCreate("startLwip", startLwip, NULL, LV3_STACK_SIZE, LV7_TASK_PRIO);
+	if (SYS_IP_10) {
+		vTaskCreate("startLwip", startLwip, NULL, LV3_STACK_SIZE, LV7_TASK_PRIO);
+	}
 #endif
 	vTaskCreate("ledblink", LedblinkTask, NULL, LV0_STACK_SIZE, LV7_TASK_PRIO);
 #if defined(__NETWORK__) && (model_TgtBd != 1)
-	vTaskCreate("netProt", startNetProtocol, NULL, LV2_STACK_SIZE, LV5_TASK_PRIO);
+	if (SYS_IP_10) {
+		vTaskCreate("netProt", startNetProtocol, NULL, LV2_STACK_SIZE, LV5_TASK_PRIO);
+	}
 #endif
 #if defined(__WIFI__) && (model_TgtBd != 1)
-	vTaskCreate("Wifi", wifiTask, NULL, LV6_STACK_SIZE, LV7_TASK_PRIO);
+	if (SYS_IP_9) {
+		vTaskCreate("Wifi", wifiTask, NULL, LV6_STACK_SIZE, LV7_TASK_PRIO);
+	}
 #endif
 #ifdef __AUDIO__
-	vTaskCreate("audRxTx", audtxrx_task, NULL, LV3_STACK_SIZE, LV5_TASK_PRIO);
+	if (SYS_IP_11) {
+		vTaskCreate("audRxTx", audtxrx_task, NULL, LV3_STACK_SIZE, LV5_TASK_PRIO);
+	}
 #endif
 #if USE_IR
 	vTaskCreate("IrRx", ir_recv_task, NULL, LV3_STACK_SIZE, LV5_TASK_PRIO);

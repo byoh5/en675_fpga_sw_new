@@ -137,9 +137,21 @@ UINT UartGetClk(UINT nCH)
 	return APB_FREQ / (((arrUART[nCH]->CLK_DIV + 1) << 4) - (1 << 3));
 }
 
-void UartSetTxType(UINT nCH, UINT Type)
+#if EN675_SINGLE
+void UartSetSync(UINT nCH, UINT sync)
 {
-	arrUART[nCH]->TX_TYPE = Type;
+	arrUART[nCH]->SYNC = sync;
+}
+
+UINT UartGetSync(UINT nCH)
+{
+	return arrUART[nCH]->SYNC;
+}
+#endif
+
+void UartSetTxType(UINT nCH, UINT type)
+{
+	arrUART[nCH]->TX_TYPE = type;
 }
 
 UINT UartGetTxType(UINT nCH)
@@ -147,9 +159,9 @@ UINT UartGetTxType(UINT nCH)
 	return arrUART[nCH]->TX_TYPE;
 }
 
-void UartSetStopbit(UINT nCH, UINT Stopbit)
+void UartSetStopbit(UINT nCH, UINT stopbit)
 {
-	arrUART[nCH]->STOP_BIT = Stopbit;
+	arrUART[nCH]->STOP_BIT = stopbit;
 }
 
 UINT UartGetStopbit(UINT nCH)
@@ -176,6 +188,11 @@ void UartTx(UINT nCH, char data)
 void UartTxSetByte(UINT nCH, char data)
 {
 	arrUARTTX[nCH]->TX_DAT = data;
+}
+
+UINT UartTxGetByte(UINT nCH)
+{
+	return arrUARTTX[nCH]->TX_DAT;
 }
 
 UINT UartTxIsEmpty(UINT nCH)
@@ -233,6 +250,16 @@ UINT UartRxIsEmpty(UINT nCH)
 UINT UartRxIsFull(UINT nCH)
 {
 	return arrUART[nCH]->RX_FULL;
+}
+
+void UartRxSetLmt(UINT nCH, UINT lmt)
+{
+	arrUARTRXLMT[nCH]->RX_LMT = lmt;
+}
+
+UINT UartRxGetLmt(UINT nCH)
+{
+	return arrUARTRXLMT[nCH]->RX_LMT;
 }
 
 void UartRxIrqCallback(UINT nCH, irq_fn irqfn, void *arg)

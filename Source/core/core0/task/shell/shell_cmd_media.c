@@ -21,6 +21,7 @@
 
 const char *sTestVideoCmd[] = {"Test Video",                    (char*)0};
 const char *sTestJpegCmd[]  = {"Test Jpeg",                     (char*)0};
+const char *sTestAudioCmd[] = {"Test Video",                    (char*)0};
 
 //*************************************************************************************************
 // User functions
@@ -48,11 +49,11 @@ const char *sTestJpegCmd[]  = {"Test Jpeg",                     (char*)0};
 #if 1 // 41.625MHz
 #define TEST_VIDEO_TIMER_DIV	250
 #define TEST_VIDEO_TIMER_LMT	2474
-#define TEST_VIDEO_TIMER_TRIG	1387
+#define TEST_VIDEO_TIMER_TRIG	(TEST_VIDEO_TIMER_LMT>>1)
 #else // 50MHz
 #define TEST_VIDEO_TIMER_DIV	250
 #define TEST_VIDEO_TIMER_LMT	3332
-#define TEST_VIDEO_TIMER_TRIG	1666
+#define TEST_VIDEO_TIMER_TRIG	(TEST_VIDEO_TIMER_LMT>>1)
 #endif
 #define TEST_VIDEO_TIMER_HZ		(APB_FREQ/((TEST_VIDEO_TIMER_LMT+1)*2)/TEST_VIDEO_TIMER_DIV)
 
@@ -263,10 +264,14 @@ int cmd_test_jpeg(int argc, char *argv[])
 			printf("Save ok!\n");
 		}
 #endif
+	} else if (argc == 2 && (strcmp(argv[1], "reg") == 0)) {
+		enx_jpeg_reg_view();
+	} else if (argc == 2 && (strcmp(argv[1], "info") == 0)) {
+		enx_jpeg_info_view();
 	} else if (argc == 3 && (strcmp(argv[1], "q") == 0)) {
 		int qp = atoi(argv[2]);
 		enx_jpeg_set_quantize(qp);
-#if 1
+#if 1 // Size error test...
 		vTaskDelay(50);
 
 		while (gptMsgShare.JPEG_STILL_FLAG == JPEG_SNAP_PROC) {
@@ -365,5 +370,117 @@ int cmd_test_jpeg(int argc, char *argv[])
 
 
 #endif
+	return 0;
+}
+
+#if EN675_SINGLE
+//#include "hello_pcm.h"
+#include "g711_8k_16bit.h"
+
+#if 0
+static int aud_tx_step = 0;
+static void aud_tx_irq_test(void *ctx)
+{
+	UINT new_addr = 0, new_size = 0;
+	if (aud_tx_step == 0) {
+		aud_tx_step = 1;
+		new_size = 41984;
+		new_addr = g711data + G711DATA_LEN - 41984;
+	} else {
+		aud_tx_step = 0;
+		new_size = G711DATA_LEN - 41984;
+		new_addr = g711data;
+	}
+	I2sSetPlatLength(new_size);
+	I2sTxBaseAddr(new_addr);
+	I2sSetPlatTxEn(ENX_ON);
+//	printf("I2S IRQ Call - TX oneshot mode: finish, ");
+//	printf("newstart(0x%08X)\n", new_addr);
+}
+#else
+static unsigned int aud_tx_size = 0;
+static unsigned int aud_tx_offset = 0;
+#define AUDIO_TX_DEP (4096*4)
+static void aud_tx_irq_test(void *ctx)
+{
+	if (I2sGetPlatTxEn() == ENX_ON) {
+		printf("already txen1...\n");
+		return;
+	}
+	if (aud_tx_size > AUDIO_TX_DEP) {
+		I2sSetPlatLength(AUDIO_TX_DEP);
+		I2sTxBaseAddr(g711data + aud_tx_offset);
+		aud_tx_offset += AUDIO_TX_DEP;
+		aud_tx_size -= AUDIO_TX_DEP;
+	} else {
+		I2sSetPlatLength(aud_tx_size);
+		I2sTxBaseAddr(g711data + aud_tx_offset);
+		aud_tx_offset += aud_tx_size;
+		aud_tx_size -= aud_tx_size;
+		if (aud_tx_size == 0) {
+			aud_tx_offset = 0;
+			aud_tx_size = G711DATA_LEN;
+		}
+	}
+	if (I2sGetPlatTxEn() == ENX_ON) {
+		printf("already txen2...\n");
+		return;
+	}
+
+	WaitXms(2);
+	I2sSetPlatTxEn(ENX_ON);
+
+	if (aud_tx_offset == 0) {
+		printf("I2S IRQ Call - TX oneshot mode: finish, last start(0x%08X)\n", I2sGetTxBaseAddr());
+	} else if (aud_tx_offset == AUDIO_TX_DEP) {
+		printf("I2S IRQ Call - TX oneshot mode: finish, new start(0x%08X)\n", I2sGetTxBaseAddr());
+	} else {
+		printf("I2S IRQ Call - TX oneshot mode: finish, continue start(0x%08X)\n", I2sGetTxBaseAddr());
+	}
+
+}
+#endif
+#endif
+
+int cmd_test_audio(int argc, char *argv[])
+{
+	if (argc == 1) {
+#if EN675_SINGLE
+#if 0
+	// hello_pcm
+	I2sSetPlatLength(sizeof(PCM_HELLO));
+	//I2sSetPlatLength(256*1024);
+	I2sTxBaseAddr(PCM_HELLO);
+#endif
+#if 1
+	// g711_8k_16bit.h
+#if 0
+	aud_tx_step = 0;
+	I2sSetPlatLength(G711DATA_LEN - 41984);
+#else
+	aud_tx_size = G711DATA_LEN;
+	I2sSetPlatLength(AUDIO_TX_DEP);
+	aud_tx_size -= AUDIO_TX_DEP;
+	aud_tx_offset += AUDIO_TX_DEP;
+#endif
+	//I2sSetPlatLength(94208);
+	I2sTxBaseAddr(g711data);
+#endif
+	I2sSetPlatMode(eI2sPlatOneshot);
+	I2sTxIrqCallback(aud_tx_irq_test, NULL);
+	I2sSetTxIrqEn(ENX_ON);
+	I2sSetTxLr(3);
+	I2sSetPlatTxEn(ENX_ON);
+	//I2sSetTxEn(ENX_ON);
+	printf("I2sTX(%d/%d)\n", I2sGetTxEn(), I2sGetPlatTxEn());
+#endif
+	} else if (strcmp(argv[1], "1") == 0) {
+		I2sSetTxLr(ENX_OFF);
+		I2sSetTxEn(0);
+	} else if (strcmp(argv[1], "2") == 0) {
+		I2sSetTxEn(ENX_ON);
+		I2sSetTxLr(3);
+	}
+
 	return 0;
 }

@@ -1163,6 +1163,7 @@ void sys_unlock_tcpip_core(void);
  * tcpip_thread after processing a message.
  */
 #define LWIP_TCPIP_THREAD_ALIVE()       {WdtReset();}
+// #define LWIP_TCPIP_THREAD_ALIVE()       {WdtoscReset();}
 
 /**
  * SLIPIF_THREAD_NAME: The name assigned to the slipif_loop thread.

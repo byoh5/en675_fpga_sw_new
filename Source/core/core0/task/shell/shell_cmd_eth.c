@@ -190,7 +190,6 @@ void eth_rx_state(void)
 	printf(" RX_ERR_EN   (rx err) : %u\n", ETH_RX_ERR_EN);
 	printf(" RX_RMII10   (rx rmi) : %-14u |", ETH_RX_RMII10);
 	printf(" RX_ERTYPE   (rx er ) : %u\n", ETH_RX_ERTYPE);
-	printf(" RX_QOS      (rx qos) : %-14u |\n", ETH_RX_QOS);
 	shell_line_print('=', "RX Clock & Delay");
 	printf(" RX_RCKEDGE  (rx e  ) : %-14u |", ETH_RX_RCKEDGE);
 	printf(" RX_RCKDLY   (rx rck) : %u\n", ETH_RX_RCKDLY);
@@ -204,6 +203,10 @@ void eth_rx_state(void)
 	printf(" RX_IDX               : %-14u |", gRxPktHead);
 	printf(" RX_SIZE              : %u\n", u32PktSize);
 	shell_line_print('=', "RX Filter");
+#if EN675_SINGLE
+	printf(" MC_FILT_EN  (if mc ) : %-14u |", ETH_MC_FILT_EN);
+	printf(" BC_FILT_EN  (if bc ) : %u\n", ETH_BC_FILT_EN);
+#endif
 	printf(" DSTMAC_BYP  (if mps) : %u\n", ETH_DSTMAC_BYP);
 	es_printf(" DSTMAC_EN   (if men) : %032bb\n", ETH_DSTMAC_EN);
 #if 0
@@ -253,10 +256,9 @@ void eth_tx_state(void)
 	printf(" TX_COLCHK   (tx co ) : %u\n", ETH_TX_COLCHK);
 	printf(" TX_COLEN    (tx oen) : %-14u |", ETH_TX_COLEN);
 	printf(" TX_COLSEL   (tx os ) : %u\n", ETH_TX_COLSEL);
-	printf(" TX_RMII10   (tx rmi) : %-14u |", ETH_TX_RMII10);
-	printf(" TX_EMPTY             : %u\n", ETH_TX_EMPTY);
-	printf(" TX_QOS      (tx qos) : %-14u |", ETH_TX_QOS);
-	printf(" TX_FULL              : %u\n", ETH_TX_FULL);
+	printf(" TX_EMPTY             : %-14u |", ETH_TX_EMPTY);
+	printf(" TX_RMII10   (tx rmi) : %u\n", ETH_TX_RMII10);
+	printf(" TX_FULL              : %-14u |\n", ETH_TX_FULL);
 	shell_line_print('=', "TX Buffer");
 	printf(" TX_ADR      (tx adr) : 0x%-12X |", ETH_TX_ADR);
 	printf(" TX_PAUSE_EN (tx p  ) : %u\n", ETH_TX_PAUSE_EN);
@@ -347,7 +349,6 @@ int cmd_test_eth(int argc, char *argv[])
 				else if (strcmp(argv[2], "e") == 0)	{		eth_getset(ETH_RX_RCKEDGE);	}
 				else if (strcmp(argv[2], "rmi") == 0) {		eth_getset(ETH_RX_RMII10);	}
 				else if (strcmp(argv[2], "adr") == 0) {		eth_getset(ETH_RX_ADR);		}
-				else if (strcmp(argv[2], "qos") == 0) {		eth_getset(ETH_RX_QOS);		}
 				else if (strcmp(argv[2], "lmt") == 0) {		eth_getset(ETH_RX_LMT);		}
 				else if (strcmp(argv[2], "ltc") == 0) {		eth_getset(ETH_RX_LTC);		}
 				else if (strcmp(argv[2], "irq") == 0) {		eth_getset(ETH_IRQ_RX_EN);	}
@@ -441,7 +442,6 @@ int cmd_test_eth(int argc, char *argv[])
 				else if (strcmp(argv[2], "rmi") == 0) {		eth_getset(ETH_TX_RMII10);	}
 				else if (strcmp(argv[2], "adr") == 0) {		eth_getset(ETH_TX_ADR);		}
 				else if (strcmp(argv[2], "len") == 0) {		eth_getset(ETH_TX_LEN);		}
-				else if (strcmp(argv[2], "qos") == 0) {		eth_getset(ETH_TX_QOS);		}
 				else if (strcmp(argv[2], "val") == 0) {		eth_getset(ETH_TX_VAL);		}
 				else if (strcmp(argv[2], "p") == 0) {		eth_getset(ETH_TX_PAUSE_EN);}
 				else if (strcmp(argv[2], "ifg") == 0) {		eth_getset(ETH_TX_IFGGAP);	}
@@ -461,12 +461,10 @@ int cmd_test_eth(int argc, char *argv[])
 															eth_getset(ETH_TX_TXD2DLY);
 															eth_getset(ETH_TX_TXD3DLY);	}
 #if 0
-				else if(strcmp(argv[2], "dstck") == 0)
-				{
+				// old code
+				else if (strcmp(argv[2], "dstck") == 0) {
 					eth_getset(PAD_ETH_TCK_DS);
-				}
-				else if(strcmp(argv[2], "dsdata") == 0)
-				{
+				} else if (strcmp(argv[2], "dsdata") == 0) {
 					eth_getset(PAD_ETH_TXD3_DS);
 					eth_getset(PAD_ETH_TXD2_DS);
 					eth_getset(PAD_ETH_TXD1_DS);
@@ -475,15 +473,12 @@ int cmd_test_eth(int argc, char *argv[])
 				}
 #endif
 #if 0
-				else if(strcmp(argv[2], "on") == 0)
-				{
+				// old code
+				else if (strcmp(argv[2], "on") == 0) {
 					gptMsgDebug.ETH_TX_CHECK = 1;
-				}
-				else if(strcmp(argv[2], "off") == 0)
-				{
+				} else if (strcmp(argv[2], "off") == 0) {
 					gptMsgDebug.ETH_TX_CHECK = 0;
-				}
-				else
+				} else
 #endif
 				else if (strcmp(argv[2], "start") == 0) {
 					eth_test_task_count = -1;
@@ -498,7 +493,7 @@ int cmd_test_eth(int argc, char *argv[])
 					} else {
 						eth_test_task_txtck = 0;
 					}
-					vTaskCreate("eth_tx", cmd_eth_test_task, NULL, LV2_STACK_SIZE, LV5_TASK_PRIO);
+					vTaskCreate("eth_tx", cmd_eth_test_task, NULL, LV2_STACK_SIZE, LV2_TASK_PRIO);
 				} else if (strcmp(argv[2], "stop") == 0) {
 					eth_test_task_sw = 0;
 				} else if (strcmp(argv[2], "size") == 0) {
@@ -538,70 +533,13 @@ int cmd_test_eth(int argc, char *argv[])
 				}
 				network_ethif_phy_restart();
 			}
-#if 0
-			else if(argc == 4 && strcmp(argv[2], "t1000") == 0)
-			{
-				if(strcmp(argv[3], "1000f") == 0)
-				{
-					EthRxTxinit(1, 1000, PHY_DUPLEX_FULL);
-					printf("input(%s) => set 1000PHY 1000Mbps FULL\n", argv[3]);
-				}
-				else if(strcmp(argv[3], "100f") == 0)
-				{
-					EthRxTxinit(1, 100, PHY_DUPLEX_FULL);
-					printf("input(%s) => set 1000PHY 100Mbps FULL\n", argv[3]);
-				}
-				else if(strcmp(argv[3], "100h") == 0)
-				{
-					EthRxTxinit(1, 100, PHY_DUPLEX_HALF);
-					printf("input(%s) => set 1000PHY 100Mbps HALF\n", argv[3]);
-				}
-				else if(strcmp(argv[3], "10f") == 0)
-				{
-					EthRxTxinit(1, 10, PHY_DUPLEX_FULL);
-					printf("input(%s) => set 1000PHY 10Mbps FULL\n", argv[3]);
-				}
-				else if(strcmp(argv[3], "10h") == 0)
-				{
-					EthRxTxinit(1, 10, PHY_DUPLEX_HALF);
-					printf("input(%s) => set 1000PHY 10Mbps HALF\n", argv[3]);
-				}
-				else
-				{
-					Shell_Unknown();
-				}
-			}
-			else if(argc == 4 && strcmp(argv[2], "t100") == 0)
-			{
-				if(strcmp(argv[3], "100f") == 0)
-				{
-					EthRxTxinit(0, 100, PHY_DUPLEX_FULL);
-					printf("input(%s) => set 100PHY 100Mbps FULL\n", argv[3]);
-				}
-				else if(strcmp(argv[3], "100h") == 0)
-				{
-					EthRxTxinit(0, 100, PHY_DUPLEX_HALF);
-					printf("input(%s) => set 100PHY 100Mbps HALF\n", argv[3]);
-				}
-				else if(strcmp(argv[3], "10f") == 0)
-				{
-					EthRxTxinit(0, 10, PHY_DUPLEX_FULL);
-					printf("input(%s) => set 100PHY 10Mbps FULL\n", argv[3]);
-				}
-				else if(strcmp(argv[3], "10h") == 0)
-				{
-					EthRxTxinit(0, 10, PHY_DUPLEX_HALF);
-					printf("input(%s) => set 100PHY 10Mbps HALF\n", argv[3]);
-				}
-				else
-				{
-					Shell_Unknown();
-				}
-			}
+#if EN675_SINGLE
+			else if (argc >= 3 && strcmp(argv[2], "mc") == 0) {	eth_getset(ETH_MC_FILT_EN);	}
+			else if (argc >= 3 && strcmp(argv[2], "bc") == 0) {	eth_getset(ETH_BC_FILT_EN);	}
 #endif
-			else if (strcmp(argv[2], "mps") == 0) {		eth_getset(ETH_DSTMAC_BYP);	}
-			else if (strcmp(argv[2], "men") == 0) {		eth_getset(ETH_DSTMAC_EN);	}
-			else if (strcmp(argv[2], "mlist") == 0) {	EthRxFilterList();			}
+			else if (argc >= 3 && strcmp(argv[2], "mps") == 0) {	eth_getset(ETH_DSTMAC_BYP);	}
+			else if (argc >= 3 && strcmp(argv[2], "men") == 0) {	eth_getset(ETH_DSTMAC_EN);	}
+			else if (argc == 3 && strcmp(argv[2], "mlist") == 0) {	EthRxFilterList();			}
 			else if (argc == 9) {
 				BYTE arrMac[6];
 				arrMac[0] = strtol(argv[3], NULL, 16);
@@ -618,73 +556,17 @@ int cmd_test_eth(int argc, char *argv[])
 					ENX_OKFAIL ofRes = EthRxFilterDelete(arrMac);
 					printf("EthRxFilterDelete: (%s)\n", ofRes == ENX_OK ? "OK" : "FAIL");
 				}
-			}
 #if 0
-			else if(argc == 4 && strcmp(argv[2], "mufj") == 0)
-			{
-				err_t ert = IGMP_Join(argv[3]);
-				if(ert == ERR_OK)	printf("IGMP Join OK(%s)\n", argv[3]);
+			} else if (argc == 4 && strcmp(argv[2], "mufj") == 0) {
+				err_t ert = network_igmp_join(argv[3]);
+				if (ert == ENX_OK)	printf("IGMP Join OK(%s)\n", argv[3]);
 				else				printf("IGMP Join Error(%d)\n", ert);
-			}
-			else if(argc == 4 && strcmp(argv[2], "mufl") == 0)
-			{
-				err_t ert = IGMP_Leave(argv[3]);
-				if(ert == ERR_OK)	printf("IGMP Leave OK(%s)\n", argv[3]);
+			} else if (argc == 4 && strcmp(argv[2], "mufl") == 0) {
+				err_t ert = network_igmp_leave(argv[3]);
+				if (ert == ENX_OK)	printf("IGMP Leave OK(%s)\n", argv[3]);
 				else				printf("IGMP Leave Error(%d)\n", ert);
-			}
-			else if(argc == 3 && strcmp(argv[2], "muflist") == 0)
-			{
-				igmp_mac_filter_list();
-			}
 #endif
-			else if(argc == 5 && strcmp(argv[2], "mufvar") == 0)
-			{
-				UINT getValue = atoi(argv[3]);
-				UINT setValue = atoi(argv[4]);
-				printf("Set ETH_RX_MUL%dADR : %d\n", getValue, setValue);
-#if 0
-				switch(getValue)
-				{
-					case 0:		ETH_RX_MUL0ADR = setValue;		break;
-					case 1:		ETH_RX_MUL1ADR = setValue;		break;
-					case 2:		ETH_RX_MUL2ADR = setValue;		break;
-					case 3:		ETH_RX_MUL3ADR = setValue;		break;
-					case 4:		ETH_RX_MUL4ADR = setValue;		break;
-					case 5:		ETH_RX_MUL5ADR = setValue;		break;
-					case 6:		ETH_RX_MUL6ADR = setValue;		break;
-					case 7:		ETH_RX_MUL7ADR = setValue;		break;
-					case 8:		ETH_RX_MUL8ADR = setValue;		break;
-					case 9:		ETH_RX_MUL9ADR = setValue;		break;
-					case 10:	ETH_RX_MUL10ADR = setValue;		break;
-					case 11:	ETH_RX_MUL11ADR = setValue;		break;
-				}
-#endif
-			}
-			else if(argc == 5 && strcmp(argv[2], "mufsw") == 0)
-			{
-				UINT getValue = atoi(argv[3]);
-				UINT setValue = atoi(argv[4]);
-				printf("Set ETH_RX_MUL%dFILT : %d\n", getValue, setValue);
-#if 0
-				switch(getValue)
-				{
-					case 0:		ETH_RX_MUL0FILT = setValue;		break;
-					case 1:		ETH_RX_MUL1FILT = setValue;		break;
-					case 2:		ETH_RX_MUL2FILT = setValue;		break;
-					case 3:		ETH_RX_MUL3FILT = setValue;		break;
-					case 4:		ETH_RX_MUL4FILT = setValue;		break;
-					case 5:		ETH_RX_MUL5FILT = setValue;		break;
-					case 6:		ETH_RX_MUL6FILT = setValue;		break;
-					case 7:		ETH_RX_MUL7FILT = setValue;		break;
-					case 8:		ETH_RX_MUL8FILT = setValue;		break;
-					case 9:		ETH_RX_MUL9FILT = setValue;		break;
-					case 10:	ETH_RX_MUL10FILT = setValue;	break;
-					case 11:	ETH_RX_MUL11FILT = setValue;	break;
-				}
-#endif
-			}
-			else
-			{
+			} else {
 				Shell_Unknown();
 			}
 		}
@@ -840,7 +722,9 @@ int cmd_test_ethphyreg(int argc, char *argv[])
 		MdioRead(ethphy_info.addr, u32Reg, &u16Data);
 		EthphyRegView(u32Reg, u16Data);
 	} else {
-		if (strcmp("init", argv[1]) == 0) {
+		if (strcmp("reg", argv[1]) == 0) {
+			MdioRegShow(ENX_YES);
+		} else if (strcmp("init", argv[1]) == 0) {
 			EthphyInit(ETHPHY_MDIO_ADR, ethphy_test_irq);
 		} else if (strcmp("get", argv[1]) == 0) {
 #if 1
@@ -877,11 +761,6 @@ int cmd_test_ethphyreg(int argc, char *argv[])
 			printf("MDIO CLK: %uHz(%u)\n", u32GetClock, u32GetClklmt);
 		} else if (strcmp("reg0", argv[1]) == 0) {
 			//ETH_MDIO_REG0_T = atoi(argv[2]);
-		} else if (strcmp("show", argv[1]) == 0) {
-			//printf("ETH_MDIO_REG0_T: 0x%08X\n", ETH_MDIO_REG0_T);
-			printf("ETH_MDIO_RXEDGE: %u\n", ETH_MDIO_RXEDGE);
-			printf("ETH_MDIO_TXEDGE: %u\n", ETH_MDIO_TXEDGE);
-			printf("ETH_MDIO_RDLTC: %u\n", ETH_MDIO_RDLTC);
 		} else if (strcmp("rxe", argv[1]) == 0) {
 			ETH_MDIO_RXEDGE = atoi(argv[2]);
 			printf("ETH_MDIO_RXEDGE: %u\n", ETH_MDIO_RXEDGE);
@@ -891,13 +770,19 @@ int cmd_test_ethphyreg(int argc, char *argv[])
 		} else if (strcmp("ltc", argv[1]) == 0) {
 			ETH_MDIO_RDLTC = atoi(argv[2]);
 			printf("ETH_MDIO_RDLTC: %u\n", ETH_MDIO_RDLTC);
+#if EN675_SINGLE_NEW
+		} else if (strcmp("sync", argv[1]) == 0) {
+			ETH_MDIO_SYNC = atoi(argv[2]);
+			printf("ETH_MDIO_SYNC: %u\n", ETH_MDIO_SYNC);
+#endif
 		} else if (strcmp("loopstart", argv[1]) == 0) {
 			ethphy_test_task_key = 1;
 			vTaskCreate("ethphy_test", ethphy_test_task, NULL, LV3_STACK_SIZE, LV5_TASK_PRIO);
 		} else if (strcmp("loopstop", argv[1]) == 0) {
 			ethphy_test_task_key = 0;
 		} else {
-			u32Reg = atoi(argv[1]);
+			u32Reg = strtol(argv[1], NULL, 16);
+			printf("MDIO Register 0x%02X\n", u32Reg);
 			if (u32Reg > 31) {
 				Shell_Unknown();
 			} else {

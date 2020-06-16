@@ -154,3 +154,37 @@ void startLwip(void *arg)
 	vTaskDelete(NULL);
 	UNUSED(arg);
 }
+
+//*************************************************************************************************
+//
+//-------------------------------------------------------------------------------------------------
+// Option
+ENX_OKFAIL network_igmp_join(char *strIP)
+{
+	ip_addr_t groupaddr;
+    err_t err;
+
+    groupaddr.addr = ipaddr_addr(strIP);
+	printf("%s => 0x%08X\n", strIP, groupaddr.addr);
+	err = igmp_joingroup(IP_ADDR_ANY, (ip_addr_t *)&groupaddr);
+    if (err != ERR_OK) {
+        printf("%s(%d) : err(%d)\n", __func__, __LINE__, err);
+        return ENX_FAIL;
+    }
+	return ENX_OK;
+}
+
+ENX_OKFAIL network_igmp_leave(char *strIP)
+{
+	ip_addr_t groupaddr;
+    err_t err;
+
+    groupaddr.addr = ipaddr_addr(strIP);
+	printf("%s => 0x%08X\n", strIP, groupaddr.addr);
+	err = igmp_leavegroup(IP_ADDR_ANY, (ip_addr_t *)&groupaddr);
+    if (err != ERR_OK) {
+        printf("%s(%d) : err(%d)\n", __func__, __LINE__, err);
+        return ENX_FAIL;
+    }
+    return ENX_OK;
+}

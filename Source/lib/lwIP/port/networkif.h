@@ -85,7 +85,8 @@ extern void network_default_netif_get_ip(UINT *pIP);
 extern void network_interface_link(NETIFLIST iftype, ENX_SWITCH u32Switch);
 extern void network_interface_list(void);
 extern void startLwip(void *arg);
-
+extern ENX_OKFAIL network_igmp_join(char *strIP);
+extern ENX_OKFAIL network_igmp_leave(char *strIP);
 
 //-------------------------------------------------------------------------------------------------
 // Variable

@@ -25,7 +25,7 @@
 
 typedef struct {
 	UINT addr;		// MDIO Address(0~31)
-	UINT type;		// 1:10/100, 2:1000
+	UINT type;		// 1:RGMII 2:MII 3:RMII
 	UINT speed;		// 10, 100, 1000
 	UINT duplex;	// 1:half, 2:full
 } EthphyInfo;

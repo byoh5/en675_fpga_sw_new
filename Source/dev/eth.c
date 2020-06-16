@@ -10,6 +10,20 @@ static _ETH_DSTMAC2 * const arrDSTMAC_L[ETH_RXFILTER_CNT+1] = {(_ETH_DSTMAC2 *)(
 ISRD static tIhnd hETHERNETTXIrq;
 ISRD static tIhnd hETHERNETRXIrq;
 
+void MdioInit(UINT Speed_Hz)
+{
+	ETH_MDIO_RXEDGE = 1;
+	ETH_MDIO_TXEDGE = 0;
+	ETH_MDIO_RDLTC = 1;
+#if EN675_SINGLE_NEW
+	ETH_MDIO_SYNC = 2;
+#endif
+
+	MdioSetClk(Speed_Hz);
+
+	ENX_DEBUGF(DBG_MDIO_STATUS, "MDIO Init - %s%uHz%s\n", TTY_COLOR_GREEN, MdioGetClk(), TTY_COLOR_RESET);
+}
+
 void MdioRead(BYTE PhyAdr, BYTE RegAdr, WORD *RdDat)
 {
 	ETH_MDIO_OPCODE = 2;
@@ -57,22 +71,61 @@ UINT MdioGetClk(void)
 	return APB_FREQ / ((ETH_MDIO_CLKLMT + 1) * 2);
 }
 
-void MdioInit(UINT Speed_Hz)
+void MdioSetSync(UINT Sync)
 {
-	ETH_MDIO_RXEDGE = 1;
-	ETH_MDIO_TXEDGE = 0;
-	ETH_MDIO_RDLTC = 1;
+#if EN675_SINGLE_NEW
+	ETH_MDIO_SYNC = Sync;
+#endif
+}
 
-	MdioSetClk(Speed_Hz);
+UINT MdioGetSync(void)
+{
+#if EN675_SINGLE_NEW
+	return ETH_MDIO_SYNC;
+#endif
+}
 
-	ENX_DEBUGF(DBG_MDIO_STATUS, "MDIO Init - %s%uHz%s\n", TTY_COLOR_GREEN, MdioGetClk(), TTY_COLOR_RESET);
+void MdioRegShow(ENX_YN isDetail)
+{
+	_Cprintf("MDIO Register View\n");
+	printf("========================================\n");
+	if (isDetail == ENX_YES) {
+		_Yprintf(" 0:0x%08X\n", _cm(REG_BASE_ETH, 0));
+		printf("   %-20s: %u\n", "RXEDGE", ETH_MDIO_RXEDGE);
+		printf("   %-20s: %u\n", "TXEDGE", ETH_MDIO_TXEDGE);
+		printf("   %-20s: %u\n", "RDLTC", ETH_MDIO_RDLTC);
+#if EN675_SINGLE_NEW
+		printf("   %-20s: %u\n", "SYNC", ETH_MDIO_SYNC);
+#endif
+		printf("   %-20s: 0x%02X\n", "GAPLMT", ETH_MDIO_GAPLMT);
+		printf("   %-20s: 0x%02X\n", "CLKLMT", ETH_MDIO_CLKLMT);
+		_Yprintf(" 1:0x%08X\n", _cm(REG_BASE_ETH, 1));
+		printf("   %-20s: %s\n", "OPCODE", ETH_MDIO_OPCODE == 1 ? "Write" : ETH_MDIO_OPCODE == 2 ? "Read" : "Error");
+		printf("   %-20s: 0x%02X\n", "PHYADR", ETH_MDIO_PHYADR);
+		printf("   %-20s: 0x%02X\n", "REGADR", ETH_MDIO_REGADR);
+		printf("   %-20s: %u\n", "REQ", ETH_MDIO_REQ);
+		_Yprintf(" 2:0x%08X\n", _cm(REG_BASE_ETH, 2));
+		printf("   %-20s: 0x%04X\n", "TXDAT", ETH_MDIO_TXDAT);
+		printf("   %-20s: 0x%04X\n", "RXDAT", ETH_MDIO_RXDAT);
+	} else {
+		printf("MDIO  0:0x%08X  1:0x%08X  2:0x%08X\n", _cm(REG_BASE_ETH, 0), _cm(REG_BASE_ETH, 1), _cm(REG_BASE_ETH, 2));
+	}
+	printf("========================================\n");
 }
 
 void EthInit(void)
 {
-	ETH_PIN_INIT;
+#if (ETHPHY_TYPE_VAL==1)
+	ETH_PIN_RGMII_INIT;
+#elif (ETHPHY_TYPE_VAL==2)
+	ETH_PIN_MII_INIT;
+#elif (ETHPHY_TYPE_VAL==3)
+	ETH_PIN_RMII_INIT;
+#else
+#error "Error ETHPHY_TYPE_VAL"
+#endif
 
-#if EN675_SINGLE // init
+#if EN675_SINGLE
 	EthSetTxClockPowerEn(ENX_ON);
 	EthSetRxClockPowerEn(ENX_ON);
 #endif
@@ -83,6 +136,10 @@ void EthInit(void)
 	ETH_RX_CRC_EN = 1;
 	ETH_RX_ERR_EN = 1;
 	ETH_DSTMAC_BYP = 0;
+#if EN675_SINGLE
+	ETH_BC_FILT_EN = 1;
+	ETH_MC_FILT_EN = 0;
+#endif
 
 	hETHERNETTXIrq.irqfn = NULL;
 	hETHERNETTXIrq.arg = NULL;
@@ -182,12 +239,9 @@ void EthTxPacket(BYTE *addr, UINT Len)
 {
 	ETH_TX_ADR = (intptr_t)addr;
 	ETH_TX_LEN = Len;
-	while (ETH_TX_FULL) {
-		if (ETH_TX_PAUSE) {
-			printf("p");
-		}
+	while (ETH_TX_FULL || ETH_TX_PAUSE) {
+		printf("f");
 	}
-//	UartTx(7, 'O');
 	ETH_TX_VAL = 1;
 }
 
@@ -216,6 +270,11 @@ void EthSetTxDly(BYTE u8TXEN, BYTE u8TXD)
 void EthRxTxInit(UINT type, UINT speed, UINT duplex)
 {
 	switch (type) {
+	////////////////////////////////////////////////////////////////////////////////
+	//                                                                            //
+	// RGMII Setting                                                              //
+	//                                                                            //
+	////////////////////////////////////////////////////////////////////////////////
 	case ETHPHY_TYPE_RGMII:
 
 		switch (duplex) {
@@ -252,49 +311,12 @@ void EthRxTxInit(UINT type, UINT speed, UINT duplex)
 		// Edge & Delay
 		// eth lbm 1000 2
 		// eth lbt 1000
-#if 1 // 200303(JHJ)/VU/bit
-		EthSetRxTxClockDly(0, 0x3, 0, 0x1);
-#elif 1 // 200217(MJS)/mcs
+		// 200615(C)
 		if (speed == ETHPHY_SPD_1000) {
-			EthSetRxTxClockDly(1, 0xB, 0, 0x2);
+			EthSetRxTxClockDly(0, 0x3, 0, 0x9);
 		} else {
-			EthSetRxTxClockDly(1, 0x1, 1, 0xC);
+			EthSetRxTxClockDly(0, 0x3, 0, 0x1);
 		}
-#elif 1 // 200130(S)/mcs
-		if (speed == ETHPHY_SPD_1000) {
-			ETH_TX_CLKEDGE = 1;
-			ETH_TX_TCKDLY = 0xC;
-			ETH_RX_RCKEDGE = 0;
-			ETH_RX_RCKDLY = 0xC;
-		} else {
-			ETH_TX_CLKEDGE = 1;
-			ETH_TX_TCKDLY = 0x1;
-			ETH_RX_RCKEDGE = 1;
-			ETH_RX_RCKDLY = 0xC;
-		}
-#elif 1 // 200128(S)/mcs
-		ETH_TX_CLKEDGE = 0;
-		ETH_TX_TCKDLY = 0x4;
-		ETH_RX_RCKEDGE = 0;
-		ETH_RX_RCKDLY = 0x3;
-#elif 0 // 200108(S)
-		ETH_TX_CLKEDGE = 0;
-		ETH_TX_TCKDLY = 0x0;
-		ETH_RX_RCKEDGE = 0;
-		ETH_RX_RCKDLY = 0xC;
-#else // 200118(JHJ)
-		if (speed == ETHPHY_SPD_1000) {
-			ETH_TX_CLKEDGE = 1;
-			ETH_TX_TCKDLY = 0x0;
-			ETH_RX_RCKEDGE = 1;
-			ETH_RX_RCKDLY = 0xB;
-		} else {
-			ETH_TX_CLKEDGE = 1;
-			ETH_TX_TCKDLY = 0x0;
-			ETH_RX_RCKEDGE = 0;
-			ETH_RX_RCKDLY = 0x3;
-		}
-#endif
 
 		EthSetTxDly(0, 0);
 
@@ -328,6 +350,11 @@ void EthRxTxInit(UINT type, UINT speed, UINT duplex)
 
 		break;
 
+	////////////////////////////////////////////////////////////////////////////////
+	//                                                                            //
+	// MII Setting                                                                //
+	//                                                                            //
+	////////////////////////////////////////////////////////////////////////////////
 	case ETHPHY_TYPE_MII:
 		switch (duplex) {
 		case ETHPHY_DUPLEX_HALF:
@@ -370,11 +397,13 @@ void EthRxTxInit(UINT type, UINT speed, UINT duplex)
 
 		break;
 
+	////////////////////////////////////////////////////////////////////////////////
+	//                                                                            //
+	// RMII Setting                                                               //
+	//                                                                            //
+	////////////////////////////////////////////////////////////////////////////////
 	case ETHPHY_TYPE_RMII:
 
-
-
-#if 1
 		ETH_TX_DATBIT	= 0;	// 0: 2bit
 		ETH_TX_DATTYPE	= 0;	// 0: SDR
 		ETH_TX_CLKOE	= 0;	// 0: ETH_TCK-IN
@@ -407,38 +436,6 @@ void EthRxTxInit(UINT type, UINT speed, UINT duplex)
 		}
 
 		ETH_TX_COLSEL = 1;		// 1: Internal generated COL signal (RMII, RGMII)
-#else
-		ETH_TX_COLEN		= 0;	//
-		switch (duplex) {
-		case ETHPHY_DUPLEX_HALF:
-			ETH_TX_CRSCHK	= 1;	// ok
-			ETH_TX_COLCHK	= 1;	// ok
-			ETH_TX_COLSEL	= 1;	// ????
-			break;
-		case ETHPHY_DUPLEX_FULL:
-			ETH_TX_CRSCHK	= 0;	// ok
-			ETH_TX_COLCHK	= 0;	// ok
-			ETH_TX_COLSEL	= 0;	// ?????
-			break;
-		}
-		switch (speed) {
-		case ETHPHY_SPD_10:
-			ETH_RX_RMII10	= 1;	// ??
-			ETH_TX_RMII10	= 1;	// ??
-			break;
-		case ETHPHY_SPD_100:
-			ETH_RX_RMII10	= 0;	// ??
-			ETH_TX_RMII10	= 0;	// ??
-			break;
-		}
-		ETH_RX_ERTYPE		= 2;	//
-		ETH_RX_DATTYPE		= 2;	// => 2
-		ETH_TX_DATTYPE		= 0;	// => 1
-		ETH_TX_DATBIT		= 0;	// => 1
-		ETH_TX_CLKOE		= 0;	// ok
-		ETH_TX_CLKSEL		= 1;	// ok
-		ETH_TX_IFGGAP		= 22;	//
-#endif
 
 		// Edge & Delay
 		ETH_TX_CLKEDGE		= 1;
@@ -461,6 +458,28 @@ void EthRxTxInit(UINT type, UINT speed, UINT duplex)
 		break;
 	}
 }
+
+#if EN675_SINGLE
+void EthSetMCFilterEn(ENX_SWITCH sw)
+{
+	ETH_MC_FILT_EN = (sw == ENX_ON ? 0 : 1);
+}
+
+ENX_SWITCH EthGetMCFilterEn(void)
+{
+	return ETH_MC_FILT_EN == 0 ? ENX_ON : ENX_OFF;
+}
+
+void EthSetBCFilterEn(ENX_SWITCH sw)
+{
+	ETH_BC_FILT_EN = (sw == ENX_ON ? 0 : 1);
+}
+
+ENX_SWITCH EthGetBCFilterEn(void)
+{
+	return ETH_BC_FILT_EN == 0 ? ENX_ON : ENX_OFF;
+}
+#endif
 
 void EthSetRxFilterEn(ENX_SWITCH sw)
 {

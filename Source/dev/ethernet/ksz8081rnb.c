@@ -201,7 +201,7 @@ void EthphyAutoNeg(ETHERNETIF_AUTONEGO autonego)
 	switch (autonego) {
 	case ENIF_AUTO_NEGOTIATION:
 		MdioRead(ethphy_info.addr, ETHPHY_ANAR_ADR, &wANAR);	// Auto-Negotiation Advertisement: Read
-#if 1 // (ETH_MAC_PAUSE)
+#if (ETH_MAC_PAUSE)
 		wANAR |= ETHPHY_ANAR_SY_PAUSE;							// Auto-Negotiation Advertisement: Enable symmetric pause
 		wANAR &= ~ETHPHY_ANAR_ASY_PAUSE;						// Auto-Negotiation Advertisement: Disable asymmetric pause
 #endif

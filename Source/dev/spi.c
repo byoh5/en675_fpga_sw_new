@@ -65,6 +65,21 @@ void SpiDeinit(UINT nCH)
 	}
 }
 
+void SpiSetTxdata(UINT nCH, UINT data)
+{
+	arrSPITX[nCH]->TX_DAT = data;
+}
+
+UINT SpiGetTxdata(UINT nCH)
+{
+	return arrSPITX[nCH]->TX_DAT;
+}
+
+UINT SpiGetRxdata(UINT nCH)
+{
+	return arrSPIRX[nCH]->RX_DAT;
+}
+
 void SpiSetEn(UINT nCH, ENX_SWITCH sw)
 {
 	arrSPI[nCH]->EN = sw;
@@ -152,6 +167,26 @@ SPI_CSMODE SpiGetCs(UINT nCH)
 	return arrSPI[nCH]->CS_MODE;
 }
 
+void SpiSetRW(UINT nCH, SPI_RWMODE rw)
+{
+	arrSPI[nCH]->RW = rw;
+}
+
+SPI_RWMODE SpiGetRW(UINT nCH)
+{
+	return arrSPI[nCH]->RW;
+}
+
+void SpiSetGo(UINT nCH, UINT go)
+{
+	arrSPI[nCH]->GO = go;
+}
+
+UINT SpiGetGo(UINT nCH)
+{
+	return arrSPI[nCH]->GO;
+}
+
 void SpiWrite8b(UINT nCH, BYTE *dat)
 {
 	arrSPITX[nCH]->TX_DAT = ((UINT)(*dat));
@@ -187,11 +222,6 @@ void SpiWrite32b(UINT nCH, BYTE *dat)
 	arrSPI[nCH]->GO = 1;
 	while (arrSPI[nCH]->GO);
 }
-
-
-
-
-
 
 void SpiWrite(UINT nCH, BYTE *dat)
 {

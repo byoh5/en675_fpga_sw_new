@@ -188,6 +188,7 @@ tMonCmd gCmdList[] =
 	{"mdio",		cmd_test_ethphyreg, sEthphyRegTest	},
 #endif
 	{"video",		cmd_test_video,		sTestVideoCmd	},
+	{"audio",		cmd_test_audio,		sTestAudioCmd	},
 	{"jpeg",		cmd_test_jpeg,		sTestJpegCmd	},
 	{"isp",			cmd_isp,			sIspCmd			},
 	{0,				0,					0				}
@@ -409,75 +410,6 @@ int UsrCmd_f(int argc, char *argv[])
 
 int UsrCmd_g(int argc, char *argv[])
 {
-#if 1
-	BYTE *abc = pvPortMalloc(1000000);
-
-	ULONG a = BenchTimeStart();
-	for (UINT i = 999999; i != 0; i--) {
-		abc[i] = i % 2 ? 0xaa : 0x55;
-	}
-	abc[0] = 0xaa;
-	ULONG b = BenchTimeStop(a);
-	printf("TestA: %lu\n", b);
-
-	for (UINT i = 0; i < 1000000; i++) {
-		abc[i] = i % 2 ? 0xaa : 0x55;
-	}
-	printf("TestB: %lu\n", b);
-
-	a = BenchTimeStart();
-	for (UINT i = 999999; i != 0; i--) {
-		abc[i] = i % 2 ? 0xaa : 0x55;
-	}
-	abc[0] = 0xaa;
-	b = BenchTimeStop(a);
-	printf("TestA: %lu\n", b);
-
-	for (UINT i = 0; i < 1000000; i++) {
-		abc[i] = i % 2 ? 0xaa : 0x55;
-	}
-	printf("TestB: %lu\n", b);
-
-
-
-#endif
-#if 0
-#undef printf
-
-	char buf[8];
-	snprintf(buf, 8, "test");
-
-//	void *ctx = getbuf(stdout);
-//	_printf("0x%08X\n", (intptr_t)ctx);
-
-	BYTE *tt = pvPortMalloc(1024);
-
-	_REENT->_stdout->_write;
-
-	printf("0x%08X\n", (intptr_t)_REENT);
-
-	setbuf(stdout, NULL);
-
-	char test[64] = {0};
-	for(int i = 0 ; i < 49; i++) {
-		test[i] = rand() % 26 + 'A';
-	}
-
-	ULONG a, cnt, b;
-
-	cnt = _printf("%s\n", test);
-	cnt = printf("%s\n", test);
-
-	a = BenchTimeStart();
-	cnt = _printf("%s\n", test);
-	b = BenchTimeStop(a);
-	printf("output:%uus, cnt(%u)\n", b, cnt);
-
-	a = BenchTimeStart();
-	cnt = printf("%s\n", test);
-	b = BenchTimeStop(a);
-	printf("output:%uus, cnt(%u)\n", b, cnt);
-#endif
 	return 0;
 	UNUSED(argc);
 	UNUSED(argv);
@@ -781,8 +713,18 @@ int UsrCmd_j(int argc, char *argv[])
 
 #if 1
 	if (argc == 1) {
-		WdtInit(10000);
+
 	} else {
+		if (strcmp("wdtapb", argv[1]) == 0) {
+			printf("WDT APB start\n");
+			WdtInit(10000);
+		} else
+#if EN675_SINGLE
+		if (strcmp("wdtosc", argv[1]) == 0) {
+			printf("WDT OSC start\n");
+			WdtoscInit(10000);
+		} else
+#endif
 		if (strcmp("dma", argv[1]) == 0) {
 			SYS_REG5 = 0x10;
 		} else if (strcmp("eth", argv[1]) == 0) {
@@ -1040,11 +982,16 @@ int cmd_info(int argc, char *argv[])
 		tCodeMemInfo *pCodeMemInfo = (tCodeMemInfo *)pBinary;	// Get code memory information
 		PRINT_CODE_MEM_INFO("Core", 0);
 	} else {
+		char strBuf[64] = {0};
 		_Gprintf("H/W info ===================================\n");
-		printf("APB Clock             : %ukHz\n", APB_FREQ / 1000);
-		printf("AXI Clock             : %ukHz\n", AXI_FREQ / 1000);
-		printf("CPU Clock             : %ukHz\n", CPU_FREQ / 1000);
-		printf("ISP Clock             : %ukHz\n", 0);
+		snprintf(strBuf, 64, "%.2f", 0.0f);
+		printf("ISP Clock             : %sMHz\n", strBuf);
+		snprintf(strBuf, 64, "%.2f", CPU_FREQ / 1000.0 / 1000.0);
+		printf("CPU Clock             : %sMHz\n", strBuf);
+		snprintf(strBuf, 64, "%.2f", AXI_FREQ / 1000.0 / 1000.0);
+		printf("AXI Clock             : %sMHz\n", strBuf);
+		snprintf(strBuf, 64, "%.2f", APB_FREQ / 1000.0 / 1000.0);
+		printf("APB Clock             : %sMHz\n", strBuf);
 
 		UINT arrMark[5];
 		arrMark[0] = SYS_MARK0;
@@ -1059,21 +1006,21 @@ int cmd_info(int argc, char *argv[])
 		}
 		printf("]\n");
 #if EN675_SINGLE
-		printf("Model date            : %04X-%02X-%02X %02X:%02X:%02X\n", SYS_RTL_YEAR, SYS_RTL_MONTH, SYS_RTL_DAY, SYS_RTL_HOUR, SYS_RTL_MIN, SYS_RTL_SEC);
+		printf("Model date            : %04u-%02u-%02u %02u:%02u:%02u\n", SYS_RTL_YEAR + 2000, SYS_RTL_MONTH, SYS_RTL_DAY, SYS_RTL_HOUR, SYS_RTL_MIN, SYS_RTL_SEC);
 #else
 		printf("Model date            : %04X-%02X-%02X %02X:%02X:%02X\n", SYS_RTL_YEAR, SYS_RTL_MONTH, SYS_RTL_DAY, SYS_RTL_HOUR, SYS_RTL_MINUTE, SYS_RTL_SECOND);
 #endif
 
 		_Gprintf("S/W info ===================================\n");
 		printf("Firmware compile date : %s %s\n", __DATE__, __TIME__);
-		printf("EN675 Firmware Ver    : %X.%X.%X\n", EN675_FW_VERSION_MAJOR, EN675_FW_VERSION_MINOR, EN675_FW_VERSION_PATCH);
-		printf("freeRTOS Ver          : %s\n", FreeRTOSVer);
-	#ifdef __NETWORK__
+		printf("EN675 Firmware Ver    : %u.%u.%u\n", EN675_FW_VERSION_MAJOR, EN675_FW_VERSION_MINOR, EN675_FW_VERSION_PATCH);
+		printf("freeRTOS Ver          : %u.%u.%u\n", tskKERNEL_VERSION_MAJOR, tskKERNEL_VERSION_MINOR, tskKERNEL_VERSION_BUILD);
+#ifdef __NETWORK__
 		 printf("lwIP Ver              : %s\n", LWIP_VERSION_STRING);
-	#endif
-	#ifdef __FILESYSTEM__
+#endif
+#ifdef __FILESYSTEM__
 		 printf("FatFS Ver             : %u.%u%c patch%u\n", FATFS_VERSION_MAJOR, FATFS_VERSION_MINOR, FATFS_VERSION_REVISION, FATFS_VERSION_RC);
-	#endif
+#endif
 
 		_Gprintf("Status info ================================\n");
 		size_t dc = rdcycle();
@@ -1253,6 +1200,7 @@ void testTimer_irq(void *ctx)
 			tts->index++;
 			tts->count = 0;
 			if (tts->index > 38) {
+				ttsTest.index = -1;
 				printf("Timer Auto Test End!\n");
 			} else {
 				TimerSetFreq(tts->index, tts->reg_div, tts->reg_lmt, tts->reg_trig);
@@ -1374,11 +1322,30 @@ int cmd_perl_timer(int argc, char *argv[])
 
 int cmd_reboot(int argc, char *argv[])
 {
+#if EN675_SINGLE
+//	WdtoscWaitReboot(3000);
+
+	if (argc == 2) {
+		if (strcmp(argv[1], "1") == 0) {
+			WDT_OSC_LMT = OSC_FREQ;
+			WDT_OSC_EN = 1;
+		} else if (strcmp(argv[1], "2") == 0) {
+			SYS_WDT_LMT = OSC_FREQ;
+			SYS_WDT_EN = 1;
+		}
+		while(1) {
+			printf(".");
+		}
+	} else {
+		WdtoscWaitReboot(3000);
+	}
+#else
 #if 1
 	WdtWaitReboot(3000);
 #else
 	WdtInit(0);
 	while(1);
+#endif
 #endif
 	return 0;
 	UNUSED(argc);
@@ -1549,113 +1516,142 @@ int cmd_test_dump(int argc, char *argv[])
 }
 
 #if defined(__AUDIO__)
+static void i2s_status_print(char *title, char *cmd1, char *cmd2, UINT type, UINT val, char *text_type[4], int end)
+{
+	if (cmd1 == NULL) {
+		printf(" %-12s         : ", title);
+	} else {
+		printf(" %-12s(%-2s %-3s) : ", title, cmd1, cmd2);
+	}
+
+	if (type == 16) {
+		printf("0x%-13X", val);
+	} else if (type == 10) {
+		printf("%-15u", val);
+	} else if (type == 0xff) {
+		printf("%u(%-12s)", val, text_type[val]);
+	}
+
+	if (end == 1) {
+		printf("\n");
+	} else if (end == 2) {
+		printf("|\n");
+	} else {
+		printf("|");
+	}
+}
+
+#define i2s_getset(val)	{if (argc == 4) { val = u32SetData; } u32GetData = val;}
+
 #include "audtxrx.h"
 int cmd_test_i2s(int argc, char *argv[])
 {
-	UINT u32GetData = 0;
-	if (argc > 2) {
-		u32GetData = atoi(argv[2]);
-	}
-	if (argc == 2 || argc == 3) {
-		if (argc == 3) {
-			printf("Set Input: %s, Value: %u\n", argv[1], u32GetData);
-		} else {
-			printf("Get Input: %s\n", argv[1]);
+	if (argc == 1) {
+		printf("== I2S State ===================================================================\r\n");
+		tlv320aic3206_print_name();
+		printf("== Common State ================================================================\r\n");
+#if EN675_SINGLE
+		i2s_status_print("PD", "ct", "pd", 10, I2S_PD, NULL, 0);
+#endif
+		i2s_status_print("MODE", "ct", "mod", 0xff, I2S_MODE, ((char*[4]){"Slave mode", "Master mode", "error", "error"}), 1);
+		i2s_status_print("BYTE", "ct", "byt", 0xff, I2S_BYTE, ((char*[4]){"8byte", "16byte", "24byte", "32byte"}), 0);				i2s_status_print("SCKCNT", "ct", "sck", 10, I2S_SCKCNT, NULL, 1);
+		printf("== TX State ===========================|== RX State ============================\r\n");
+		i2s_status_print("TXEN", "tx", "en", 10, I2S_TXEN, NULL, 0);																i2s_status_print("RXEN", "rx", "en", 10, I2S_RXEN, NULL, 1);
+		i2s_status_print("ADDR", "tx", "adr", 16, I2S_ADRR, NULL, 0);																i2s_status_print("ADRW", "rx", "adr", 16, I2S_ADRW, NULL, 1);
+		i2s_status_print("TX_ADDR", NULL, NULL, 16, I2S_TX_ADDR, NULL, 0);															i2s_status_print("RX_ADDR", NULL, NULL, 16, I2S_RX_ADDR, NULL, 1);
+		i2s_status_print("RDBYTE", "tx", "rdb", 0xff, I2S_RDBYTE, ((char*[4]){"128byte", "256byte", "512byte", "1024byte"}), 0);	i2s_status_print("WRBYTE", "rx", "wrb", 0xff, I2S_WRBYTE, ((char*[4]){"128byte", "256byte", "512byte", "1024byte"}), 1);
+		i2s_status_print("TXEDN", "tx", "edn", 0xff, I2S_TXEDN, ((char*[4]){"Big-endian", "Little-endian", "error", "error"}), 0);	i2s_status_print("RXEDN", "rx", "edn", 0xff, I2S_RXEDN, ((char*[4]){"Big-endian", "Little-endian", "error", "error"}), 1);
+		i2s_status_print("TXCODEC", "tx", "cd", 0xff, I2S_TXCODEC, ((char*[4]){"PCM", "PCM", "G711-A", "G711-u"}), 0);				i2s_status_print("RXCODEC", "rx", "cd", 0xff, I2S_RXCODEC, ((char*[4]){"PCM", "PCM", "G711-A", "G711-u"}), 1);
+		i2s_status_print("RDDW", "tx", "rdw", 0xff, I2S_RDDW, ((char*[4]){"8bit", "16bit", "24bit", "32bit"}), 0);					i2s_status_print("WRDW", "rx", "wdw", 0xff, I2S_RXDW, ((char*[4]){"8bit", "16bit", "24bit", "32bit"}), 1);
+		i2s_status_print("TXDW", "tx", "tdw", 0xff, I2S_TXDW, ((char*[4]){"8bit", "16bit", "24bit", "32bit"}), 0);					i2s_status_print("RXDW", "rx", "rdw", 0xff, I2S_WRDW, ((char*[4]){"8bit", "16bit", "24bit", "32bit"}), 1);
+		i2s_status_print("TXMODE", "tx", "md", 0xff, I2S_TXMODE, ((char*[4]){"Left", "Right", "(L+R)/2", "Stereo"}), 0);			i2s_status_print("RXMODE", "rx", "md", 0xff, I2S_RXMODE, ((char*[4]){"Left", "Right", "(L+R)/2", "Stereo"}), 1);
+		i2s_status_print("RXLEN", "tx", "rdl", 0xff, I2S_RDLEN, ((char*[4]){"128KB", "256KB", "512KB", "1024KB"}), 0);				i2s_status_print("WRLEN", "rx", "wrl", 0xff, I2S_WRLEN, ((char*[4]){"128KB", "256KB", "512KB", "1024KB"}), 1);
+		i2s_status_print("TXLR", "tx", "lr", 0xff, I2S_TXLR, ((char*[4]){"Mute", "Left", "Right", "Both"}), 2);
+#if EN675_SINGLE
+		printf("== TX-Plat State ===============================================================\r\n");
+		i2s_status_print("PLAT_TXEN", "tx", "pen", 10, I2S_PLAT_TXEN, NULL, 0);														i2s_status_print("PLAT_LENGTH", "tx", "psz", 10, I2S_PLAT_LENGTH, NULL, 1);
+		i2s_status_print("PLAT_MODE", "tx", "pmd", 0xff, I2S_PLAT_MODE, ((char*[4]){"Loop", "One-shot", "error", "error"}), 2);
+		i2s_status_print("PLAT_IRQ_1", "tx", "pwr", 10, I2S_PLAT_IRQ_BUF_WR, NULL, 0);												i2s_status_print("PLAT_IRQ_2", "tx", "prd", 10, I2S_PLAT_IRQ_BUF_RD, NULL, 1);
+		i2s_status_print("PLAT_IRQ_3", "tx", "plw", 10, I2S_PLAT_IRQ_LAST_WORD, NULL, 0);											i2s_status_print("PLAT_IRQ_4", "tx", "pfn", 10, I2S_PLAT_IRQ_FINISH, NULL, 1);
+//		i2s_status_print("I2S_PLAT_IRQ_UP", "tx", "pup", 10, I2S_PLAT_IRQ_UP, NULL, 0);												i2s_status_print("I2S_PLAT_IRQ_DOWN", "tx", "pdn", 10, I2S_PLAT_IRQ_DOWN, NULL, 1);
+//		i2s_status_print("I2S_PLAT_IRQ_DOWN1", "tx", "pd1", 10, I2S_PLAT_IRQ_DOWN1, NULL, 0);										i2s_status_print("I2S_PLAT_IRQ_DOWN2", "tx", "pd2", 10, I2S_PLAT_IRQ_DOWN2, NULL, 1);
+#endif
+		printf("== IRQ state ===================================================================\r\n");
+		i2s_status_print("TX_IRQ_EN", "tx", "irq", 10, I2S_TX_IRQ_EN, NULL, 0);														i2s_status_print("RX_IRQ_EN", "rx", "irq", 10, I2S_RX_IRQ_EN, NULL, 1);
+		i2s_status_print("TX_IRQ", NULL, NULL, 10, I2S_TX_IRQ, NULL, 0);															i2s_status_print("RX_IRQ", NULL, NULL, 10, I2S_RX_IRQ, NULL, 1);
+		printf("== AUD Pool ====================================================================\r\n");
+		i2s_status_print("TX NEW POS", NULL, NULL, 16, audpool.audtx_now_pos, NULL, 0);												i2s_status_print("RX NEW POS", NULL, NULL, 16, audpool.audrx_now_pos, NULL, 1);
+		i2s_status_print("TX IRQ COUNT", NULL, NULL, 10, audpool.audtx_irq_count, NULL, 0);											i2s_status_print("RX IRQ COUNT", NULL, NULL, 10, audpool.audrx_irq_count, NULL, 1);
+		printf("================================================================================\r\n");
+
+#if EN675_SINGLE
+	} else if (strcmp(argv[1], "pt") == 0) {
+		I2S_PLAT_IRQ_T = 0xffffffff;
+		I2S_PLAT_IRQ_UP = 0x0;
+		I2S_PLAT_IRQ_DOWN2 = 0x0;
+#endif
+	} else if (argc == 3 || argc == 4) {
+		UINT u32GetData = 0, u32SetData = 0, bErr = 0;
+		if (argc > 3) {
+			u32SetData = atoi(argv[3]);
 		}
 
-		if (strcmp("sw", argv[1]) == 0) {
-			if (argc == 3) {
-				I2sSetRxEn(u32GetData);
-				I2sSetTxEn(u32GetData);
-			}
-			u32GetData = I2sGetRxEn();
-		} else if (strcmp("rxen", argv[1]) == 0) {
-			if (argc == 3) {
-				I2sSetRxEn(u32GetData);
-			}
-			u32GetData = I2sGetRxEn();
-		} else if (strcmp("txen", argv[1]) == 0) {
-			if (argc == 3) {
-				I2sSetTxEn(u32GetData);
-			}
-			u32GetData = I2sGetTxEn();
-		} else if (strcmp("txmode", argv[1]) == 0) {
-			if (argc == 3) {
-				I2sSetTxMode(u32GetData);
-			}
-			u32GetData = I2sGetTxMode();
-		} else if (strcmp("txcodec", argv[1]) == 0) {
-			if (argc == 3) {
-				I2sSetTxCodec(u32GetData);
-			}
-			u32GetData = I2sGetTxCodec();
-		} else if (strcmp("txdw", argv[1]) == 0) {
-			if (argc == 3) {
-				I2sSetTxDw(u32GetData);
-			}
-			u32GetData = I2sGetTxDw();
-		} else if (strcmp("rdbyte", argv[1]) == 0) {
-			if (argc == 3) {
-				I2sSetRdByte(u32GetData);
-			}
-			u32GetData = I2sGetRdByte();
-		} else if (strcmp("rddw", argv[1]) == 0) {
-			if (argc == 3) {
-				I2sSetRdDw(u32GetData);
-			}
-			u32GetData = I2sGetRdDw();
-		} else if (strcmp("rdlen", argv[1]) == 0) {
-			if (argc == 3) {
-				I2sSetRdLen(u32GetData);
-			}
-			u32GetData = I2sGetRdLen();
-		} else if (strcmp("txlr", argv[1]) == 0) {
-			if (argc == 3) {
-				I2sSetTxLr(u32GetData);
-			}
-			u32GetData = I2sGetTxLr();
-		} else if (strcmp("rxmode", argv[1]) == 0) {
-			if (argc == 3) {
-				I2sSetRxMode(u32GetData);
-			}
-			u32GetData = I2sGetRxMode();
-		} else if (strcmp("rxcodec", argv[1]) == 0) {
-			if (argc == 3) {
-				I2sSetRxCodec(u32GetData);
-			}
-			u32GetData = I2sGetRxCodec();
-		} else if (strcmp("rxdw", argv[1]) == 0) {
-			if (argc == 3) {
-				I2sSetRxDw(u32GetData);
-			}
-			u32GetData = I2sGetRxDw();
-		} else if (strcmp("wrbyte", argv[1]) == 0) {
-			if (argc == 3) {
-				I2sSetWrByte(u32GetData);
-			}
-			u32GetData = I2sGetWrByte();
-		} else if (strcmp("wrdw", argv[1]) == 0) {
-			if (argc == 3) {
-				I2sSetWrDw(u32GetData);
-			}
-			u32GetData = I2sGetWrDw();
-		} else if (strcmp("wrlen", argv[1]) == 0) {
-			if (argc == 3) {
-				I2sSetWrLen(u32GetData);
-			}
-			u32GetData = I2sGetWrLen();
-		} else if (strcmp("txrxmode", argv[1]) == 0) {
-			if (argc == 3) {
-				I2sSetTxMode(u32GetData);
-				I2sSetRxMode(u32GetData);
-			}
-			u32GetData = I2sGetTxMode();
-			printf("%s : TX:%u\n", argv[1], u32GetData);
-			u32GetData = I2sGetRxMode();
-			printf("%s : RX:%u\n", argv[1], u32GetData);
-			return 0;
+		if (strcmp(argv[1], "ct") == 0) {
+			if (strcmp(argv[2], "byt") == 0)		i2s_getset(I2S_BYTE)
+			else if (strcmp(argv[2], "mod") == 0)	i2s_getset(I2S_MODE)
+			else if (strcmp(argv[2], "sck") == 0)	i2s_getset(I2S_SCKCNT)
+			else {									bErr = 1;	}
+		} else if (strcmp(argv[1], "tx") == 0) {
+			if (strcmp(argv[2], "en") == 0)			i2s_getset(I2S_TXEN)
+			else if (strcmp(argv[2], "adr") == 0)	i2s_getset(I2S_ADRR)
+			else if (strcmp(argv[2], "rdb") == 0)	i2s_getset(I2S_RDBYTE)
+			else if (strcmp(argv[2], "edn") == 0)	i2s_getset(I2S_TXEDN)
+			else if (strcmp(argv[2], "tdw") == 0)	i2s_getset(I2S_TXDW)
+			else if (strcmp(argv[2], "cd") == 0)	i2s_getset(I2S_TXCODEC)
+			else if (strcmp(argv[2], "md") == 0)	i2s_getset(I2S_TXMODE)
+			else if (strcmp(argv[2], "rdl") == 0)	i2s_getset(I2S_RDLEN)
+			else if (strcmp(argv[2], "rdw") == 0)	i2s_getset(I2S_RDDW)
+			else if (strcmp(argv[2], "lr") == 0)	i2s_getset(I2S_TXLR)
+#if EN675_SINGLE
+			else if (strcmp(argv[2], "pen") == 0)	i2s_getset(I2S_PLAT_TXEN)
+			else if (strcmp(argv[2], "psz") == 0)	i2s_getset(I2S_PLAT_LENGTH)
+			else if (strcmp(argv[2], "pmd") == 0)	i2s_getset(I2S_PLAT_MODE)
+			else if (strcmp(argv[2], "pwr") == 0)	i2s_getset(I2S_PLAT_IRQ_BUF_WR)
+			else if (strcmp(argv[2], "prd") == 0)	i2s_getset(I2S_PLAT_IRQ_BUF_RD)
+			else if (strcmp(argv[2], "plw") == 0)	i2s_getset(I2S_PLAT_IRQ_LAST_WORD)
+			else if (strcmp(argv[2], "pfn") == 0)	i2s_getset(I2S_PLAT_IRQ_FINISH)
+			else if (strcmp(argv[2], "pal") == 0)	i2s_getset(I2S_PLAT_IRQ_T)
+			else if (strcmp(argv[2], "pup") == 0)	i2s_getset(I2S_PLAT_IRQ_UP)
+			else if (strcmp(argv[2], "pdn") == 0)	i2s_getset(I2S_PLAT_IRQ_DOWN)
+			else if (strcmp(argv[2], "pd1") == 0)	i2s_getset(I2S_PLAT_IRQ_DOWN1)
+			else if (strcmp(argv[2], "pd2") == 0)	i2s_getset(I2S_PLAT_IRQ_DOWN2)
+#endif
+			else if (strcmp(argv[2], "irq") == 0)	i2s_getset(I2S_TX_IRQ_EN)
+			else {									bErr = 1;	}
+		} else if (strcmp(argv[1], "rx") == 0) {
+			if (strcmp(argv[2], "en") == 0)			i2s_getset(I2S_RXEN)
+			else if (strcmp(argv[2], "adr") == 0)	i2s_getset(I2S_ADRW)
+			else if (strcmp(argv[2], "wrb") == 0)	i2s_getset(I2S_WRBYTE)
+			else if (strcmp(argv[2], "edn") == 0)	i2s_getset(I2S_RXEDN)
+			else if (strcmp(argv[2], "rdw") == 0)	i2s_getset(I2S_WRDW)
+			else if (strcmp(argv[2], "cd") == 0)	i2s_getset(I2S_RXCODEC)
+			else if (strcmp(argv[2], "md") == 0)	i2s_getset(I2S_RXMODE)
+			else if (strcmp(argv[2], "wrl") == 0)	i2s_getset(I2S_WRLEN)
+			else if (strcmp(argv[2], "wdw") == 0)	i2s_getset(I2S_RDDW)
+			else if (strcmp(argv[2], "irq") == 0)	i2s_getset(I2S_RX_IRQ_EN)
+			else {									bErr = 1;	}
+		} else {
+			bErr = 1;
 		}
-		printf("%s : %u\n", argv[1], u32GetData);
+
+		if (bErr == 1) {
+			Shell_Unknown();
+		} else {
+			if (argc == 4) {
+				printf("[SET] Cmd:%s_%s, Value:%u\n", argv[1], argv[2], u32SetData);
+			}
+			printf("[GET] Cmd:%s_%s, Value:%u\n", argv[1], argv[2], u32GetData);
+		}
 	} else if (argc == 8) {
 		UINT tx_mode = atoi(argv[1]);
 		UINT tx_cd = atoi(argv[2]);
@@ -1673,56 +1669,7 @@ int cmd_test_i2s(int argc, char *argv[])
 		//tx_lr : 0 : Mute(0), 1: Left, 2: Right, 3: Both -> TX할 때 mute 또는 unmute 선택
 		I2sTxCfg(tx_mode, tx_cd, tx_dw, rd_byte, rd_dw, rd_len, tx_lr);
 	} else {
-		// COMMON
-		printf("== I2S COMMON ====\n");
-		printf("I2S_BYTE      : %u\n", I2S_BYTE);
-		printf("I2S_MODE      : %u\n", I2S_MODE);
-		printf("I2S_SCKCNT    : %u\n", I2S_SCKCNT);
 
-		// TX
-		printf("== I2S TX ========\n");
-		printf("I2S_TXEN      : %u\n", I2S_TXEN);
-		printf("I2S_ADRR      : 0x%08X\n", I2S_ADRR);
-		printf("I2S_TX_ADDR   : 0x%08X\n", I2S_TX_ADDR);
-		printf("I2S_TXLR      : %u\n", I2S_TXLR);
-		printf("I2S_TXEDN     : %u\n", I2S_TXEDN);
-		printf("I2S_RDBYTE    : %u\n", I2S_RDBYTE);
-		printf("I2S_TXDW      : %u\n", I2S_TXDW);
-		printf("I2S_TXCODEC   : %u\n", I2S_TXCODEC);
-		printf("I2S_TXMODE    : %u\n", I2S_TXMODE);
-		printf("I2S_RDLEN     : %u\n", I2S_RDLEN);
-		printf("I2S_RDDW      : %u\n", I2S_RDDW);
-
-		// RX
-		printf("== I2S RX ========\n");
-		printf("I2S_RXEN      : %u\n", I2S_RXEN);
-		printf("I2S_ADRW      : 0x%08X\n", I2S_ADRW);
-		printf("I2S_RX_ADDR   : 0x%08X\n", I2S_RX_ADDR);
-		printf("I2S_RXEDN     : %u\n", I2S_RXEDN);
-		printf("I2S_WRBYTE    : %u\n", I2S_WRBYTE);
-		printf("I2S_RXDW      : %u\n", I2S_RXDW);
-		printf("I2S_RXCODEC   : %u\n", I2S_RXCODEC);
-		printf("I2S_RXMODE    : %u\n", I2S_RXMODE);
-		printf("I2S_WRLEN     : %u\n", I2S_WRLEN);
-		printf("I2S_WRDW      : %u\n", I2S_WRDW);
-
-		// IRQ
-		printf("== I2S IRQ =======\n");
-		printf("I2S_TX_IRQ    : %u\n", I2S_TX_IRQ);
-		printf("I2S_RX_IRQ    : %u\n", I2S_RX_IRQ);
-		printf("I2S_TX_IRQ_CLR: %u\n", I2S_TX_IRQ_CLR);
-		printf("I2S_RX_IRQ_CLR: %u\n", I2S_RX_IRQ_CLR);
-		printf("I2S_TX_IRQ_EN : %u\n", I2S_TX_IRQ_EN);
-		printf("I2S_RX_IRQ_EN : %u\n", I2S_RX_IRQ_EN);
-
-		// AudPool
-		printf("== AUD POOL ======\n");
-		printf("TX NOW POS    : 0x%08X\n", audpool.audtx_now_pos);
-		printf("TX IRQ COUNT  : %lu\n", audpool.audtx_irq_count);
-		printf("RX NOW POS    : 0x%08X\n", audpool.audrx_now_pos);
-		printf("RX IRQ COUNT  : %lu\n", audpool.audrx_irq_count);
-
-		printf("==================\n");
 	}
 	return 0;
 }
@@ -1791,7 +1738,10 @@ int cmd_test_ir(int argc, char *argv[])
 		printf("(RW) IR_IRQ_ADDR (irq addr [val]) : 0x%02X, %u\n", IR_IRQ_ADDR, IR_IRQ_ADDR);
 		printf("(RW) IR_MARGIN (m [val])          : %u\n", IR_MARGIN);
 		printf("(RW) IR_RPT_MG (rm [val])         : %u\n", IR_RPT_MG);
-		printf("(R ) IR_RPT                       : %u\n", IR_RPT, IR_RPT);
+#if EN675_SINGLE
+		printf("(RW) IR_SYNC (s [val])            : %u\n", IR_SYNC);
+#endif
+		printf("(R ) IR_RPT                       : %u\n", IR_RPT);
 		printf("(R ) IR_ADDR                      : 0x%02X, %u\n", IR_ADDR, IR_ADDR);
 		printf("(R ) IR_DAT                       : 0x%02X, %u\n", IR_DAT, IR_DAT);
 	} else {
@@ -1829,6 +1779,12 @@ int cmd_test_ir(int argc, char *argv[])
 			UINT val = atoi(argv[2]);
 			IrSetRepeatMargin(val);
 			printf("IrSetRepeatMargin(%u) IrGetRepeatMargin(%u)\n", val, IrGetRepeatMargin());
+#if EN675_SINGLE
+		} else if (argc == 3 && strcmp("s", argv[1]) == 0) {
+			UINT val = atoi(argv[2]);
+			IrSetSync(val);
+			printf("IrSetSync(%u) IrGetSync(%u)\n", val, IrGetSync());
+#endif
 		} else {
 			Shell_Unknown();
 		}

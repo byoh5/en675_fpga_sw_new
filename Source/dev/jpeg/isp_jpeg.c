@@ -107,7 +107,47 @@ typedef struct {
 
 jpeg_enc_t jpeg_enc;
 
-void enx_jpeg_info_print(void)
+void enx_jpeg_reg_view(void)
+{
+	_Cprintf("JPEG Register View\n");
+	printf("========================================\n");
+	printf(" %-20s: 0x%08X, %u\n", "JPG_GO", JPG_GOr, JPG_GOr);									// en673		| 0:Idle 1:Encoding start
+	printf(" %-20s: 0x%08X, %u\n", "JPG_ZRL_CUT", JPG_ZRL_CUTr, JPG_ZRL_CUTr);					// en673		|
+	printf(" %-20s: 0x%08X, %u\n", "JPG_RST_IVL", JPG_RST_IVLr, JPG_RST_IVLr);					// en673		|
+	printf(" %-20s: 0x%08X, %u\n", "JPG_QP0", JPG_QP0r, JPG_QP0r);								// en673		| 8bit(Multiplicative Q factor)
+	printf(" %-20s: 0x%08X, %u\n", "JPG_QP1", JPG_QP1r, JPG_QP1r);								// en673		| 3bit(Dividable Q factor)
+	printf(" %-20s: 0x%08X, %u\n", "JPG_YDC_QTBL", JPG_YDC_QTBLr, JPG_YDC_QTBLr);				// new(en675)	|
+	printf(" %-20s: 0x%08X, %u\n", "JPG_CDC_QTBL", JPG_CDC_QTBLr, JPG_CDC_QTBLr);				// new(en675)	|
+	printf(" %-20s: 0x%08X, %u\n", "JPG_IVSEL", JPG_IVSELr, JPG_IVSELr);						// en673		|
+	printf(" %-20s: 0x%08X, %u\n", "JPG_ADR", JPG_ADRr, JPG_ADRr);								// en673		|
+	printf(" %-20s: 0x%08X, %u\n", "JPG_MEM_PD", JPG_MEM_PDr, JPG_MEM_PDr);						// new(en675)	|
+	printf(" %-20s: 0x%08X, %u\n", "JPG_NPFONT", JPG_NPFONTr, JPG_NPFONTr);						// new(en675)	|
+	printf(" %-20s: 0x%08X, %u\n", "JPG_MAX", JPG_MAXr, JPG_MAXr);								// en673		| JPG max size (Limit)
+	printf(" %-20s: 0x%08X, %u\n", "JPG_HW", JPG_HWr, JPG_HWr);									// en673		| JPG Horizontal
+	printf(" %-20s: 0x%08X, %u\n", "JPG_VW", JPG_VWr, JPG_VWr);									// en673		| JPG Vertical
+	printf(" %-20s: 0x%08X, %u\n", "JPG_HBLK_SEL", JPG_HBLK_SELr, JPG_HBLK_SELr);				// en673		|
+	printf(" %-20s: 0x%08X, %u\n", "JVLOCK_ADJ_ON", JVLOCK_ADJ_ONr, JVLOCK_ADJ_ONr);			// new(en675)	|
+	printf(" %-20s: 0x%08X, %u\n", "JPG_HBLK_CYC", JPG_HBLK_CYCr, JPG_HBLK_CYCr);				// en673		|
+	printf(" %-20s: 0x%08X, %u\n", "JPG_ISEL", JPG_ISELr, JPG_ISELr);							// en673		|
+	printf(" %-20s: 0x%08X, %u\n", "JPG_VOFS", JPG_VOFSr, JPG_VOFSr);							// en673		|
+	printf(" %-20s: 0x%08X, %u\n", "JVLOCK_POS", JVLOCK_POSr, JVLOCK_POSr);						// en673		|
+	printf(" %-20s: 0x%08X, %u\n", "JPG_ON", JPG_ONr, JPG_ONr);									// en673		|
+	printf(" %-20s: 0x%08X, %u\n", "JPG_DC_FIX", JPG_DC_FIXr, JPG_DC_FIXr);						// new(en675)	|
+	printf(" %-20s: 0x%08X, %u\n", "JPG_YQT_GAIN", JPG_YQT_GAINr, JPG_YQT_GAINr);				// new(en675)	|
+	printf(" %-20s: 0x%08X, %u\n", "JPG_CQT_GAIN", JPG_CQT_GAINr, JPG_CQT_GAINr);				// new(en675)	|
+	printf(" %-20s: 0x%08X, %u\n", "JPG_QP_MODE", JPG_QP_MODEr, JPG_QP_MODEr);					// new(en675)	|
+	printf(" %-20s: 0x%08X, %u\n", "JPG_C_QUALITY", JPG_C_QUALITYr, JPG_C_QUALITYr);			// new(en675)	|
+	printf(" %-20s: 0x%08X, %u\n", "JPG_C_DCT_CUT_EN", JPG_C_DCT_CUT_ENr, JPG_C_DCT_CUT_ENr);	// new(en675)	|
+	printf(" %-20s: 0x%08X, %u\n", "JPG_C_DCT_CUT_ON", JPG_C_DCT_CUT_ONr, JPG_C_DCT_CUT_ONr);	// new(en675)	|
+	printf(" %-20s: 0x%08X, %u\n", "JPG_C_DCT_CUT_NUM", JPG_C_DCT_CUT_NUMr, JPG_C_DCT_CUT_NUMr);// new(en675)	|
+	printf(" %-20s: 0x%08X, %u\n", "JPG_MODE", JPG_MODEr, JPG_MODEr);							// new(en675)	| 0:Encoding 1:Decoding
+	printf(" %-20s: 0x%08X, %u\n", "JPG_DEC_GO", JPG_DEC_GOr, JPG_DEC_GOr);						// new(en675)	| 0:Idle 1:Decoding start
+	printf(" %-20s: 0x%08X, %u\n", "JPG_DEC_TON", JPG_DEC_TONr, JPG_DEC_TONr);					// new(en675)	|
+	printf(" %-20s: 0x%08X, %u\n", "JDEC_CINV", JDEC_CINVr, JDEC_CINVr);						// new(en675)	|
+	printf("========================================\n");
+}
+
+void enx_jpeg_info_view(void)
 {
 	UINT i;
 	jpeg_param_t *param = &(jpeg_enc.param);
@@ -178,6 +218,35 @@ static inline void jpeg_default_register(void)
 //	JPG_HBLK_CYCw(0x897);
 
 	JPG_MAXw(jpeg_enc.param.max_size);
+}
+
+inline void enx_jpeg_set_dc_quantization_manual(UINT qp_DCL, UINT qp_DCC)
+{
+	if (qp_DCL > 255) {
+		qp_DCL = 255;
+	} else if (qp_DCL == 0) {
+		qp_DCL = 1;
+	}
+	if (qp_DCC > 255) {
+		qp_DCC = 255;
+	} else if (qp_DCC == 0) {
+		qp_DCC = 1;
+	}
+
+	JPG_YDC_QTBLw(qp_DCL);
+	JPG_CDC_QTBLw(qp_DCC);
+}
+
+inline void enx_jpeg_set_dc_quantization_auto(void)
+{
+#define JPG_QTB_DC_Luminance	16
+#define JPG_QTB_DC_Chrominance	17
+	UINT qp_div = (2 << JPG_QP1r);
+	UINT qp_mul = JPG_QP0r;
+	UINT qp_DCL = (JPG_QTB_DC_Luminance * qp_mul) / qp_div;
+	UINT qp_DCC = (JPG_QTB_DC_Chrominance * qp_mul) / qp_div;
+
+	enx_jpeg_set_dc_quantization_manual(qp_DCL, qp_DCC);
 }
 
 /**============================================================================
@@ -430,7 +499,7 @@ static inline void jpeg_default_buffer(void)
 	printf("real JPEG_ADDR_END(0x%08X), define JPEG_IMG_END(0x%08X)\r\n", JPEG_ADDR, JPEG_IMG_END);
 
 	if (JPEG_ADDR > JPEG_IMG_END) {	// JPEG_IMG_END recalculation!
-		enx_jpeg_info_print();
+		enx_jpeg_info_view();
 		while (1) {
 			printf("%s(%d) Buffer overflow!!(pos:0x%08X,END:0x%08X)\r\n", __func__, __LINE__, JPEG_ADDR, JPEG_IMG_END);
 			WdtReset();
@@ -701,7 +770,7 @@ void enx_jpeg_on(void)
 	enx_jpeg_set_bit_rate_mode(e_brmQBR);				// brmode.mode
 	enx_jpeg_set_bit_rate(e_br1m);						// brmode.bitrate
 
-	enx_jpeg_info_print();								// 임시
+	enx_jpeg_info_view();								// 임시
 
 	enx_jpeg_start();
 }

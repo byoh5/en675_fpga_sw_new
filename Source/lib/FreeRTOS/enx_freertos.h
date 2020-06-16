@@ -5,8 +5,6 @@
 #include "semphr.h"
 #include "timers.h"
 
-#define FreeRTOSVer "10.2.1" // May 13 2019
-
 extern void vMemoryHeapInit(void);
 extern void vMemoryHeapInfoPrint(void);
 extern uint32_t xPortGetTotalHeapSize(void);
