@@ -296,25 +296,42 @@ void vTimerCallback2(TimerHandle_t xTimer)
 }
 #endif
 
+void can_tx_GPIO(short id, unsigned char data_len, unsigned char data[8]);
+void MCP2515_Init(void);
 int UsrCmd_c(int argc, char *argv[])
 {
-	_printf("Shell Cmd %s\n", __func__);
-#if (configUSE_TIMERS==1)
-	if (xTimersTest == NULL) {
-		xTimersTest = xTimerCreate("MyTimer", 100, pdTRUE, ( void * ) 0, vTimerCallback2);
-		// pdFALSE pdTRUE
-		if (xTimersTest != NULL) {
-			_printf("Timer Create OK!(0x%08X)\n", (intptr_t)xTimersTest);
-		} else {
-			_printf("Timer Create Fail!\n");
+
+	char buf[8];
+	snprintf(buf, 8, "test123");
+
+	int round = atoi(argv[1]);
+	printf("CAN test %d",round);
+
+
+	for(int i=0; i<round;i++){
+		can_tx_GPIO(0, 8, buf);
+		//vTaskDelay(500);
 		}
-	} else {
-		_printf("Timer Already!\n");
-	}
-#endif
+
+
 	return 0;
-	UNUSED(argc);
-	UNUSED(argv);
+//	_printf("Shell Cmd %s\n", __func__);
+//#if (configUSE_TIMERS==1)
+//	if (xTimersTest == NULL) {
+//		xTimersTest = xTimerCreate("MyTimer", 100, pdFALSE, ( void * ) 0, vTimerCallback);
+//		// pdFALSE pdTRUE
+//		if (xTimersTest != NULL) {
+//			_printf("Timer Create OK!(0x%08X)\n", (intptr_t)xTimersTest);
+//		} else {
+//			_printf("Timer Create Fail!\n");
+//		}
+//	} else {
+//		_printf("Timer Already!\n");
+//	}
+//#endif
+//	return 0;
+//	UNUSED(argc);
+//	UNUSED(argv);
 }
 
 int UsrCmd_d(int argc, char *argv[])
@@ -910,7 +927,7 @@ extern void EthphyLoopbackMode(UINT speed, UINT duplex);
 	//TimerStart(8);
 
 #if 0
-	// 정답지 만들기
+	// ?�답지 만들�?
 	BYTE *arrSrc = pvPortMalloc(512*1024+1024);
 	if (arrSrc == NULL) {
 		printf("malloc error(arrSrc), size(%lu)\n", 512*1024+1024);
@@ -1660,13 +1677,13 @@ int cmd_test_i2s(int argc, char *argv[])
 		UINT rd_dw = atoi(argv[5]);
 		UINT rd_len = atoi(argv[6]);
 		UINT tx_lr = atoi(argv[7]);
-		//tx_mode : 0: L, 1: R, 2: L+R/2, 3: Stereo -> 데이터를 전송할 방향, 2는 한 word의 데이터를 읽은 후 2로 divide, 양방향으로 전송.
+		//tx_mode : 0: L, 1: R, 2: L+R/2, 3: Stereo -> ?�이?��? ?�송??방향, 2????word???�이?��? ?��? ??2�?divide, ?�방?�으�??�송.
 		//tx_cd : 0 or 1: PCM, 2: G711-a, 3: G711-u)
-		//tx_dw : 0->8 , 1->16, 2->24, 3->32 : Tx의 데이터 width
-		//rd_byte : 0: 128B, 1: 256B, 2: 512B, 3: 1KB -> 한번 request에서 읽는 데이터 량
-		//rd_dw : 0->8 , 1->16, 2->24, 3->32 : Rx의 데이터 width
-		//rd_len : 0: 128KB, 1: 256KB, 2: 512KB, 3: 1MB -> Loop를 도는 최대 데이터 량
-		//tx_lr : 0 : Mute(0), 1: Left, 2: Right, 3: Both -> TX할 때 mute 또는 unmute 선택
+		//tx_dw : 0->8 , 1->16, 2->24, 3->32 : Tx???�이??width
+		//rd_byte : 0: 128B, 1: 256B, 2: 512B, 3: 1KB -> ?�번 request?�서 ?�는 ?�이????
+		//rd_dw : 0->8 , 1->16, 2->24, 3->32 : Rx???�이??width
+		//rd_len : 0: 128KB, 1: 256KB, 2: 512KB, 3: 1MB -> Loop�??�는 최�? ?�이????
+		//tx_lr : 0 : Mute(0), 1: Left, 2: Right, 3: Both -> TX????mute ?�는 unmute ?�택
 		I2sTxCfg(tx_mode, tx_cd, tx_dw, rd_byte, rd_dw, rd_len, tx_lr);
 	} else {
 
