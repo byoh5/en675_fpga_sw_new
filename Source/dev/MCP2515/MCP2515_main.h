@@ -153,8 +153,8 @@
 #define MCP_MERRF       0x80
 
 
-#define MCP2515_SPI_CH0	2
-#define MCP2515_SPI_CH1	3
+#define MCP2515_SPI_CH0	8
+#define MCP2515_SPI_CH1	7
 
 
 extern void SpiWrite(UINT nCH, BYTE *dat);
