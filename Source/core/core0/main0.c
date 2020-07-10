@@ -449,6 +449,25 @@ void enx_device_init(void)
 //	I2cInit(EEPROM_I2C_CH, EEPROM_I2C_SPEED);	// FPGA 보드에서 사용하는 24AA64 는 1.8V로 동작하며 100KHz로 동작함
 	EepromInit();
 #endif
+
+#if 1
+
+       extern void TVI_Init(void);
+
+//       TVI_Init(); // I2C 1 Initialization needed for TP2827
+
+//       INIT_STR("TP2827 Initialization...");
+
+
+
+       void MCP2515_Init(void);
+
+       MCP2515_Init(); // SPI 2,3 Initialization needed for CAN Device
+
+       INIT_STR("MCP2515 Initialization...");
+
+#endif
+
 }
 
 void enx_default_userinfo(void)

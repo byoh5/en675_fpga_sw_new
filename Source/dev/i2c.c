@@ -1,3 +1,5 @@
+#if 1
+
 #include "dev.h"
 
 #if USE_I2C0 | USE_I2C1 | USE_I2C2 | USE_I2C3 | USE_I2C4 | USE_I2C5 | USE_I2C6 | USE_I2C7 | USE_I2C8
@@ -442,6 +444,7 @@ void IrqI2c(UINT nCH)
 }
 #endif
 
+
 #else
 #include "dev.h"
 
@@ -857,4 +860,6 @@ void IrqI2c(UINT nCH)
 	_Rprintf("I2C%u IRQ Get! I2C%u is inactive.\n", nCH, nCH);
 	ENX_ASSERT(0);
 }
+#endif
+
 #endif

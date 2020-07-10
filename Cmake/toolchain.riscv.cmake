@@ -5,7 +5,7 @@ SET(CMAKE_SYSTEM_NAME Generic)
 SET(CMAKE_SYSTEM_VERSION 1)
 
 # prefix of the toolchain path
-SET(TOOLCHAIN_PATH "E:/EN675/eclipse/tool/riscv64-unknown-elf-gcc-8.3.0-2019.08.0-x86_64-w64-mingw32/bin/riscv64-unknown-elf-")
+SET(TOOLCHAIN_PATH "D:/DEV_2020/en675/riscv64-unknown-elf-gcc-8.3.0-2019.08.0-x86_64-w64-mingw32/riscv64-unknown-elf-gcc-8.3.0-2019.08.0-x86_64-w64-mingw32/bin/riscv64-unknown-elf-")
 
 IF (WIN32)
     SET(EXT ".exe")

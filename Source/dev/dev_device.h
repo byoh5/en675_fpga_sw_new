@@ -16,9 +16,9 @@
 #ifndef __DEV_DEVICE_H__
 #define __DEV_DEVICE_H__
 
-#define model_TgtBd 2
+#define model_TgtBd 0
 
-#define EN675_SINGLE 0
+#define EN675_SINGLE 1
 
 #define OSC_FREQ	27000000
 #define APB_FREQ	37125000
@@ -85,17 +85,17 @@
 #define __FREERTOS__
 #endif // __FREERTOS__
 
-#if 1
+#if 0
 #define __ECM_STRING__
 #endif // __ECM_STRING__
 
-#if 1
+#if 0
 #define __USE_ISP__
 #endif // __USE_ISP__
 
-#define USE_ISP_FRC		1
+#define USE_ISP_FRC		0
 
-#if 1
+#if 0
 #define __SENSOR__
 #define SENSOR_RESET_GPIO_CH	1
 #define SENSOR_I2C_CH	0
@@ -126,7 +126,7 @@
 #define model_MotionOut	0
 
 
-#if 0 || 1
+#if 0 || 0
 #define HDMI_I2C_CH	7
 #endif
 
@@ -135,7 +135,7 @@
 #define HDMI_I2C_CA	0x90
 #endif // __HDMI_SILICON__
 
-#if 1
+#if 0
 #define __HDMI_LONTIUM__
 //#define   LT8618SX_ADR			0x76		//CI2CA HIGH : 0x76
 #define   LT8618SX_ADR			0x72		//CI2CA LOW : 0x72
@@ -193,7 +193,7 @@
 #define AUDIO_GPIO_RST	20
 #define AUDIO_GPIO_IRQ	21
 #define AUDIO_I2C_CH	2
-#if 1
+#if 0
 #define __AUDIO_TLV320AIC3206__
 #define AUDIO_TLV320AIC3206_I2C_CA 0x30
 #endif
@@ -228,7 +228,7 @@
 #define GPIO_LED2	8
 #endif // __USE_LED2__
 
-#if 1
+#if 0
 #define __USE_SDIOCD__
 #define SD_GPIO_RST	33
 #define SD_GPIO_IRQ	32
@@ -239,20 +239,20 @@
 #define __WIFI__
 #define WF_GPIO_RST	35
 #define WF_GPIO_IRQ	34
-#define WF_SDIO_CH	1
+#define WF_SDIO_CH	0
 #if 0
 #define __WIFI_SD8782__
 #endif
 #endif // __WIFI__
 
-#if 1
+#if 0
 #define __FILESYSTEM__
 #if 0
 #define LOAD_FS_FLS 1
 #else
 #define LOAD_FS_FLS 0
 #endif // LOAD_FS_FLS
-#if 1
+#if 0
 #define LOAD_FS_SDCARD 1
 #else
 #define LOAD_FS_SDCARD 0

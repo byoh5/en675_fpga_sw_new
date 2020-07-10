@@ -607,9 +607,9 @@ static void SSI_entry_uping(char *pcInsert, int iInsertLen)
 
 static void SSI_entry_sdformat(char *pcInsert, int iInsertLen)
 {
-	int update_ing = SDcardGetFormatState();
-	printf("[%d]", update_ing);
-	snprintf(pcInsert, iInsertLen, "\n\tsdfmt=%d;\n", update_ing);
+//	int update_ing = SDcardGetFormatState();
+//	printf("[%d]", update_ing);
+//	snprintf(pcInsert, iInsertLen, "\n\tsdfmt=%d;\n", update_ing);
 }
 
 int App_EN675SSIHandler(int iIndex, char *pcInsert, int iInsertLen)

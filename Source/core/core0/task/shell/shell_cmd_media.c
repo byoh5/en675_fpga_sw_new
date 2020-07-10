@@ -141,235 +141,235 @@ static void testVideoTimer_irq(void *ctx)
 
 int cmd_test_video(int argc, char *argv[])
 {
-	static int init = 0;
-	if (strcmp("init", argv[1]) == 0) {
-		BYTE *pvidbuf = (BYTE *)VID_HEADER;
-		BYTE nal_start[4] = {0,0,0,1};
-
-		printf("vid_info init: %lubyte\n", sizeof(vid_info));
-		memset(vid_info, 0, sizeof(vid_info));
-
-		int i = 0;
-		ULONG total = 0;
-		while (pvidbuf < (VID_HEADER + VID_SIZE)) {
-			int sek = memcmp(pvidbuf, nal_start, 4);
-			if (sek == 0) {
-				BYTE nalvalue = pvidbuf[4];
-#if VID_CODEC==0
-				BYTE naltype = nalvalue & 0x1f;
-				printf("%2d: [0x%02X/0x%02X]\n", i, nalvalue, naltype);
-#elif VID_CODEC==1
-				BYTE naltype = (nalvalue >> 1) & 0x3f;
-				BYTE nalvalue2 = pvidbuf[5];
-				printf("%2d: [0x%02X-0x%02X/0x%02X]\n", i, nalvalue, nalvalue2, naltype);
-#endif
-#if 0
-				pvidbuf++;
-#else
-#if VID_CODEC==0
-				if (naltype == 0x7) {
-					vid_info[i].type = eSTREAMMSG_H264I;
-#elif VID_CODEC==1
-				if (naltype == 0x20) {
-					vid_info[i].type = eSTREAMMSG_H265I;
-#endif
-					vid_info[i].addr = (UINT)(intptr_t)pvidbuf;
-					vid_info[i].ts = 3000;
-					BYTE *next = enx_memstr(pvidbuf+200, VID_SIZE-(pvidbuf+50-VID_HEADER), nal_start, 4);
-					vid_info[i].size = (next - 4 - pvidbuf);
-					total += vid_info[i].size;
-					pvidbuf += 200;
-					i++;
-#if VID_CODEC==0
-				} else if (naltype == 0x5 || naltype == 0x1) {
-					if (naltype == 0x5) {
-						vid_info[i].type = eSTREAMMSG_H264I;
-					} else {
-						vid_info[i].type = eSTREAMMSG_H264P;
-					}
-#elif VID_CODEC==1
-				} else if (naltype == 0x5 || naltype == 0x1) {
-					if (naltype == 0x5) {
-						vid_info[i].type = eSTREAMMSG_H265I;
-					} else {
-						vid_info[i].type = eSTREAMMSG_H265P;
-					}
-#endif
-					vid_info[i].addr = (UINT)(intptr_t)pvidbuf;
-					vid_info[i].ts = 3000;
-					BYTE *next = enx_memstr(pvidbuf+4, VID_SIZE-(pvidbuf+4-VID_HEADER), nal_start, 4);
-					if (next == NULL) {
-						vid_info[i].size = (VID_HEADER + VID_SIZE - pvidbuf);
-					} else {
-						vid_info[i].size = (next - 4 - pvidbuf);
-					}
-					total += vid_info[i].size;
-					pvidbuf += 4;
-					i++;
-				} else {
-					printf("%s %2d, 0x%02X, SEK: %ld\n", __func__, i, nalvalue, pvidbuf - VID_HEADER);
-				}
-#endif
-			} else {
-				pvidbuf++;
-			}
-		}
-		printf("done: %lubyte\n", total);
-		init = 1;
-	} else if (strcmp("start", argv[1]) == 0) {
-		if (init == 0) {
-			char *arg[2] = {"video", "init"};
-			cmd_test_video(2, arg);
-		}
-		TimerSetFreq(TEST_VIDEO_TIMER_CH, TEST_VIDEO_TIMER_DIV, TEST_VIDEO_TIMER_LMT, TEST_VIDEO_TIMER_TRIG);
-		TimerIrqCallback(TEST_VIDEO_TIMER_CH, testVideoTimer_irq, NULL);
-		TimerSetIrqEn(TEST_VIDEO_TIMER_CH, ENX_ON);
-		printf("Start Video Timer: %uHz\n", TEST_VIDEO_TIMER_HZ);
-		TimerStart(TEST_VIDEO_TIMER_CH);
-
-#if (LOAD_FS_SDCARD==1)
-#if (VID_CODEC==0)
-		gtUser.vcVideo[e_vcVEncoder1].eCodec = e_vcodecH264;
-		muxer_videnc_set_vcodec(eRecNormal, e_vcVEncoder1);
-#if (FAT_SDSAVE_EVENT==1)
-		muxer_videnc_set_vcodec(eRecEvent, e_vcVEncoder1);
-#endif
-#else
-		gtUser.vcVideo[e_vcVEncoder1].eCodec = e_vcodecH265;
-		muxer_videnc_set_vcodec(eRecNormal, e_vcVEncoder1);
-#if (FAT_SDSAVE_EVENT==1)
-		muxer_videnc_set_vcodec(eRecEvent, e_vcVEncoder1);
-#endif
-#endif
-#endif
-#if (ENX_RTSP_use==1)
-	} else if (strcmp("check", argv[1]) == 0) {
-		printf("last number: %d\n", rtp_step);
-	}
-#else
-	}
-#endif
+//	static int init = 0;
+//	if (strcmp("init", argv[1]) == 0) {
+//		BYTE *pvidbuf = (BYTE *)VID_HEADER;
+//		BYTE nal_start[4] = {0,0,0,1};
+//
+//		printf("vid_info init: %lubyte\n", sizeof(vid_info));
+//		memset(vid_info, 0, sizeof(vid_info));
+//
+//		int i = 0;
+//		ULONG total = 0;
+//		while (pvidbuf < (VID_HEADER + VID_SIZE)) {
+//			int sek = memcmp(pvidbuf, nal_start, 4);
+//			if (sek == 0) {
+//				BYTE nalvalue = pvidbuf[4];
+//#if VID_CODEC==0
+//				BYTE naltype = nalvalue & 0x1f;
+//				printf("%2d: [0x%02X/0x%02X]\n", i, nalvalue, naltype);
+//#elif VID_CODEC==1
+//				BYTE naltype = (nalvalue >> 1) & 0x3f;
+//				BYTE nalvalue2 = pvidbuf[5];
+//				printf("%2d: [0x%02X-0x%02X/0x%02X]\n", i, nalvalue, nalvalue2, naltype);
+//#endif
+//#if 0
+//				pvidbuf++;
+//#else
+//#if VID_CODEC==0
+//				if (naltype == 0x7) {
+//					vid_info[i].type = eSTREAMMSG_H264I;
+//#elif VID_CODEC==1
+//				if (naltype == 0x20) {
+//					vid_info[i].type = eSTREAMMSG_H265I;
+//#endif
+//					vid_info[i].addr = (UINT)(intptr_t)pvidbuf;
+//					vid_info[i].ts = 3000;
+//					BYTE *next = enx_memstr(pvidbuf+200, VID_SIZE-(pvidbuf+50-VID_HEADER), nal_start, 4);
+//					vid_info[i].size = (next - 4 - pvidbuf);
+//					total += vid_info[i].size;
+//					pvidbuf += 200;
+//					i++;
+//#if VID_CODEC==0
+//				} else if (naltype == 0x5 || naltype == 0x1) {
+//					if (naltype == 0x5) {
+//						vid_info[i].type = eSTREAMMSG_H264I;
+//					} else {
+//						vid_info[i].type = eSTREAMMSG_H264P;
+//					}
+//#elif VID_CODEC==1
+//				} else if (naltype == 0x5 || naltype == 0x1) {
+//					if (naltype == 0x5) {
+//						vid_info[i].type = eSTREAMMSG_H265I;
+//					} else {
+//						vid_info[i].type = eSTREAMMSG_H265P;
+//					}
+//#endif
+//					vid_info[i].addr = (UINT)(intptr_t)pvidbuf;
+//					vid_info[i].ts = 3000;
+//					BYTE *next = enx_memstr(pvidbuf+4, VID_SIZE-(pvidbuf+4-VID_HEADER), nal_start, 4);
+//					if (next == NULL) {
+//						vid_info[i].size = (VID_HEADER + VID_SIZE - pvidbuf);
+//					} else {
+//						vid_info[i].size = (next - 4 - pvidbuf);
+//					}
+//					total += vid_info[i].size;
+//					pvidbuf += 4;
+//					i++;
+//				} else {
+//					printf("%s %2d, 0x%02X, SEK: %ld\n", __func__, i, nalvalue, pvidbuf - VID_HEADER);
+//				}
+//#endif
+//			} else {
+//				pvidbuf++;
+//			}
+//		}
+//		printf("done: %lubyte\n", total);
+//		init = 1;
+//	} else if (strcmp("start", argv[1]) == 0) {
+//		if (init == 0) {
+//			char *arg[2] = {"video", "init"};
+//			cmd_test_video(2, arg);
+//		}
+//		TimerSetFreq(TEST_VIDEO_TIMER_CH, TEST_VIDEO_TIMER_DIV, TEST_VIDEO_TIMER_LMT, TEST_VIDEO_TIMER_TRIG);
+//		TimerIrqCallback(TEST_VIDEO_TIMER_CH, testVideoTimer_irq, NULL);
+//		TimerSetIrqEn(TEST_VIDEO_TIMER_CH, ENX_ON);
+//		printf("Start Video Timer: %uHz\n", TEST_VIDEO_TIMER_HZ);
+//		TimerStart(TEST_VIDEO_TIMER_CH);
+//
+//#if (LOAD_FS_SDCARD==1)
+//#if (VID_CODEC==0)
+//		gtUser.vcVideo[e_vcVEncoder1].eCodec = e_vcodecH264;
+//		muxer_videnc_set_vcodec(eRecNormal, e_vcVEncoder1);
+//#if (FAT_SDSAVE_EVENT==1)
+//		muxer_videnc_set_vcodec(eRecEvent, e_vcVEncoder1);
+//#endif
+//#else
+//		gtUser.vcVideo[e_vcVEncoder1].eCodec = e_vcodecH265;
+//		muxer_videnc_set_vcodec(eRecNormal, e_vcVEncoder1);
+//#if (FAT_SDSAVE_EVENT==1)
+//		muxer_videnc_set_vcodec(eRecEvent, e_vcVEncoder1);
+//#endif
+//#endif
+//#endif
+//#if (ENX_RTSP_use==1)
+//	} else if (strcmp("check", argv[1]) == 0) {
+//		printf("last number: %d\n", rtp_step);
+//	}
+//#else
+//	}
+//#endif
 	return 0;
 }
 
 int cmd_test_jpeg(int argc, char *argv[])
 {
-#if 1
-	if (argc == 2 && (strcmp(argv[1], "start") == 0)) {
-		printf("jpeg on!\n");
-		enx_jpeg_on();
-#if (LOAD_FS_SDCARD==1)
-	} else if (argc == 2 && (strcmp(argv[1], "save") == 0)) {
-		if (muxer_jpegstill_request() == ENX_OK) {
-			printf("Save ok!\n");
-		}
-#endif
-	} else if (argc == 2 && (strcmp(argv[1], "reg") == 0)) {
-		enx_jpeg_reg_view();
-	} else if (argc == 2 && (strcmp(argv[1], "info") == 0)) {
-		enx_jpeg_info_view();
-	} else if (argc == 3 && (strcmp(argv[1], "q") == 0)) {
-		int qp = atoi(argv[2]);
-		enx_jpeg_set_quantize(qp);
-#if 1 // Size error test...
-		vTaskDelay(50);
-
-		while (gptMsgShare.JPEG_STILL_FLAG == JPEG_SNAP_PROC) {
-			vTaskDelay(1);
-		}
-		gptMsgShare.JPEG_STILL_FLAG = JPEG_SNAP_STR;
-		printf("ADDR(0x%08X~0x%08X) SIZE(%u)\n", gptMsgShare.JPEG_STILL_ADDR, gptMsgShare.JPEG_STILL_ADDR + gptMsgShare.JPEG_STILL_SIZE, gptMsgShare.JPEG_STILL_SIZE);
-		gptMsgShare.JPEG_STILL_FLAG = JPEG_SNAP_IDE;
-
-		UINT endaddr = gptMsgShare.JPEG_STILL_ADDR + gptMsgShare.JPEG_STILL_SIZE;
-		UINT newaddr = ENX_MEM_ALIGN(endaddr) - 64;
-		hwflush_dcache_range(newaddr, 64);
-
-		BYTE *pEndAddr = (BYTE *)(intptr_t)(endaddr - 2);
-		if (pEndAddr[0] == 0xff && pEndAddr[1] == 0xd9) {
-			printf("Length OK\n");
-		} else {
-			hexDump("Memory Dump", (void *)(intptr_t)newaddr, 64);
-		}
-#endif
-#if defined(__FILESYSTEM__)
-	} else if (argc == 2 && (strcmp(argv[1], "dec") == 0)) {
-		FIL fp;
-		FRESULT fres;
-		if ((fres=f_open(&fp, "1:/snapshot/2m.jpg", FA_READ)) != FR_OK) {
-			printf("file open fail\n");
-		} else {
-			UINT read_size = 0;
-			FSIZE_t jpeg_size = f_size(&fp);
-			printf("file open ok(%ubyte)\n", jpeg_size);
-			BYTE *src_addr = pvPortMalloc(jpeg_size);
-			if (src_addr == NULL) {
-				printf("src malloc file\n");
-				f_close(&fp);
-				return 0;
-			}
-
-			fres = f_read(&fp, src_addr, jpeg_size, &read_size);
-			if (fres != FR_OK) {
-				printf("file read fail(read:%u)\n", read_size);
-			} else {
-				printf("file read ok(read:%u)\n", read_size);
-				if (jpeg_size == read_size) {
-					printf("read ok!\n");
-				}
-			}
-
-			hexDump("JPEG", src_addr, 512);
-
-			f_close(&fp);
-			vPortFree(src_addr);
-
-			if ((fres=f_open(&fp, "1:/snapshot/2m.raw", FA_WRITE | FA_CREATE_ALWAYS)) != FR_OK) {
-				printf("dec file open fail\n");
-			} else {
-#define JPEG_DEC_YUV_SIZE (4*1024*1024)
-				UINT write_size = 0;
-				BYTE *dst_addr = pvPortCalloc(1, JPEG_DEC_YUV_SIZE);
-				if (dst_addr == NULL) {
-					printf("dst malloc file\n");
-					f_close(&fp);
-					return 0;
-				}
-
-				flprintf("\n");
-				FRESULT fexp = f_expand(&fp, JPEG_DEC_YUV_SIZE, 1);
-				if (fexp != FR_OK) {
-					printf("f_expand fail\n");
-				} else {
-					printf("f_expand ok\n");
-				}
-
-				flprintf("JPEG DEC START\n");
-
-				if (f_write(&fp, dst_addr, JPEG_DEC_YUV_SIZE, &write_size) != FR_OK) {
-					printf("file write fail(write:%u)\n", write_size);
-				} else {
-					printf("file write ok(write:%u)\n", write_size);
-				}
-
-				f_close(&fp);
-				vPortFree(dst_addr);
-			}
-		}
-#endif
-	} else {
-		while (gptMsgShare.JPEG_STILL_FLAG == JPEG_SNAP_PROC) {
-			vTaskDelay(1);
-		}
-		gptMsgShare.JPEG_STILL_FLAG = JPEG_SNAP_STR;
-
-		printf("ADDR(0x%08X) SIZE(%u)\n", gptMsgShare.JPEG_STILL_ADDR, gptMsgShare.JPEG_STILL_SIZE);
-
-		gptMsgShare.JPEG_STILL_FLAG = JPEG_SNAP_IDE;
-	}
-
-
-#endif
+//#if 1
+//	if (argc == 2 && (strcmp(argv[1], "start") == 0)) {
+//		printf("jpeg on!\n");
+//		enx_jpeg_on();
+//#if (LOAD_FS_SDCARD==1)
+//	} else if (argc == 2 && (strcmp(argv[1], "save") == 0)) {
+//		if (muxer_jpegstill_request() == ENX_OK) {
+//			printf("Save ok!\n");
+//		}
+//#endif
+//	} else if (argc == 2 && (strcmp(argv[1], "reg") == 0)) {
+//		enx_jpeg_reg_view();
+//	} else if (argc == 2 && (strcmp(argv[1], "info") == 0)) {
+//		enx_jpeg_info_view();
+//	} else if (argc == 3 && (strcmp(argv[1], "q") == 0)) {
+//		int qp = atoi(argv[2]);
+//		enx_jpeg_set_quantize(qp);
+//#if 1 // Size error test...
+//		vTaskDelay(50);
+//
+//		while (gptMsgShare.JPEG_STILL_FLAG == JPEG_SNAP_PROC) {
+//			vTaskDelay(1);
+//		}
+//		gptMsgShare.JPEG_STILL_FLAG = JPEG_SNAP_STR;
+//		printf("ADDR(0x%08X~0x%08X) SIZE(%u)\n", gptMsgShare.JPEG_STILL_ADDR, gptMsgShare.JPEG_STILL_ADDR + gptMsgShare.JPEG_STILL_SIZE, gptMsgShare.JPEG_STILL_SIZE);
+//		gptMsgShare.JPEG_STILL_FLAG = JPEG_SNAP_IDE;
+//
+//		UINT endaddr = gptMsgShare.JPEG_STILL_ADDR + gptMsgShare.JPEG_STILL_SIZE;
+//		UINT newaddr = ENX_MEM_ALIGN(endaddr) - 64;
+//		hwflush_dcache_range(newaddr, 64);
+//
+//		BYTE *pEndAddr = (BYTE *)(intptr_t)(endaddr - 2);
+//		if (pEndAddr[0] == 0xff && pEndAddr[1] == 0xd9) {
+//			printf("Length OK\n");
+//		} else {
+//			hexDump("Memory Dump", (void *)(intptr_t)newaddr, 64);
+//		}
+//#endif
+//#if defined(__FILESYSTEM__)
+//	} else if (argc == 2 && (strcmp(argv[1], "dec") == 0)) {
+//		FIL fp;
+//		FRESULT fres;
+//		if ((fres=f_open(&fp, "1:/snapshot/2m.jpg", FA_READ)) != FR_OK) {
+//			printf("file open fail\n");
+//		} else {
+//			UINT read_size = 0;
+//			FSIZE_t jpeg_size = f_size(&fp);
+//			printf("file open ok(%ubyte)\n", jpeg_size);
+//			BYTE *src_addr = pvPortMalloc(jpeg_size);
+//			if (src_addr == NULL) {
+//				printf("src malloc file\n");
+//				f_close(&fp);
+//				return 0;
+//			}
+//
+//			fres = f_read(&fp, src_addr, jpeg_size, &read_size);
+//			if (fres != FR_OK) {
+//				printf("file read fail(read:%u)\n", read_size);
+//			} else {
+//				printf("file read ok(read:%u)\n", read_size);
+//				if (jpeg_size == read_size) {
+//					printf("read ok!\n");
+//				}
+//			}
+//
+//			hexDump("JPEG", src_addr, 512);
+//
+//			f_close(&fp);
+//			vPortFree(src_addr);
+//
+//			if ((fres=f_open(&fp, "1:/snapshot/2m.raw", FA_WRITE | FA_CREATE_ALWAYS)) != FR_OK) {
+//				printf("dec file open fail\n");
+//			} else {
+//#define JPEG_DEC_YUV_SIZE (4*1024*1024)
+//				UINT write_size = 0;
+//				BYTE *dst_addr = pvPortCalloc(1, JPEG_DEC_YUV_SIZE);
+//				if (dst_addr == NULL) {
+//					printf("dst malloc file\n");
+//					f_close(&fp);
+//					return 0;
+//				}
+//
+//				flprintf("\n");
+//				FRESULT fexp = f_expand(&fp, JPEG_DEC_YUV_SIZE, 1);
+//				if (fexp != FR_OK) {
+//					printf("f_expand fail\n");
+//				} else {
+//					printf("f_expand ok\n");
+//				}
+//
+//				flprintf("JPEG DEC START\n");
+//
+//				if (f_write(&fp, dst_addr, JPEG_DEC_YUV_SIZE, &write_size) != FR_OK) {
+//					printf("file write fail(write:%u)\n", write_size);
+//				} else {
+//					printf("file write ok(write:%u)\n", write_size);
+//				}
+//
+//				f_close(&fp);
+//				vPortFree(dst_addr);
+//			}
+//		}
+//#endif
+//	} else {
+//		while (gptMsgShare.JPEG_STILL_FLAG == JPEG_SNAP_PROC) {
+//			vTaskDelay(1);
+//		}
+//		gptMsgShare.JPEG_STILL_FLAG = JPEG_SNAP_STR;
+//
+//		printf("ADDR(0x%08X) SIZE(%u)\n", gptMsgShare.JPEG_STILL_ADDR, gptMsgShare.JPEG_STILL_SIZE);
+//
+//		gptMsgShare.JPEG_STILL_FLAG = JPEG_SNAP_IDE;
+//	}
+//
+//
+//#endif
 	return 0;
 }
 
@@ -403,6 +403,7 @@ static unsigned int aud_tx_offset = 0;
 #define AUDIO_TX_DEP (4096*4)
 static void aud_tx_irq_test(void *ctx)
 {
+#if 0
 	if (I2sGetPlatTxEn() == ENX_ON) {
 		printf("already txen1...\n");
 		return;
@@ -437,50 +438,50 @@ static void aud_tx_irq_test(void *ctx)
 	} else {
 		printf("I2S IRQ Call - TX oneshot mode: finish, continue start(0x%08X)\n", I2sGetTxBaseAddr());
 	}
-
+#endif
 }
 #endif
 #endif
 
 int cmd_test_audio(int argc, char *argv[])
 {
-	if (argc == 1) {
-#if EN675_SINGLE
-#if 0
-	// hello_pcm
-	I2sSetPlatLength(sizeof(PCM_HELLO));
-	//I2sSetPlatLength(256*1024);
-	I2sTxBaseAddr(PCM_HELLO);
-#endif
-#if 1
-	// g711_8k_16bit.h
-#if 0
-	aud_tx_step = 0;
-	I2sSetPlatLength(G711DATA_LEN - 41984);
-#else
-	aud_tx_size = G711DATA_LEN;
-	I2sSetPlatLength(AUDIO_TX_DEP);
-	aud_tx_size -= AUDIO_TX_DEP;
-	aud_tx_offset += AUDIO_TX_DEP;
-#endif
-	//I2sSetPlatLength(94208);
-	I2sTxBaseAddr(g711data);
-#endif
-	I2sSetPlatMode(eI2sPlatOneshot);
-	I2sTxIrqCallback(aud_tx_irq_test, NULL);
-	I2sSetTxIrqEn(ENX_ON);
-	I2sSetTxLr(3);
-	I2sSetPlatTxEn(ENX_ON);
-	//I2sSetTxEn(ENX_ON);
-	printf("I2sTX(%d/%d)\n", I2sGetTxEn(), I2sGetPlatTxEn());
-#endif
-	} else if (strcmp(argv[1], "1") == 0) {
-		I2sSetTxLr(ENX_OFF);
-		I2sSetTxEn(0);
-	} else if (strcmp(argv[1], "2") == 0) {
-		I2sSetTxEn(ENX_ON);
-		I2sSetTxLr(3);
-	}
+//	if (argc == 1) {
+//#if EN675_SINGLE
+//#if 0
+//	// hello_pcm
+//	I2sSetPlatLength(sizeof(PCM_HELLO));
+//	//I2sSetPlatLength(256*1024);
+//	I2sTxBaseAddr(PCM_HELLO);
+//#endif
+//#if 1
+//	// g711_8k_16bit.h
+//#if 0
+//	aud_tx_step = 0;
+//	I2sSetPlatLength(G711DATA_LEN - 41984);
+//#else
+//	aud_tx_size = G711DATA_LEN;
+//	I2sSetPlatLength(AUDIO_TX_DEP);
+//	aud_tx_size -= AUDIO_TX_DEP;
+//	aud_tx_offset += AUDIO_TX_DEP;
+//#endif
+//	//I2sSetPlatLength(94208);
+//	I2sTxBaseAddr(g711data);
+//#endif
+//	I2sSetPlatMode(eI2sPlatOneshot);
+//	I2sTxIrqCallback(aud_tx_irq_test, NULL);
+//	I2sSetTxIrqEn(ENX_ON);
+////	I2sSetTxLr(3);
+//	I2sSetPlatTxEn(ENX_ON);
+//	//I2sSetTxEn(ENX_ON);
+//	printf("I2sTX(%d/%d)\n", I2sGetTxEn(), I2sGetPlatTxEn());
+//#endif
+//	} else if (strcmp(argv[1], "1") == 0) {
+////		I2sSetTxLr(ENX_OFF);
+//		I2sSetTxEn(0);
+//	} else if (strcmp(argv[1], "2") == 0) {
+//		I2sSetTxEn(ENX_ON);
+////		I2sSetTxLr(3);
+//	}
 
 	return 0;
 }
