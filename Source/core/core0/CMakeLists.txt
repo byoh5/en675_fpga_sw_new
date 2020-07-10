@@ -62,6 +62,16 @@ SET ( CORE0_HDRS
 	task/videnc/videnc_info.h
 	task/wifi/wifi.h
 	task/wifi/wifi_task.h
+	task/npu/npu.h
+	task/npu/detector/exp_tables.h
+	task/npu/detector/prior_box.h
+	task/npu/network/npu_cmd.h
+	task/npu/network/npu_data_type.h
+	task/npu/network/quantized_network.h
+	task/npu/network/quantized_network_oact.h
+	task/npu/network/quantized_prior_box.h
+	task/tcp_echo/echo.h
+	task/net_control/net_control.h
 )
 
 SET ( CORE0_SRCS
@@ -126,6 +136,12 @@ SET ( CORE0_SRCS
 	task/videnc/videnc_info.c
 	task/wifi/wifi.c
 	task/wifi/wifi_task.c
+	task/npu/npu_apb.c
+	task/npu/npu_app.c
+	task/npu/detector/detector.c
+	task/npu/network/post_process.c
+	task/tcp_echo/echo.c
+	task/net_control/net_control.c
 )
 
 # 라이브러리 생성

@@ -33,6 +33,15 @@ extern void hwflush_dcache_line(uint);
 
 //------------------------------------------------------------------------------
 // cache flush function
+void hwflush_dcache_range_all(void)
+{
+	portENTER_CRITICAL();
+	asm volatile ("fence rw,rw");
+	// def CFLUSH_D_L1 = BitPat("b 1111 1100 0000 ???? ?000 0000 0111 0011") @ Instructions.scala
+	asm volatile (".word 0xfc000073");
+	portEXIT_CRITICAL();
+}
+
 inline void hwflush_dcache_all(void)
 {	// def CFLUSH_D_L1 = BitPat("b 1111 1100 0000 ???? ?000 0000 0111 0011") @ Instructions.scala
 	__asm__ __volatile__ (".word 0xfc000073");

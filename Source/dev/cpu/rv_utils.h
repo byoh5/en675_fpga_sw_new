@@ -15,6 +15,7 @@
 #define	_RV_UTILS_H_
 
 // cache flush function
+void hwflush_dcache_range_all(void);
 extern void hwflush_dcache_all(void);
 extern void hwflush_dcache_range(ulong sadr, ulong size);
 extern void hwflush_dcache_range_rtos(ulong sadr, ulong size);

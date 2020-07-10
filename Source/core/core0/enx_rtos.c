@@ -21,6 +21,27 @@
 
 #include <stdio.h>
 
+#include "task/npu/npu.h"
+
+#include "task/tcp_echo/echo.h"
+#include "task/net_control/net_control.h"
+
+void npu_task(void)
+{
+	run_npu();
+}
+
+void echo_task(void)
+{
+	EchoServer();
+}
+
+void control_task(void)
+{
+	NControl();
+}
+
+
 #if defined(__ETHERNET__)
 void startNetProtocol(void *arg)
 {
@@ -45,6 +66,10 @@ void startNetProtocol(void *arg)
 	vTaskCreate("rtspd", rtspd_socket_server, NULL, LV3_STACK_SIZE, LV5_TASK_PRIO);
 #endif
 
+	vTaskCreate("echo", EchoServer, NULL, LV2_STACK_SIZE, LV5_TASK_PRIO);
+
+//	vTaskCreate("control", control_task, NULL, LV3_STACK_SIZE, LV5_TASK_PRIO);
+
 	vTaskDelete(NULL);
 	UNUSED(arg);
 }
@@ -68,6 +93,9 @@ void main_os(void)
 	vMemoryHeapInit();
 
 	vTaskCreate("shell", ShellTask, NULL, LV2_STACK_SIZE, LV6_TASK_PRIO);
+
+
+	vTaskCreate("npu", npu_task, NULL, LV6_STACK_SIZE, LV2_TASK_PRIO);
 
 #ifdef __USE_SDIOCD__
 	if (SYS_IP_9) {

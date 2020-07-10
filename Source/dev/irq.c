@@ -1724,7 +1724,7 @@ void enx_externalirq_init_cpu0(void)
 	enx_externalirq_perl(eigiETH, ENX_ON, 0);							// Enable ETH_TX Interrupts
 	enx_externalirq_perl(eigiSDIO0, ENX_ON, 0);							// Enable SDIO0 Interrupts
 	enx_externalirq_perl(eigiSDIO1, ENX_ON, 0);							// Enable SDIO1 Interrupts
-	enx_externalirq_perl(eigiNPU, ENX_ON, 0);							// Enable NPU Interrupts
+	enx_externalirq_perl(eigiNPU, ENX_OFF, 0);							// Enable NPU Interrupts
 	enx_externalirq_perl(eigiI2S, ENX_ON, 0);							// Enable I2S Interrupts
 	enx_externalirq_perl(eigiUSB, ENX_ON, 0);							// Enable USB Interrupts
 	enx_externalirq_perl(eigiCHKSUM, ENX_ON, 0);						// Enable CHKSUM Interrupts
