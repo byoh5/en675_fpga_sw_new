@@ -286,9 +286,9 @@ void MCP2515_Init(void)
     //MCP2515_SPI_WRITE(MCP_CNF1, 0x00);  // FPGA (External OSC)
     //MCP2515_SPI_WRITE(MCP_CNF2, 0x90);  // FPGA (External OSC)
     //MCP2515_SPI_WRITE(MCP_CNF3, 0x82);  // FPGA (External OSC)
-    MCP2515_SPI_WRITE(MCP_CNF1, 0x00); // SoC (16MHz OSC)
-    MCP2515_SPI_WRITE(MCP_CNF2, 0x9a); // SoC (16MHz OSC)
-    MCP2515_SPI_WRITE(MCP_CNF3, 0x07); // SoC (16MHz OSC)
+    MCP2515_SPI_WRITE(MCP_CNF1, 0x3F); // SoC (16MHz OSC)
+    MCP2515_SPI_WRITE(MCP_CNF2, 0xFF); // SoC (16MHz OSC)
+    MCP2515_SPI_WRITE(MCP_CNF3, 0x87); // SoC (16MHz OSC)
 
     //// Set up the MCP receive buffer 0 mask to receive broadcast messages.
     //// Set up receive buffer 1 mask to receive messages sent to the
@@ -322,7 +322,7 @@ void MCP2515_Init(void)
 
     // Disable all MCP2510 Interrupts
     //SPI_WR_BYTE(MCP_CANINTE, 0x00 );
-    MCP2515_SPI_WRITE(MCP_CANINTE, 0x3);
+    MCP2515_SPI_WRITE(MCP_CANINTE, 0x0);
 
     //reg_data = SPI_RD(MCP_CNF1);
     //printf("CNF1: 0x",reg_data);

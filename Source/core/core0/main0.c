@@ -462,7 +462,7 @@ void enx_device_init(void)
 
        void MCP2515_Init(void);
 
-    //   MCP2515_Init(); // SPI 2,3 Initialization needed for CAN Device
+       MCP2515_Init(); // SPI 2,3 Initialization needed for CAN Device
 
        INIT_STR("MCP2515 Initialization...");
 
